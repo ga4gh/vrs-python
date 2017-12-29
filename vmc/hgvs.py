@@ -6,11 +6,14 @@ import hgvs.parser
 import hgvs.location
 
 hp = None
+
+
 def _get_hgvs_parser():
     global hp
     if hp is None:
         hp = hgvs.parser.Parser()
     return hp
+
 
 def from_hgvs(hgvs_string):
     hp = _get_hgvs_parser()
@@ -49,10 +52,4 @@ def from_hgvs(hgvs_string):
         identifiers = {sequence_id: [ir.as_dict()]},
         )
 
-    import IPython; IPython.embed()	  ### TODO: Remove IPython.embed()
-
     return bundle
-
-
-if __name__ == "__main__":
-    b = vmc.hgvs.from_hgvs("NC_000019.10:g.44908684C>T")

@@ -19,7 +19,14 @@ SEQREPO_ROOT_DIR = os.environ.get("SEQREPO_ROOT_DIR", "/usr/local/share/seqrepo"
 SEQREPO_INSTANCE_NAME = os.environ.get("SEQREPO_INSTANCE", "master")
 seqrepo_instance_path = os.path.join(SEQREPO_ROOT_DIR, SEQREPO_INSTANCE_NAME)
 
-_sr = biocommons.seqrepo.SeqRepo(seqrepo_instance_path)
+_sr = None
+
+
+def _get_seqrepo():
+    global _sr
+    if _sr is None:
+        _sr = biocommons.seqrepo.SeqRepo(seqrepo_instance_path)
+    return _sr
 
 
 def get_vmc_sequence_id(ir):
@@ -37,6 +44,7 @@ def get_vmc_sequence_id(ir):
     KeyError: <Identifier accession=bogus namespace=NCBI>
     """
 
+    _sr = _get_seqrepo()
     r = _sr.aliases.find_aliases(namespace=str(ir.namespace), alias=str(ir.accession)).fetchone()
     if r is None:
         raise KeyError(ir)
