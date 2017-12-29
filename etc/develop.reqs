@@ -1,4 +1,6 @@
 ipython
 jupyter
+pytest
 restview
+tox
 yapf

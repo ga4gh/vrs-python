@@ -11,6 +11,7 @@ doc
 *.orig
 *.pyc
 __pycache__
+.tox
 venv
 wing.wpr
 wing.wpu
