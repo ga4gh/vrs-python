@@ -10,7 +10,7 @@ SELF:=$(firstword $(MAKEFILE_LIST))
 
 PKG=vmc
 PKGD=$(subst .,/,${PKG})
-VEDIR=venv/3.5
+VEDIR=venv/3.6
 
 export SEQREPO_ROOT_DIR=tests/_data/seqrepo
 
