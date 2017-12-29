@@ -1,0 +1,67 @@
+{
+   "alleles": {
+      "VMC:GA_6DSejQb2b3Of9N5QXSULOTfU_7i9RA-F": {
+         "id": "VMC:GA_6DSejQb2b3Of9N5QXSULOTfU_7i9RA-F",
+         "location_id": "VMC:GL__e3BmXQJ0CYG0ZtXeZDBzBQkvnetKxgb",
+         "state": "A"
+      }
+   },
+   "genotypes": {
+      "VMC:GG_9uOweOFteefYsz-Vno_Yaw1itsjg8MI7": {
+         "completeness": "COMPLETE",
+         "haplotype_ids": [
+            "VMC:GH_dmPKNQRhrnF-XRsqder9RTPz8ZjRtVLg",
+            "VMC:GH_p1wCN7-eVQklcv6tg5d2DGVHCX3eCP2p"
+         ],
+         "id": "VMC:GG_9uOweOFteefYsz-Vno_Yaw1itsjg8MI7"
+      }
+   },
+   "haplotypes": {
+      "VMC:GH_dmPKNQRhrnF-XRsqder9RTPz8ZjRtVLg": {
+         "allele_ids": [
+            "VMC:GA_6DSejQb2b3Of9N5QXSULOTfU_7i9RA-F"
+         ],
+         "completeness": "PARTIAL",
+         "id": "VMC:GH_dmPKNQRhrnF-XRsqder9RTPz8ZjRtVLg"
+      },
+      "VMC:GH_p1wCN7-eVQklcv6tg5d2DGVHCX3eCP2p": {
+         "allele_ids": [
+            "VMC:GA_6DSejQb2b3Of9N5QXSULOTfU_7i9RA-F"
+         ],
+         "completeness": "COMPLETE",
+         "id": "VMC:GH_p1wCN7-eVQklcv6tg5d2DGVHCX3eCP2p"
+      }
+   },
+   "identifiers": {
+      "VMC:GL__e3BmXQJ0CYG0ZtXeZDBzBQkvnetKxgb_": [
+         {
+            "accession": "rs12345",
+            "namespace": "dbSNP"
+         }
+      ],
+      "VMC:GS_01234": [
+         {
+            "accession": "NM_0123.4",
+            "namespace": "NCBI"
+         },
+         {
+            "accession": "GS_01234",
+            "namespace": "VMC"
+         }
+      ]
+   },
+   "locations": {
+      "VMC:GL__e3BmXQJ0CYG0ZtXeZDBzBQkvnetKxgb": {
+         "id": "VMC:GL__e3BmXQJ0CYG0ZtXeZDBzBQkvnetKxgb",
+         "interval": {
+            "end": 42,
+            "start": 42
+         },
+         "sequence_id": "VMC:GS_01234"
+      }
+   },
+   "meta": {
+      "generated_at": "2017-12-28T18:06:06.759661",
+      "vmc_version": 0
+   }
+}

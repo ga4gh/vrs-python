@@ -94,8 +94,15 @@ def id_to_ir(id):
 def serialize(o, namespace="VMC"):
     """convert object to canonical serialized representation
 
-    Serialization is the core of the VMC digest algorithm.  All of the
-    magic occurs here.
+    Serialization is the core of the VMC digest algorithm: Every VMC
+    object must have a serialization in order for it to be
+    identifiable (i.e., to be digested).
+
+    Example:
+    >>> import vmc
+    >>> ir = vmc.models.Identifier(namespace="NCBI", accession="NC_000019.10")
+    >>> vmc.serialize(ir)
+    '<Identifier:NCBI:NC_000019.10>'
 
     Two wrinkles:
 
@@ -147,6 +154,12 @@ def serialize(o, namespace="VMC"):
 def truncated_digest(o):
     """For a VMC object o, return the URL-safe, Base64 encoded, 24-byte
     truncated SHA512 digest as unicode
+
+    Example:
+    >>> import vmc
+    >>> ir = vmc.models.Identifier(namespace="NCBI", accession="NC_000019.10")
+    >>> vmc.truncated_digest(ir)
+    'Kh-Ml83IE-vt7Fu9XLBDmWWJlRzkOvcF'
 
     """
     ser = serialize(o)

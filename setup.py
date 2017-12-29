@@ -41,7 +41,7 @@ setup(
         "biocommons.seqrepo",
         "hgvs",
         "jsonschema",
-        "python-jsonschema-objects",
+        "python-jsonschema-objects < 0.3",  # See https://github.com/cwacek/python-jsonschema-objects/issues/119
     ],
 
     setup_requires = [
