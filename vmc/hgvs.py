@@ -1,9 +1,17 @@
-from . import models, computed_id
-from .seqrepo import get_vmc_sequence_id
+# -*- coding: utf-8 -*-
+
+"""generate VMC Bundle from HGVS string
+
+"""
+
+from __future__ import absolute_import
 
 import hgvs
 import hgvs.parser
 import hgvs.location
+
+from . import models, computed_id
+from .seqrepo import get_vmc_sequence_id
 
 hp = None
 
