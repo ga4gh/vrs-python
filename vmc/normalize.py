@@ -10,6 +10,8 @@ A normalized Allele is:
 
 """
 
+debug = False
+
 
 def trim_left(alleles):
     """remove common prefix from left of all alleles, returning
@@ -59,8 +61,9 @@ def normalize(ref, pos, allele):
     start, end = pos
     ref_allele = ref[start:end]
 
-    #_print_seq(ref)
-    #_print_allele(pos, allele)
+    if debug:
+        _print_seq(ref)
+        _print_allele(pos, allele)
 
     # remove common prefix and advance start
     trimmed, alleles = trim_left([ref_allele, allele])
@@ -68,13 +71,12 @@ def normalize(ref, pos, allele):
     start += trimmed
 
     while True:
-        #_print_allele((start, end), allele)
-        #_print(start,end, [ref_allele, allele])
+        if debug:
+            _print_allele((start, end), allele)
         if end == len(ref):
             break
         next_residue = ref[end:end + 1]
         trimmed, alleles = trim_left([ref_allele + next_residue, allele + next_residue])
-        #print(trimmed, alleles)
         if trimmed == 0:
             break
         allele_len_change = len(allele)
@@ -102,6 +104,7 @@ def _print_allele(pos, allele):    # pragma: no cover
 
 
 if __name__ == "__main__":    # pragma: no cover
+    debug = True
     ref = "TCTCAGCAGCATCT"
 
     # T|C|T|C|A|G|C|A|G|C|A|T|C|T
