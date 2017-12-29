@@ -14,7 +14,6 @@ import os
 
 import biocommons.seqrepo
 
-
 SEQREPO_ROOT_DIR = os.environ.get("SEQREPO_ROOT_DIR", "/usr/local/share/seqrepo")
 SEQREPO_INSTANCE_NAME = os.environ.get("SEQREPO_INSTANCE", "master")
 seqrepo_instance_path = os.path.join(SEQREPO_ROOT_DIR, SEQREPO_INSTANCE_NAME)
@@ -50,7 +49,7 @@ def get_vmc_sequence_id(ir):
         raise KeyError(ir)
 
     rows = _sr.aliases.find_aliases(seq_id=r["seq_id"], namespace="VMC").fetchall()
-    if len(r) == 0:             # pragma: no cover (can't test)
+    if len(r) == 0:    # pragma: no cover (can't test)
         raise RuntimeError("No VMC digest for {ir}".format(ir=ir))
     r = rows[0]
 

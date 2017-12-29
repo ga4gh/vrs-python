@@ -10,6 +10,7 @@ A normalized Allele is:
 
 """
 
+
 def trim_left(alleles):
     """remove common prefix from left of all alleles, returning
     (number_trimmed, [new_alleles])
@@ -71,7 +72,7 @@ def normalize(ref, pos, allele):
         #_print(start,end, [ref_allele, allele])
         if end == len(ref):
             break
-        next_residue = ref[end:end+1]
+        next_residue = ref[end:end + 1]
         trimmed, alleles = trim_left([ref_allele + next_residue, allele + next_residue])
         #print(trimmed, alleles)
         if trimmed == 0:
@@ -83,28 +84,28 @@ def normalize(ref, pos, allele):
     return ((start, end), allele)
 
 
-def _print_seq(seq):            # pragma: no cover
+def _print_seq(seq):    # pragma: no cover
     p = "{:15s}".format("")
     print(p + " ".join(list("01234567890123456789")))
     print(p + "|" + "|".join(list(seq)) + "|")
 
 
-def _print_allele(pos, allele):  # pragma: no cover
+def _print_allele(pos, allele):    # pragma: no cover
     start, end = pos
     pfx = "[{:2d},{:2d})".format(start, end)
     p = "{:15s}".format(pfx)
     pos_str = p + "  " * start + "^"
     # pos_str = p + "  "*(start) + "|"
     if end > start:
-        pos_str += "—" + "——"*(end-start-1) + "^"
+        pos_str += "—" + "——" * (end - start - 1) + "^"
     print(pos_str + " ⇒ " + allele)
 
 
-if __name__ == "__main__":      # pragma: no cover
+if __name__ == "__main__":    # pragma: no cover
     ref = "TCTCAGCAGCATCT"
-    
+
     # T|C|T|C|A|G|C|A|G|C|A|T|C|T
-    #  |---| ⇒ A 
+    #  |---| ⇒ A
 
     tests = [
         ((3, 3), "CAG"),
