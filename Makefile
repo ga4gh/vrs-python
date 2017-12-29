@@ -6,6 +6,7 @@
 
 SHELL:=/bin/bash -o pipefail
 SELF:=$(firstword $(MAKEFILE_LIST))
+export SEQREPO_ROOT_DIR=tests/_data/seqrepo
 
 
 ############################################################################
