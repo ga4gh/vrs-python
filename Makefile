@@ -6,6 +6,7 @@
 
 SHELL:=/bin/bash -o pipefail
 SELF:=$(firstword $(MAKEFILE_LIST))
+PACKAGE_DIR:=vmc
 export SEQREPO_ROOT_DIR=tests/_data/seqrepo
 
 
@@ -83,10 +84,11 @@ tox:
 #=> reformat: reformat code with yapf and commit
 .PHONY: reformat
 reformat:
-	@if hg sum | grep -qL '^commit:.*modified'; then echo "Repository not clean" 1>&2; exit 1; fi
-	@if hg sum | grep -qL ' applied'; then echo "Repository has applied patches" 1>&2; exit 1; fi
-	yapf -i -r seqrepo tests
-	hg commit -m "reformatted with yapf"
+	#@if hg sum | grep -qL '^commit:.*modified'; then echo "Repository not clean" 1>&2; exit 1; fi
+	#@if hg sum | grep -qL ' applied'; then echo "Repository has applied patches" 1>&2; exit 1; fi
+	@if ! git diff --cached --exit-code; then echo "Repository not clean" 1>&2; exit 1; fi
+	yapf -i -r "${PACKAGE_DIR}" tests
+	git commit -a -m "reformatted with yapf"
 
 #=> docs -- make sphinx docs
 .PHONY: doc docs
