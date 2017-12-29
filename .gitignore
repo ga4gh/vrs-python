@@ -8,5 +8,7 @@
 .eggs
 __pycache__
 archive
+build
+dist
 doc
 venv
