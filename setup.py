@@ -14,6 +14,7 @@ setup(
     long_description = long_description,
     name = "vmc",
     packages = find_packages(),
+    package_data = {"vmc": ["_data/schema/*.json"]},
     url = "https://github.com/reece/vmc-python",
     use_scm_version = True,
     zip_safe = True,
