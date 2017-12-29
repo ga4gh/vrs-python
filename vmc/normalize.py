@@ -51,6 +51,9 @@ def normalize(ref, pos, allele):
     >>> normalize(ref, (3,8), "CA")
     ((8, 11), '')
 
+    >>> ref = "TCTCAGCAGCA"     # normalizes to end of ref
+    >>> normalize(ref, (3,3), "CAG")
+    ((11, 11), 'GCA')
     """
     start, end = pos
     ref_allele = ref[start:end]
@@ -80,13 +83,13 @@ def normalize(ref, pos, allele):
     return ((start, end), allele)
 
 
-def _print_seq(seq):
+def _print_seq(seq):            # pragma: no cover
     p = "{:15s}".format("")
     print(p + " ".join(list("01234567890123456789")))
     print(p + "|" + "|".join(list(seq)) + "|")
 
 
-def _print_allele(pos, allele):
+def _print_allele(pos, allele):  # pragma: no cover
     start, end = pos
     pfx = "[{:2d},{:2d})".format(start, end)
     p = "{:15s}".format(pfx)
@@ -97,7 +100,7 @@ def _print_allele(pos, allele):
     print(pos_str + " ⇒ " + allele)
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":      # pragma: no cover
     ref = "TCTCAGCAGCATCT"
     
     # T|C|T|C|A|G|C|A|G|C|A|T|C|T

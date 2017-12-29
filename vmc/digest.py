@@ -104,6 +104,11 @@ def serialize(o, namespace="VMC"):
     >>> vmc.serialize(ir)
     '<Identifier:NCBI:NC_000019.10>'
 
+    >>> vmc.serialize("bogus")
+    Traceback (most recent call last):
+    ...
+    Exception: Unknown type: str
+
     Two wrinkles:
 
     * The digest must be based on VMC (external) identifiers. For this

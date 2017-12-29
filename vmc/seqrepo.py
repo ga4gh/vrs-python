@@ -30,6 +30,11 @@ def get_vmc_sequence_id(ir):
     >>> get_vmc_sequence_id(ir)
     'VMC:GS_IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl'
 
+    >>> ir = models.Identifier(namespace="NCBI", accession="bogus")
+    >>> get_vmc_sequence_id(ir)
+    Traceback (most recent call last):
+    ...
+    KeyError: <Identifier accession=bogus namespace=NCBI>
     """
 
     r = _sr.aliases.find_aliases(namespace=str(ir.namespace), alias=str(ir.accession)).fetchone()
@@ -37,7 +42,7 @@ def get_vmc_sequence_id(ir):
         raise KeyError(ir)
 
     rows = _sr.aliases.find_aliases(seq_id=r["seq_id"], namespace="VMC").fetchall()
-    if len(r) == 0:
+    if len(r) == 0:             # pragma: no cover (can't test)
         raise RuntimeError("No VMC digest for {ir}".format(ir=ir))
     r = rows[0]
 
