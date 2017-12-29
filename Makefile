@@ -2,11 +2,16 @@
 
 .DELETE_ON_ERROR:
 .PHONY: FORCE
+.PRECIOUS :
 .SUFFIXES:
 
-SHELL:=/bin/bash -o pipefail
+SHELL:=/bin/bash -e -o pipefail
 SELF:=$(firstword $(MAKEFILE_LIST))
-PACKAGE_DIR:=vmc
+
+PKG=vmc
+PKGD=$(subst .,/,${PKG})
+VEDIR=venv/3.5
+
 export SEQREPO_ROOT_DIR=tests/_data/seqrepo
 
 
@@ -22,11 +27,18 @@ help:
 ############################################################################
 #= SETUP, INSTALLATION, PACKAGING
 
+#=> venv: make a Python virtual environment
+.PHONY: venv/2.7
+venv/2.7: venv/%:
+	virtualenv -p $$(type -p python$*) $@; \
+	source $@/bin/activate; \
+	pip install --upgrade pip setuptools
+
 #=> venv: make a Python 3 virtual environment
-.PHONY: venv
-venv:
-	pyvenv venv; \
-	source venv/bin/activate; \
+.PHONY: venv/3.5 venv/3.6
+venv/3.5 venv/3.6: venv/%:
+	pyvenv-$* $@; \
+	source $@/bin/activate; \
 	python -m ensurepip --upgrade; \
 	pip install --upgrade pip setuptools
 
@@ -39,10 +51,10 @@ setup: etc/develop.reqs etc/install.reqs
 #=> devready: create venv, install prerequisites, install pkg in develop mode
 .PHONY: devready
 devready:
-	make venv && source venv/bin/activate && make setup develop
-	@echo '#############################################################################'
-	@echo '###  Do not forget to `source venv/bin/activate` to use this environment  ###'
-	@echo '#############################################################################'
+	make ${VEDIR} && source ${VEDIR}/bin/activate && make setup develop
+	@echo '#################################################################################'
+	@echo '###  Do not forget to `source ${VEDIR}/bin/activate` to use this environment  ###'
+	@echo '#################################################################################'
 
 #=> develop: install package in develop mode
 .PHONY: develop
@@ -65,11 +77,13 @@ upload_%:
 
 ############################################################################
 #= TESTING
+# see test configuration in setup.cfg
 
 #=> test: execute tests
 .PHONY: test
 test:
-	python setup.py pytest --addopts="--cov=vmc vmc tests"
+	type -p python
+	python setup.py pytest --addopts="--cov=${PKG} ${PKGD} tests"
 
 #=> tox: execute tests via tox
 .PHONY: tox
@@ -84,10 +98,8 @@ tox:
 #=> reformat: reformat code with yapf and commit
 .PHONY: reformat
 reformat:
-	#@if hg sum | grep -qL '^commit:.*modified'; then echo "Repository not clean" 1>&2; exit 1; fi
-	#@if hg sum | grep -qL ' applied'; then echo "Repository has applied patches" 1>&2; exit 1; fi
 	@if ! git diff --cached --exit-code; then echo "Repository not clean" 1>&2; exit 1; fi
-	yapf -i -r "${PACKAGE_DIR}" tests
+	yapf -i -r "${PKGD}" tests
 	git commit -a -m "reformatted with yapf"
 
 #=> docs -- make sphinx docs
@@ -96,10 +108,8 @@ doc docs: develop
 	# RTD makes json. Build here to ensure that it works.
 	make -C doc html json
 
-
-nb:
-	jupyter notebook --notebook-dir examples
-
+############################################################################
+#= CLEANUP
 
 #=> clean: remove temporary and backup files
 .PHONY: clean
@@ -114,7 +124,7 @@ cleaner: clean
 	find . \( -name \*.pyc -o -name \*.orig -o -name \*.rej \) -print0 | xargs -0r rm
 	find . -name __pycache__ -print0 | xargs -0r rm -fr
 
-#=> cleaner: remove files and directories that require more time/network fetches to rebuild
+#=> cleanest: remove files and directories that require more time/network fetches to rebuild
 .PHONY: cleanest distclean
 cleanest distclean: cleaner
 	rm -fr .eggs .tox venv
