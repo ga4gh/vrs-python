@@ -1,9 +1,9 @@
 # flake8: noqa
-"""vmcdemo -- public interface to vmcdemo
+"""vmc -- public interface to vmcdemo
 
 Most callers should use something like this:
 
->>> from vmcdemo import models, computed_id, serialize
+>>> from vmc import models, computed_id, serialize
 
 """
 

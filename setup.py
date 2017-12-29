@@ -38,8 +38,10 @@ setup(
     ],
 
     install_requires = [
-        "attrs",
-        "six",
+        "biocommons.seqrepo",
+        "hgvs",
+        "jsonschema",
+        "python-jsonschema-objects",
     ],
 
     setup_requires = [

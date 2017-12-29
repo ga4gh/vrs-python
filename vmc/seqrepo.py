@@ -25,13 +25,14 @@ _sr = biocommons.seqrepo.SeqRepo(seqrepo_instance_path)
 def get_vmc_sequence_id(ir):
     """return VMC sequence Id (string) for a given Identifier from another namespace
 
+    >>> from vmc import models, get_vmc_sequence_id
     >>> ir = models.Identifier(namespace="NCBI", accession="NC_000019.10")
     >>> get_vmc_sequence_id(ir)
     'VMC:GS_IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl'
 
     """
 
-    r = _sr.aliases.find_aliases(namespace=ir.namespace, alias=ir.accession).fetchone()
+    r = _sr.aliases.find_aliases(namespace=str(ir.namespace), alias=str(ir.accession)).fetchone()
     if r is None:
         raise KeyError(ir)
 

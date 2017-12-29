@@ -1,0 +1,12 @@
+*-checkpoint.ipynb
+*.egg-info
+*.orig
+*.pyc
+*~
+.cache
+.coverage
+.eggs
+__pycache__
+archive
+doc
+venv

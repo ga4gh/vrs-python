@@ -39,6 +39,7 @@ def normalize(ref, pos, allele):
     """
     Normalize allele with respect to reference sequence and position
 
+    >>> ref = "TCTCAGCAGCATCT"
     >>> normalize(ref, (3,3), "CAG")
     ((11, 11), 'GCA')
     >>> normalize(ref, (4,4), "AGC")
@@ -54,8 +55,8 @@ def normalize(ref, pos, allele):
     start, end = pos
     ref_allele = ref[start:end]
 
-    _print_seq(ref)
-    _print_allele(pos, allele)
+    #_print_seq(ref)
+    #_print_allele(pos, allele)
 
     # remove common prefix and advance start
     trimmed, alleles = trim_left([ref_allele, allele])
@@ -63,8 +64,8 @@ def normalize(ref, pos, allele):
     start += trimmed
 
     while True:
-        _print_allele((start, end), allele)
-        #print(start,end, [ref_allele, allele])
+        #_print_allele((start, end), allele)
+        #_print(start,end, [ref_allele, allele])
         if end == len(ref):
             break
         next_residue = ref[end:end+1]
