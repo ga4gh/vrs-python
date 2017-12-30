@@ -5,11 +5,19 @@
 >>> vb = from_hgvs("NC_000019.10:g.44908684C>T")
 >>> list(vb.locations.keys())[0]
 'VMC:GL_9Jht-lguk_jnBvG-wLJbjmBw5v_v7rQo'
->>> list(vb.alleles.values())[0]
-<Allele id=VMC:GA_xXBYkzzu1AH0HRbLeFESvllmAKUNN1MF location_id=VMC:GL_9Jht-lguk_jnBvG-wLJbjmBw5v_v7rQo state=T>
+>>> list(vb.alleles.keys())[0]
+'VMC:GA_xXBYkzzu1AH0HRbLeFESvllmAKUNN1MF'
 
->>> vb = from_hgvs("NM_000314.4:c.706_707insTT")
+# These types work:
+>>> _ = from_hgvs("NM_000314.4:c.706G>T")
+>>> _ = from_hgvs("NM_000314.4:c.706_706delG")
+>>> _ = from_hgvs("NM_000314.4:c.706_707insTT")
+>>> _ = from_hgvs("NM_000314.4:c.706_708delGAC")
+>>> _ = from_hgvs("NM_000314.4:c.706_708delGACinsTTGT")
+>>> _ = from_hgvs("NM_000314.4:c.706_708delinsTTGT")
+>>> _ = from_hgvs("NM_000314.4:c.706delG")
 
+# Some HGVS expressions are not supported:
 >>> from_hgvs("NM_000314.4:c.493-2A>C")
 Traceback (most recent call last):
 ...
@@ -21,18 +29,6 @@ Traceback (most recent call last):
 ValueError: HGVS variant type dup is unsupported
 
 """
-
-# vb = from_hgvs("NM_000314.4:c.706G>T")
-# vb = from_hgvs("NM_000314.4:c.706_706delG")
-# vb = from_hgvs("NM_000314.4:c.706_708delGAC")
-# vb = from_hgvs("NM_000314.4:c.706_708delGACinsTTGT")
-# vb = from_hgvs("NM_000314.4:c.706_708delinsTTGT")
-# vb = from_hgvs("NM_000314.4:c.706delG")
-# vb = from_hgvs("NM_000314.4:c.493-2A>C")
-
-
-
-
 
 import hgvs
 import hgvs.parser
