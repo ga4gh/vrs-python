@@ -61,7 +61,7 @@ def normalize(ref, pos, allele):
     start, end = pos
     ref_allele = ref[start:end]
 
-    if debug:
+    if debug:                   # pragma: no cover
         _print_seq(ref)
         _print_allele(pos, allele)
 
@@ -71,7 +71,7 @@ def normalize(ref, pos, allele):
     start += trimmed
 
     while True:
-        if debug:
+        if debug:                   # pragma: no cover
             _print_allele((start, end), allele)
         if end == len(ref):
             break
@@ -79,7 +79,6 @@ def normalize(ref, pos, allele):
         trimmed, alleles = trim_left([ref_allele + next_residue, allele + next_residue])
         if trimmed == 0:
             break
-        allele_len_change = len(allele)
         ref_allele, allele = alleles
         start += trimmed
         end += trimmed

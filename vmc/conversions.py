@@ -2,9 +2,37 @@
 
 """generate VMC Bundle from HGVS string
 
+>>> vb = from_hgvs("NC_000019.10:g.44908684C>T")
+>>> list(vb.locations.keys())[0]
+'VMC:GL_9Jht-lguk_jnBvG-wLJbjmBw5v_v7rQo'
+>>> list(vb.alleles.values())[0]
+<Allele id=VMC:GA_xXBYkzzu1AH0HRbLeFESvllmAKUNN1MF location_id=VMC:GL_9Jht-lguk_jnBvG-wLJbjmBw5v_v7rQo state=T>
+
+>>> vb = from_hgvs("NM_000314.4:c.706_707insTT")
+
+>>> from_hgvs("NM_000314.4:c.493-2A>C")
+Traceback (most recent call last):
+...
+ValueError: Intronic HGVS variants are not supported
+
+>>> from_hgvs("NM_000314.4:c.493dup")
+Traceback (most recent call last):
+...
+ValueError: HGVS variant type dup is unsupported
+
 """
 
-from __future__ import absolute_import
+# vb = from_hgvs("NM_000314.4:c.706G>T")
+# vb = from_hgvs("NM_000314.4:c.706_706delG")
+# vb = from_hgvs("NM_000314.4:c.706_708delGAC")
+# vb = from_hgvs("NM_000314.4:c.706_708delGACinsTTGT")
+# vb = from_hgvs("NM_000314.4:c.706_708delinsTTGT")
+# vb = from_hgvs("NM_000314.4:c.706delG")
+# vb = from_hgvs("NM_000314.4:c.493-2A>C")
+
+
+
+
 
 import hgvs
 import hgvs.parser
@@ -12,6 +40,7 @@ import hgvs.location
 
 from . import models, computed_id
 from .seqrepo import get_vmc_sequence_id
+
 
 hp = None
 
@@ -31,7 +60,7 @@ def from_hgvs(hgvs_string):
     sequence_id = get_vmc_sequence_id(ir)
 
     if isinstance(sv.posedit.pos, hgvs.location.BaseOffsetInterval):
-        if sv.posedit.pos.start.is_intronic() or sv.posedit.pos.end.is_intronic():
+        if sv.posedit.pos.start.is_intronic or sv.posedit.pos.end.is_intronic:
             raise ValueError("Intronic HGVS variants are not supported".format(sv.posedit.edit.type))
 
     if sv.posedit.edit.type == 'ins':
@@ -44,13 +73,17 @@ def from_hgvs(hgvs_string):
     location = models.Location(sequence_id=sequence_id, interval=interval)
     location.id = computed_id(location)
 
-    allele = models.Allele(location_id=location.id, state=sv.posedit.edit.alt)
+    state = sv.posedit.edit.alt or ''
+    allele = models.Allele(location_id=location.id, state=state)
     allele.id = computed_id(allele)
 
     bundle = models.Vmcbundle(
-        locations={location.id: location.as_dict()},
         alleles={allele.id: allele.as_dict()},
+        genotypes={},
+        haplotypes={},
         identifiers={sequence_id: [ir.as_dict()]},
+        locations={location.id: location.as_dict()},
+        meta={}
     )
 
     return bundle
