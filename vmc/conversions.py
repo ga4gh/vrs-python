@@ -79,7 +79,7 @@ def from_hgvs(hgvs_string):
         haplotypes={},
         identifiers={sequence_id: [ir.as_dict()]},
         locations={location.id: location.as_dict()},
-        meta={}
+        meta={"version": "0.1"},
     )
 
     return bundle

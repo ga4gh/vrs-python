@@ -3,36 +3,6 @@
 A VMC digest is computed using a "truncated digest" (see below) on a
 well-prescribed serialization of an object.
 
-To compute the digest of an object:
-
-* If an object has an id and it begins with "VMC:", it is assumed to
-  be a VMC digest; that id is returned as is.
-
-* If the object has an id that does not begin with "VMC:", the VMC
-  digest is computed using the truncated_digest on the serialization
-  of the current object.
-
-* If the object does not have an id propoerty, the fields are
-  serialized and returned (not 
-
-To serialize an object, all properties except the `id` field are
-formatted as strings and concatenated, separated by a colon.  When a
-property to be serialized is an object, 
-
-
-The computed_identifier is functionally this:
-
-  ci = computed_identifier(obj)
-
-The pseudocode for computed_identifier is:
-
-def computed_identifier(obj):
-  ser = serialize( obj )
-  digest = base64_urlsafe( sha512( ser )[:24] )
-  prefix = vmc_type_prefix[type(obj)]
-  accession = prefix + "_" + digest
-  ir = Identifier(namespace="VMC", accession=accession)
-
 """
 
 import base64
@@ -40,9 +10,9 @@ import hashlib
 
 from . import models
 
-abc = models
-
 enc = "ASCII"
+
+abc = models                    # still needed?
 
 vmc_namespace = "VMC"
 vmc_model_prefixes = {
@@ -60,39 +30,56 @@ def computed_id(o):
 
     """
 
+    if o.id is not None and o.id.startswith(vmc_namespace + ":"):
+        return o.id
+
     return "{i.namespace}:{i.accession}".format(i=computed_identifier(o))
 
 
 def computed_identifier(o):
     """return the VMC computed identifier for the object, as an Identifier
 
+    >>> import vmc
+    >>> interval = vmc.models.Interval(start=10,end=11)
+    >>> location = vmc.models.Location(sequence_id="VMC:GS_bogus", interval=interval)
+
+    # Compute computed identifier: 
+    >>> cid = computed_id(location)
+    >>> cid
+    'VMC:GL_LBe0tQtFb1wtDpiwDMM1ixBIYYn171fT'
+
+    # Setting the id will preempt computing the identifier again:
+    >>> location.id = cid
+    >>> cid = computed_id(location)
+    >>> cid
+    'VMC:GL_LBe0tQtFb1wtDpiwDMM1ixBIYYn171fT'
+
     """
 
     pfx = vmc_model_prefixes[type(o)]
-    dig = truncated_digest(o)
+    dig = vmc_digest(o)
     accession = "{pfx}_{dig}".format(pfx=pfx, dig=dig)
-    return models.Identifier(namespace=vmc_namespace, accession=accession)
+    ir = models.Identifier(namespace=vmc_namespace, accession=accession)
+    return ir
 
 
-def id_to_ir(id):
-    """Convert internal id to identifier string.
+def vmc_digest(o):
+    """For a VMC object o, return the URL-safe, Base64 encoded, 24-byte
+    truncated SHA512 digest as unicode
 
-    For the VMC demo, we're going to assume that the computed
-    identifier is used as the id, and therefore we can just assert
-    that the id begins with the "VMC:" and then return a synthesized
-    Identifier.
-
-    If an implementation uses a different internal id, this function
-    needs to be changed.
+    Example:
+    >>> import vmc
+    >>> ir = vmc.models.Identifier(namespace="NCBI", accession="NC_000019.10")
+    >>> vmc_digest(ir)
+    'Kh-Ml83IE-vt7Fu9XLBDmWWJlRzkOvcF'
 
     """
-    assert id.startswith(vmc_namespace + ":"), "Must be a VMC id for this demo"
-    ns, acc = id.split(":")
-    return models.Identifier(namespace=ns, accession=acc)
+    ser = vmc_serialize(o)
+    return _truncated_digest(ser.encode(enc)).decode(enc)
 
 
-def serialize(o, namespace="VMC"):
-    """convert object to canonical serialized representation
+def vmc_serialize(o):
+    """convert VMC object to canonical VMC serialized representation
 
     Serialization is the core of the VMC digest algorithm: Every VMC
     object must have a serialization in order for it to be
@@ -101,10 +88,10 @@ def serialize(o, namespace="VMC"):
     Example:
     >>> import vmc
     >>> ir = vmc.models.Identifier(namespace="NCBI", accession="NC_000019.10")
-    >>> vmc.serialize(ir)
+    >>> vmc_serialize(ir)
     '<Identifier:NCBI:NC_000019.10>'
 
-    >>> vmc.serialize("bogus")
+    >>> vmc_serialize("bogus")
     Traceback (most recent call last):
     ...
     Exception: Unknown type: str
@@ -115,7 +102,7 @@ def serialize(o, namespace="VMC"):
       demo, the VMC identifiers and internal ids are equivalent, but
       that need not be true generally.  For example, an implementation
       might choose to use uuids for ids, with VMC identifiers
-      attached.  (See id_to_ir for shortcut used in this demo.)
+      attached.  (See _id_to_ir for shortcut used in this demo.)
 
     * Alleles need to be reliably ordered.  Unfortunately, URL-safe
       Base 64 encodings use characters that are subject to
@@ -136,38 +123,55 @@ def serialize(o, namespace="VMC"):
         return "<{t}:{o.start}:{o.end}>".format(t=t, o=o)
 
     if t == "Location":
-        ir = id_to_ir(o.sequence_id)
-        return "<{t}:{ir}:{ival}>".format(t=t, ir=serialize(ir), ival=serialize(o.interval))
+        ir = _id_to_ir(o.sequence_id)
+        return "<{t}:{ir}:{ival}>".format(t=t, ir=vmc_serialize(ir), ival=vmc_serialize(o.interval))
 
     if t == "Allele":
-        ir = id_to_ir(o.location_id)
-        return "<{t}:{ir}:{o.state}>".format(t=t, ir=serialize(ir), o=o)
+        ir = _id_to_ir(o.location_id)
+        return "<{t}:{ir}:{o.state}>".format(t=t, ir=vmc_serialize(ir), o=o)
 
     if t == "Haplotype":
         # sort as well-defined binary encoding to circumvent locale-dependent sorting differences
-        ids = sorted(serialize(id_to_ir(str(i))).encode(enc) for i in o.allele_ids)
+        ids = sorted(vmc_serialize(_id_to_ir(str(i))).encode(enc) for i in o.allele_ids)
         return "<{t}:{o.completeness}:[{irss}]>".format(t=t, o=o, irss=";".join(i.decode(enc) for i in ids))
 
     if t == "Genotype":
         # sort as well-defined binary encoding to circumvent locale-dependent sorting differences
-        ids = sorted(serialize(id_to_ir(str(i))).encode(enc) for i in o.haplotype_ids)
+        ids = sorted(vmc_serialize(_id_to_ir(str(i))).encode(enc) for i in o.haplotype_ids)
         return "<{t}:{o.completeness}:[{irss}]>".format(t=t, o=o, irss=";".join(i.decode(enc) for i in ids))
 
     raise Exception("Unknown type: " + t)
 
 
-def truncated_digest(o):
-    """For a VMC object o, return the URL-safe, Base64 encoded, 24-byte
-    truncated SHA512 digest as unicode
+############################################################################
+# Internals
 
-    Example:
-    >>> import vmc
-    >>> ir = vmc.models.Identifier(namespace="NCBI", accession="NC_000019.10")
-    >>> vmc.truncated_digest(ir)
-    'Kh-Ml83IE-vt7Fu9XLBDmWWJlRzkOvcF'
+def _id_to_ir(id):
+    """Convert internal id to identifier string.
+
+    For the VMC demo, we're going to assume that the computed
+    identifier is used as the id, and therefore we can just assert
+    that the id begins with the "VMC:" and then return a synthesized
+    Identifier.
+
+    If an implementation uses a different internal id, this function
+    needs to be changed.
 
     """
-    ser = serialize(o)
-    digest = hashlib.sha512(ser.encode(enc)).digest()
-    tdigest_b64us = base64.urlsafe_b64encode(digest[:24]).decode(enc)
+    assert id.startswith(vmc_namespace + ":"), "Must be a VMC id for this demo"
+    ns, acc = id.split(":")
+    return models.Identifier(namespace=ns, accession=acc)
+
+
+def _truncated_digest(blob):
+    """For the binary object blob, return the URL-safe, Base64 encoded,
+    24-byte truncated SHA512 digest as unicode
+
+    Example:
+    >>> _truncated_digest(b'')
+    b'z4PhNX7vuL3xVChQ1m2AB9Yg5AULVxXc'
+
+    """
+    digest = hashlib.sha512(blob).digest()
+    tdigest_b64us = base64.urlsafe_b64encode(digest[:24])
     return tdigest_b64us

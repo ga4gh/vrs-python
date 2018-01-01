@@ -1,7 +1,7 @@
 import datetime
 import json
 
-from vmc import models, computed_id, serialize
+from vmc import models, computed_id
 
 i = models.Interval(start=42, end=42)
 assert {"end": 42, "start": 42} == i.as_dict()
