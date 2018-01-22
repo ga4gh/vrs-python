@@ -25,6 +25,8 @@ def trim_left(alleles):
     (1, ['T', 'A'])
     >>> trim_left(["AA","AA"])
     (2, ['', ''])
+    >>> trim_left(["CAG","CG"])
+    (1, ['AG', 'G'])
 
     """
     trimmed = 0
@@ -38,6 +40,33 @@ def trim_left(alleles):
     return (trimmed, alleles)
 
 
+def trim_right(alleles):
+    """remove common suffix from right of all alleles, returning
+    (number_trimmed, [new_alleles])
+
+    >>> trim_right(["","AA"])
+    (0, ['', 'AA'])
+    >>> trim_right(["A","AA"])
+    (1, ['', 'A'])
+    >>> trim_right(["AT","AA"])
+    (0, ['AT', 'AA'])
+    >>> trim_right(["AA","AA"])
+    (2, ['', ''])
+    >>> trim_right(["CAG","CG"])
+    (1, ['CA', 'C'])
+
+    """
+    trimmed = 0
+    while all(len(a) > 0 for a in alleles):
+        a0 = alleles[0]
+        for a in alleles[1:]:
+            if a0[-1] != a[-1]:
+                return trimmed, alleles
+        alleles = [a[:-1] for a in alleles]
+        trimmed += 1
+    return (trimmed, alleles)
+
+
 def normalize(ref, pos, allele):
     """
     Normalize allele with respect to reference sequence and position
@@ -45,6 +74,8 @@ def normalize(ref, pos, allele):
     >>> ref = "TCTCAGCAGCATCT"
     >>> normalize(ref, (3,3), "CAG")
     ((11, 11), 'GCA')
+    >>> normalize(ref, (3,6), "CG")
+    ((4, 5), '')
     >>> normalize(ref, (4,4), "AGC")
     ((11, 11), 'GCA')
     >>> normalize(ref, (3,6), "")
@@ -65,10 +96,13 @@ def normalize(ref, pos, allele):
         _print_seq(ref)
         _print_allele(pos, allele)
 
-    # remove common prefix and advance start
-    trimmed, alleles = trim_left([ref_allele, allele])
+    # remove common suffix, prefix, and advance start
+    alleles = [ref_allele, allele]
+    l_trimmed, alleles = trim_left(alleles)
+    start += l_trimmed
+    r_trimmed, alleles = trim_right(alleles)
+    end -= r_trimmed
     ref_allele, allele = alleles
-    start += trimmed
 
     while True:
         if debug:                   # pragma: no cover
@@ -111,6 +145,7 @@ if __name__ == "__main__":    # pragma: no cover
 
     tests = [
         ((3, 3), "CAG"),
+        ((3, 6), "CG"),
         ((4, 4), "AGC"),
         ((3, 6), ""),
         ((3, 7), "C"),
