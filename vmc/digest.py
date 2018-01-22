@@ -116,6 +116,7 @@ def vmc_serialize(o):
     # So, we'll use the class "basename".
     t = o.__class__.__name__
 
+    # TODO: this should be string id, not structured identifier
     if t == "Identifier":
         return "<{t}:{o.namespace}:{o.accession}>".format(t=t, o=o)
 
@@ -133,7 +134,8 @@ def vmc_serialize(o):
     if t == "Haplotype":
         # sort as well-defined binary encoding to circumvent locale-dependent sorting differences
         ids = sorted(vmc_serialize(_id_to_ir(str(i))).encode(enc) for i in o.allele_ids)
-        return "<{t}:{o.completeness}:[{irss}]>".format(t=t, o=o, irss=";".join(i.decode(enc) for i in ids))
+        l = o.location_id or ""
+        return "<{t}:{l}:{o.completeness}:[{irss}]>".format(t=t, l=l, o=o, irss=";".join(i.decode(enc) for i in ids))
 
     if t == "Genotype":
         # sort as well-defined binary encoding to circumvent locale-dependent sorting differences

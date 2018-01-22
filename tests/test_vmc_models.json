@@ -7,29 +7,29 @@
       }
    },
    "genotypes": {
-      "VMC:GG_9uOweOFteefYsz-Vno_Yaw1itsjg8MI7": {
+      "VMC:GG_wkq5IDZPN1dTD-WOxdl_8iOB5CAUQ8Va": {
          "completeness": "COMPLETE",
          "haplotype_ids": [
-            "VMC:GH_dmPKNQRhrnF-XRsqder9RTPz8ZjRtVLg",
-            "VMC:GH_p1wCN7-eVQklcv6tg5d2DGVHCX3eCP2p"
+            "VMC:GH__oZ5-57j6eI2M12RVJG46a3Q1LS-4IuN",
+            "VMC:GH_zrCwcEZkWF4nDxSk5BQjrEwufUxCXEWq"
          ],
-         "id": "VMC:GG_9uOweOFteefYsz-Vno_Yaw1itsjg8MI7"
+         "id": "VMC:GG_wkq5IDZPN1dTD-WOxdl_8iOB5CAUQ8Va"
       }
    },
    "haplotypes": {
-      "VMC:GH_dmPKNQRhrnF-XRsqder9RTPz8ZjRtVLg": {
+      "VMC:GH__oZ5-57j6eI2M12RVJG46a3Q1LS-4IuN": {
          "allele_ids": [
             "VMC:GA_6DSejQb2b3Of9N5QXSULOTfU_7i9RA-F"
          ],
          "completeness": "PARTIAL",
-         "id": "VMC:GH_dmPKNQRhrnF-XRsqder9RTPz8ZjRtVLg"
+         "id": "VMC:GH__oZ5-57j6eI2M12RVJG46a3Q1LS-4IuN"
       },
-      "VMC:GH_p1wCN7-eVQklcv6tg5d2DGVHCX3eCP2p": {
+      "VMC:GH_zrCwcEZkWF4nDxSk5BQjrEwufUxCXEWq": {
          "allele_ids": [
             "VMC:GA_6DSejQb2b3Of9N5QXSULOTfU_7i9RA-F"
          ],
          "completeness": "COMPLETE",
-         "id": "VMC:GH_p1wCN7-eVQklcv6tg5d2DGVHCX3eCP2p"
+         "id": "VMC:GH_zrCwcEZkWF4nDxSk5BQjrEwufUxCXEWq"
       }
    },
    "identifiers": {
@@ -61,7 +61,7 @@
       }
    },
    "meta": {
-      "generated_at": "2017-12-28T18:06:06.759661",
+      "generated_at": "2018-01-21T21:56:21.121486",
       "vmc_version": 0
    }
 }
