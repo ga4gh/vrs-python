@@ -1,3 +1,0 @@
-[submodule "vmc-spec"]
-	path = vmc-spec
-	url = git://github.com/ga4gh/vmc
