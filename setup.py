@@ -47,7 +47,7 @@ setup(
 
     setup_requires = [
         "pytest-runner",
-        "setuptools_scm==1.11.1",
+        "setuptools_scm",
         "wheel",
     ],
 
