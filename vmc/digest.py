@@ -25,8 +25,17 @@ vmc_model_prefixes = {
 
 
 def computed_id(o):
-    """return the VMC computed identifier for the object, as a CURIE
+    """return the VMC digest-based id for the object, as a CURIE
     (string)
+
+    >>> import vmc
+    >>> interval = vmc.models.Interval(start=10,end=11)
+    >>> location = vmc.models.Location(sequence_id="VMC:GS_bogus", interval=interval)
+
+    # Compute computed id: 
+    >>> cid = computed_id(location)
+    >>> cid
+    'VMC:GL_RDaX1nGMg7D4M_Y9tiBQ_zG32cNkgkXQ'
 
     """
 
@@ -37,22 +46,16 @@ def computed_id(o):
 
 
 def computed_identifier(o):
-    """return the VMC computed identifier for the object, as an Identifier
+    """return the VMC digest-based identifier for the object, as an Identifier
 
     >>> import vmc
     >>> interval = vmc.models.Interval(start=10,end=11)
     >>> location = vmc.models.Location(sequence_id="VMC:GS_bogus", interval=interval)
 
     # Compute computed identifier: 
-    >>> cid = computed_id(location)
+    >>> cid = computed_identifier(location)
     >>> cid
-    'VMC:GL_LBe0tQtFb1wtDpiwDMM1ixBIYYn171fT'
-
-    # Setting the id will preempt computing the identifier again:
-    >>> location.id = cid
-    >>> cid = computed_id(location)
-    >>> cid
-    'VMC:GL_LBe0tQtFb1wtDpiwDMM1ixBIYYn171fT'
+    <Identifier accession=GL_RDaX1nGMg7D4M_Y9tiBQ_zG32cNkgkXQ namespace=VMC>
 
     """
 
@@ -69,9 +72,10 @@ def digest(o):
 
     Example:
     >>> import vmc
-    >>> ir = vmc.models.Identifier(namespace="NCBI", accession="NC_000019.10")
-    >>> digest(ir)
-    'Kh-Ml83IE-vt7Fu9XLBDmWWJlRzkOvcF'
+    >>> interval = vmc.models.Interval(start=10,end=11)
+    >>> location = vmc.models.Location(sequence_id="VMC:GS_bogus", interval=interval)
+    >>> digest(location)
+    'RDaX1nGMg7D4M_Y9tiBQ_zG32cNkgkXQ'
 
     """
     ser = serialize(o)

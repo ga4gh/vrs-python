@@ -1,35 +1,35 @@
 {
    "alleles": {
-      "VMC:GA_6DSejQb2b3Of9N5QXSULOTfU_7i9RA-F": {
-         "id": "VMC:GA_6DSejQb2b3Of9N5QXSULOTfU_7i9RA-F",
-         "location_id": "VMC:GL__e3BmXQJ0CYG0ZtXeZDBzBQkvnetKxgb",
+      "VMC:GA_xTR0mmMviMLoAI9SwmDMFYr_AZczkjyU": {
+         "id": "VMC:GA_xTR0mmMviMLoAI9SwmDMFYr_AZczkjyU",
+         "location_id": "VMC:GL_OUqODzxryILUEDmv7uF8R8NwREJAx7gN",
          "state": "A"
       }
    },
    "genotypes": {
-      "VMC:GG_wkq5IDZPN1dTD-WOxdl_8iOB5CAUQ8Va": {
+      "VMC:GG_fPYzC18fCsTBXfG48apLSvr2TeEepTRB": {
          "completeness": "COMPLETE",
          "haplotype_ids": [
-            "VMC:GH__oZ5-57j6eI2M12RVJG46a3Q1LS-4IuN",
-            "VMC:GH_zrCwcEZkWF4nDxSk5BQjrEwufUxCXEWq"
+            "VMC:GH_RhBraQWtIyTu9VP90IJ2wvqOk4tN76SB",
+            "VMC:GH_x29VkAQwgr724e5kjgylAoWQfk2LqiHd"
          ],
-         "id": "VMC:GG_wkq5IDZPN1dTD-WOxdl_8iOB5CAUQ8Va"
+         "id": "VMC:GG_fPYzC18fCsTBXfG48apLSvr2TeEepTRB"
       }
    },
    "haplotypes": {
-      "VMC:GH__oZ5-57j6eI2M12RVJG46a3Q1LS-4IuN": {
+      "VMC:GH_RhBraQWtIyTu9VP90IJ2wvqOk4tN76SB": {
          "allele_ids": [
-            "VMC:GA_6DSejQb2b3Of9N5QXSULOTfU_7i9RA-F"
+            "VMC:GA_xTR0mmMviMLoAI9SwmDMFYr_AZczkjyU"
          ],
          "completeness": "PARTIAL",
-         "id": "VMC:GH__oZ5-57j6eI2M12RVJG46a3Q1LS-4IuN"
+         "id": "VMC:GH_RhBraQWtIyTu9VP90IJ2wvqOk4tN76SB"
       },
-      "VMC:GH_zrCwcEZkWF4nDxSk5BQjrEwufUxCXEWq": {
+      "VMC:GH_x29VkAQwgr724e5kjgylAoWQfk2LqiHd": {
          "allele_ids": [
-            "VMC:GA_6DSejQb2b3Of9N5QXSULOTfU_7i9RA-F"
+            "VMC:GA_xTR0mmMviMLoAI9SwmDMFYr_AZczkjyU"
          ],
          "completeness": "COMPLETE",
-         "id": "VMC:GH_zrCwcEZkWF4nDxSk5BQjrEwufUxCXEWq"
+         "id": "VMC:GH_x29VkAQwgr724e5kjgylAoWQfk2LqiHd"
       }
    },
    "identifiers": {
@@ -51,8 +51,8 @@
       ]
    },
    "locations": {
-      "VMC:GL__e3BmXQJ0CYG0ZtXeZDBzBQkvnetKxgb": {
-         "id": "VMC:GL__e3BmXQJ0CYG0ZtXeZDBzBQkvnetKxgb",
+      "VMC:GL_OUqODzxryILUEDmv7uF8R8NwREJAx7gN": {
+         "id": "VMC:GL_OUqODzxryILUEDmv7uF8R8NwREJAx7gN",
          "interval": {
             "end": 42,
             "start": 42
@@ -61,7 +61,7 @@
       }
    },
    "meta": {
-      "generated_at": "2018-01-21T21:56:21.121486",
+      "generated_at": "2018-04-29T21:49:47.743868",
       "vmc_version": 0
    }
 }
