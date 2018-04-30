@@ -2,8 +2,11 @@
 
 **This file should not be imported directly.**
 
-vmc.__init__ exports all symbols for external users. Please see
-that file.
+Users should `import vmc`.
+
+This module reads the spec and generates classes at runtime.  The
+advantage of this approach over models defined in code is that the
+models are always in sync with the spec.
 
 """
 
