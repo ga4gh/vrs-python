@@ -81,15 +81,30 @@ def digest(o):
 ############################################################################
 # Internals
 
-def _truncated_digest(blob):
+def _truncated_digest(blob, digest_size=24):
     """For the binary object blob, return the URL-safe, Base64 encoded,
-    24-byte truncated SHA512 digest as unicode
+    24-byte truncated SHA512 digest ascii encoded.  digest_size must
+    be a multiple of 3.
 
-    Example:
+    Examples:
     >>> _truncated_digest(b'')
     b'z4PhNX7vuL3xVChQ1m2AB9Yg5AULVxXc'
 
+    >>> _truncated_digest(b'', digest_size=24)
+    b'z4PhNX7vuL3xVChQ1m2AB9Yg5AULVxXc'
+
+    >>> _truncated_digest(b'', digest_size=18)
+    b'z4PhNX7vuL3xVChQ1m2AB9Yg'
+
+    >>> _truncated_digest(b'', digest_size=9)
+    b'z4PhNX7vuL3x'
+
     """
+
+    # b64 encoding results in 4/3 size expansion of data and padded if
+    # not multiple of 3, which doesn't make sense for this use
+    assert digest_size % 3 == 0, "digest size must be multiple of 3"
+
     digest = hashlib.sha512(blob).digest()
-    tdigest_b64us = base64.urlsafe_b64encode(digest[:24])
+    tdigest_b64us = base64.urlsafe_b64encode(digest[:digest_size])
     return tdigest_b64us
