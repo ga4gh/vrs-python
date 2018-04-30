@@ -4,9 +4,9 @@
 
 >>> vb = from_hgvs("NC_000019.10:g.44908684C>T")
 >>> list(vb.locations.keys())[0]
-'VMC:GL_9Jht-lguk_jnBvG-wLJbjmBw5v_v7rQo'
+'VMC:GL_L1IS6jOwSUsOpKihGRcqxHul1IwbV-1s'
 >>> list(vb.alleles.keys())[0]
-'VMC:GA_xXBYkzzu1AH0HRbLeFESvllmAKUNN1MF'
+'VMC:GA_AnJl99FJB5tNPupduz8I4R8CCuwCpIY0'
 
 # These types work:
 >>> _ = from_hgvs("NM_000314.4:c.706G>T")
