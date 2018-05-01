@@ -1,7 +1,6 @@
 enc = "ASCII"
 
 # serialization field separator in serialize
-sep = ":"
+sep = "|"
 
 namespace = "VMC"
-
