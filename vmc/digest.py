@@ -103,6 +103,9 @@ def _truncated_digest(blob, digest_size=24):
     >>> _truncated_digest(b'', digest_size=9)
     b'z4PhNX7vuL3x'
 
+    >>> _truncated_digest(b"ACGT", digest_size=24)
+    b'aKF498dAxcJAqme6QYQ7EZ07-fiw8Kw2'
+
     """
 
     # b64 encoding results in 4/3 size expansion of data and padded if

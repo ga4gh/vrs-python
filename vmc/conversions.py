@@ -30,6 +30,7 @@ ValueError: HGVS variant type dup is unsupported
 
 """
 
+
 import hgvs
 import hgvs.parser
 import hgvs.location
@@ -38,6 +39,7 @@ from . import models, computed_id
 from .seqrepo import get_vmc_sequence_id
 
 
+# TODO: Use new `from hgvs.easy import parser`
 hp = None
 
 
@@ -52,6 +54,8 @@ def from_hgvs(hgvs_string):
     hp = _get_hgvs_parser()
     sv = hp.parse_hgvs_variant(hgvs_string)
 
+    # TODO: infer namespace from accession rather than hardcoding
+    # https://github.com/biocommons/bioutils/issues/12
     ir = models.Identifier(namespace="NCBI", accession=sv.ac)
     sequence_id = get_vmc_sequence_id(ir)
 
