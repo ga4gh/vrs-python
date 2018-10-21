@@ -8,8 +8,10 @@ well-prescribed serialization of an object.
 import base64
 import hashlib
 
+from six import text_type
+
 from . import models
-from ._const import enc, namespace
+from ._const import ENC, NAMESPACE
 from .serialize import serialize
 
 
@@ -39,7 +41,7 @@ def computed_id(o):
 
     """
 
-    if o.id is not None and o.id.startswith(namespace + ":"):
+    if o.id is not None and o.id.startswith(NAMESPACE + ":"):
         return o.id
 
     return "{i.namespace}:{i.accession}".format(i=computed_identifier(o))
@@ -62,24 +64,48 @@ def computed_identifier(o):
     pfx = vmc_model_prefixes[type(o)]
     dig = digest(o)
     accession = "{pfx}_{dig}".format(pfx=pfx, dig=dig)
-    ir = models.Identifier(namespace=namespace, accession=accession)
+    ir = models.Identifier(namespace=NAMESPACE, accession=accession)
     return ir
 
 
-def digest(o):
-    """For a VMC object o, return the URL-safe, Base64 encoded, 24-byte
-    truncated SHA512 digest as unicode
+def digest(o, digest_size=24):
+    """For a string object o, return the VMC digest of o.  For a VMC
+    object o, return the VMC digest of the serialization of o.
+
+    The VMC digest is an ASCII string derived by applying URL-safe
+    Base64 encoding to the truncated SHA512 digest of the
+    ASCII-encoded string.  Schematically, that is:
+    
+      digest := decode( b64us( trunc( sha512( encode(s) ), len )))
+
+    or, in Python:
+
+      digest = urlsafe_b64encode(sha512(s.encode("ascii")).digest()[:len]).decode()
 
     Example:
     >>> import vmc
+
+    >>> digest("")
+    'z4PhNX7vuL3xVChQ1m2AB9Yg5AULVxXc'
+
+    >>> digest("", digest_size=12)
+    'z4PhNX7vuL3xVChQ'
+
+    >>> digest("ACGT")
+    'aKF498dAxcJAqme6QYQ7EZ07-fiw8Kw2'
+
     >>> interval = vmc.models.Interval(start=10,end=11)
     >>> location = vmc.models.Location(sequence_id="VMC:GS_bogus", interval=interval)
+
+    >>> digest(serialize(location))
+    'RDaX1nGMg7D4M_Y9tiBQ_zG32cNkgkXQ'
+
     >>> digest(location)
     'RDaX1nGMg7D4M_Y9tiBQ_zG32cNkgkXQ'
 
     """
-    ser = serialize(o)
-    return _truncated_digest(ser.encode(enc)).decode(enc)
+    s = o if isinstance(o, text_type) else serialize(o)
+    return _truncated_digest(s.encode(ENC), digest_size=digest_size).decode(ENC)
 
 
 ############################################################################

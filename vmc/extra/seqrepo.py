@@ -14,8 +14,11 @@ import os
 
 import biocommons.seqrepo
 
+import vmc
+
+
 SEQREPO_ROOT_DIR = os.environ.get("SEQREPO_ROOT_DIR", "/usr/local/share/seqrepo")
-SEQREPO_INSTANCE_NAME = os.environ.get("SEQREPO_INSTANCE", "latest")
+SEQREPO_INSTANCE_NAME = os.environ.get("SEQREPO_INSTANCE", "testing")
 seqrepo_instance_path = os.path.join(SEQREPO_ROOT_DIR, SEQREPO_INSTANCE_NAME)
 
 _sr = None
@@ -28,29 +31,30 @@ def _get_seqrepo():
     return _sr
 
 
-def get_vmc_sequence_id(ir):
-    """return VMC sequence Id (string) for a given Identifier from another namespace
+def get_vmc_sequence_identifier(identifier):
+    """return VMC sequence Identifier (string) for a given Identifier from another namespace
 
-    >>> from vmc import models, get_vmc_sequence_id
-    >>> ir = models.Identifier(namespace="NCBI", accession="NC_000019.10")
-    >>> get_vmc_sequence_id(ir)
+    >>> get_vmc_sequence_identifier("RefSeq:NC_000019.10")
     'VMC:GS_IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl'
 
-    >>> ir = models.Identifier(namespace="NCBI", accession="bogus")
-    >>> get_vmc_sequence_id(ir)
+    >>> get_vmc_sequence_identifier("RefSeq:bogus")
     Traceback (most recent call last):
     ...
-    KeyError: <Identifier accession=bogus namespace=NCBI>
+    KeyError: 'refseq:bogus'
+
+    # also accepts an Identifier
+    >>> from vmc import models
+    >>> ir = models.Identifier(namespace="RefSeq", accession="NC_000019.10")
+    >>> get_vmc_sequence_identifier(ir)
+    'VMC:GS_IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl'
+
     """
 
     _sr = _get_seqrepo()
-    r = _sr.aliases.find_aliases(namespace=str(ir.namespace), alias=str(ir.accession)).fetchone()
-    if r is None:
-        raise KeyError(ir)
+    if isinstance(identifier, vmc.models.Identifier):
+        identifier = "{i.namespace}:{i.accession}".format(i=identifier)
+    return _sr.translate_identifier(identifier, target_namespaces=["VMC"])[0]
 
-    rows = _sr.aliases.find_aliases(seq_id=r["seq_id"], namespace="VMC").fetchall()
-    if len(r) == 0:    # pragma: no cover (can't test)
-        raise RuntimeError("No VMC digest for {ir}".format(ir=ir))
-    r = rows[0]
 
-    return "{r[namespace]}:{r[alias]}".format(r=r)
+def get_reference_sequence(id, start, end):
+    return _get_seqrepo()[id][start:end]

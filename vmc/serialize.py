@@ -1,4 +1,4 @@
-from ._const import enc, sep
+from ._const import ENC, SEP
 
 
 def serialize(o):
@@ -39,29 +39,29 @@ def serialize(o):
 
     # Identifier serialization for completeness.
     if t == "Identifier":
-        return "<{t}{sep}{o.namespace}{sep}{o.accession}>".format(sep=sep, t=t, o=o)
+        return "<{t}{sep}{o.namespace}{sep}{o.accession}>".format(sep=SEP, t=t, o=o)
 
     if t == "Interval":
-        return "<{t}{sep}{o.start}{sep}{o.end}>".format(sep=sep, t=t, o=o)
+        return "<{t}{sep}{o.start}{sep}{o.end}>".format(sep=SEP, t=t, o=o)
 
     if t == "Location":
         ival = serialize(o.interval)
-        return "<{t}{sep}{o.sequence_id}{sep}{ival}>".format(sep=sep, t=t, o=o, ival=ival)
+        return "<{t}{sep}{o.sequence_id}{sep}{ival}>".format(sep=SEP, t=t, o=o, ival=ival)
 
     if t == "Allele":
-        return "<{t}{sep}{o.location_id}{sep}{o.state}>".format(sep=sep, t=t, o=o)
+        return "<{t}{sep}{o.location_id}{sep}{o.state}>".format(sep=SEP, t=t, o=o)
 
     if t == "Haplotype":
         # sort as well-defined binary encoding to circumvent locale-dependent sorting differences
-        ids = sorted(i._value.encode(enc) for i in o.allele_ids)
-        ids_str = ";".join(i.decode(enc) for i in ids)
+        ids = sorted(i._value.encode(ENC) for i in o.allele_ids)
+        ids_str = ";".join(i.decode(ENC) for i in ids)
         l = o.location_id or ""
-        return "<{t}{sep}{l}{sep}{o.completeness}{sep}[{ids_str}]>".format(sep=sep, t=t, o=o, l=l, ids_str=ids_str)
+        return "<{t}{sep}{l}{sep}{o.completeness}{sep}[{ids_str}]>".format(sep=SEP, t=t, o=o, l=l, ids_str=ids_str)
 
     if t == "Genotype":
         # sort as well-defined binary encoding to circumvent locale-dependent sorting differences
-        ids = sorted(i._value.encode(enc) for i in o.haplotype_ids)
-        ids_str = ";".join(i.decode(enc) for i in ids)
-        return "<{t}{sep}{o.completeness}{sep}[{ids_str}]>".format(sep=sep, t=t, o=o, ids_str=ids_str)
+        ids = sorted(i._value.encode(ENC) for i in o.haplotype_ids)
+        ids_str = ";".join(i.decode(ENC) for i in ids)
+        return "<{t}{sep}{o.completeness}{sep}[{ids_str}]>".format(sep=SEP, t=t, o=o, ids_str=ids_str)
 
     raise Exception("Cannot serialize; unknown VMC object type: " + t)

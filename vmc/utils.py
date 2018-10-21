@@ -1,4 +1,5 @@
 from ._models import models
+from .extra.seqrepo import get_vmc_sequence_identifier  # flake8: noqa
 
 
 def id_to_ir(id):
@@ -18,3 +19,7 @@ def id_to_ir(id):
     """
     ns, acc = id.split(":")
     return models.Identifier(namespace=ns, accession=acc)
+
+
+def ir_to_id(ir):
+    return "{ir.namespace}:{ir.accession}".format(ir=ir)

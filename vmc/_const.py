@@ -1,6 +1,6 @@
-enc = "ASCII"
+ENC = "ASCII"
 
 # serialization field separator in serialize
-sep = "|"
+SEP = "|"
 
-namespace = "VMC"
+NAMESPACE = "VMC"
