@@ -167,7 +167,7 @@ class BundleManager:
         return b
 
     def as_dict(self):
-        self.as_bundle().as_dict()
+        return self.as_bundle().as_dict()
 
     def get_referenced_sequence_ids(self):
         return set(l.sequence_id for l in self.locations.values())
