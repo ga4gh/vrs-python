@@ -57,14 +57,9 @@ genotypes = {g.id: g.as_dict()}
 
 # Identifier
 identifiers = {
-    "VMC:GS_01234": [
-        models.Identifier(namespace="NCBI", accession="NM_0123.4"),
-        models.Identifier(namespace="VMC", accession="GS_01234")
-    ],
-    "VMC:GL__e3BmXQJ0CYG0ZtXeZDBzBQkvnetKxgb_": [
-        models.Identifier(namespace="dbSNP", accession="rs12345"),
-    ]
-}
+    "VMC:GS_01234": ["RefSeq:NM_0123.4", "VMC:GS_01234"],
+    "VMC:GL__e3BmXQJ0CYG0ZtXeZDBzBQkvnetKxgb_": ["dbSNP:rs12345", "VMC:GL__e3BmXQJ0CYG0ZtXeZDBzBQkvnetKxgb_"],
+    }
 
 
 # Bundle
@@ -77,7 +72,8 @@ bundle = models.Vmcbundle(
     alleles=alleles,
     haplotypes=haplotypes,
     genotypes=genotypes,
-    identifiers=identifiers)
+    identifiers=identifiers,
+    )
 
 bundle_fn = __file__.replace(".py", ".json")
 # to create (py 3 req'd):
@@ -87,4 +83,6 @@ saved_bundle = models.Vmcbundle(**json.load(open(bundle_fn)))
 # fudge the timestamp so that they compare equal
 saved_bundle.meta.generated_at = bundle.meta.generated_at
 
-assert bundle == saved_bundle
+bundle_d = bundle.as_dict()
+saved_bundle_d = saved_bundle.as_dict()
+assert bundle_d == saved_bundle_d
