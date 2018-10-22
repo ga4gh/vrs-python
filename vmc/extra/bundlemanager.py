@@ -1,10 +1,11 @@
+"""manages a VMC bundle and provides helpful a helpful interface to
+it"""
+
 import collections
 import datetime
 import functools
 
 from bioutils.accessions import infer_namespace
-from vmc import models, computed_id, get_vmc_sequence_identifier
-from vmc.utils import ir_to_id
 
 import hgvs
 import hgvs.edit
@@ -13,7 +14,8 @@ import hgvs.parser
 import hgvs.location
 import hgvs.sequencevariant
 
-from .seqrepo import get_reference_sequence
+from vmc import models, computed_id, get_vmc_sequence_identifier
+from vmc.extra.seqrepo import get_reference_sequence
 
 
 # TODO: Implement changeable id style: vmcdigest, serial, uuid
@@ -30,6 +32,12 @@ def _get_hgvs_parser():
     return hp
 
 
+def ns_to_name(ns):
+    # totally hokey
+    if ns == "refseq":
+        return "RefSeq"
+    return ns
+
 
 class BundleManager:
     def __init__(self):
@@ -39,19 +47,6 @@ class BundleManager:
         self.identifiers = collections.defaultdict(set)
         self.locations = {}
 
-    def as_bundle(self):
-        b = models.Vmcbundle(
-            alleles = self.alleles,
-            genotypes = self.genotypes,
-            haplotypes = self.haplotypes,
-            identifiers = {k: list(v) for k, v in self.identifiers.items()},
-            locations = self.locations,
-            meta=models.Meta(
-                generated_at=datetime.datetime.isoformat(datetime.datetime.now()),
-                vmc_version=0,
-            ))
-        return b
-
 
     def add_hgvs_allele(self, hgvs_allele):
         """parse and add the hgvs_allele to the bundle"""
@@ -59,14 +54,8 @@ class BundleManager:
 
         sv = hp.parse_hgvs_variant(hgvs_allele)
 
-        ns = infer_namespace(sv.ac)
-        # FIXME: drop the following translation when
-        # https://github.com/biocommons/biocommons.seqrepo/issues/31 is
-        # completed
-        ns = "NCBI" if ns == "refseq" else ns  # DROP
-        ir = models.Identifier(namespace=ns, accession=sv.ac)
-        sequence_id = get_vmc_sequence_identifier(ir)
-        self.identifiers[sequence_id].add(ir_to_id(ir))
+        sequence_id = get_vmc_sequence_identifier(sv.ac)
+        self.identifiers[sequence_id].add(sv.ac)
 
         if isinstance(sv.posedit.pos, hgvs.location.BaseOffsetInterval):
             if sv.posedit.pos.start.is_intronic or sv.posedit.pos.end.is_intronic:
@@ -104,8 +93,8 @@ class BundleManager:
             raise Exception("Haplotypes must be defined on a single sequence")
         sequence_id = next(iter(sequence_ids))
         intervals = [self.locations[a.location_id].interval for a in alleles]
-        interval_min = min(i.start for i in intervals)
-        interval_max = max(i.end for i in intervals)
+        interval_min = min(int(i.start) for i in intervals)
+        interval_max = max(int(i.end) for i in intervals)
         interval = models.Interval(start=interval_min, end=interval_max)
         location = models.Location(sequence_id=sequence_id, interval=interval)
         location.id = computed_id(location)
@@ -137,7 +126,7 @@ class BundleManager:
             location = self.locations[allele.location_id]
             interval = location.interval
             seq_ir = next(iter(self.identifiers[location.sequence_id]))
-            ns, acc = seq_ir.split(':')
+            ns, acc = seq_ir.split(":") if ":" in seq_ir else (None, seq_ir)
             ref = get_reference_sequence(seq_ir, interval.start, interval.end)
             type = "g"
             v = hgvs.sequencevariant.SequenceVariant(
@@ -164,6 +153,22 @@ class BundleManager:
         }
 
 
+    def as_bundle(self):
+        b = models.Vmcbundle(
+            alleles = self.alleles,
+            genotypes = self.genotypes,
+            haplotypes = self.haplotypes,
+            identifiers = {k: list(v) for k, v in self.identifiers.items()},
+            locations = self.locations,
+            meta=models.Meta(
+                generated_at=datetime.datetime.isoformat(datetime.datetime.now()),
+                vmc_version=0,
+            ))
+        return b
+
+    def as_dict(self):
+        self.as_bundle().as_dict()
+
     def get_referenced_sequence_ids(self):
         return set(l.sequence_id for l in self.locations.values())
 
@@ -179,16 +184,15 @@ class BundleManager:
 
 
 if __name__ == "__main__":
-    hd = VMCHelper()
+    bm = BundleManager()
 
-    allele = hd.add_hgvs_allele("NM_000041.3:c.388T>C")
+    allele = bm.add_hgvs_allele("NM_000041.3:c.388T>C")
 
-    haplotype = hd.add_hgvs_haplotype(["NM_000041.3:c.388T>C",
+    haplotype = bm.add_hgvs_haplotype(["NM_000041.3:c.388T>C",
                                        "NM_000041.3:c.526C>T"])
     
-    genotype = hd.add_hgvs_genotype([["NM_000041.3:c.388T>C",
+    genotype = bm.add_hgvs_genotype([["NM_000041.3:c.388T>C",
                                       "NM_000041.3:c.526C>T"],
                                      ["NM_000041.3:c.388T>C",
                                       "NM_000041.3:c.526C>T"]])
 
-    
