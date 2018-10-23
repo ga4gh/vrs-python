@@ -40,9 +40,9 @@ setup(
 
     install_requires = [
         "biocommons.seqrepo>=0.4.2",
-        "hgvs",
-        "jsonschema",
-        "python-jsonschema-objects < 0.3",  # See https://github.com/cwacek/python-jsonschema-objects/issues/119
+        "bioutils>=0.4rc",
+        "hgvs>=1.2",
+        "python-jsonschema-objects<0.3",
     ],
 
     setup_requires = [
@@ -54,6 +54,7 @@ setup(
     tests_require = [
         "pytest",
         "pytest-cov",
+        "pyyaml",
     ],
 )
 
