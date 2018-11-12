@@ -16,11 +16,14 @@ model.
 **NOTE:** This project is in-progress.  
 
 
-Installation (required to use notebooks)
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+Installation
+@@@@@@@@@@@@
+
+1. Install vmc-python
+#####################
 
 Ubuntu 18.04+
-###############
+$$$$$$$$$$$$$
 
 ::
 
@@ -31,16 +34,30 @@ Ubuntu 18.04+
   pip install -e .
   pip install -e '.[notebooks]'
 
+
 MacOS
-########
+$$$$$
 
 (Please contribute instructions)
 
 
 Windows
-#######
+$$$$$$$
 
 You need a different kind of help.
+
+
+
+  seqrepo pull
+
+
+2. Pull seqrepo data
+####################
+
+Sequence data are required to normalize sequences and infer VMC
+sequence identifiers.  The notebooks use `SeqRepo
+<https://github.com/biocommons/biocommons.seqrepo>`__.  VMC
+implementers may use SeqRepo or other data source.
 
 
 Running the Notebooks
@@ -49,5 +66,4 @@ Running the Notebooks
 Once installed as described above, type::
 
   source venv/3.6/bin/activate
-(??)
   jupyter notebook --notebook-dir notebooks/
