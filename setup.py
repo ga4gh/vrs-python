@@ -38,6 +38,20 @@ setup(
         'bioinformatics',
     ],
 
+    extras_require = {
+        'dev': [
+            "pytest",
+            "pytest-cov",
+            "restview",
+            "tox",
+            "yapf",
+        ],
+        'notebooks': [
+            "ipython",
+            "jupyter",
+        ],
+    },
+
     install_requires = [
         "biocommons.seqrepo>=0.4.2",
         "bioutils>=0.4rc",

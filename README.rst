@@ -25,10 +25,11 @@ Ubuntu 18.04+
 ::
 
   git clone --recurse-submodules https://github.com/ga4gh/vmc-python.git
-  make venv/3.6
+  python3.6 -m venv venv/3.6
   source venv/3.6/bin/activate
-  make install
-
+  pip install --upgrade pip setuptools
+  pip install -e .
+  pip install -e '.[notebooks]'
 
 MacOS
 ########
@@ -48,5 +49,5 @@ Running the Notebooks
 Once installed as described above, type::
 
   source venv/3.6/bin/activate
-  pip install jupyter
+(??)
   jupyter notebook --notebook-dir notebooks/
