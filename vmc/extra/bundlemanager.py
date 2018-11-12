@@ -4,8 +4,7 @@ it"""
 import collections
 import datetime
 import functools
-
-from bioutils.accessions import infer_namespace
+import uuid
 
 import hgvs
 import hgvs.edit
@@ -39,13 +38,29 @@ def ns_to_name(ns):
     return ns
 
 
+
+_object_id = 0
+def _get_id_serial(o):
+    global _object_id
+    _object_id += 1
+    return str(_object_id)
+
+_id_functions = {
+    'computed': computed_id,
+    'serial': _get_id_serial,
+    'uuid': lambda: str(uuid.uuid4()),
+    }
+
+
+
 class BundleManager:
-    def __init__(self):
+    def __init__(self, id_function="computed"):
         self.alleles = {}
         self.genotypes = {}
         self.haplotypes = {}
         self.identifiers = collections.defaultdict(set)
         self.locations = {}
+        self._id_function = _id_functions[id_function]
 
 
     def add_hgvs_allele(self, hgvs_allele):
@@ -74,11 +89,11 @@ class BundleManager:
             raise ValueError("HGVS variant type {} is unsupported".format(sv.posedit.edit.type))
 
         location = models.Location(sequence_id=sequence_id, interval=interval)
-        location.id = computed_id(location)
+        location.id = self._id_function(location)
         self.locations[location.id] = location
 
         allele = models.Allele(location_id=location.id, state=state)
-        allele.id = computed_id(allele)
+        allele.id = self._id_function(allele)
         self.alleles[allele.id] = allele
 
         return allele
@@ -97,13 +112,13 @@ class BundleManager:
         interval_max = max(int(i.end) for i in intervals)
         interval = models.Interval(start=interval_min, end=interval_max)
         location = models.Location(sequence_id=sequence_id, interval=interval)
-        location.id = computed_id(location)
+        location.id = self._id_function(location)
         self.locations[location.id] = location
 
         haplotype = models.Haplotype(completeness=completeness,
                                      location_id=location.id,
                                      allele_ids=[a.id for a in alleles])
-        haplotype.id = computed_id(haplotype)
+        haplotype.id = self._id_function(haplotype)
         self.haplotypes[haplotype.id] = haplotype
         return haplotype
 
@@ -112,7 +127,7 @@ class BundleManager:
         haplotypes = [self.add_hgvs_haplotype(hh) for hh in hgvs_haplotypes]
         genotype = models.Genotype(completeness=completeness,
                                    haplotype_ids=[h.id for h in haplotypes])
-        genotype.id = computed_id(genotype)
+        genotype.id = self._id_function(genotype)
         self.genotypes[genotype.id] = genotype
         return genotype
 
