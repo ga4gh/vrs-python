@@ -4,6 +4,7 @@ import itertools
 import json
 import logging
 import shelve
+import tempfile
 import time
 
 import requests
@@ -45,12 +46,14 @@ class RefSeqMapper(shelve.DbfilenameShelf):
 
 
 class AlleleRegistryClient:
-    def __init__(self, base_url, login, password):
+    def __init__(self, base_url, login, password, cache_fn=None):
         self._base_url = base_url
         self.login = login
         self.password = password
 
-        self._refseqmapper = RefSeqMapper("/tmp/refseqmapper.shelve")
+        if not cache_fn:
+            cache_fn = tempfile.NamedTemporaryFile(delete=True).name
+        self._refseqmapper = RefSeqMapper(cache_fn)
 
     def get_allele(self, hgvs):
         return self._get("allele", hgvs=hgvs)
