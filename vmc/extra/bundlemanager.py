@@ -48,7 +48,7 @@ def _get_id_serial(o):
 _id_functions = {
     'computed': computed_id,
     'serial': _get_id_serial,
-    'uuid': lambda: str(uuid.uuid4()),
+    'uuid': lambda _: str(uuid.uuid4()),
     }
 
 
