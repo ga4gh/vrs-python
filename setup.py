@@ -13,7 +13,7 @@ setup(
     license = "Apache License 2.0 (http://www.apache.org/licenses/LICENSE-2.0)",
     long_description = long_description,
     name = "vmc",
-    packages = find_packages(),
+    packages = find_packages(exclude=["__pycache__", "*.pyc"]),
     package_data = {"vmc": ["_data/schema/*.json"]},
     url = "https://github.com/reece/vmc-python",
     use_scm_version = True,
