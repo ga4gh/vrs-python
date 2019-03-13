@@ -55,8 +55,15 @@ class AlleleRegistryClient:
             cache_fn = tempfile.NamedTemporaryFile(delete=True).name
         self._refseqmapper = RefSeqMapper(cache_fn)
 
+    def get_allele_by_hgvs(self, hgvs):
+        return self._build_vmc_from_ca(self._get("allele", hgvs=hgvs))
+
     def get_allele(self, hgvs):
-        return self._get("allele", hgvs=hgvs)
+        _logger.warn("get_allele is deprecated; use get_allele_by_hgvs instead")
+        return self.get_allele_by_hgvs(hgvs)
+
+    def get_allele_by_id(self, id):
+        return self._build_vmc_from_ca(self._get("allele/" + id))
 
     ############################################################################
 
