@@ -38,7 +38,14 @@ $$$$$$$$$$$$$
 MacOS
 $$$$$
 
-(Please contribute instructions)
+::
+
+  git clone --recurse-submodules https://github.com/ga4gh/vmc-python.git
+  python3.7 -m venv vmc-python
+  cd vmc-python
+  pip install --upgrade pip setuptools
+  pip install -e .
+  pip install -e '.[notebooks]'
 
 
 Windows
