@@ -41,9 +41,9 @@ $$$$$
 ::
 
   git clone --recurse-submodules https://github.com/ga4gh/vmc-python.git
-  python3.7 -m venv vmc-python
-  cd vmc-python
+  python3.7 -m venv venv/3.7
   pip3 install --upgrade pip setuptools
+  cd vmc-python
   pip3 install -e .
   pip3 install -e '.[notebooks]'
 
