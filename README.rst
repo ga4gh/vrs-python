@@ -22,33 +22,20 @@ Installation
 1. Install vmc-python
 #####################
 
-Ubuntu 18.04+
-$$$$$$$$$$$$$
+The following instructions are for Ubuntu 18.04+ and MacOS.
+vmc-python is unlikely to work on Windows due to dependencies.
 
 ::
 
   git clone --recurse-submodules https://github.com/ga4gh/vmc-python.git
-  python3.6 -m venv venv/3.6
-  source venv/3.6/bin/activate
+  cd vmc-python
+  python3.7 -m venv venv/3.7
+  source venv/3.7/bin/activate
   pip install --upgrade pip setuptools
   pip install -e .
   pip install -e '.[notebooks]'
 
-
-MacOS
-$$$$$
-
-(Please contribute instructions)
-
-
-Windows
-$$$$$$$
-
-You need a different kind of help.
-
-
-
-  seqrepo pull
+(Python 3.5 and 3.6 should also work.)
 
 
 2. Pull seqrepo data
@@ -59,11 +46,22 @@ sequence identifiers.  The notebooks use `SeqRepo
 <https://github.com/biocommons/biocommons.seqrepo>`__.  VMC
 implementers may use SeqRepo or other data source.
 
+Then, download seqrepo with::
+
+  sudo mkdir /usr/local/share/seqrepo
+  sudo chown $USER:$USER /usr/local/share/seqrepo
+  seqrepo pull
+
+NOTE: This will download approximately 10GB of sequence data.  See
+https://github.com/biocommons/biocommons.seqrepo/ for more
+information.
+
+
 
 Running the Notebooks
 @@@@@@@@@@@@@@@@@@@@@
 
 Once installed as described above, type::
 
-  source venv/3.6/bin/activate
+  source venv/3.7/bin/activate
   jupyter notebook --notebook-dir notebooks/
