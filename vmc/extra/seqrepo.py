@@ -16,9 +16,9 @@ import biocommons.seqrepo
 
 import vmc
 
-
 SEQREPO_ROOT_DIR = os.environ.get("SEQREPO_ROOT_DIR", "/usr/local/share/seqrepo")
-SEQREPO_INSTANCE_NAME = os.environ.get("SEQREPO_INSTANCE", "latest")
+# SEQREPO_INSTANCE_NAME = os.environ.get("SEQREPO_INSTANCE", "latest")
+SEQREPO_INSTANCE_NAME = os.environ.get("SEQREPO_INSTANCE", "2018-11-26")
 seqrepo_instance_path = os.path.join(SEQREPO_ROOT_DIR, SEQREPO_INSTANCE_NAME)
 
 _sr = None
