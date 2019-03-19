@@ -6,7 +6,6 @@ import logging
 import shelve
 import tempfile
 import time
-
 import requests
 
 from vmc import models, computed_id, get_vmc_sequence_identifier
@@ -90,7 +89,7 @@ class AlleleRegistryClient:
             allele = models.Allele(location_id=location.id, state=coords["allele"])
             allele.id = computed_id(allele)
             return (ir, sequence_id, location, allele)
-        
+
         def _add_ca_to_bundle(bm, ca):
             (ir, sequence_id, location, allele) = _make_vmc_allele(ca)
             bm.locations[location.id] = location
@@ -108,20 +107,17 @@ class AlleleRegistryClient:
             "vmcbundle": {},
         }
 
-
         alleles = []
         allele_decorations = collections.defaultdict(lambda: dict)
         bm = BundleManager()
 
-        typed_alleles = itertools.chain(
-            (("genomic", a) for a in cadict["genomicAlleles"]),
-            (("transcript", a) for a in cadict["transcriptAlleles"]))
+        typed_alleles = itertools.chain((("genomic", a) for a in cadict["genomicAlleles"]),
+                                        (("transcript", a) for a in cadict["transcriptAlleles"]))
         for car_type, car_allele in typed_alleles:
             try:
                 allele = _add_ca_to_bundle(bm, car_allele)
             except KeyError as e:
-                _logger.critical("Failed to make allele for {} ({})".format(
-                    str(car_allele), str(e)))
+                _logger.critical("Failed to make allele for {} ({})".format(str(car_allele), str(e)))
                 continue
 
             allele_decorations[allele.id] = {
@@ -158,15 +154,10 @@ class AlleleRegistryClient:
         return resp.json()
 
 
-
 if __name__ == "__main__":
     logging.basicConfig(level="DEBUG")
 
-    config = {
-        "base_url": "http://reg.test.genome.network",
-        "login": "testuser",
-        "password": "testuser"
-    }
+    config = {"base_url": "http://reg.test.genome.network", "login": "poglesbyg", "password": "genetics123"}
 
     arc = AlleleRegistryClient(**config)
     d = arc.get_allele(hgvs="NC_000010.11:g.87894077C>T")
