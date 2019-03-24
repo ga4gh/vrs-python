@@ -1,22 +1,39 @@
 dist: trusty
 sudo: required
+
 language: python
 python:
+- '3.5'
 - '3.6'
+- '3.7'
 cache: pip
+
 before_install: 
   # must update the spec file
   - git submodule update --init
 install: pip install tox-travis
 script: make tox
-deploy:
-  provider: pypi
-  user: ga4gh
-  skip_upload_docs: true
-  skip_cleanup: true
-  distributions: sdist bdist_egg bdist_wheel
-  on:
-    tags: true
-    branch: master
-  password:
-    secure: He5yLYoAUW/LktIyJ92biAoIJ/YFO/fm18sQ+2uKP6hjsJ6luRdrU9YRbrngRyBhGNHF0lkVKW5Uwdwi7cIKuRg+Hi+E4PHQfVg9oaEjaNMV9znnisIcXpDXwYMUoP4TvJyXFRQV2eAQfkyK6XuFXoZDSnk106Q5QDgb5V1KzlzqYGPvHtDh7tdS1GHJdmcINil9vR8o5dhRjEN194XD4xKrJoVaxdSzxF1BRh2CG7nVcArQ+MrvCU52M03oFfT7PBcQRSOZ+wOxxcZdBu/NYG/gIvhMEI5093+eVijnlEmMc0jYilzZ2W8dq8X87o0X3Z5cCa/cZhQUdU/RFDBgdnI9+myMHSVmIIjnxOr3U5eGVRkpDg9rJZDqsQFuL8FZUTcaLAFOgbtZ82u/8ffGRzwkY/o/DZATG06HIYWBE/Sf270S/jMpKn2RzGTvBHt2Q6s0pVzvlzpVNIKartk/i4ChgMv/fRIn1wshgrtr//wv/VudlhpDwJyntMbu/op9oAqUJViGh0Q4Pma2N1G97KmtTlPk7TlNPXfThpqyxkTYPJMWm57yGOzJ88MxSzuy2sYMfmKCZzjOOOfO7N/iTiHA6VQISxVvU9owPo0NSIVWeHgGWczSiCF8zk/vAMJtfOMyeWJG+heY6aHqjPCyVumWUM7VKGky2y29a61QNgU=
+after_success:
+  - coveralls
+
+stages:
+  - test
+  - deploy
+
+jobs:
+  include:
+    - stage: deploy
+      python: 3.7
+      install: skip
+      script: skip
+      deploy:
+        provider: pypi
+        user: ga4gh
+        skip_upload_docs: true
+        skip_cleanup: true
+        distributions: "sdist bdist_egg bdist_wheel"
+        on:
+          tags: true
+          branch: master
+        password:
+          secure: He5yLYoAUW/LktIyJ92biAoIJ/YFO/fm18sQ+2uKP6hjsJ6luRdrU9YRbrngRyBhGNHF0lkVKW5Uwdwi7cIKuRg+Hi+E4PHQfVg9oaEjaNMV9znnisIcXpDXwYMUoP4TvJyXFRQV2eAQfkyK6XuFXoZDSnk106Q5QDgb5V1KzlzqYGPvHtDh7tdS1GHJdmcINil9vR8o5dhRjEN194XD4xKrJoVaxdSzxF1BRh2CG7nVcArQ+MrvCU52M03oFfT7PBcQRSOZ+wOxxcZdBu/NYG/gIvhMEI5093+eVijnlEmMc0jYilzZ2W8dq8X87o0X3Z5cCa/cZhQUdU/RFDBgdnI9+myMHSVmIIjnxOr3U5eGVRkpDg9rJZDqsQFuL8FZUTcaLAFOgbtZ82u/8ffGRzwkY/o/DZATG06HIYWBE/Sf270S/jMpKn2RzGTvBHt2Q6s0pVzvlzpVNIKartk/i4ChgMv/fRIn1wshgrtr//wv/VudlhpDwJyntMbu/op9oAqUJViGh0Q4Pma2N1G97KmtTlPk7TlNPXfThpqyxkTYPJMWm57yGOzJ88MxSzuy2sYMfmKCZzjOOOfO7N/iTiHA6VQISxVvU9owPo0NSIVWeHgGWczSiCF8zk/vAMJtfOMyeWJG+heY6aHqjPCyVumWUM7VKGky2y29a61QNgU=
