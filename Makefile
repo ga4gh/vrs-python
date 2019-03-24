@@ -36,23 +36,18 @@ venv/%:
 	python -m ensurepip --upgrade; \
 	pip install --upgrade pip setuptools
 
-#=> setup: setup/upgrade packages *in current environment*
-.PHONY: setup
-setup: 
+#=> develop: install package in develop mode
+.PHONY: develop
+develop:
 	pip install -e .[dev]
 
 #=> devready: create venv, install prerequisites, install pkg in develop mode
 .PHONY: devready
 devready:
-	make ${VEDIR} && source ${VEDIR}/bin/activate && make setup develop
+	make ${VEDIR} && source ${VEDIR}/bin/activate && make develop
 	@echo '#################################################################################'
 	@echo '###  Do not forget to `source ${VEDIR}/bin/activate` to use this environment  ###'
 	@echo '#################################################################################'
-
-#=> develop: install package in develop mode
-.PHONY: develop
-develop:
-	pip install -e .
 
 #=> install: install package
 #=> bdist bdist_egg bdist_wheel build sdist: distribution options
@@ -69,7 +64,7 @@ bdist bdist_egg bdist_wheel build sdist install: %:
 #=> test: execute tests
 .PHONY: test
 test:
-	pytest
+	python setup.py pytest
 
 #=> tox: execute tests via tox
 .PHONY: tox
