@@ -1,7 +1,0 @@
-ipython
-jupyter
-pytest
-pytest-cov
-restview
-tox
-yapf

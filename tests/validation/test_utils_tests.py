@@ -6,7 +6,7 @@ import yaml
 import vmc
 
 validation_fn = os.path.join(os.path.dirname(__file__), "..", "..", "vmc-spec", "tests", "utils.yaml")
-validation_tests = yaml.load(open(validation_fn))
+validation_tests = yaml.load(open(validation_fn), Loader=yaml.SafeLoader)
 
 
 @pytest.mark.parametrize("test", validation_tests["get_vmc_sequence_identifier"])

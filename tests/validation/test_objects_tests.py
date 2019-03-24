@@ -7,7 +7,7 @@ import vmc
 
 
 validation_fn = os.path.join(os.path.dirname(__file__), "..", "..", "vmc-spec", "tests", "objects.yaml")
-validation_tests = yaml.load(open(validation_fn))
+validation_tests = yaml.load(open(validation_fn), Loader=yaml.SafeLoader)
 
 
 @pytest.mark.parametrize("test", validation_tests["Interval"])

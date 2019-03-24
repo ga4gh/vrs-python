@@ -8,7 +8,7 @@ from vmc.extra.seqrepo import get_vmc_sequence_identifier
 
 
 validation_fn = os.path.join(os.path.dirname(__file__), "..", "..", "vmc-spec", "tests", "functions.yaml")
-validation_tests = yaml.load(open(validation_fn))
+validation_tests = yaml.load(open(validation_fn), Loader=yaml.SafeLoader)
 
 
 @pytest.mark.parametrize("test", validation_tests["digest"])

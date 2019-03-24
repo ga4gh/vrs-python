@@ -10,7 +10,8 @@ SELF:=$(firstword $(MAKEFILE_LIST))
 
 PKG=vmc
 PKGD=$(subst .,/,${PKG})
-VEDIR=venv/3.6
+PYV:=3.7
+VEDIR=venv/${PYV}
 
 export SEQREPO_ROOT_DIR=tests/_data/seqrepo
 
@@ -27,26 +28,18 @@ help:
 ############################################################################
 #= SETUP, INSTALLATION, PACKAGING
 
-#=> venv: make a Python virtual environment
-.PHONY: venv/2.7
-venv/2.7: venv/%:
-	virtualenv -p $$(type -p python$*) $@; \
-	source $@/bin/activate; \
-	pip install --upgrade pip setuptools
-
 #=> venv: make a Python 3 virtual environment
-.PHONY: venv/3.5 venv/3.6
-venv/3.5 venv/3.6: venv/%:
-	pyvenv-$* $@; \
+.PHONY: venv/%
+venv/%:
+	python$* -m venv $@; \
 	source $@/bin/activate; \
 	python -m ensurepip --upgrade; \
 	pip install --upgrade pip setuptools
 
 #=> setup: setup/upgrade packages *in current environment*
 .PHONY: setup
-setup: etc/develop.reqs etc/install.reqs
-	if [ -s $(word 1,$^) ]; then pip install --upgrade -r $(word 1,$^); fi
-	if [ -s $(word 2,$^) ]; then pip install --upgrade -r $(word 2,$^); fi
+setup: 
+	pip install -e .[dev]
 
 #=> devready: create venv, install prerequisites, install pkg in develop mode
 .PHONY: devready
@@ -67,12 +60,6 @@ develop:
 bdist bdist_egg bdist_wheel build sdist install: %:
 	python setup.py $@
 
-#=> upload: upload to pypi
-#=> upload_*: upload to named pypi service (requires config in ~/.pypirc)
-.PHONY: upload upload_%
-upload: upload_pypi
-upload_%:
-	python setup.py bdist_egg bdist_wheel sdist upload -r $*
 
 
 ############################################################################
@@ -82,8 +69,7 @@ upload_%:
 #=> test: execute tests
 .PHONY: test
 test:
-	type -p python
-	python setup.py pytest --addopts="--cov=${PKG} ${PKGD} tests"
+	pytest
 
 #=> tox: execute tests via tox
 .PHONY: tox
@@ -119,8 +105,7 @@ clean:
 #=> cleaner: remove files and directories that are easily rebuilt
 .PHONY: cleaner
 cleaner: clean
-	rm -f devready.log
-	rm -fr .cache *.egg-info build dist doc/_build htmlcov
+	rm -fr .cache *.egg-info .pytest_cache build dist doc/_build htmlcov
 	find . \( -name \*.pyc -o -name \*.orig -o -name \*.rej \) -print0 | xargs -0r rm
 	find . -name __pycache__ -print0 | xargs -0r rm -fr
 
