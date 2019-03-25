@@ -20,4 +20,4 @@ schema_path = schema_dir + "/vmcbundle.json"
 schema_file = os.path.basename(schema_path)
 
 builder = pjs.ObjectBuilder(schema_path)
-models = builder.build_classes()
+models = builder.build_classes(standardize_names=False)

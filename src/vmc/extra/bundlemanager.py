@@ -169,7 +169,7 @@ class BundleManager:
 
 
     def as_bundle(self):
-        b = models.Vmcbundle(
+        b = models.VMCBundle(
             alleles = self.alleles,
             genotypes = self.genotypes,
             haplotypes = self.haplotypes,
