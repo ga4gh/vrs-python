@@ -1,0 +1,40 @@
+#!/usr/bin/env python3
+# input: file of hgvs expressions
+# output: report of parsing failures
+
+
+import gzip
+import logging
+import sys
+import datetime
+
+import dateutil
+
+from vmc.extra.bundlemanager import BundleManager
+
+_logger = logging.getLogger()
+
+
+if __name__ == "__main__":
+    logging.basicConfig(level="INFO")
+
+    t0 = datetime.datetime.now()
+
+    bm = BundleManager()
+
+    seen = errors = 0
+    fh = gzip.open(sys.argv[1], mode="rt", encoding="utf-8")
+    for hgvs in fh:
+        seen += 1
+        hgvs = hgvs.strip()
+        try:
+            a = bm.add_hgvs_allele(hgvs)
+        except Exception as e:
+            errors += 1
+            _logger.warning(f"{hgvs}: {e}")
+
+    t1 = datetime.datetime.now()
+    td = t1 - t0
+
+    _logger.info(f"Finished. {errors} / {seen}. {td}")
+    import IPython; IPython.embed()	  ### TODO: Remove IPython.embed()

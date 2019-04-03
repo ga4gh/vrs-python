@@ -1,0 +1,28 @@
+#!/usr/bin/env python3
+
+import csv
+import fileinput
+import logging
+import re
+import sys
+
+_logger = logging.getLogger()
+
+#line_re = re.compile(r'(?P<hgvs>.+?): \1: char (?P<char>\d+): (?P<error>.+)')
+line_re = re.compile(r'(?P<hgvs>.+?): (?:char \d+: )?(?P<error>.+)')
+warning_prefix = "WARNING:root:"
+wpl = len(warning_prefix)
+
+if __name__ == "__main__":
+    tsv_out = csv.DictWriter(sys.stdout, fieldnames="hgvs error".split(), delimiter="\t")
+    tsv_out.writeheader()
+    for line in fileinput.input():
+        line = line.strip()
+        if line.startswith(warning_prefix):
+            line = line[wpl:]
+
+        m = line_re.match(line)
+        if not m:
+            _logger.warning(f"unparsed: {line}")
+            continue
+        tsv_out.writerow(m.groupdict())
