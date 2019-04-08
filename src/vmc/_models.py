@@ -2,7 +2,7 @@
 
 **This file should not be imported directly.**
 
-Users should `import vmc`.
+Users should `import vmc` and then `vmc.models` to access models.
 
 This module reads the spec and generates classes at runtime.  The
 advantage of this approach over models defined in code is that the
