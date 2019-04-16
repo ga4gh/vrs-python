@@ -19,5 +19,13 @@ schema_dir = pkg_resources.resource_filename(__name__, "_data/schema")
 schema_path = schema_dir + "/vmc.json"
 schema_file = os.path.basename(schema_path)
 
-builder = pjs.ObjectBuilder(schema_path)
-models = builder.build_classes(standardize_names=False)
+classes = models = None
+
+def _build_classes():
+    """load/reload models"""
+    global classes, models
+    builder = pjs.ObjectBuilder(schema_path)
+    classes = models = builder.build_classes(standardize_names=False)  # TODO: named_only=True, 
+    return classes
+
+_build_classes()
