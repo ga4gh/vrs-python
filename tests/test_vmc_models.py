@@ -7,7 +7,7 @@ from vmc import models, computed_id, serialize
 # Interval
 i = models.Interval(start=42, end=42)
 assert "<Interval|42|42>" == serialize(i)
-assert {"end": 42, "start": 42} == i.as_dict()
+assert {"end": 42, "start": 42, "type": "Interval"} == i.as_dict()
 
 
 # Location
@@ -15,7 +15,7 @@ l = models.Location(sequence_id="VMC:GS_01234", interval=i)
 assert "<Location|VMC:GS_01234|<Interval|42|42>>" == serialize(l)
 l.id = computed_id(l)
 assert "VMC:GL_OUqODzxryILUEDmv7uF8R8NwREJAx7gN" == l.id
-assert {"id": "VMC:GL_OUqODzxryILUEDmv7uF8R8NwREJAx7gN", "interval": {"end": 42, "start": 42}, "sequence_id": "VMC:GS_01234"} == l.as_dict()
+assert {"id": "VMC:GL_OUqODzxryILUEDmv7uF8R8NwREJAx7gN", "interval": {"end": 42, "start": 42, "type": "Interval"}, "sequence_id": "VMC:GS_01234"} == l.as_dict()
 
 locations = {l.id: l.as_dict()}
 
