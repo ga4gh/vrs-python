@@ -8,7 +8,7 @@ well-prescribed serialization of an object.
 import base64
 import hashlib
 
-from six import text_type
+from six import binary_type, text_type
 
 from . import models
 from ._const import ENC, NAMESPACE
@@ -22,7 +22,9 @@ vmc_model_prefixes = {
     models.Allele: "GA",
     models.Genotype: "GG",
     models.Haplotype: "GH",
-    models.Location: "GL",
+    models.SequenceLocation: "GL",
+    models.Text: "GT",
+    models.VariationSet: "GVS",
 }
 
 
@@ -104,8 +106,15 @@ def digest(o, digest_size=24):
     'RDaX1nGMg7D4M_Y9tiBQ_zG32cNkgkXQ'
 
     """
-    s = o if isinstance(o, text_type) else serialize(o)
-    return _truncated_digest(s.encode(ENC), digest_size=digest_size).decode(ENC)
+    if isinstance(o, binary_type):
+        b = o
+    if isinstance(o, text_type):
+        b = o.encode(ENC)
+    else:
+        b = serialize(o)
+        if isinstance(b, text_type):
+            b = b.encode(ENC)
+    return _truncated_digest(b, digest_size=digest_size).decode(ENC)
 
 
 ############################################################################

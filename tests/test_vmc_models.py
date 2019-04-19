@@ -1,17 +1,36 @@
 import datetime
 import json
 
-from vmc import models, computed_id, serialize
+from vmc import models, computed_id, digest, serialize
 
 
-# Interval
-i = models.Interval(start=42, end=42)
-assert "<Interval|42|42>" == serialize(i)
-assert {"end": 42, "start": 42, "type": "Interval"} == i.as_dict()
+# Regions
+sr = models.SimpleRegion(start=42, end=43)
+assert b'{"end":43,"start":42,"type":"SimpleRegion"}' == serialize(sr)
+assert 'F_w80nPlNsJl30db5Ht083rwUr6Sawr9' == digest(sr)
+assert models.Region(**sr.as_dict()) == sr, "Round trip encode/decode of SimpleRegion failed"
+
+nr = vmc.models.NestedRegion(
+    inner=vmc.models.SimpleRegion(start=29,end=30),
+    outer=vmc.models.SimpleRegion(start=30,end=39))
+assert b'{"inner":{"end":30,"start":29,"type":"SimpleRegion"},"outer":{"end":39,"start":30,"type":"SimpleRegion"},"type":"NestedRegion"}' == serialize(nr)
+assert models.Region(**nr.as_dict()) == nr, "Round trip encode/decode of NestedRegion failed"
+
+rr = vmc.models.RangedRegion(
+    start=vmc.models.SimpleRegion(start=20,end=29),
+    end=vmc.models.SimpleRegion(start=30,end=39))
+assert b'{"end":{"end":39,"start":30,"type":"SimpleRegion"},"start":{"end":29,"start":20,"type":"SimpleRegion"},"type":"RangedRegion"}' == serialize(rr)
+assert models.Region(**rr.as_dict()) == rr, "Round trip encode/decode of RangedRegion failed"
+
+
 
 
 # Location
-l = models.Location(sequence_id="VMC:GS_01234", interval=i)
+l = models.Location(sequence_id="VMC:GS_01234", region=rr)
+l = vmc.models.Location(sequence_id="VMC:GS_01234", region=rr)
+b'{"region":{"end":{"end":39,"start":30,"type":"SimpleRegion"},"start":{"end":29,"start":20,"type":"SimpleRegion"},"type":"RangedRegion"},"sequence_id":"VMC:GS_01234"}'
+
+
 assert "<Location|VMC:GS_01234|<Interval|42|42>>" == serialize(l)
 l.id = computed_id(l)
 assert "VMC:GL_OUqODzxryILUEDmv7uF8R8NwREJAx7gN" == l.id
