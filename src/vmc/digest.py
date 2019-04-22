@@ -8,6 +8,7 @@ well-prescribed serialization of an object.
 import base64
 import hashlib
 
+
 from six import binary_type, text_type
 
 from . import models
@@ -23,6 +24,8 @@ vmc_model_prefixes = {
     models.Genotype: "GG",
     models.Haplotype: "GH",
     models.SequenceLocation: "GL",
+    models.GeneLocation: "GL",
+    models.CytobandLocation: "GL",
     models.Text: "GT",
     models.VariationSet: "GVS",
 }
@@ -63,7 +66,7 @@ def computed_identifier(o):
 
     """
 
-    pfx = vmc_model_prefixes[type(o)]
+    pfx = vmc_model_prefixes.get(type(o), "??")
     dig = digest(o)
     accession = "{pfx}_{dig}".format(pfx=pfx, dig=dig)
     ir = models.Identifier(namespace=NAMESPACE, accession=accession)

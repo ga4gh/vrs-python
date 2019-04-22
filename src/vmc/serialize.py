@@ -85,6 +85,9 @@ def serialize_vmc(o):
     if t == "SimpleRegion":
         return "<{t}{sep}{o.start}{sep}{o.end}>".format(sep=SEP, t=t, o=o)
 
+    if t == "GeneLocation":
+        return "<{t}{sep}{o.gene}>".format(sep=SEP, t=t, o=o)
+
     if t == "SequenceLocation":
         rgn = serialize(o.region)
         return "<{t}{sep}{o.sequence_id}{sep}{rgn}>".format(sep=SEP, t=t, o=o, rgn=rgn)
@@ -117,4 +120,4 @@ def serialize_vmc(o):
     raise Exception("Cannot serialize; unknown VMC object type: " + t)
 
 
-serialize = serialize_vmc
+serialize = serialize_cj
