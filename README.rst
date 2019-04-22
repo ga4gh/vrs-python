@@ -33,7 +33,7 @@ vmc-python is unlikely to work on Windows due to dependencies.
   source venv/3.7/bin/activate
   pip install --upgrade pip setuptools
   pip install -e .
-  pip install -e '.[notebooks]'
+  pip install -e '.[dev,notebooks]'
 
 (Python 3.5 and 3.6 should also work.)
 
