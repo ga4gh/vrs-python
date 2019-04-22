@@ -37,6 +37,11 @@ def serialize_cj(o):
     return encode_canonical_json(d)
 
 
+def sorted_ids(ids):
+    """sort python jsonschema objects by encoded str value"""
+    return sorted(ids, key=lambda id: id._value.encode(ENC))
+
+
 def serialize_vmc(o):
     """convert VMC object to canonical VMC serialized representation
 
@@ -103,6 +108,11 @@ def serialize_vmc(o):
         ids = sorted(i._value.encode(ENC) for i in o.haplotype_ids)
         ids_str = ";".join(i.decode(ENC) for i in ids)
         return "<{t}{sep}{o.completeness}{sep}[{ids_str}]>".format(sep=SEP, t=t, o=o, ids_str=ids_str)
+
+    if t == "VariationSet":
+        o.member_ids = sorted_ids(o.member_ids)
+        ids_str = ";".join(map(str, o.member_ids))
+        return "<{t}{sep}[{ids_str}]>".format(sep=SEP, t=t, ids_str=ids_str)
 
     raise Exception("Cannot serialize; unknown VMC object type: " + t)
 
