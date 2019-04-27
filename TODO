@@ -1,0 +1,30 @@
+-*-mode: outline-*-
+
+* vmc-python
+** digest: handle sorting and remove id before digest
+
+** structure:
+vmc/extras/
+  translator
+  normalizer
+  localizer
+  projector (later)
+
+** make sequence ac translation optional
+
+** implement localizer
+
+** subset storage by type
+
+** rename vmc -> ga4gh.vr
+
+** update roadmap
+
+
+
+* anyvar
+
+** accept alt import formats
+
+** expand option
+
