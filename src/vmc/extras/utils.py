@@ -1,14 +1,8 @@
 # lovingly borrowed from
 # https://github.com/ipython/ipython/blob/master/IPython/core/magics/execution.py
 
-import json
 import math
 import sys
-
-
-def json_pretty_format(j):
-    """pretty print object as json"""
-    return json.dumps(json.loads(j), indent=4, sort_keys=True, ensure_ascii=False)
 
 
 def _format_time(timespan, precision=3):
@@ -49,3 +43,6 @@ def _format_time(timespan, precision=3):
     else:
         order = 3
     return u"%.*g %s" % (precision, timespan * scaling[order], units[order])
+
+
+

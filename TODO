@@ -5,7 +5,7 @@
 
 ** structure:
 vmc/extras/
-  translator
+  DONE: translator
   normalizer
   localizer
   projector (later)
@@ -20,6 +20,7 @@ vmc/extras/
 
 ** update roadmap
 
+** implement VOCA normalization
 
 
 * anyvar

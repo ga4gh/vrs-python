@@ -10,4 +10,4 @@ Most callers should use something like this:
 from ._models import models, schema_path
 from .digest import computed_id, computed_identifier, digest, serialize
 from .serialize import serialize
-from .utils import get_vmc_sequence_identifier, ir_to_id, id_to_ir
+#from .utils import get_vmc_sequence_identifier, ir_to_id, id_to_ir

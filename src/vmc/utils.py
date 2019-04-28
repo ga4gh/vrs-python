@@ -1,5 +1,10 @@
+import json
+
+import python_jsonschema_objects
+from bioutils.accessions import infer_namespace
+
 from ._models import models
-from .extra.seqrepo import get_vmc_sequence_identifier  # flake8: noqa
+
 
 
 def id_to_ir(id):
@@ -23,3 +28,38 @@ def id_to_ir(id):
 
 def ir_to_id(ir):
     return "{ir.namespace}:{ir.accession}".format(ir=ir)
+
+
+def json_pretty_format(j):
+    """pretty print object as json"""
+    return json.dumps(json.loads(j), indent=4, sort_keys=True, ensure_ascii=False)
+
+
+def is_vr_instance(o):
+    return isinstance(o, python_jsonschema_objects.classbuilder.ProtocolBase)
+
+
+def coerce_namespace(ac):
+    """given an accession, prefix with inferred namespace if not present
+
+    >>> coerce_namespace("refseq:NM_01234.5")
+    'refseq:NM_01234.5'
+
+    >>> coerce_namespace("NM_01234.5")
+    'refseq:NM_01234.5'
+
+    >>> coerce_namespace("QQ_01234.5")
+    Traceback (most recent call last):
+    ...
+    ValueError: Could not infer namespace for QQ_01234.5
+
+    >>> coerce_namespace("bogus:QQ_01234.5")
+    'bogus:QQ_01234.5'
+
+    """
+    if ":" not in ac:
+        ns = infer_namespace(ac)
+        if ns is None:
+            raise ValueError(f"Could not infer namespace for {ac}")
+        ac = ns + ":" + ac
+    return ac
