@@ -4,7 +4,7 @@ import pytest
 import yaml
 
 import vmc
-from vmc.extra.seqrepo import get_vmc_sequence_identifier
+from vmc.extras.seqrepo import get_vmc_sequence_identifier
 
 
 validation_fn = os.path.join(os.path.dirname(__file__), "..", "..", "vmc-spec", "tests", "functions.yaml")

@@ -2,7 +2,7 @@
 
 .DELETE_ON_ERROR:
 .PHONY: FORCE
-.PRECIOUS :
+.PRECIOUS:
 .SUFFIXES:
 
 SHELL:=/bin/bash -e -o pipefail
