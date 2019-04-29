@@ -1,24 +1,20 @@
 -*-mode: outline-*-
 
-* vmc-python
-** digest: handle sorting and remove id before digest
+* vmc (spec)
 
-** structure:
-vmc/extras/
-  DONE: translator
-  normalizer
-  localizer
-  projector (later)
+** update tests
+
+
+
+* vmc-python
+
+** digest: handle sorting and remove id before digest
 
 ** make sequence ac translation optional
 
 ** implement localizer
 
-** subset storage by type
-
 ** rename vmc -> ga4gh.vr
-
-** update roadmap
 
 ** implement VOCA normalization
 
