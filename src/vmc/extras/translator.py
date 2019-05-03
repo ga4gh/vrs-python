@@ -43,7 +43,7 @@ class Translator:
     def from_beacon(self, beacon_expr, assembly_name=None):
         """Parse beacon expression into VR Allele
         
-        >>> a = t.from_beacon("13 : 32936732 G > C")
+        >>> a = tlr.from_beacon("13 : 32936732 G > C")
         >>> a.as_dict()
         {'location': {'region': {'end': 32936732,
            'start': 32936731,
@@ -80,7 +80,7 @@ class Translator:
     def from_gnomad(self, gnomad_expr, assembly_name=None):
         """Parse gnomAD expression into VR Allele
         
-        >>> a = t.from_gnomad("1-55516888-G-GA")
+        >>> a = tlr.from_gnomad("1-55516888-G-GA")
         >>> a.as_dict()
         {'location': {'region': {'end': 55516888,
            'start': 55516887,
@@ -117,7 +117,7 @@ class Translator:
     def from_hgvs(self, hgvs_expr):
         """parse hgvs into a VR object (typically an Allele)
 
-        >>> a = t.from_hgvs("NM_012345.6:c.22A>T")
+        >>> a = tlr.from_hgvs("NM_012345.6:c.22A>T")
         >>> a.as_dict()
         {
           'location': {
@@ -164,7 +164,7 @@ class Translator:
     def from_spdi(self, spdi_expr):
         """Parse SPDI expression in to a GA4GH Allele
 
-        >>> a = t.from_spdi("NM_012345.6:21:1:T")
+        >>> a = tlr.from_spdi("NM_012345.6:21:1:T")
         >>> a.as_dict()
         {
           'location': {
