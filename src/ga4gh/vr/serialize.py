@@ -57,12 +57,12 @@ def serialize_vmc(o):
 
 
     Example:
-    >>> import vmc
-    >>> iv = vmc.models.Interval(start=10, end=11)
+    >>> import ga4gh.vr
+    >>> iv = ga4gh.vr.models.Interval(start=10, end=11)
     >>> serialize(iv)
     '<Interval|10|11>'
 
-    >>> ir = vmc.models.Identifier(namespace="bob", accession="smith")
+    >>> ir = ga4gh.vr.models.Identifier(namespace="bob", accession="smith")
     >>> serialize(ir)
     '<Identifier|bob|smith>'
 

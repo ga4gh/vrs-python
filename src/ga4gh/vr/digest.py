@@ -35,9 +35,9 @@ def computed_id(o):
     """return the VMC digest-based id for the object, as a CURIE
     (string)
 
-    >>> import vmc
-    >>> interval = vmc.models.Interval(start=10,end=11)
-    >>> location = vmc.models.Location(sequence_id="VMC:GS_bogus", interval=interval)
+    >>> import ga4gh.vr
+    >>> interval = ga4gh.vr.models.Interval(start=10,end=11)
+    >>> location = ga4gh.vr.models.Location(sequence_id="VMC:GS_bogus", interval=interval)
 
     # Compute computed id: 
     >>> cid = computed_id(location)
@@ -55,9 +55,9 @@ def computed_id(o):
 def computed_identifier(o):
     """return the VMC digest-based identifier for the object, as an Identifier
 
-    >>> import vmc
-    >>> interval = vmc.models.Interval(start=10,end=11)
-    >>> location = vmc.models.Location(sequence_id="VMC:GS_bogus", interval=interval)
+    >>> import ga4gh.vr
+    >>> interval = ga4gh.vr.models.Interval(start=10,end=11)
+    >>> location = ga4gh.vr.models.Location(sequence_id="VMC:GS_bogus", interval=interval)
 
     # Compute computed identifier: 
     >>> cid = computed_identifier(location)
@@ -88,7 +88,7 @@ def digest(o, digest_size=24):
       digest = urlsafe_b64encode(sha512(s.encode("ascii")).digest()[:len]).decode()
 
     Example:
-    >>> import vmc
+    >>> import ga4gh.vr
 
     >>> digest("")
     'z4PhNX7vuL3xVChQ1m2AB9Yg5AULVxXc'
@@ -99,8 +99,8 @@ def digest(o, digest_size=24):
     >>> digest("ACGT")
     'aKF498dAxcJAqme6QYQ7EZ07-fiw8Kw2'
 
-    >>> interval = vmc.models.Interval(start=10,end=11)
-    >>> location = vmc.models.Location(sequence_id="VMC:GS_bogus", interval=interval)
+    >>> interval = ga4gh.vr.models.Interval(start=10,end=11)
+    >>> location = ga4gh.vr.models.Location(sequence_id="VMC:GS_bogus", interval=interval)
 
     >>> digest(serialize(location))
     'RDaX1nGMg7D4M_Y9tiBQ_zG32cNkgkXQ'

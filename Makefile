@@ -13,7 +13,7 @@ PKGD=$(subst .,/,${PKG})
 PYV:=3.7
 VEDIR=venv/${PYV}
 
-export SEQREPO_ROOT_DIR=tests/_data/seqrepo
+export SEQREPO_ROOT_DIR=tests/data/seqrepo
 
 
 ############################################################################

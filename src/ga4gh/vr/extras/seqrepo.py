@@ -14,7 +14,7 @@ import os
 
 import biocommons.seqrepo
 
-import vmc
+import ga4gh.vr
 
 
 SEQREPO_ROOT_DIR = os.environ.get("SEQREPO_ROOT_DIR", "/usr/local/share/seqrepo")
@@ -51,7 +51,7 @@ def get_vmc_sequence_identifier(identifier):
     """
 
     _sr = _get_seqrepo()
-    if isinstance(identifier, vmc.models.Identifier):
+    if isinstance(identifier, ga4gh.vr.models.Identifier):
         identifier = "{i.namespace}:{i.accession}".format(i=identifier)
     return _sr.translate_identifier(identifier, target_namespaces=["VMC"])[0]
 

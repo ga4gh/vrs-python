@@ -3,8 +3,8 @@ import copy
 from bioutils.assemblies import make_name_ac_map
 from bioutils.cytobands import get_cytoband_maps
 
-import vmc
-from vmc.utils import coerce_namespace
+import ga4gh.vr
+from ga4gh.vr.utils import coerce_namespace
 
 
 assy_name_to_map_name = {
@@ -67,9 +67,9 @@ class Localizer:
         except KeyError:
             raise ValueError(f"No accssion for {loc.chr} in assembly {assembly_name}")
 
-        return vmc.models.SequenceLocation(
+        return ga4gh.vr.models.SequenceLocation(
             sequence_id = coerce_namespace(ac),
-            region = vmc.models.SimpleRegion(start=start, end=end)
+            region = ga4gh.vr.models.SimpleRegion(start=start, end=end)
             )
 
 
@@ -84,7 +84,7 @@ class Localizer:
 
         # copy input variant and replace location
         # using as_dict() to copy because deepcopy led to recursion errors
-        v2 = vmc.models.Variation(**v.as_dict())
+        v2 = ga4gh.vr.models.Variation(**v.as_dict())
         v2.id = None
         v2.location = sloc
         return v2
@@ -92,11 +92,11 @@ class Localizer:
 
     
 if __name__ == "__main__":
-    from vmc.extras.localizer import Localizer
-    cbl = vmc.models.CytobandLocation(chr="11", start="q22.3", end="q23.1")
-    cnvstate = vmc.models.CNVState(min_copies=3, max_copies=5, copy_measure="RELATIVE")
-    a = vmc.models.Allele(location=cbl, state=cnvstate)
-    a.id = vmc.computed_id(a)
+    from ga4gh.vr.extras.localizer import Localizer
+    cbl = ga4gh.vr.models.CytobandLocation(chr="11", start="q22.3", end="q23.1")
+    cnvstate = ga4gh.vr.models.CNVState(min_copies=3, max_copies=5, copy_measure="RELATIVE")
+    a = ga4gh.vr.models.Allele(location=cbl, state=cnvstate)
+    a.id = ga4gh.vr.computed_id(a)
 
     lczr = Localizer()
     

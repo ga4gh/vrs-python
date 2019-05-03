@@ -69,10 +69,10 @@ class Translator:
         end = start + len(ref)
         ins_seq = alt
 
-        region = vmc.models.SimpleRegion(start=start, end=end)
-        location = vmc.models.Location(sequence_id=sequence_id, region=region)
-        sstate = vmc.models.SequenceState(sequence=ins_seq)
-        allele = vmc.models.Allele(location=location, state=sstate)
+        region = ga4gh.vr.models.SimpleRegion(start=start, end=end)
+        location = ga4gh.vr.models.Location(sequence_id=sequence_id, region=region)
+        sstate = ga4gh.vr.models.SequenceState(sequence=ins_seq)
+        allele = ga4gh.vr.models.Allele(location=location, state=sstate)
         
         return allele
 
@@ -106,10 +106,10 @@ class Translator:
         end = start + len(ref)
         ins_seq = alt
 
-        region = vmc.models.SimpleRegion(start=start, end=end)
-        location = vmc.models.Location(sequence_id=sequence_id, region=region)
-        sstate = vmc.models.SequenceState(sequence=ins_seq)
-        allele = vmc.models.Allele(location=location, state=sstate)
+        region = ga4gh.vr.models.SimpleRegion(start=start, end=end)
+        location = ga4gh.vr.models.Location(sequence_id=sequence_id, region=region)
+        sstate = ga4gh.vr.models.SequenceState(sequence=ins_seq)
+        allele = ga4gh.vr.models.Allele(location=location, state=sstate)
         
         return allele
 
@@ -140,11 +140,11 @@ class Translator:
                 raise ValueError("Intronic HGVS variants are not supported ({sv.posedit})")
 
         if sv.posedit.edit.type == 'ins':
-            region = vmc.models.SimpleRegion(start=sv.posedit.pos.start.base,
+            region = ga4gh.vr.models.SimpleRegion(start=sv.posedit.pos.start.base,
                                         end=sv.posedit.pos.start.base)
             state = sv.posedit.edit.alt
         elif sv.posedit.edit.type in ('sub', 'del', 'delins', 'identity'):
-            region = vmc.models.SimpleRegion(start=sv.posedit.pos.start.base - 1,
+            region = ga4gh.vr.models.SimpleRegion(start=sv.posedit.pos.start.base - 1,
                                        end=sv.posedit.pos.end.base)
             if sv.posedit.edit.type == 'identity':
                 state = get_reference_sequence(sv.ac, sv.posedit.pos.start.base - 1,
@@ -154,9 +154,9 @@ class Translator:
         else:
             raise ValueError(f"HGVS variant type {sv.posedit.edit.type} is unsupported")
 
-        location = vmc.models.Location(sequence_id=sequence_id, region=region)
-        sstate = vmc.models.SequenceState(sequence=state)
-        allele = vmc.models.Allele(location=location, state=sstate)
+        location = ga4gh.vr.models.Location(sequence_id=sequence_id, region=region)
+        sstate = ga4gh.vr.models.SequenceState(sequence=state)
+        allele = ga4gh.vr.models.Allele(location=location, state=sstate)
 
         return allele
 
@@ -188,9 +188,9 @@ class Translator:
         end = start + del_len
         ins_seq = g["ins_seq"]
 
-        region = vmc.models.SimpleRegion(start=start, end=end)
-        location = vmc.models.Location(sequence_id=sequence_id, region=region)
-        sstate = vmc.models.SequenceState(sequence=ins_seq)
-        allele = vmc.models.Allele(location=location, state=sstate)
+        region = ga4gh.vr.models.SimpleRegion(start=start, end=end)
+        location = ga4gh.vr.models.Location(sequence_id=sequence_id, region=region)
+        sstate = ga4gh.vr.models.SequenceState(sequence=ins_seq)
+        allele = ga4gh.vr.models.Allele(location=location, state=sstate)
         
         return allele
