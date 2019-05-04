@@ -55,6 +55,9 @@ devready:
 bdist bdist_egg bdist_wheel build sdist install: %:
 	python setup.py $@
 
+.PHONY: install-extras
+install-extras:
+	pip install -e .[extras]
 
 
 ############################################################################
