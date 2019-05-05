@@ -11,9 +11,9 @@ validation_fn = os.path.join(os.path.dirname(__file__), "..", "data", "schema-te
 validation_tests = yaml.load(open(validation_fn), Loader=yaml.SafeLoader)
 
 
-@pytest.mark.parametrize("test", validation_tests["SimpleRegion"])
-def test_SimpleRegion(test):
-    o = ga4gh.vr.models.SimpleRegion(**test["in"])
+@pytest.mark.parametrize("test", validation_tests["SimpleInterval"])
+def test_SimpleInterval(test):
+    o = ga4gh.vr.models.SimpleInterval(**test["in"])
     assert test["out"]["serialize_cj"] == serialize_cj(o).decode("utf-8")
     assert test["out"]["serialize_vmc"] == serialize_vmc(o)
 

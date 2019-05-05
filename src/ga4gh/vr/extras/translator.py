@@ -47,7 +47,7 @@ class Translator:
         >>> a.as_dict()
         {'location': {'region': {'end': 32936732,
            'start': 32936731,
-           'type': 'SimpleRegion'},
+           'type': 'SimpleInterval'},
           'sequence_id': 'GRCh38:13 ',
           'type': 'SequenceLocation'},
          'state': {'sequence': 'C', 'type': 'SequenceState'},
@@ -69,7 +69,7 @@ class Translator:
         end = start + len(ref)
         ins_seq = alt
 
-        region = ga4gh.vr.models.SimpleRegion(start=start, end=end)
+        region = ga4gh.vr.models.SimpleInterval(start=start, end=end)
         location = ga4gh.vr.models.Location(sequence_id=sequence_id, region=region)
         sstate = ga4gh.vr.models.SequenceState(sequence=ins_seq)
         allele = ga4gh.vr.models.Allele(location=location, state=sstate)
@@ -84,7 +84,7 @@ class Translator:
         >>> a.as_dict()
         {'location': {'region': {'end': 55516888,
            'start': 55516887,
-           'type': 'SimpleRegion'},
+           'type': 'SimpleInterval'},
           'sequence_id': 'GRCh38:1',
           'type': 'SequenceLocation'},
          'state': {'sequence': 'GA', 'type': 'SequenceState'},
@@ -106,7 +106,7 @@ class Translator:
         end = start + len(ref)
         ins_seq = alt
 
-        region = ga4gh.vr.models.SimpleRegion(start=start, end=end)
+        region = ga4gh.vr.models.SimpleInterval(start=start, end=end)
         location = ga4gh.vr.models.Location(sequence_id=sequence_id, region=region)
         sstate = ga4gh.vr.models.SequenceState(sequence=ins_seq)
         allele = ga4gh.vr.models.Allele(location=location, state=sstate)
@@ -121,7 +121,7 @@ class Translator:
         >>> a.as_dict()
         {
           'location': {
-            'region': {'end': 22, 'start': 21, 'type': 'SimpleRegion'},
+            'region': {'end': 22, 'start': 21, 'type': 'SimpleInterval'},
             'sequence_id': 'refseq:NM_012345.6',
             'type': 'SequenceLocation'
           },
@@ -140,11 +140,11 @@ class Translator:
                 raise ValueError("Intronic HGVS variants are not supported ({sv.posedit})")
 
         if sv.posedit.edit.type == 'ins':
-            region = ga4gh.vr.models.SimpleRegion(start=sv.posedit.pos.start.base,
+            region = ga4gh.vr.models.SimpleInterval(start=sv.posedit.pos.start.base,
                                         end=sv.posedit.pos.start.base)
             state = sv.posedit.edit.alt
         elif sv.posedit.edit.type in ('sub', 'del', 'delins', 'identity'):
-            region = ga4gh.vr.models.SimpleRegion(start=sv.posedit.pos.start.base - 1,
+            region = ga4gh.vr.models.SimpleInterval(start=sv.posedit.pos.start.base - 1,
                                        end=sv.posedit.pos.end.base)
             if sv.posedit.edit.type == 'identity':
                 state = get_reference_sequence(sv.ac, sv.posedit.pos.start.base - 1,
@@ -168,7 +168,7 @@ class Translator:
         >>> a.as_dict()
         {
           'location': {
-            'region': {'end': 22, 'start': 21, 'type': 'SimpleRegion'},
+            'region': {'end': 22, 'start': 21, 'type': 'SimpleInterval'},
             'sequence_id': 'refseq:NM_012345.6',
             'type': 'SequenceLocation'
           },
@@ -188,7 +188,7 @@ class Translator:
         end = start + del_len
         ins_seq = g["ins_seq"]
 
-        region = ga4gh.vr.models.SimpleRegion(start=start, end=end)
+        region = ga4gh.vr.models.SimpleInterval(start=start, end=end)
         location = ga4gh.vr.models.Location(sequence_id=sequence_id, region=region)
         sstate = ga4gh.vr.models.SequenceState(sequence=ins_seq)
         allele = ga4gh.vr.models.Allele(location=location, state=sstate)

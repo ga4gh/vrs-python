@@ -82,7 +82,7 @@ def serialize_vmc(o):
     if t == "Identifier":
         return "<{t}{sep}{o.namespace}{sep}{o.accession}>".format(sep=SEP, t=t, o=o)
 
-    if t == "SimpleRegion":
+    if t == "SimpleInterval":
         return "<{t}{sep}{o.start}{sep}{o.end}>".format(sep=SEP, t=t, o=o)
 
     if t == "GeneLocation":

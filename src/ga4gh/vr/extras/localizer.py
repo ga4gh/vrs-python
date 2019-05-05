@@ -69,7 +69,7 @@ class Localizer:
 
         return ga4gh.vr.models.SequenceLocation(
             sequence_id = coerce_namespace(ac),
-            region = ga4gh.vr.models.SimpleRegion(start=start, end=end)
+            region = ga4gh.vr.models.SimpleInterval(start=start, end=end)
             )
 
 
