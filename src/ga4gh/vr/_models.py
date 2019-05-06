@@ -16,7 +16,7 @@ import pkg_resources
 import python_jsonschema_objects as pjs
 
 schema_dir = pkg_resources.resource_filename(__name__, "_data/schema")
-schema_path = schema_dir + "/vmc.json"
+schema_path = schema_dir + "/vr.json"
 schema_file = os.path.basename(schema_path)
 
 classes = models = None
