@@ -69,7 +69,7 @@ class Localizer:
 
         return ga4gh.vr.models.SequenceLocation(
             sequence_id = coerce_namespace(ac),
-            region = ga4gh.vr.models.SimpleInterval(start=start, end=end)
+            interval = ga4gh.vr.models.SimpleInterval(start=start, end=end)
             )
 
 
@@ -85,7 +85,7 @@ class Localizer:
         # copy input variant and replace location
         # using as_dict() to copy because deepcopy led to recursion errors
         v2 = ga4gh.vr.models.Variation(**v.as_dict())
-        v2.id = None
+        del v2.id
         v2.location = sloc
         return v2
 
