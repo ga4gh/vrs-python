@@ -1,8 +1,15 @@
-"""vmc models, defined at runtime from the spec
+"""Generate VR models at runtime from the spec
 
 **This file should not be imported directly.**
 
-Users should `import vmc` and then `vmc.models` to access models.
+Users should use one of the following:
+
+  * `from ga4gh.vr import models`, and refer to models with the
+    abbreviated name, e.g., `models.Allele` (recommended)
+
+  * `import ga4gh.vr`, and refer to models using the fully-qualified
+    module name, e.g., `ga4gh.vr.models.Allele`
+
 
 This module reads the spec and generates classes at runtime.  The
 advantage of this approach over models defined in code is that the

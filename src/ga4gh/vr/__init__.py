@@ -1,9 +1,17 @@
 # flake8: noqa
-"""vmc -- public interface to vmcdemo
+"""Public interface to the GA4GH Variation Representation reference
+implementation
 
-Most callers should use something like this:
+Import as:
 
->>> from vmc import models, computed_id, digest, serialize
+>>> from ga4gh.vr import models, computed_id, digest, serialize
+
+Deprecation and change notices are provided only for definitions
+obtained by importing ga4gh.vr as shown above.
+
+Modules names that begin with an underscore are internal; definitions
+therein are not part of the public interface and may change or
+disappear without notice.
 
 """
 
