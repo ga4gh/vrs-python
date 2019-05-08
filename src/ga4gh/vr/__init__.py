@@ -15,7 +15,19 @@ disappear without notice.
 
 """
 
+import warnings
+from pkg_resources import get_distribution, DistributionNotFound
+
+try:
+    __version__ = get_distribution(__name__).version
+except DistributionNotFound:
+    __version__ = "unknown"
+finally:
+    del get_distribution, DistributionNotFound
+
+
 from ._models import models, schema_path
 from .digest import computed_id, computed_identifier, digest, serialize
 from .serialize import serialize
 #from .utils import get_vmc_sequence_identifier, ir_to_id, id_to_ir
+
