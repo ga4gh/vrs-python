@@ -5,10 +5,10 @@
 import logging
 import re
 
+from bioutils.accessions import coerce_namespace
 import hgvs.parser
 
 from .. import models
-from ..utils import coerce_namespace
 from .decorators import lazy_property
 
 

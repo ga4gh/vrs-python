@@ -1,10 +1,10 @@
 import copy
 
+from bioutils.accessions import coerce_namespace
 from bioutils.assemblies import make_name_ac_map
 from bioutils.cytobands import get_cytoband_maps
 
 import ga4gh.vr
-from ga4gh.vr.utils import coerce_namespace
 
 
 assy_name_to_map_name = {

@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import List
 
-from ga4gh.vr.utils import coerce_namespace
+from bioutils.accessions import coerce_namespace
 
 
 @dataclass

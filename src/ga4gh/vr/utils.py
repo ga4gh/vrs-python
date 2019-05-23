@@ -37,29 +37,3 @@ def json_pretty_format(j):
 
 def is_vr_instance(o):
     return isinstance(o, python_jsonschema_objects.classbuilder.ProtocolBase)
-
-
-def coerce_namespace(ac):
-    """given an accession, prefix with inferred namespace if not present
-
-    >>> coerce_namespace("refseq:NM_01234.5")
-    'refseq:NM_01234.5'
-
-    >>> coerce_namespace("NM_01234.5")
-    'refseq:NM_01234.5'
-
-    >>> coerce_namespace("QQ_01234.5")
-    Traceback (most recent call last):
-    ...
-    ValueError: Could not infer namespace for QQ_01234.5
-
-    >>> coerce_namespace("bogus:QQ_01234.5")
-    'bogus:QQ_01234.5'
-
-    """
-    if ":" not in ac:
-        ns = infer_namespace(ac)
-        if ns is None:
-            raise ValueError(f"Could not infer namespace for {ac}")
-        ac = ns + ":" + ac
-    return ac
