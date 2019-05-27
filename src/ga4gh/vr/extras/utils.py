@@ -1,6 +1,7 @@
 # lovingly borrowed from
 # https://github.com/ipython/ipython/blob/master/IPython/core/magics/execution.py
 
+import datetime
 import math
 import sys
 
@@ -45,4 +46,12 @@ def _format_time(timespan, precision=3):
     return u"%.*g %s" % (precision, timespan * scaling[order], units[order])
 
 
-
+def isoformat(o):
+    # stolen from connexion flask_app.py
+    assert isinstance(o, datetime.datetime)
+    if o.tzinfo:
+        # eg: '2015-09-25T23:14:42.588601+00:00'
+        return o.isoformat('T')
+    # No timezone present - assume UTC.
+    # eg: '2015-09-25T23:14:42.588601Z'
+    return o.isoformat('T') + 'Z'
