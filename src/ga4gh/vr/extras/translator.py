@@ -8,7 +8,7 @@ import re
 from bioutils.accessions import coerce_namespace
 import hgvs.parser
 
-from .. import models
+from ga4gh.vr import models
 from .decorators import lazy_property
 
 

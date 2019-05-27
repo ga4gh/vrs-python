@@ -3,7 +3,7 @@ import json
 import python_jsonschema_objects
 from bioutils.accessions import infer_namespace
 
-from ._models import models
+from .models import models
 
 
 

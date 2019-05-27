@@ -2,11 +2,11 @@
 
 Three serialization methods are implemented. The standard should
 eventually choose only one, but there are complex tradeoffs left to
-understand.  Choices:
+understand.  Choices::
 
-1) Custom serialization
-2) Canonical JSON
-3) JSON Canonicalization Scheme
+* Custom serialization
+* Canonical JSON
+* JSON Canonicalization Scheme
 
 Briefly, 1 is under our control, but harder to keep up-to-date and
 consistent with models. 2 Is implemented in, and pre-packaged, for
@@ -24,23 +24,38 @@ critical to have comprehensive tests of this functionality.
 
 import base64
 
-from ._const import ENC, SEP
+from .const import ENC, SEP
+from .utils import is_vr_instance
 
+
+
+############################################################################
+# Option 1: OLPC Canonical JSON
 from canonicaljson import encode_canonical_json
 
 def serialize_cj(o):
     """serialize object using canonical json"""
     # BUG: arrays need to be sorted for canonicalization
     # BUG: replace inline with ids (or vv, requires cache)
+    if not is_vr_instance(o):
+        return o
     d = o.as_dict()
     d.pop("id",None)
     return encode_canonical_json(d)
 
 
+
+
+
+
+
+
+############################################################################
+# Option 2: Original VMC serialization
+
 def sorted_ids(ids):
     """sort python jsonschema objects by encoded str value"""
     return sorted(ids, key=lambda id: id._value.encode(ENC))
-
 
 def serialize_vmc(o):
     """convert VMC object to canonical VMC serialized representation

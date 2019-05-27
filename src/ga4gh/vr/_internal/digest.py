@@ -11,23 +11,23 @@ import hashlib
 
 from six import binary_type, text_type
 
-from . import models
-from ._const import ENC, NAMESPACE
+from .models import models
+from .const import ENC, NAMESPACE
 from .serialize import serialize
 
-
-abc = models                    # still needed?
 
 vmc_model_prefixes = {
     # GS: Sequence does not have a model
     models.Allele: "GA",
-    models.Genotype: "GG",
-    models.Haplotype: "GH",
     models.SequenceLocation: "GL",
-    models.GeneLocation: "GL",
-    models.CytobandLocation: "GL",
     models.Text: "GT",
-    models.VariationSet: "GVS",
+
+    # The following are from post-1.0:
+    # models.GeneLocation: "GL",
+    # models.CytobandLocation: "GL",
+    # models.Genotype: "GG",
+    # models.Haplotype: "GH",
+    # models.VariationSet: "GVS",
 }
 
 
