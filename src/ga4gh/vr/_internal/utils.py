@@ -1,10 +1,8 @@
 import json
 
 import python_jsonschema_objects
-from bioutils.accessions import infer_namespace
 
 from .models import models
-
 
 
 def id_to_ir(id):

@@ -4,7 +4,7 @@ implementation
 
 Import as:
 
->>> from ga4gh.vr import models, computed_id, digest, serialize
+>>> from ga4gh.vr import models, computed_id, serialize
 
 Deprecation and change notices are provided only for definitions
 obtained by importing ga4gh.vr as shown above.
@@ -14,6 +14,10 @@ therein are not part of the public interface and may change or
 disappear without notice.
 
 """
+
+
+__all__ = """models schema_path   computed_id dictify ga4gh_digest serialize""".split()
+
 
 import warnings
 from pkg_resources import get_distribution, DistributionNotFound
@@ -27,6 +31,4 @@ finally:
 
 
 from ._internal.models import models, schema_path
-from ._internal.digest import computed_id, computed_identifier, digest, serialize
-from ._internal.serialize import serialize
-
+from ._internal.ids import computed_id, dictify, ga4gh_digest, serialize
