@@ -29,6 +29,9 @@ class _DataProxy(ABC):
 
         If the given sequence does not exist, KeyError is raised.
 
+        >> dp.get_sequence("NM_000551.3", 0, 10)
+        'CCTCGCCTCC'
+
         """
 
     @abstractmethod
@@ -38,7 +41,19 @@ class _DataProxy(ABC):
 
         If the given sequence does not exist, KeyError is raised.
 
+        >> dp.get_metadata("NM_000551.3")
+        {'added': '2016-08-24T05:03:11Z',
+         'aliases': ['MD5:215137b1973c1a5afcf86be7d999574a',
+                     'RefSeq:NM_000551.3',
+                     'SEGUID:T12L0p2X5E8DbnL0+SwI4Wc1S6g',
+                     'SHA1:4f5d8bd29d97e44f036e72f4f92c08e167354ba8',
+                     'VMC:GS_v_QTc1p-MUYdgrRv4LMT6ByXIOsdw3C_',
+                     'gi:319655736'],
+         'alphabet': 'ACGT',
+         'length': 4560}
+
         """
+
 
 
 class SeqRepoDataProxy(_DataProxy):
