@@ -14,7 +14,7 @@ import base64
 import hashlib
 import logging
 
-from .const import ENC, NAMESPACE, IDSEP
+from .const import ENC, NAMESPACE
 from .models import models
 
 from canonicaljson import encode_canonical_json
@@ -23,33 +23,33 @@ import python_jsonschema_objects as pjs
 
 _logger = logging.getLogger(__name__)
 
-vmc_model_prefixes = {
-    # GS: Sequence does not have a model
-    models.Allele: "GA",
-    models.SequenceLocation: "GL",
-    models.Text: "GT",
+ga4gh_model_prefixes = {
+    # SQ: Sequence does not have a model
+    models.Allele: "VA",
+    models.Text: "VT",
+    models.SequenceLocation: "SL",
 
-    # The following are from post-1.0:
+    # The following are for post-1.0:
     # models.GeneLocation: "GL",
-    # models.CytobandLocation: "GL",
-    # models.Genotype: "GG",
-    # models.Haplotype: "GH",
-    # models.VariationSet: "GVS",
+    # models.CytobandLocation: "CL",
+    # models.Genotype: "VG",
+    # models.Haplotype: "VH",
+    # models.VariationSet: "VS",
 }
 
 
 def computed_id(o):
-    """return the VMC digest-based id for the object, as a CURIE
+    """return the GA4GH digest-based id for the object, as a CURIE
     (string)
 
     >>> import ga4gh.vr
     >>> interval = ga4gh.vr.models.Interval(start=10,end=11)
-    >>> location = ga4gh.vr.models.Location(sequence_id="VMC:GS_bogus", interval=interval)
+    >>> location = ga4gh.vr.models.Location(sequence_id="GA4GH:GS_bogus", interval=interval)
 
     # Compute computed id: 
     >>> cid = computed_id(location)
     >>> cid
-    'VMC:GL_RDaX1nGMg7D4M_Y9tiBQ_zG32cNkgkXQ'
+    'GA4GH:GL_RDaX1nGMg7D4M_Y9tiBQ_zG32cNkgkXQ'
 
     """
 
@@ -59,22 +59,22 @@ def computed_id(o):
 
 
 def computed_identifier(o):
-    """return the VMC digest-based identifier for the object, as an Identifier
+    """return the GA4GH digest-based identifier for the object, as an Identifier
 
     >>> import ga4gh.vr
     >>> interval = ga4gh.vr.models.Interval(start=10,end=11)
-    >>> location = ga4gh.vr.models.Location(sequence_id="VMC:GS_bogus", interval=interval)
+    >>> location = ga4gh.vr.models.Location(sequence_id="GA4GH:GS_bogus", interval=interval)
 
     # Compute computed identifier: 
     >>> cid = computed_identifier(location)
     >>> cid
-    <Identifier accession=GL_RDaX1nGMg7D4M_Y9tiBQ_zG32cNkgkXQ namespace=VMC>
+    <Identifier accession=GL_RDaX1nGMg7D4M_Y9tiBQ_zG32cNkgkXQ namespace=GA4GH>
 
     """
 
-    pfx = vmc_model_prefixes[type(o)]
+    pfx = ga4gh_model_prefixes[type(o)]
     gd = ga4gh_digest(serialize(o))
-    ir = models.Identifier(namespace=NAMESPACE, accession=f"{pfx}{IDSEP}{gd}")
+    ir = models.Identifier(namespace=NAMESPACE, accession=pfx + gd)
     return ir
 
 
