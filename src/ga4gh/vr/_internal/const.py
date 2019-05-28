@@ -3,4 +3,6 @@ ENC = "ASCII"
 # serialization field separator in serialize
 SEP = "|"
 
-NAMESPACE = "VMC"
+IDSEP = ""
+
+NAMESPACE = "ga4gh"

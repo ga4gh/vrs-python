@@ -1,7 +1,9 @@
-"""Provides format and digest functions for VMC objects
+"""Provides format and digest functions for VR objects
 
-A VMC digest is computed using a "truncated digest" (see below) on a
+A VR digest is computed using a "truncated digest" (see below) on a
 well-prescribed serialization of an object.
+
+This code was pulled https://github.com/biocommons/bioutils/.
 
 """
 
@@ -12,7 +14,7 @@ import hashlib
 from six import binary_type, text_type
 
 from .models import models
-from .const import ENC, NAMESPACE
+from .const import ENC, NAMESPACE, IDSEP
 from .serialize import serialize
 
 
@@ -68,7 +70,7 @@ def computed_identifier(o):
 
     pfx = vmc_model_prefixes.get(type(o), "??")
     dig = digest(o)
-    accession = "{pfx}_{dig}".format(pfx=pfx, dig=dig)
+    accession = "{pfx}{idsep}{dig}".format(pfx=pfx, idsep=IDSEP, dig=dig)
     ir = models.Identifier(namespace=NAMESPACE, accession=accession)
     return ir
 
