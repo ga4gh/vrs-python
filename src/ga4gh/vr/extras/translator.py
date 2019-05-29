@@ -34,7 +34,6 @@ class Translator:
     @lazy_property
     def hgvs_parser(self):
         """Parsing the hgvs grammar is slow (~1s). :-("""
-        _logger.warning("Creating parser")
         _logger.info("Creating  parser")
         return hgvs.parser.Parser()
 
