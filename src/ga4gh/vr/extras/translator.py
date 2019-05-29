@@ -11,11 +11,10 @@ import hgvs.parser
 from ga4gh.vr import models
 from .decorators import lazy_property
 
-
 _logger = logging.getLogger(__name__)
 
 
-beacon_re = re.compile(r"(?P<chr>[^-]+)\s*:\s*(?P<pos>\d+)\s*(?P<ref>\w+)\s*>\s*(?P<alt>\w+)")
+beacon_re = re.compile(r"(?P<chr>[^-]+):(?P<pos>\d+)(?P<ref>\w+)>(?P<alt>\w+)")
 vcf_re = re.compile(r"(?P<chr>[^-]+)-(?P<pos>\d+)-(?P<ref>\w+)-(?P<alt>\w+)")
 spdi_re = re.compile(r"(?P<ac>[^:]+):(?P<pos>\d+):(?P<del_len>\d+):(?P<ins_seq>\w+)")
 
@@ -26,16 +25,14 @@ class Translator:
 
     """
 
-    def __init__(self, default_assembly_name="GRCh38"):
+    def __init__(self,
+                 data_proxy,
+                 default_assembly_name="GRCh38",
+                 translate_sequence_identifiers=True):
         # TODO: add identify option
-        # TODO: add optional ac translation
         self.default_assembly_name = default_assembly_name
-
-    @lazy_property
-    def hgvs_parser(self):
-        """Parsing the hgvs grammar is slow (~1s). :-("""
-        _logger.info("Creating  parser")
-        return hgvs.parser.Parser()
+        self.translate_sequence_identifiers = translate_sequence_identifiers
+        self.data_proxy = data_proxy
 
 
     def from_beacon(self, beacon_expr, assembly_name=None):
@@ -53,7 +50,7 @@ class Translator:
 
         """          
         
-        m = beacon_re.match(beacon_expr)
+        m = beacon_re.match(beacon_expr.replace(" ", ""))
         if not m:
             raise ValueError(f"Not a Beacon expression: {beacon_expr}")
 
@@ -68,7 +65,7 @@ class Translator:
         ins_seq = alt
 
         interval = models.SimpleInterval(start=start, end=end)
-        location = models.Location(sequence_id=sequence_id, interval=interval)
+        location = models.Location(sequence_id=self._seq_id_mapper(sequence_id), interval=interval)
         sstate = models.SequenceState(sequence=ins_seq)
         allele = models.Allele(location=location, state=sstate)
         
@@ -91,7 +88,7 @@ class Translator:
         }
 
         """
-        sv = self.hgvs_parser.parse_hgvs_variant(hgvs_expr)
+        sv = self._hgvs_parser.parse_hgvs_variant(hgvs_expr)
 
         # prefix accession with namespace
         sequence_id = coerce_namespace(sv.ac)
@@ -108,14 +105,15 @@ class Translator:
             interval = models.SimpleInterval(start=sv.posedit.pos.start.base - 1,
                                        end=sv.posedit.pos.end.base)
             if sv.posedit.edit.type == 'identity':
-                state = get_reference_sequence(sv.ac, sv.posedit.pos.start.base - 1,
-                                               sv.posedit.pos.end.base)
+                state = self.data_proxy.get_sequence(sv.ac,
+                                                     sv.posedit.pos.start.base - 1,
+                                                     sv.posedit.pos.end.base)
             else:
                 state = sv.posedit.edit.alt or ''
         else:
             raise ValueError(f"HGVS variant type {sv.posedit.edit.type} is unsupported")
 
-        location = models.Location(sequence_id=sequence_id, interval=interval)
+        location = models.Location(sequence_id=self._seq_id_mapper(sequence_id), interval=interval)
         sstate = models.SequenceState(sequence=state)
         allele = models.Allele(location=location, state=sstate)
 
@@ -150,7 +148,7 @@ class Translator:
         ins_seq = g["ins_seq"]
 
         interval = models.SimpleInterval(start=start, end=end)
-        location = models.Location(sequence_id=sequence_id, interval=interval)
+        location = models.Location(sequence_id=self._seq_id_mapper(sequence_id), interval=interval)
         sstate = models.SequenceState(sequence=ins_seq)
         allele = models.Allele(location=location, state=sstate)
         
@@ -187,10 +185,41 @@ class Translator:
         ins_seq = alt
 
         interval = models.SimpleInterval(start=start, end=end)
-        location = models.Location(sequence_id=sequence_id, interval=interval)
+        location = models.Location(sequence_id=self._seq_id_mapper(sequence_id), interval=interval)
         sstate = models.SequenceState(sequence=ins_seq)
         allele = models.Allele(location=location, state=sstate)
         
         return allele
 
 
+    
+    ############################################################################
+    ## INTERNAL
+
+    @lazy_property
+    def _hgvs_parser(self):
+        """instantiates and returns an hgvs parser instance"""
+        _logger.info("Creating  parser")
+        return hgvs.parser.Parser()
+
+
+    def _seq_id_mapper(self, ir):
+        if self.translate_sequence_identifiers:
+            return self.data_proxy.translate_sequence_identifier(ir)
+        return ir
+
+
+if __name__ == "__main__":
+    logging.basicConfig(level="DEBUG")
+
+    local = True
+    if local:
+        from biocommons.seqrepo import SeqRepo
+        from ga4gh.vr.extras.dataproxy import SeqRepoDataProxy
+        sr = SeqRepo(root_dir="/usr/local/share/seqrepo/latest/")
+        dp = SeqRepoDataProxy(sr=sr)
+    else:
+        from ga4gh.vr.extras.dataproxy import SeqRepoRESTDataProxy
+        dp = SeqRepoRESTDataProxy(base_url="http://localhost:5000/seqrepo")
+
+    tlr = Translator(data_proxy=dp)

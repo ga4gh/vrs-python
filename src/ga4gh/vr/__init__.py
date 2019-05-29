@@ -16,7 +16,7 @@ disappear without notice.
 """
 
 
-__all__ = """models schema_path   computed_id dictify ga4gh_digest serialize""".split()
+__all__ = """models schema_path   compute_id ga4gh_digest serialize""".split()
 
 
 import warnings
@@ -31,4 +31,4 @@ finally:
 
 
 from ._internal.models import models, schema_path
-from ._internal.ids import computed_id, dictify, ga4gh_digest, serialize
+from ._internal.ids import compute_id, ga4gh_digest, serialize

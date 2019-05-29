@@ -1,12 +1,14 @@
-# lovingly borrowed from
-# https://github.com/ipython/ipython/blob/master/IPython/core/magics/execution.py
-
+from base64 import urlsafe_b64decode, urlsafe_b64encode
+from binascii import hexlify, unhexlify
 import datetime
 import math
 import sys
 
 
 def _format_time(timespan, precision=3):
+    # lovingly borrowed from
+    # https://github.com/ipython/ipython/blob/master/IPython/core/magics/execution.py
+
     """Formats the timespan in a human readable form"""
 
     if timespan >= 60.0:
@@ -55,3 +57,11 @@ def isoformat(o):
     # No timezone present - assume UTC.
     # eg: '2015-09-25T23:14:42.588601Z'
     return o.isoformat('T') + 'Z'
+
+
+def hex_to_base64url(s):
+    return urlsafe_b64encode(unhexlify(s)).decode("ascii")
+
+def base64url_to_hex(s):
+    return hexlify(urlsafe_b64decode(s)).decode("ascii")
+
