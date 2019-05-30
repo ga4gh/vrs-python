@@ -64,7 +64,7 @@ class _DataProxy(ABC):
 
 
     @functools.lru_cache()
-    def translate_sequence_identifier(self, ir):
+    def translate_sequence_identifier(self, identifier):
         """Translate identifier to a ga4gh sequence identifier.
 
         On success, returns string identifier.  Raises KeyError if given
@@ -73,10 +73,10 @@ class _DataProxy(ABC):
         """
 
         try:
-            md = self.get_metadata(ir)
+            md = self.get_metadata(identifier)
             al = [a for a in md["aliases"] if a.startswith("ga4gh:")][0]
         except (ValueError, KeyError, IndexError):
-            raise KeyError(ir)
+            raise KeyError(identifier)
         return al
 
 

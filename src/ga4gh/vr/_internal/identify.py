@@ -40,12 +40,12 @@ _logger = logging.getLogger(__name__)
 _ga4gh_model_prefixes = {
     # SQ: Sequence does not have a model
     models.Allele: "VA",
-    models.CytobandLocation: "CL",
-    models.GeneLocation: "GL",
     models.SequenceLocation: "SL",
     models.Text: "VT",
 
     # The following are for post-1.0:
+    # models.CytobandLocation: "CL",
+    # models.GeneLocation: "GL",
     # models.Genotype: "VG",
     # models.Haplotype: "VH",
     # models.VariationSet: "VS",
