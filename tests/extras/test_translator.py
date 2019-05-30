@@ -21,10 +21,8 @@ output = {
 def test_from_beacon(tlr):
     assert tlr.from_beacon(inputs["beacon"]).as_dict() == output
 
-
 def test_from_hgvs(tlr):
-    assert tlr.from_beacon(inputs["beacon"]).as_dict() == output
-
+    assert tlr.from_hgvs(inputs["hgvs"]).as_dict() == output
 
 def test_from_spdi(tlr):
     assert tlr.from_spdi(inputs["spdi"]).as_dict() == output

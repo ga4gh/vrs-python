@@ -17,6 +17,7 @@ vcr.default_vcr = vcr.VCR(
 vcr.use_cassette = vcr.default_vcr.use_cassette
 
 
+
 @vcr.use_cassette
 @pytest.fixture(scope="session")
 def dataproxy():
@@ -26,5 +27,12 @@ def dataproxy():
 @pytest.fixture(scope="session")
 def tlr(dataproxy):
     return Translator(data_proxy=dataproxy,
+                      identify=True,
+                      translate_sequence_identifiers=True,
                       default_assembly_name="GRCh38")
 
+
+# See https://github.com/ga4gh/vr-python/issues/24
+# @pytest.fixture(autouse=True)
+# def setup_doctest(doctest_namespace, tlr):
+#     doctest_namespace["tlr"] = tlr
