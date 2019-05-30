@@ -184,7 +184,7 @@ def _dictify(o, enref=True):
             return {k: dictify_inner(o[k], enref, level+1)
                     for k in o
                     if k != "id" and o[k] is not None}
-        _logger.critical(f"Got a {o} object")
+        _logger.critical(f"Got a {o} object")        # pragma: nocover
         return o
 
     return dictify_inner(o=o, enref=enref, level=0)
