@@ -2,10 +2,10 @@
 
 Serialization implemented here occurs in two phases:
 
-   [vro] -----> [dict] -----> [cjson] -----> [digest] -----> [computed_id]
+   [vro] -----> [dict] -----> [cjson] -----> [digest] -----> [identify]
      |--dictify---|--encode_cj---|-ga4gh_digest-|-----prefix------|
      |--------serialize----------|
-     |--------------------compute_id------------------------------|
+     |-----------------------identify-----------------------------|
 
 
 serialization converts a VR object (vro) into a *binary*
@@ -13,7 +13,7 @@ representation, typically in order to generate a digest.
 
 Note: A runtime option for dictify is to "enref" 
 
-dictify and computed_id may be circularly dependent when
+dictify and identify may be circularly dependent when
 enref=True and objects don't already have an identifier.  This
 design is a tradeoff of several complicated factors.
 
@@ -32,7 +32,7 @@ from canonicaljson import encode_canonical_json
 import python_jsonschema_objects as pjs
 
 
-__all__ = "compute_id ga4gh_digest serialize".split()
+__all__ = "identify ga4gh_digest serialize".split()
 
 
 _logger = logging.getLogger(__name__)
@@ -40,19 +40,19 @@ _logger = logging.getLogger(__name__)
 _ga4gh_model_prefixes = {
     # SQ: Sequence does not have a model
     models.Allele: "VA",
-    models.Text: "VT",
+    models.CytobandLocation: "CL",
+    models.GeneLocation: "GL",
     models.SequenceLocation: "SL",
+    models.Text: "VT",
 
     # The following are for post-1.0:
-    # models.GeneLocation: "GL",
-    # models.CytobandLocation: "CL",
     # models.Genotype: "VG",
     # models.Haplotype: "VH",
     # models.VariationSet: "VS",
 }
 
 
-def compute_id(o):
+def identify(o):
     """return the GA4GH digest-based id for the object, as a CURIE
     (string)
 
@@ -61,7 +61,7 @@ def compute_id(o):
     >>> location = ga4gh.vr.models.Location(sequence_id="GA4GH:GS_bogus", interval=interval)
 
     # Compute computed id: 
-    >>> cid = computed_id(location)
+    >>> cid = identify(location)
     >>> cid
     'GA4GH:GL_RDaX1nGMg7D4M_Y9tiBQ_zG32cNkgkXQ'
 
@@ -69,7 +69,7 @@ def compute_id(o):
 
     if o.id is not None:
         return str(o.id)
-    return "{ir.namespace}:{ir.accession}".format(ir=computed_identifier(o))
+    return "{ir.namespace}:{ir.accession}".format(ir=_computed_identifier(o))
 
 
 def ga4gh_digest(blob):
@@ -125,7 +125,7 @@ def serialize(o, enref=True):
     # >>     return json.dumps(a, sort_keys=True, separators=(',',':'),
     #                          indent=None).encode("utf-8")
 
-    return encode_canonical_json(dictify(o, enref=enref))
+    return encode_canonical_json(_dictify(o, enref=enref))
 
 
 ############################################################################
@@ -139,7 +139,7 @@ def _computed_identifier(o):
     >>> location = ga4gh.vr.models.Location(sequence_id="GA4GH:GS_bogus", interval=interval)
 
     # Compute computed identifier: 
-    >>> cid = computed_identifier(location)
+    >>> cid = _computed_identifier(location)
     >>> cid
     <Identifier accession=GL_RDaX1nGMg7D4M_Y9tiBQ_zG32cNkgkXQ namespace=GA4GH>
 
@@ -168,9 +168,11 @@ def _dictify(o, enref=True):
             if "id" in o and enref and level>0:
                 # object is identifiable and user asked to enref
                 if getattr(o, "id") is None:
-                    setattr(o, "id", computed_id(o))
+                    setattr(o, "id", identify(o))
                 return str(getattr(o, "id"))
-            return {k: dictify_inner(o[k], enref, level+1) for k in o if o[k] is not None}
+            return {k: dictify_inner(o[k], enref, level+1)
+                    for k in o
+                    if k != "id" and o[k] is not None}
         _logger.critical(f"Got a {o} object")
         return o
 

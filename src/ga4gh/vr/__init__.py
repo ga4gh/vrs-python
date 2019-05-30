@@ -9,14 +9,10 @@ Import as:
 Deprecation and change notices are provided only for definitions
 obtained by importing ga4gh.vr as shown above.
 
-Modules names that begin with an underscore are internal; definitions
-therein are not part of the public interface and may change or
-disappear without notice.
-
 """
 
 
-__all__ = """models schema_path   compute_id ga4gh_digest serialize""".split()
+__all__ = """ga4gh_digest identify models schema_path serialize""".split()
 
 
 import warnings
@@ -29,6 +25,5 @@ except DistributionNotFound:
 finally:
     del get_distribution, DistributionNotFound
 
+from ._internal import ga4gh_digest, identify, models, schema_path, serialize
 
-from ._internal.models import models, schema_path
-from ._internal.ids import compute_id, ga4gh_digest, serialize

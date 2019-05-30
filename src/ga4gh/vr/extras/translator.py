@@ -8,7 +8,7 @@ import re
 from bioutils.accessions import coerce_namespace
 import hgvs.parser
 
-from ga4gh.vr import models
+from ga4gh.vr import models, identify
 from .decorators import lazy_property
 
 _logger = logging.getLogger(__name__)
@@ -28,11 +28,12 @@ class Translator:
     def __init__(self,
                  data_proxy,
                  default_assembly_name="GRCh38",
-                 translate_sequence_identifiers=True):
-        # TODO: add identify option
+                 translate_sequence_identifiers=True,
+                 identify=True):
         self.default_assembly_name = default_assembly_name
         self.translate_sequence_identifiers = translate_sequence_identifiers
         self.data_proxy = data_proxy
+        self.identify = identify
 
 
     def from_beacon(self, beacon_expr, assembly_name=None):
@@ -68,7 +69,7 @@ class Translator:
         location = models.Location(sequence_id=self._seq_id_mapper(sequence_id), interval=interval)
         sstate = models.SequenceState(sequence=ins_seq)
         allele = models.Allele(location=location, state=sstate)
-        
+        allele.id = identify(allele)
         return allele
 
 
@@ -116,7 +117,7 @@ class Translator:
         location = models.Location(sequence_id=self._seq_id_mapper(sequence_id), interval=interval)
         sstate = models.SequenceState(sequence=state)
         allele = models.Allele(location=location, state=sstate)
-
+        allele.id = identify(allele)
         return allele
 
     
@@ -151,7 +152,7 @@ class Translator:
         location = models.Location(sequence_id=self._seq_id_mapper(sequence_id), interval=interval)
         sstate = models.SequenceState(sequence=ins_seq)
         allele = models.Allele(location=location, state=sstate)
-        
+        allele.id = identify(allele)
         return allele
 
 
@@ -188,7 +189,7 @@ class Translator:
         location = models.Location(sequence_id=self._seq_id_mapper(sequence_id), interval=interval)
         sstate = models.SequenceState(sequence=ins_seq)
         allele = models.Allele(location=location, state=sstate)
-        
+        allele.id = identify(allele)
         return allele
 
 
