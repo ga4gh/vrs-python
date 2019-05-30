@@ -1,23 +1,34 @@
 """serializes GA4GH VR objects
 
-Serialization implemented here occurs in two phases:
+Serialization implemented here occurs in these phases:
 
-   [vro] -----> [dict] -----> [cjson] -----> [digest] -----> [identify]
-     |--dictify---|--encode_cj---|-ga4gh_digest-|-----prefix------|
+   [vro] -----> [dict] -----> [cjson] -----> [digest] -----> [computed_id]
+     |--dictify---|--encode_cj---|-ga4gh_digest-|------<format id>-------|
      |--------serialize----------|
-     |-----------------------identify-----------------------------|
+     |----------------------------identify-------------------------------|
+
+[vro] = VR object
+[dict] = Python dict
+[cjson] = canonical JSON format
+[digest] = ga4gh_digest result
+[computed_id] = CURIE-formatted string identifier
+
+dictify: convert vro to dict, by default replacing inlined objects
+with identifiers ("enref" option)
+
+encode_cj: encode dict as UTF-8 encoded JSON per spec
+
+serialization: dictify + encode_cj; converts a VR object (vro) into a
+*binary* representation, typically in order to generate a digest.
 
 
-serialization converts a VR object (vro) into a *binary*
-representation, typically in order to generate a digest.
+TODO: [#25] Remove circular dependency of dictify and identify by
+identify'ing objects depth-first before dictify'ing.  Currently,
+dictify and identify may be circularly dependent when enref=True and
+an object doesn't already have an identifier.  This is unnecessary.
+Instead, when enref is requested, we should identify all nested
+objects, then dictify. This breaks the circular need.
 
-Note: A runtime option for dictify is to "enref" 
-
-dictify and identify may be circularly dependent when
-enref=True and objects don't already have an identifier.  This
-design is a tradeoff of several complicated factors.
-
-         
 """
 
 
