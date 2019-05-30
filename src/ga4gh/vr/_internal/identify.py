@@ -32,11 +32,10 @@ objects, then dictify. This breaks the circular need.
 """
 
 
-import base64
-import hashlib
 import logging
 
-from .const import ENC, NAMESPACE
+from .const import ENC, NAMESPACE, PFX_REF_SEP, REF_SEP
+from .digest import ga4gh_digest
 from .models import models
 
 from canonicaljson import encode_canonical_json
@@ -74,38 +73,17 @@ def identify(o):
     # Compute computed id: 
     >>> cid = identify(location)
     >>> cid
-    'GA4GH:GL_RDaX1nGMg7D4M_Y9tiBQ_zG32cNkgkXQ'
+    'GA4GH:GLRDaX1nGMg7D4M_Y9tiBQ_zG32cNkgkXQ'
 
     """
 
     if o.id is not None:
         return str(o.id)
-    return "{ir.namespace}:{ir.accession}".format(ir=_computed_identifier(o))
 
-
-def ga4gh_digest(blob):
-    """generate a GA4GH digest for the given binary object
-
-    A GA4GH digest is a convention for constructing and formatting
-    digests for use as object identifiers. Specifically::
-    
-        * generate a SHA512 digest on binary data
-        * truncate at 24 bytes
-        * encode using base64url encoding
-
-    Examples:
-    >>> ga4gh_digest(b'')
-    'z4PhNX7vuL3xVChQ1m2AB9Yg5AULVxXc'
-
-    >>> ga4gh_digest(b"ACGT")
-    'aKF498dAxcJAqme6QYQ7EZ07-fiw8Kw2'
-
-    """
-
-    digest_size = 24            # bytes
-    digest = hashlib.sha512(blob).digest()
-    tdigest_b64us = base64.urlsafe_b64encode(digest[:digest_size])
-    return tdigest_b64us.decode("ASCII")
+    pfx = _ga4gh_model_prefixes[type(o)]
+    digest = ga4gh_digest(serialize(o))
+    ir = f"{NAMESPACE}{PFX_REF_SEP}{pfx}{REF_SEP}{digest}"
+    return ir
 
 
 def serialize(o, enref=True):
@@ -141,26 +119,6 @@ def serialize(o, enref=True):
 
 ############################################################################
 ## INTERNAL
-
-def _computed_identifier(o):
-    """return the GA4GH digest-based identifier for the object, as an Identifier
-
-    >>> import ga4gh.vr
-    >>> interval = ga4gh.vr.models.Interval(start=10,end=11)
-    >>> location = ga4gh.vr.models.Location(sequence_id="GA4GH:GS_bogus", interval=interval)
-
-    # Compute computed identifier: 
-    >>> cid = _computed_identifier(location)
-    >>> cid
-    <Identifier accession=GL_RDaX1nGMg7D4M_Y9tiBQ_zG32cNkgkXQ namespace=GA4GH>
-
-    """
-
-    pfx = _ga4gh_model_prefixes[type(o)]
-    gd = ga4gh_digest(serialize(o))
-    ir = models.Identifier(namespace=NAMESPACE, accession=pfx + gd)
-    return ir
-
 
 def _dictify(o, enref=True):
     """converts (any) object to dictionary prior to serialization
