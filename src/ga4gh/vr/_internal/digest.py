@@ -23,4 +23,4 @@ def ga4gh_digest(blob, digest_size=24):
 
     digest = hashlib.sha512(blob).digest()
     tdigest_b64us = base64.urlsafe_b64encode(digest[:digest_size])
-    return tdigest_b64us.decode("ASCII")
+    return tdigest_b64us.decode("ascii")

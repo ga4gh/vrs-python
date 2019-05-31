@@ -21,20 +21,11 @@ encode_cj: encode dict as UTF-8 encoded JSON per spec
 serialization: dictify + encode_cj; converts a VR object (vro) into a
 *binary* representation, typically in order to generate a digest.
 
-
-TODO: [#25] Remove circular dependency of dictify and identify by
-identify'ing objects depth-first before dictify'ing.  Currently,
-dictify and identify may be circularly dependent when enref=True and
-an object doesn't already have an identifier.  This is unnecessary.
-Instead, when enref is requested, we should identify all nested
-objects, then dictify. This breaks the circular need.
-
 """
 
 
 import logging
 
-from .const import ENC, NAMESPACE, PFX_REF_SEP, REF_SEP
 from .digest import ga4gh_digest
 from .models import models
 
@@ -61,6 +52,14 @@ _ga4gh_model_prefixes = {
     # models.VariationSet: "VS",
 }
 
+# computed identifer format:
+# <NAMESPACE><PFX_REF_SEP><type-prefix><REF_SEP><digest>
+# eg., ga4gh:SQ0123abcd
+NAMESPACE = "ga4gh"
+PFX_REF_SEP = ":"
+REF_SEP = ""
+
+
 
 def identify(o):
     """return the GA4GH digest-based id for the object, as a CURIE
@@ -79,14 +78,14 @@ def identify(o):
 
     if o.id is not None:
         return str(o.id)
-
     pfx = _ga4gh_model_prefixes[type(o)]
     digest = ga4gh_digest(serialize(o))
     ir = f"{NAMESPACE}{PFX_REF_SEP}{pfx}{REF_SEP}{digest}"
+    setattr(o, "id", ir)
     return ir
 
 
-def serialize(o, enref=True):
+def serialize(o):
     """serialize object into a canonical format
 
     Briefly:
@@ -95,6 +94,8 @@ def serialize(o, enref=True):
     * no "insignificant" whitespace, as defined in rfc7159§2
     * MUST use two-char escapes when available, as defined in rfc7159§7
     * UTF-8 encoded
+    * nested identifiable objects are replaced by their identifiers
+    * arrays of identifiers are sorted lexographically
     
     These requirements are a distillation of several proposals which
     have not yet been ratified.
@@ -114,35 +115,34 @@ def serialize(o, enref=True):
     # >>     return json.dumps(a, sort_keys=True, separators=(',',':'),
     #                          indent=None).encode("utf-8")
 
-    return encode_canonical_json(_dictify(o, enref=enref))
+    return encode_canonical_json(_dictify(o))
 
 
 ############################################################################
 ## INTERNAL
 
-def _dictify(o, enref=True):
-    """converts (any) object to dictionary prior to serialization
-
-    enref: if True, replace nested identifiable objects with
-    identifiers ("enref" is opposite of "de-ref")
+def _dictify(o):
+    """recursively converts (any) object to dictionary prior to
+    serialization
 
     """
 
-    def dictify_inner(o, enref, level):
+    def dictify_inner(o, enref=True):
+        """enref: if True, replace nested identifiable objects with
+        identifiers ("enref" is opposite of "de-ref")
+        """
         if o is None:
             return None
         if isinstance(o, pjs.literals.LiteralValue):
             return o._value
         if isinstance(o, pjs.classbuilder.ProtocolBase):
-            if "id" in o and enref and level>0:
-                # object is identifiable and user asked to enref
-                if getattr(o, "id") is None:
-                    setattr(o, "id", identify(o))
+            if "id" in o and enref:
+                if o.id is None:
+                    identify(o)
                 return str(getattr(o, "id"))
-            return {k: dictify_inner(o[k], enref, level+1)
+            return {k: dictify_inner(o[k])
                     for k in o
                     if k != "id" and o[k] is not None}
-        _logger.critical(f"Got a {o} object")        # pragma: nocover
         return o
 
-    return dictify_inner(o=o, enref=enref, level=0)
+    return dictify_inner(o=o, enref=False)  # don't enref first
