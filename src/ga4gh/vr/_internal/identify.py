@@ -54,10 +54,10 @@ _ga4gh_model_prefixes = {
 
 # computed identifer format:
 # <NAMESPACE><PFX_REF_SEP><type-prefix><REF_SEP><digest>
-# eg., ga4gh:SQ0123abcd
+# eg., ga4gh:SQ/0123abcd
 NAMESPACE = "ga4gh"
 PFX_REF_SEP = ":"
-REF_SEP = ""
+REF_SEP = "/"
 
 
 
