@@ -26,7 +26,7 @@ serialization: dictify + encode_cj; converts a VR object (vro) into a
 
 import logging
 
-from .digest import ga4gh_digest
+from ga4gh.core import ga4gh_digest
 from .models import models
 
 from canonicaljson import encode_canonical_json

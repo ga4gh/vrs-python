@@ -4,7 +4,7 @@ import pytest
 import vcr
 import yaml
 
-from ga4gh.vr import ga4gh_digest
+from ga4gh.core import ga4gh_digest
 
 
 validation_fn = os.path.join(os.path.dirname(__file__), "data", "functions.yaml")
