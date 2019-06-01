@@ -1,4 +1,5 @@
-from ga4gh.vr._internal.identify import identify, _dictify
+from ga4gh.vr import identify
+from ga4gh.vr._internal.computed_identifier import _dictify
 
 
 class X:

@@ -8,7 +8,7 @@ ipython -m ga4gh.vr._internal -i
 
 from .. import __version__
 from . import *
-from .identify import _dictify
+from .computed_identifier import _dictify
 
 
 print("############################################################################")

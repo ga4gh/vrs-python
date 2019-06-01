@@ -60,8 +60,7 @@ PFX_REF_SEP = ":"
 REF_SEP = "/"
 
 
-
-def identify(o):
+def identify(vro):
     """return the GA4GH digest-based id for the object, as a CURIE
     (string)
 
@@ -76,16 +75,16 @@ def identify(o):
 
     """
 
-    if o.id is not None:
-        return str(o.id)
-    pfx = _ga4gh_model_prefixes[type(o)]
-    digest = ga4gh_digest(serialize(o))
+    if vro.id is not None:
+        return str(vro.id)
+    pfx = _ga4gh_model_prefixes[type(vro)]
+    digest = ga4gh_digest(serialize(vro))
     ir = f"{NAMESPACE}{PFX_REF_SEP}{pfx}{REF_SEP}{digest}"
-    setattr(o, "id", ir)
+    setattr(vro, "id", ir)
     return ir
 
 
-def serialize(o):
+def serialize(vro):
     """serialize object into a canonical format
 
     Briefly:
@@ -115,44 +114,46 @@ def serialize(o):
     # >>     return json.dumps(a, sort_keys=True, separators=(',',':'),
     #                          indent=None).encode("utf-8")
 
-    return encode_canonical_json(_dictify(o))
+    return encode_canonical_json(_dictify(vro))
 
 
 ############################################################################
 ## INTERNAL
 
 
-def is_literal(o):
-    return isinstance(o, pjs.literals.LiteralValue)
+def is_literal(vro):
+    return isinstance(vro, pjs.literals.LiteralValue)
 
-def is_class(o):
-    return isinstance(o, pjs.classbuilder.ProtocolBase)
+def is_class(vro):
+    return isinstance(vro, pjs.classbuilder.ProtocolBase)
 
-def is_identifiable(o):
-    return is_class(o) and ("id" in o)
+def is_identifiable(vro):
+    return is_class(vro) and ("id" in vro)
 
-def _dictify(o):
+def _dictify(vro):
     """recursively converts (any) object to dictionary prior to
     serialization
 
     """
 
-    def dictify_inner(o, enref=True):
+    def dictify_inner(vro, enref=True):
         """enref: if True, replace nested identifiable objects with
         identifiers ("enref" is opposite of "de-ref")
         """
-        if o is None:
+        if vro is None:
             return None
-        if is_literal(o):
-            return o._value
-        if is_class(o):
-            if "id" in o and enref:
-                if o.id is None:
-                    identify(o)
-                return str(getattr(o, "id"))
-            return {k: dictify_inner(o[k])
-                    for k in o
-                    if k != "id" and o[k] is not None}
-        return o
+        if is_literal(vro):
+            return vro._value
+        if is_class(vro):
+            if "id" in vro and enref:
+                if vro.id is None:
+                    identify(vro)
+                elif not str(vro.id).startswith(NAMESPACE + PFX_REF_SEP):
+                    raise GA4GHError("ga4gh computed identifiers require that nested objects use GA4GH computed identifiers") 
+                return str(getattr(vro, "id"))
+            return {k: dictify_inner(vro[k])
+                    for k in vro
+                    if k != "id" and vro[k] is not None}
+        return vro
 
-    return dictify_inner(o=o, enref=False)  # don't enref first
+    return dictify_inner(vro=vro, enref=False)  # don't enref first
