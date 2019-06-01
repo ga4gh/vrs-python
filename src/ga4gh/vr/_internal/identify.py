@@ -21,22 +21,12 @@ encode_cj: encode dict as UTF-8 encoded JSON per spec
 serialization: dictify + encode_cj; converts a VR object (vro) into a
 *binary* representation, typically in order to generate a digest.
 
-
-TODO: [#25] Remove circular dependency of dictify and identify by
-identify'ing objects depth-first before dictify'ing.  Currently,
-dictify and identify may be circularly dependent when enref=True and
-an object doesn't already have an identifier.  This is unnecessary.
-Instead, when enref is requested, we should identify all nested
-objects, then dictify. This breaks the circular need.
-
 """
 
 
-import base64
-import hashlib
 import logging
 
-from .const import ENC, NAMESPACE
+from .digest import ga4gh_digest
 from .models import models
 
 from canonicaljson import encode_canonical_json
@@ -62,6 +52,14 @@ _ga4gh_model_prefixes = {
     # models.VariationSet: "VS",
 }
 
+# computed identifer format:
+# <NAMESPACE><PFX_REF_SEP><type-prefix><REF_SEP><digest>
+# eg., ga4gh:SQ/0123abcd
+NAMESPACE = "ga4gh"
+PFX_REF_SEP = ":"
+REF_SEP = "/"
+
+
 
 def identify(o):
     """return the GA4GH digest-based id for the object, as a CURIE
@@ -74,41 +72,20 @@ def identify(o):
     # Compute computed id: 
     >>> cid = identify(location)
     >>> cid
-    'GA4GH:GL_RDaX1nGMg7D4M_Y9tiBQ_zG32cNkgkXQ'
+    'GA4GH:GLRDaX1nGMg7D4M_Y9tiBQ_zG32cNkgkXQ'
 
     """
 
     if o.id is not None:
         return str(o.id)
-    return "{ir.namespace}:{ir.accession}".format(ir=_computed_identifier(o))
+    pfx = _ga4gh_model_prefixes[type(o)]
+    digest = ga4gh_digest(serialize(o))
+    ir = f"{NAMESPACE}{PFX_REF_SEP}{pfx}{REF_SEP}{digest}"
+    setattr(o, "id", ir)
+    return ir
 
 
-def ga4gh_digest(blob):
-    """generate a GA4GH digest for the given binary object
-
-    A GA4GH digest is a convention for constructing and formatting
-    digests for use as object identifiers. Specifically::
-    
-        * generate a SHA512 digest on binary data
-        * truncate at 24 bytes
-        * encode using base64url encoding
-
-    Examples:
-    >>> ga4gh_digest(b'')
-    'z4PhNX7vuL3xVChQ1m2AB9Yg5AULVxXc'
-
-    >>> ga4gh_digest(b"ACGT")
-    'aKF498dAxcJAqme6QYQ7EZ07-fiw8Kw2'
-
-    """
-
-    digest_size = 24            # bytes
-    digest = hashlib.sha512(blob).digest()
-    tdigest_b64us = base64.urlsafe_b64encode(digest[:digest_size])
-    return tdigest_b64us.decode("ASCII")
-
-
-def serialize(o, enref=True):
+def serialize(o):
     """serialize object into a canonical format
 
     Briefly:
@@ -117,6 +94,8 @@ def serialize(o, enref=True):
     * no "insignificant" whitespace, as defined in rfc7159§2
     * MUST use two-char escapes when available, as defined in rfc7159§7
     * UTF-8 encoded
+    * nested identifiable objects are replaced by their identifiers
+    * arrays of identifiers are sorted lexographically
     
     These requirements are a distillation of several proposals which
     have not yet been ratified.
@@ -136,55 +115,34 @@ def serialize(o, enref=True):
     # >>     return json.dumps(a, sort_keys=True, separators=(',',':'),
     #                          indent=None).encode("utf-8")
 
-    return encode_canonical_json(_dictify(o, enref=enref))
+    return encode_canonical_json(_dictify(o))
 
 
 ############################################################################
 ## INTERNAL
 
-def _computed_identifier(o):
-    """return the GA4GH digest-based identifier for the object, as an Identifier
-
-    >>> import ga4gh.vr
-    >>> interval = ga4gh.vr.models.Interval(start=10,end=11)
-    >>> location = ga4gh.vr.models.Location(sequence_id="GA4GH:GS_bogus", interval=interval)
-
-    # Compute computed identifier: 
-    >>> cid = _computed_identifier(location)
-    >>> cid
-    <Identifier accession=GL_RDaX1nGMg7D4M_Y9tiBQ_zG32cNkgkXQ namespace=GA4GH>
+def _dictify(o):
+    """recursively converts (any) object to dictionary prior to
+    serialization
 
     """
 
-    pfx = _ga4gh_model_prefixes[type(o)]
-    gd = ga4gh_digest(serialize(o))
-    ir = models.Identifier(namespace=NAMESPACE, accession=pfx + gd)
-    return ir
-
-
-def _dictify(o, enref=True):
-    """converts (any) object to dictionary prior to serialization
-
-    enref: if True, replace nested identifiable objects with
-    identifiers ("enref" is opposite of "de-ref")
-
-    """
-
-    def dictify_inner(o, enref, level):
+    def dictify_inner(o, enref=True):
+        """enref: if True, replace nested identifiable objects with
+        identifiers ("enref" is opposite of "de-ref")
+        """
         if o is None:
             return None
         if isinstance(o, pjs.literals.LiteralValue):
             return o._value
         if isinstance(o, pjs.classbuilder.ProtocolBase):
-            if "id" in o and enref and level>0:
-                # object is identifiable and user asked to enref
-                if getattr(o, "id") is None:
-                    setattr(o, "id", identify(o))
+            if "id" in o and enref:
+                if o.id is None:
+                    identify(o)
                 return str(getattr(o, "id"))
-            return {k: dictify_inner(o[k], enref, level+1)
+            return {k: dictify_inner(o[k])
                     for k in o
                     if k != "id" and o[k] is not None}
-        _logger.critical(f"Got a {o} object")        # pragma: nocover
         return o
 
-    return dictify_inner(o=o, enref=enref, level=0)
+    return dictify_inner(o=o, enref=False)  # don't enref first
