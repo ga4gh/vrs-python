@@ -121,6 +121,16 @@ def serialize(o):
 ############################################################################
 ## INTERNAL
 
+
+def is_literal(o):
+    return isinstance(o, pjs.literals.LiteralValue)
+
+def is_class(o):
+    return isinstance(o, pjs.classbuilder.ProtocolBase)
+
+def is_identifiable(o):
+    return is_class(o) and ("id" in o)
+
 def _dictify(o):
     """recursively converts (any) object to dictionary prior to
     serialization
@@ -133,9 +143,9 @@ def _dictify(o):
         """
         if o is None:
             return None
-        if isinstance(o, pjs.literals.LiteralValue):
+        if is_literal(o):
             return o._value
-        if isinstance(o, pjs.classbuilder.ProtocolBase):
+        if is_class(o):
             if "id" in o and enref:
                 if o.id is None:
                     identify(o)
