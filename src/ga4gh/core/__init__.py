@@ -11,5 +11,5 @@ except DistributionNotFound:    # pragma: nocover
 finally:
     del get_distribution, DistributionNotFound
 
+from ._internal.exceptions import GA4GHError
 from ._internal.ga4gh_digest import ga4gh_digest
-
