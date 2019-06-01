@@ -6,9 +6,9 @@ inputs = {
 }
 
 output = {
-    'id': 'ga4gh:VAJBgSI1HBdpOYUNCWtRGwzhLtNrcdXAk8',
+    'id': 'ga4gh:VA/xlv08oyqHKbmkP7mW38FwIf9scOrogMW',
     'location': {
-        'id': 'ga4gh:SL0FXQTd1CoM6ElQtD7qK1Ge6XGYhH6OZt',
+        'id': 'ga4gh:SL/0FXQTd1CoM6ElQtD7qK1Ge6XGYhH6OZt',
         'interval': {'end': 32936732, 'start': 32936731, 'type': 'SimpleInterval'},
         'sequence_id': 'ga4gh:SQ_0wi-qoDrvram155UmcSC-zA5ZK4fpLT',
         'type': 'SequenceLocation'},
