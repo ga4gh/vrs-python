@@ -1,4 +1,4 @@
-"""Translates various formats into VMC models.
+"""Translates various formats into VR models.
 
 """
 

@@ -81,9 +81,8 @@ class _DataProxy(ABC):
 
 
 class _SeqRepoDataProxyBase(_DataProxy):
-    # wraps seqreqpo classes in order to provide vmc-to-ga4gh
-    # translation and back.  It's mostly to make up for some namespace
-    # warts in seqrepo that haven't been resolved yet.
+    # wraps seqreqpo classes in order to provide translation to/from
+    # `ga4gh` identifiers.
 
     def get_metadata(self, identifier):
         def xl(ir):

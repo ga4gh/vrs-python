@@ -27,9 +27,9 @@ vr-python is unlikely to work on Windows due to dependencies.
 2. Pull seqrepo data
 ####################
 
-Sequence data are required to normalize sequences and infer VMC
+Sequence data are required to normalize sequences and infer `ga4gh`
 sequence identifiers.  The notebooks use `SeqRepo
-<https://github.com/biocommons/biocommons.seqrepo>`__.  VMC
+<https://github.com/biocommons/biocommons.seqrepo>`__.  VR
 implementers may use SeqRepo or other data source.
 
 Then, download seqrepo with::

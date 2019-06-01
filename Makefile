@@ -8,7 +8,7 @@
 SHELL:=/bin/bash -e -o pipefail
 SELF:=$(firstword $(MAKEFILE_LIST))
 
-PKG=vmc
+PKG=ga4gh.vr
 PKGD=$(subst .,/,${PKG})
 PYV:=3.7
 VEDIR=venv/${PYV}
