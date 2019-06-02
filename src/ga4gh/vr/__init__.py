@@ -12,7 +12,7 @@ obtained by importing ga4gh.vr as shown above.
 """
 
 
-__all__ = """identify models schema_path serialize""".split()
+__all__ = """identify models schema_path normalize serialize""".split()
 
 
 import warnings
@@ -25,5 +25,5 @@ except DistributionNotFound:    # pragma: nocover
 finally:
     del get_distribution, DistributionNotFound
 
-from ._internal import identify, models, schema_path, serialize
+from ._internal import identify, models, normalize, schema_path, serialize
 
