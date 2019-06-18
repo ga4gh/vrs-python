@@ -25,6 +25,7 @@ serialization: dictify + encode_cj; converts a VR object (vro) into a
 
 
 import logging
+import re
 
 from ga4gh.core import ga4gh_digest
 from .models import models
@@ -54,11 +55,12 @@ _ga4gh_model_prefixes = {
 
 # computed identifer format:
 # <NAMESPACE><PFX_REF_SEP><type-prefix><REF_SEP><digest>
-# eg., ga4gh:SQ/0123abcd
+# eg., ga4gh:SQ.0123abcd
 NAMESPACE = "ga4gh"
 PFX_REF_SEP = ":"
 NS_W_SEP = NAMESPACE + PFX_REF_SEP
-REF_SEP = "/"
+REF_SEP = "."
+GA4GH_IR_REGEXP = re.compile(fr"^{NAMESPACE}:(?P<type>[^.]+)\.(?P<digest>.+)$")
 
 
 def ga4gh_identify(vro):
@@ -67,16 +69,16 @@ def ga4gh_identify(vro):
 
     >>> import ga4gh.vr
     >>> interval = ga4gh.vr.models.Interval(start=10,end=11)
-    >>> location = ga4gh.vr.models.Location(sequence_id="ga4gh:SQ/0123abcd", interval=interval)
+    >>> location = ga4gh.vr.models.Location(sequence_id="ga4gh:SQ.0123abcd", interval=interval)
 
     # Compute computed id: 
     >>> cid = ga4gh_identify(location)
     >>> cid
-    ga4gh:SL/lGBsEujtdjKPTxBMCPAeGArLgNEuPN99
+    ga4gh:SL.lGBsEujtdjKPTxBMCPAeGArLgNEuPN99
 
     """
 
-    if vro.id is not None and vro.id._value.startswith(NS_W_SEP):
+    if vro.id is not None:
         return str(vro.id)
     pfx = _ga4gh_model_prefixes[type(vro)]
     digest = ga4gh_digest(ga4gh_serialize(vro))
@@ -133,6 +135,13 @@ def is_class(vro):
 def is_identifiable(vro):
     return is_class(vro) and ("id" in vro)
 
+def is_ga4gh_identifer(ir):
+    return str(ir).startswith(NS_W_SEP)
+
+def parse_ga4gh_identifier(ir):
+    return GA4GH_IR_REGEXP.match(str(ir)).groupdict()
+
+
 def _dictify(vro):
     """recursively converts (any) object to dictionary prior to
     serialization
@@ -146,15 +155,17 @@ def _dictify(vro):
         if vro is None:
             return None
         if is_literal(vro):
-            return vro._value
+            v = vro._value
+            if is_ga4gh_identifer(v):
+                v = v.split(REF_SEP)[-1]
+            return v
         if is_class(vro):
-            if "id" in vro and enref:
+            if is_identifiable(vro) and enref:
                 if vro.id is None:
                     ga4gh_identify(vro)
-                elif not str(vro.id).startswith(NAMESPACE + PFX_REF_SEP):
+                elif not is_ga4gh_identifier(vro.id):
                     raise GA4GHError("nested objects must be identified with ga4gh digests") 
-                # id is of form `ga4gh:XX/0123abcd`
-                _id = str(getattr(vro, "id")).split("/")[-1]
+                _id = str(getattr(vro, "id")).split(REF_SEP)[-1]
                 return _id
             return {k: dictify_inner(vro[k])
                     for k in vro
@@ -169,7 +180,7 @@ def _dictify(vro):
 if __name__ == "__main__":
     import ga4gh.vr
     interval = ga4gh.vr.models.Interval(start=10,end=11)
-    location = ga4gh.vr.models.Location(sequence_id="ga4gh:SQ/0123abcd", interval=interval)
+    location = ga4gh.vr.models.Location(sequence_id="ga4gh:SQ.0123abcd", interval=interval)
     state = ga4gh.vr.models.SequenceState(sequence="C")
     allele = ga4gh.vr.models.Allele(location=location, state=state)
     ga4gh_identify(location)

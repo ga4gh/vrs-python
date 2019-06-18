@@ -1,4 +1,4 @@
-from ga4gh.vr import identify
+from ga4gh.vr import ga4gh_identify, models
 from ga4gh.vr._internal.computed_identifier import _dictify
 
 
@@ -10,7 +10,7 @@ x.id = "an existing id"
 
 def test_use_existing_id():
     "tests that identify() uses an existing id property"
-    assert identify(x) == x.id
+    assert ga4gh_identify(x) == x.id
 
 def test_dictify_None():
     "tests that _dictify works on None"
