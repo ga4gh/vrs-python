@@ -146,9 +146,12 @@ def _dictify(vro):
         if vro is None:
             return None
         if is_literal(vro):
-            return vro._value
+            v = vro._value
+            if isinstance(v, str) and v.startswith(NS_W_SEP):
+                v = v.split("/")[-1]
+            return v
         if is_class(vro):
-            if "id" in vro and enref:
+            if is_identifiable(vro) and enref:
                 if vro.id is None:
                     ga4gh_identify(vro)
                 elif not str(vro.id).startswith(NAMESPACE + PFX_REF_SEP):
