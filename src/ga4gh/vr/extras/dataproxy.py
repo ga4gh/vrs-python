@@ -55,7 +55,7 @@ class _DataProxy(ABC):
                      'RefSeq:NM_000551.3',
                      'SEGUID:T12L0p2X5E8DbnL0+SwI4Wc1S6g',
                      'SHA1:4f5d8bd29d97e44f036e72f4f92c08e167354ba8',
-                     'ga4gh:SQv_QTc1p-MUYdgrRv4LMT6ByXIOsdw3C_',
+                     'ga4gh:SQ/v_QTc1p-MUYdgrRv4LMT6ByXIOsdw3C_',
                      'gi:319655736'],
          'alphabet': 'ACGT',
          'length': 4560}
@@ -90,7 +90,7 @@ class _SeqRepoDataProxyBase(_DataProxy):
             # and inject other translations
             ns, a = ir.split(":", 1)
             if ns == "VMC":
-                yield ir.replace("VMC:GS_", "ga4gh:SQ")
+                yield ir.replace("VMC:GS_", "ga4gh:SQ/")
                 yield "TRUNC512:" + base64url_to_hex(a.replace("GS_",""))
 
         identifier2 = self._lookup_ir_xl(identifier)
@@ -106,7 +106,7 @@ class _SeqRepoDataProxyBase(_DataProxy):
     @staticmethod
     def _lookup_ir_xl(ir):
         """translate lookup identifier to seqrepo-friendly identifier"""
-        return ir.replace("ga4gh:SQ", "VMC:GS_").replace("refseq:", "RefSeq:")
+        return ir.replace("ga4gh:SQ/", "VMC:GS_").replace("refseq:", "RefSeq:")
 
     @abstractmethod
     def _get_metadata(self, identifier):
