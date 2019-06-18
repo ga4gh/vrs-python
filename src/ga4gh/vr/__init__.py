@@ -4,7 +4,7 @@ implementation
 
 Import as:
 
->>> from ga4gh.vr import models, computed_id, serialize
+>>> from ga4gh.vr import models, computed_id, ga4gh_serialize
 
 Deprecation and change notices are provided only for definitions
 obtained by importing ga4gh.vr as shown above.
@@ -12,7 +12,7 @@ obtained by importing ga4gh.vr as shown above.
 """
 
 
-__all__ = """identify models schema_path normalize serialize""".split()
+__all__ = """ga4gh_identify ga4gh_serialize models normalize   schema_path""".split()
 
 
 import warnings
@@ -25,5 +25,5 @@ except DistributionNotFound:    # pragma: nocover
 finally:
     del get_distribution, DistributionNotFound
 
-from ._internal import identify, models, normalize, schema_path, serialize
+from ._internal import ga4gh_identify, ga4gh_serialize, models, normalize, schema_path
 

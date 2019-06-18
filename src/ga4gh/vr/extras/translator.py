@@ -8,7 +8,7 @@ import re
 from bioutils.accessions import coerce_namespace
 import hgvs.parser
 
-from ga4gh.vr import models, identify
+from ga4gh.vr import models, ga4gh_identify
 from .decorators import lazy_property
 
 _logger = logging.getLogger(__name__)
@@ -69,7 +69,8 @@ class Translator:
         location = models.Location(sequence_id=self._seq_id_mapper(sequence_id), interval=interval)
         sstate = models.SequenceState(sequence=ins_seq)
         allele = models.Allele(location=location, state=sstate)
-        allele.id = identify(allele)
+        if self.identify:
+            ga4gh_identify(allele)
         return allele
 
 
@@ -117,7 +118,8 @@ class Translator:
         location = models.Location(sequence_id=self._seq_id_mapper(sequence_id), interval=interval)
         sstate = models.SequenceState(sequence=state)
         allele = models.Allele(location=location, state=sstate)
-        allele.id = identify(allele)
+        if self.identify:
+            ga4gh_identify(allele)
         return allele
 
     
@@ -152,7 +154,8 @@ class Translator:
         location = models.Location(sequence_id=self._seq_id_mapper(sequence_id), interval=interval)
         sstate = models.SequenceState(sequence=ins_seq)
         allele = models.Allele(location=location, state=sstate)
-        allele.id = identify(allele)
+        if self.identify:
+            ga4gh_identify(allele)
         return allele
 
 
@@ -189,7 +192,8 @@ class Translator:
         location = models.Location(sequence_id=self._seq_id_mapper(sequence_id), interval=interval)
         sstate = models.SequenceState(sequence=ins_seq)
         allele = models.Allele(location=location, state=sstate)
-        allele.id = identify(allele)
+        if self.identify:
+            ga4gh_identify(allele)
         return allele
 
 

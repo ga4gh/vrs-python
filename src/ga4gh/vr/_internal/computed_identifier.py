@@ -33,7 +33,7 @@ from canonicaljson import encode_canonical_json
 import python_jsonschema_objects as pjs
 
 
-__all__ = "identify ga4gh_digest serialize".split()
+__all__ = "ga4gh_identify ga4gh_serialize".split()
 
 
 _logger = logging.getLogger(__name__)
@@ -57,10 +57,11 @@ _ga4gh_model_prefixes = {
 # eg., ga4gh:SQ/0123abcd
 NAMESPACE = "ga4gh"
 PFX_REF_SEP = ":"
+NS_W_SEP = NAMESPACE + PFX_REF_SEP
 REF_SEP = "/"
 
 
-def identify(vro):
+def ga4gh_identify(vro):
     """return the GA4GH digest-based id for the object, as a CURIE
     (string)
 
@@ -69,22 +70,22 @@ def identify(vro):
     >>> location = ga4gh.vr.models.Location(sequence_id="ga4gh:SQ/0123abcd", interval=interval)
 
     # Compute computed id: 
-    >>> cid = identify(location)
+    >>> cid = ga4gh_identify(location)
     >>> cid
     ga4gh:SL/lGBsEujtdjKPTxBMCPAeGArLgNEuPN99
 
     """
 
-    if vro.id is not None:
+    if vro.id is not None and vro.id._value.startswith(NS_W_SEP):
         return str(vro.id)
     pfx = _ga4gh_model_prefixes[type(vro)]
-    digest = ga4gh_digest(serialize(vro))
+    digest = ga4gh_digest(ga4gh_serialize(vro))
     ir = f"{NAMESPACE}{PFX_REF_SEP}{pfx}{REF_SEP}{digest}"
     setattr(vro, "id", ir)
     return ir
 
 
-def serialize(vro):
+def ga4gh_serialize(vro):
     """serialize object into a canonical format
 
     Briefly:
@@ -149,7 +150,7 @@ def _dictify(vro):
         if is_class(vro):
             if "id" in vro and enref:
                 if vro.id is None:
-                    identify(vro)
+                    ga4gh_identify(vro)
                 elif not str(vro.id).startswith(NAMESPACE + PFX_REF_SEP):
                     raise GA4GHError("nested objects must be identified with ga4gh digests") 
                 # id is of form `ga4gh:XX/0123abcd`
@@ -171,4 +172,4 @@ if __name__ == "__main__":
     location = ga4gh.vr.models.Location(sequence_id="ga4gh:SQ/0123abcd", interval=interval)
     state = ga4gh.vr.models.SequenceState(sequence="C")
     allele = ga4gh.vr.models.Allele(location=location, state=state)
-    identify(location)
+    ga4gh_identify(location)
