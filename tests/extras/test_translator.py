@@ -6,11 +6,11 @@ inputs = {
 }
 
 output = {
-    'id': 'ga4gh:VA/xlv08oyqHKbmkP7mW38FwIf9scOrogMW',
+    'id': 'ga4gh:VA/cxH2DtdGp35-S0Eqj9Jf1-cH_yZiaf0U',
     'location': {
-        'id': 'ga4gh:SL/0FXQTd1CoM6ElQtD7qK1Ge6XGYhH6OZt',
+        'id': 'ga4gh:SL/HTlh4NTzBViUK0P5ZMinx-YJuNvlBmht',
         'interval': {'end': 32936732, 'start': 32936731, 'type': 'SimpleInterval'},
-        'sequence_id': 'ga4gh:SQ_0wi-qoDrvram155UmcSC-zA5ZK4fpLT',
+        'sequence_id': 'ga4gh:SQ/_0wi-qoDrvram155UmcSC-zA5ZK4fpLT',
         'type': 'SequenceLocation'},
     'state': {'sequence': 'C', 'type': 'SequenceState'},
     'type': 'Allele'

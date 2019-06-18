@@ -66,12 +66,12 @@ def identify(vro):
 
     >>> import ga4gh.vr
     >>> interval = ga4gh.vr.models.Interval(start=10,end=11)
-    >>> location = ga4gh.vr.models.Location(sequence_id="GA4GH:GS_bogus", interval=interval)
+    >>> location = ga4gh.vr.models.Location(sequence_id="ga4gh:SQ/0123abcd", interval=interval)
 
     # Compute computed id: 
     >>> cid = identify(location)
     >>> cid
-    'GA4GH:GLRDaX1nGMg7D4M_Y9tiBQ_zG32cNkgkXQ'
+    ga4gh:SL/lGBsEujtdjKPTxBMCPAeGArLgNEuPN99
 
     """
 
@@ -103,12 +103,14 @@ def serialize(vro):
     """
 
     # The canonicaljson pacakge does everything we want. Use that with
-    # the expectation (hope) that it will be upward compatible with a
-    # future ratified proposal.
+    # the hope that it will be upward compatible with a future
+    # ratified proposal for json canonicalization.
     #
-    # The following alternative seems to do the same thing for our use
-    # case.  It's included here as an outline for anyone implementing
-    # in another language.
+    # The following alternative does the same thing for our use case.
+    # It's included here as an outline for anyone implementing in
+    # another language.  (canonicaljson escapes unicode characters,
+    # but this doesn't apply for us.)
+
     # >> import json
     # >> def cjdump(a):
     # >>     return json.dumps(a, sort_keys=True, separators=(',',':'),
@@ -149,11 +151,24 @@ def _dictify(vro):
                 if vro.id is None:
                     identify(vro)
                 elif not str(vro.id).startswith(NAMESPACE + PFX_REF_SEP):
-                    raise GA4GHError("ga4gh computed identifiers require that nested objects use GA4GH computed identifiers") 
-                return str(getattr(vro, "id"))
+                    raise GA4GHError("nested objects must be identified with ga4gh digests") 
+                # id is of form `ga4gh:XX/0123abcd`
+                _id = str(getattr(vro, "id")).split("/")[-1]
+                return _id
             return {k: dictify_inner(vro[k])
                     for k in vro
                     if k != "id" and vro[k] is not None}
         return vro
 
     return dictify_inner(vro=vro, enref=False)  # don't enref first
+
+
+
+
+if __name__ == "__main__":
+    import ga4gh.vr
+    interval = ga4gh.vr.models.Interval(start=10,end=11)
+    location = ga4gh.vr.models.Location(sequence_id="ga4gh:SQ/0123abcd", interval=interval)
+    state = ga4gh.vr.models.SequenceState(sequence="C")
+    allele = ga4gh.vr.models.Allele(location=location, state=state)
+    identify(location)

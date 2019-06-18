@@ -1,4 +1,4 @@
-__all__ = """ga4gh_digest""".split()
+__all__ = ("ga4gh_digest", "GA4GHError")
 
 
 import warnings
