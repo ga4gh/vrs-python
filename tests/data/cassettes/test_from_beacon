@@ -1,0 +1,41 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.22.0
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/metadata/GRCh38:13
+  response:
+    body:
+      string: "{\n  \"added\": \"2016-08-27T23:50:14Z\",\n  \"aliases\": [\n    \"GRCh38:13\",\n
+        \   \"GRCh38:chr13\",\n    \"GRCh38.p1:13\",\n    \"GRCh38.p1:chr13\",\n    \"GRCh38.p10:13\",\n
+        \   \"GRCh38.p10:chr13\",\n    \"GRCh38.p11:13\",\n    \"GRCh38.p11:chr13\",\n
+        \   \"GRCh38.p12:13\",\n    \"GRCh38.p12:chr13\",\n    \"GRCh38.p2:13\",\n
+        \   \"GRCh38.p2:chr13\",\n    \"GRCh38.p3:13\",\n    \"GRCh38.p3:chr13\",\n
+        \   \"GRCh38.p4:13\",\n    \"GRCh38.p4:chr13\",\n    \"GRCh38.p5:13\",\n    \"GRCh38.p5:chr13\",\n
+        \   \"GRCh38.p6:13\",\n    \"GRCh38.p6:chr13\",\n    \"GRCh38.p7:13\",\n    \"GRCh38.p7:chr13\",\n
+        \   \"GRCh38.p8:13\",\n    \"GRCh38.p8:chr13\",\n    \"GRCh38.p9:13\",\n    \"GRCh38.p9:chr13\",\n
+        \   \"MD5:a5437debe2ef9c9ef8f3ea2874ae1d82\",\n    \"RefSeq:NC_000013.11\",\n
+        \   \"SEGUID:2oDBty0yKV9wHo7gg+Bt+fPgi5o\",\n    \"SHA1:da80c1b72d32295f701e8ee083e06df9f3e08b9a\",\n
+        \   \"VMC:GS__0wi-qoDrvram155UmcSC-zA5ZK4fpLT\",\n    \"genbank:CM000675.2\"\n
+        \ ],\n  \"alphabet\": \"ACGKNTY\",\n  \"length\": 114364328\n}\n"
+    headers:
+      Content-Length:
+      - '903'
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 21 Jun 2019 03:28:18 GMT
+      Server:
+      - Werkzeug/0.15.4 Python/3.6.8
+    status:
+      code: 200
+      message: OK
+version: 1
