@@ -53,7 +53,7 @@ _ga4gh_model_prefixes = {
     # models.VariationSet: "VS",
 }
 
-# computed identifer format:
+# computed identifier format:
 # <NAMESPACE><PFX_REF_SEP><type-prefix><REF_SEP><digest>
 # eg., ga4gh:SQ.0123abcd
 NAMESPACE = "ga4gh"
@@ -135,7 +135,7 @@ def is_class(vro):
 def is_identifiable(vro):
     return is_class(vro) and ("id" in vro)
 
-def is_ga4gh_identifer(ir):
+def is_ga4gh_identifier(ir):
     return str(ir).startswith(NS_W_SEP)
 
 def parse_ga4gh_identifier(ir):
@@ -156,7 +156,7 @@ def _dictify(vro):
             return None
         if is_literal(vro):
             v = vro._value
-            if is_ga4gh_identifer(v):
+            if is_ga4gh_identifier(v):
                 v = v.split(REF_SEP)[-1]
             return v
         if is_class(vro):
