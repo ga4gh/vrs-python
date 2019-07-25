@@ -27,6 +27,9 @@ serialization: dictify + encode_cj; converts a VR object (vro) into a
 import logging
 import re
 
+import pkg_resources
+import yaml
+
 from ga4gh.core import ga4gh_digest
 from .models import models
 
@@ -36,31 +39,17 @@ import python_jsonschema_objects as pjs
 
 __all__ = "ga4gh_identify ga4gh_serialize".split()
 
-
 _logger = logging.getLogger(__name__)
 
-_ga4gh_model_prefixes = {
-    # SQ: Sequence does not have a model
-    models.Allele: "VA",
-    models.SequenceLocation: "SL",
-    models.Text: "VT",
+schema_dir = pkg_resources.resource_filename(__name__, "data/schema")
+cfg = yaml.safe_load(open(schema_dir + "/ga4gh.yaml"))
+type_prefix_map = cfg["identifiers"]["type_prefix_map"]
+namespace = cfg["identifiers"]["namespace"]
+curie_sep = cfg["identifiers"]["curie_sep"]
+ref_sep = cfg["identifiers"]["ref_sep"]
+ga4gh_ir_regexp = re.compile(cfg["identifiers"]["regexp"])
 
-    # The following are for post-1.0:
-    # models.CytobandLocation: "CL",
-    # models.GeneLocation: "GL",
-    # models.Genotype: "VG",
-    # models.Haplotype: "VH",
-    # models.VariationSet: "VS",
-}
-
-# computed identifier format:
-# <NAMESPACE><PFX_REF_SEP><type-prefix><REF_SEP><digest>
-# eg., ga4gh:SQ.0123abcd
-NAMESPACE = "ga4gh"
-PFX_REF_SEP = ":"
-NS_W_SEP = NAMESPACE + PFX_REF_SEP
-REF_SEP = "."
-GA4GH_IR_REGEXP = re.compile(fr"^{NAMESPACE}:(?P<type>[^.]+)\.(?P<digest>.+)$")
+ns_w_sep = namespace + curie_sep
 
 
 def ga4gh_identify(vro):
@@ -80,9 +69,9 @@ def ga4gh_identify(vro):
 
     if vro.id is not None:
         return str(vro.id)
-    pfx = _ga4gh_model_prefixes[type(vro)]
+    pfx = type_prefix_map[vro.type]
     digest = ga4gh_digest(ga4gh_serialize(vro))
-    ir = f"{NAMESPACE}{PFX_REF_SEP}{pfx}{REF_SEP}{digest}"
+    ir = f"{namespace}{curie_sep}{pfx}{ref_sep}{digest}"
     setattr(vro, "id", ir)
     return ir
 
@@ -136,10 +125,10 @@ def is_identifiable(vro):
     return is_class(vro) and ("id" in vro)
 
 def is_ga4gh_identifier(ir):
-    return str(ir).startswith(NS_W_SEP)
+    return str(ir).startswith(ns_w_sep)
 
 def parse_ga4gh_identifier(ir):
-    return GA4GH_IR_REGEXP.match(str(ir)).groupdict()
+    return ga4gh_ir_regexp.match(str(ir)).groupdict()
 
 
 def _dictify(vro):
@@ -157,7 +146,7 @@ def _dictify(vro):
         if is_literal(vro):
             v = vro._value
             if is_ga4gh_identifier(v):
-                v = v.split(REF_SEP)[-1]
+                v = v.split(ref_sep)[-1]
             return v
         if is_class(vro):
             if is_identifiable(vro) and enref:
@@ -165,7 +154,7 @@ def _dictify(vro):
                     ga4gh_identify(vro)
                 elif not is_ga4gh_identifier(vro.id):
                     raise GA4GHError("nested objects must be identified with ga4gh digests") 
-                _id = str(getattr(vro, "id")).split(REF_SEP)[-1]
+                _id = str(getattr(vro, "id")).split(ref_sep)[-1]
                 return _id
             return {k: dictify_inner(vro[k])
                     for k in vro
