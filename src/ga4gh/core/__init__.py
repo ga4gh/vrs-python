@@ -1,4 +1,4 @@
-__all__ = ("ga4gh_digest", "GA4GHError")
+__all__ = ("sha512t24u", "GA4GHError")
 
 
 import warnings
@@ -12,4 +12,4 @@ finally:
     del get_distribution, DistributionNotFound
 
 from ._internal.exceptions import GA4GHError
-from ._internal.ga4gh_digest import ga4gh_digest
+from ._internal.digests import sha512t24u

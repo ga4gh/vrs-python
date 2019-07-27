@@ -25,5 +25,5 @@ except DistributionNotFound:    # pragma: nocover
 finally:
     del get_distribution, DistributionNotFound
 
-from ._internal import ga4gh_identify, ga4gh_serialize, models, normalize, schema_path
+from ._internal import ga4gh_digest, ga4gh_identify, ga4gh_serialize, models, normalize, schema_path
 

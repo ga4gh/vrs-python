@@ -1,28 +1,6 @@
-"""serializes GA4GH VR objects
-
-Serialization implemented here occurs in these phases:
-
-   [vro] -----> [dict] -----> [cjson] -----> [digest] -----> [computed_id]
-     |--dictify---|--encode_cj---|-ga4gh_digest-|------<format id>-------|
-     |--------serialize----------|
-     |----------------------------identify-------------------------------|
-
-[vro] = VR object
-[dict] = Python dict
-[cjson] = canonical JSON format
-[digest] = ga4gh_digest result
-[computed_id] = CURIE-formatted string identifier
-
-dictify: convert vro to dict, by default replacing inlined objects
-with identifiers ("enref" option)
-
-encode_cj: encode dict as UTF-8 encoded JSON per spec
-
-serialization: dictify + encode_cj; converts a VR object (vro) into a
-*binary* representation, typically in order to generate a digest.
+"""serializes, digests, and identifies GA4GH objects
 
 """
-
 
 import logging
 import re
@@ -30,17 +8,19 @@ import re
 import pkg_resources
 import yaml
 
-from ga4gh.core import ga4gh_digest
+from ga4gh.core import sha512t24u
 from .models import models
 
 from canonicaljson import encode_canonical_json
 import python_jsonschema_objects as pjs
 
 
-__all__ = "ga4gh_identify ga4gh_serialize".split()
+__all__ = "ga4gh_digest ga4gh_identify ga4gh_serialize".split()
 
 _logger = logging.getLogger(__name__)
 
+
+# TODO: move to ga4gh.core.identfiers
 schema_dir = pkg_resources.resource_filename(__name__, "data/schema")
 cfg = yaml.safe_load(open(schema_dir + "/ga4gh.yaml"))
 type_prefix_map = cfg["identifiers"]["type_prefix_map"]
@@ -67,14 +47,29 @@ def ga4gh_identify(vro):
 
     """
 
-    if vro.id is not None:
-        return str(vro.id)
     pfx = type_prefix_map[vro.type]
-    digest = ga4gh_digest(ga4gh_serialize(vro))
+    digest = ga4gh_digest(vro)
     ir = f"{namespace}{curie_sep}{pfx}{ref_sep}{digest}"
-    setattr(vro, "id", ir)
     return ir
 
+
+def ga4gh_digest(vro):
+    """return the GA4GH digest for the object
+
+    >>> import ga4gh.vr
+    >>> interval = ga4gh.vr.models.Interval(start=10,end=11)
+    >>> location = ga4gh.vr.models.Location(sequence_id="ga4gh:SQ.0123abcd", interval=interval)
+
+    >>> ga4gh_digest(location)
+    lGBsEujtdjKPTxBMCPAeGArLgNEuPN99
+
+    """
+
+    assert is_identifiable(vro), "ga4gh_digest called with non-identifiable object"
+    if vro._digest is None:
+        vro._digest = sha512t24u(ga4gh_serialize(vro))
+    return vro._digest._value
+    
 
 def ga4gh_serialize(vro):
     """serialize object into a canonical format
@@ -91,29 +86,63 @@ def ga4gh_serialize(vro):
     These requirements are a distillation of several proposals which
     have not yet been ratified.
 
-    See https://github.com/ga4gh/vr-schema/issues/31 for a discussion
+    >>> import ga4gh.vr
+    >>> interval = ga4gh.vr.models.Interval(start=10,end=11)
+    >>> location = ga4gh.vr.models.Location(sequence_id="ga4gh:SQ.0123abcd", interval=interval)
+
+    >>> ga4gh_serialize(location)
+    b'{"interval":{"end":11,"start":10,"type":"SimpleInterval"},"sequence_id":"ga4gh:SQ.0123abcd","type":"SequenceLocation"}'
+
     """
 
-    # The canonicaljson pacakge does everything we want. Use that with
+    def dictify(vro, enref=True):
+        """recursively converts (any) object to dictionary prior to
+        serialization
+
+        enref: if True, replace nested identifiable objects with
+        digests ("enref" is opposite of "de-ref")
+
+        """
+
+        if vro is None:
+            return None
+        if is_literal(vro):
+            v = vro._value
+            if is_ga4gh_identifier(v):
+                # strip ga4gh identifier to just the digest
+                v = v.split(ref_sep, 1)[1]
+            return v
+        if is_class(vro):
+            if is_identifiable(vro) and enref:
+                return ga4gh_digest(vro)
+            return {k: dictify(vro[k], enref=True)
+                    for k in vro
+                    if not (k.startswith("_") or vro[k] is None)}
+        return vro
+
+
+    # The canonicaljson package does everything we want. Use that with
     # the hope that it will be upward compatible with a future
     # ratified proposal for json canonicalization.
     #
     # The following alternative does the same thing for our use case.
     # It's included here as an outline for anyone implementing in
-    # another language.  (canonicaljson escapes unicode characters,
-    # but this doesn't apply for us.)
+    # another language.  (canonicaljson escapes unicode characters, as
+    # required by the VR spec, but this doesn't apply to any known
+    # uses so these are equivalent.)
 
     # >> import json
     # >> def cjdump(a):
     # >>     return json.dumps(a, sort_keys=True, separators=(',',':'),
     #                          indent=None).encode("utf-8")
 
-    return encode_canonical_json(_dictify(vro))
+    vro_dict = dictify(vro, enref=False)
+    return encode_canonical_json(vro_dict)
 
 
 ############################################################################
 ## INTERNAL
-
+# TODO: Move these to utils in ga4gh.vr or perhaps ga4gh.core
 
 def is_literal(vro):
     return isinstance(vro, pjs.literals.LiteralValue)
@@ -122,46 +151,13 @@ def is_class(vro):
     return isinstance(vro, pjs.classbuilder.ProtocolBase)
 
 def is_identifiable(vro):
-    return is_class(vro) and ("id" in vro)
+    return is_class(vro) and ("_digest" in vro)
 
 def is_ga4gh_identifier(ir):
     return str(ir).startswith(ns_w_sep)
 
 def parse_ga4gh_identifier(ir):
     return ga4gh_ir_regexp.match(str(ir)).groupdict()
-
-
-def _dictify(vro):
-    """recursively converts (any) object to dictionary prior to
-    serialization
-
-    """
-
-    def dictify_inner(vro, enref=True):
-        """enref: if True, replace nested identifiable objects with
-        identifiers ("enref" is opposite of "de-ref")
-        """
-        if vro is None:
-            return None
-        if is_literal(vro):
-            v = vro._value
-            if is_ga4gh_identifier(v):
-                v = v.split(ref_sep)[-1]
-            return v
-        if is_class(vro):
-            if is_identifiable(vro) and enref:
-                if vro.id is None:
-                    ga4gh_identify(vro)
-                elif not is_ga4gh_identifier(vro.id):
-                    raise GA4GHError("nested objects must be identified with ga4gh digests") 
-                _id = str(getattr(vro, "id")).split(ref_sep)[-1]
-                return _id
-            return {k: dictify_inner(vro[k])
-                    for k in vro
-                    if k != "id" and vro[k] is not None}
-        return vro
-
-    return dictify_inner(vro=vro, enref=False)  # don't enref first
 
 
 
