@@ -1,21 +1,32 @@
-"""Provide support for JSON Schema using python-jsonschema-objects"""
+"""Support for JSON Schema and GA4GH schema conventions 
+
+"""
 
 import python_jsonschema_objects as pjs
 
 
-def build_classes(path, standardize_names):
-    """load/reload models"""
+def build_models(path, standardize_names):
+    """load models from json schema at path"""
     builder = pjs.ObjectBuilder(path)
-    classes = models = builder.build_classes(standardize_names=False)  # TODO: named_only=True, 
-    return classes
+    models = builder.build_classes(standardize_names=False)  # TODO?: named_only=True
+    return models
 
-def is_class(vro):
+
+def is_class(o):
     """return True if object is a python jsonschema object"""
-    return isinstance(vro, pjs.classbuilder.ProtocolBase)
+    return isinstance(o, pjs.classbuilder.ProtocolBase)
 
-def is_identifiable(vro):
-    """return True if object is identifiable"""
-    return is_class(vro) and ("_id" in vro)
 
-def is_literal(vro):
-    return isinstance(vro, pjs.literals.LiteralValue)
+def is_literal(o):
+    """return True if object is a python jsonschema object literal"""
+    return isinstance(o, pjs.literals.LiteralValue)
+
+
+def is_identifiable(o):
+    """return True if object is identifiable
+
+    An object is considered identifiable if it contains an `_id` attribute
+    """
+    return is_class(o) and ("_id" in o)
+
+

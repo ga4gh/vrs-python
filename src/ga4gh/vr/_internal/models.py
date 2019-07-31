@@ -21,22 +21,22 @@ import os
 
 import pkg_resources
 
-from ga4gh.core import build_classes
+from ga4gh.core import build_models
 
 
 schema_dir = pkg_resources.resource_filename(__name__, "data/schema")
 schema_path = schema_dir + "/vr.json"
 schema_file = os.path.basename(schema_path)
 
-classes = models = None
+models = None
 
-def _build_classes():
+
+def _build_models():
     """load/reload models
-    
-    developers may call this function to reload schemas during development
-    """
-    global classes, models
-    classes = models = build_classes(schema_path, standardize_names=False)
-    return classes
 
-_build_classes()
+    """
+    global models
+    models = build_models(schema_path, standardize_names=False)
+    return models
+
+_build_models()
