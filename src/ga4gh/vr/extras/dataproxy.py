@@ -64,8 +64,9 @@ class _DataProxy(ABC):
 
 
     @functools.lru_cache()
-    def translate_sequence_identifier(self, identifier):
-        """Translate identifier to a ga4gh sequence identifier.
+    def translate_sequence_identifier(self, identifier, namespace):
+        """Translate given identifier to a list of identifiers in the
+        specified namespace
 
         On success, returns string identifier.  Raises KeyError if given
         identifier isn't found.
@@ -74,10 +75,9 @@ class _DataProxy(ABC):
 
         try:
             md = self.get_metadata(identifier)
-            al = [a for a in md["aliases"] if a.startswith("ga4gh:")][0]
         except (ValueError, KeyError, IndexError):
             raise KeyError(identifier)
-        return al
+        return [a for a in md["aliases"] if a.startswith(namespace + ":")]
 
 
 class _SeqRepoDataProxyBase(_DataProxy):
@@ -118,6 +118,8 @@ class _SeqRepoDataProxyBase(_DataProxy):
 
 
 class SeqRepoDataProxy(_SeqRepoDataProxyBase):
+    """DataProxy based on a local instance of SeqRepo"""
+
     def __init__(self, sr):
         super().__init__()
         self.sr = sr
@@ -145,6 +147,8 @@ class SeqRepoDataProxy(_SeqRepoDataProxyBase):
 
 
 class SeqRepoRESTDataProxy(_SeqRepoDataProxyBase):
+    """DataProxy based on a REST instance of SeqRepo, as provided by seqrepo-rest-services"""
+
     rest_version = "1"
 
     def __init__(self, base_url):
