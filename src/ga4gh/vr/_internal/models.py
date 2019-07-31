@@ -20,7 +20,9 @@ models are always in sync with the spec.
 import os
 
 import pkg_resources
-import python_jsonschema_objects as pjs
+
+from ga4gh.core import build_classes
+
 
 schema_dir = pkg_resources.resource_filename(__name__, "data/schema")
 schema_path = schema_dir + "/vr.json"
@@ -29,10 +31,12 @@ schema_file = os.path.basename(schema_path)
 classes = models = None
 
 def _build_classes():
-    """load/reload models"""
+    """load/reload models
+    
+    developers may call this function to reload schemas during development
+    """
     global classes, models
-    builder = pjs.ObjectBuilder(schema_path)
-    classes = models = builder.build_classes(standardize_names=False)  # TODO: named_only=True, 
+    classes = models = build_classes(schema_path, standardize_names=False)
     return classes
 
 _build_classes()

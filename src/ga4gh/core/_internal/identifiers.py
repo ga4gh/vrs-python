@@ -1,5 +1,18 @@
 """serializes, digests, and identifies GA4GH objects
 
+In GA4GH schemas with nested objects, serialize, digest, and identify
+are entangled.
+
+For example, here is a call path for ga4gh_identify called on an Allele:
+    ga4gh_identify(allele)
+    > ga4gh_digest(allele)
+    >> ga4gh_serialize(allele)
+    >>> ga4gh_digest(allele.location)
+    >>>> ga4gh_serialize(allele.location)
+    >>> ga4gh_serialize(allele.state)
+
+For that reason, they are implemented here in one file.
+
 """
 
 import logging
@@ -8,14 +21,14 @@ import re
 import pkg_resources
 import yaml
 
-from ga4gh.core import sha512t24u
-from .models import models
+from .digests import sha512t24u
 
 from canonicaljson import encode_canonical_json
-import python_jsonschema_objects as pjs
 
 
-__all__ = "ga4gh_digest ga4gh_identify ga4gh_serialize".split()
+__all__ = "ga4gh_digest ga4gh_identify ga4gh_serialize is_ga4gh_identifier parse_ga4gh_identifier".split()
+
+
 
 _logger = logging.getLogger(__name__)
 
@@ -30,6 +43,13 @@ ref_sep = cfg["identifiers"]["ref_sep"]
 ga4gh_ir_regexp = re.compile(cfg["identifiers"]["regexp"])
 
 ns_w_sep = namespace + curie_sep
+
+
+def is_ga4gh_identifier(ir):
+    return str(ir).startswith(ns_w_sep)
+
+def parse_ga4gh_identifier(ir):
+    return ga4gh_ir_regexp.match(str(ir)).groupdict()
 
 
 def ga4gh_identify(vro):
@@ -138,34 +158,3 @@ def ga4gh_serialize(vro):
 
     vro_dict = dictify(vro, enref=False)
     return encode_canonical_json(vro_dict)
-
-
-############################################################################
-## INTERNAL
-# TODO: Move these to utils in ga4gh.vr or perhaps ga4gh.core
-
-def is_literal(vro):
-    return isinstance(vro, pjs.literals.LiteralValue)
-
-def is_class(vro):
-    return isinstance(vro, pjs.classbuilder.ProtocolBase)
-
-def is_identifiable(vro):
-    return is_class(vro) and ("_digest" in vro)
-
-def is_ga4gh_identifier(ir):
-    return str(ir).startswith(ns_w_sep)
-
-def parse_ga4gh_identifier(ir):
-    return ga4gh_ir_regexp.match(str(ir)).groupdict()
-
-
-
-
-if __name__ == "__main__":
-    import ga4gh.vr
-    interval = ga4gh.vr.models.Interval(start=10,end=11)
-    location = ga4gh.vr.models.Location(sequence_id="ga4gh:SQ.0123abcd", interval=interval)
-    state = ga4gh.vr.models.SequenceState(sequence="C")
-    allele = ga4gh.vr.models.Allele(location=location, state=state)
-    ga4gh_identify(location)
