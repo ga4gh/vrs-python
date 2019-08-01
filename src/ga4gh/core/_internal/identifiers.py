@@ -22,6 +22,8 @@ import pkg_resources
 import yaml
 
 from .digests import sha512t24u
+from .jsonschema import is_class, is_identifiable, is_literal
+
 
 from canonicaljson import encode_canonical_json
 

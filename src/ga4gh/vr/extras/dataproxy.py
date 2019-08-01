@@ -92,6 +92,9 @@ class _SeqRepoDataProxyBase(_DataProxy):
             if ns == "VMC":
                 yield ir.replace("VMC:GS_", "ga4gh:SQ.")
                 yield "TRUNC512:" + base64url_to_hex(a.replace("GS_",""))
+            elif ns == "RefSeq":
+                yield ir
+                yield ir.replace("RefSeq:", "refseq:")
 
         identifier2 = self._lookup_ir_xl(identifier)
         md = self._get_metadata(identifier2)
@@ -101,7 +104,6 @@ class _SeqRepoDataProxyBase(_DataProxy):
     def get_sequence(self, identifier, start=None, end=None):
         identifier2 = self._lookup_ir_xl(identifier)
         return self._get_sequence(identifier2, start=start, end=end)
-
 
     @staticmethod
     def _lookup_ir_xl(ir):
