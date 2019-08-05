@@ -210,21 +210,5 @@ class Translator:
 
     def _seq_id_mapper(self, ir):
         if self.translate_sequence_identifiers:
-            return self.data_proxy.translate_sequence_identifier(ir)
+            return self.data_proxy.translate_sequence_identifier(ir, "ga4gh")[0]
         return ir
-
-
-if __name__ == "__main__":
-    logging.basicConfig(level="DEBUG")
-
-    local = True
-    if local:
-        from biocommons.seqrepo import SeqRepo
-        from ga4gh.vr.extras.dataproxy import SeqRepoDataProxy
-        sr = SeqRepo(root_dir="/usr/local/share/seqrepo/latest/")
-        dp = SeqRepoDataProxy(sr=sr)
-    else:
-        from ga4gh.vr.extras.dataproxy import SeqRepoRESTDataProxy
-        dp = SeqRepoRESTDataProxy(base_url="http://localhost:5000/seqrepo")
-
-    tlr = Translator(data_proxy=dp)

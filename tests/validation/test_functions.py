@@ -12,5 +12,5 @@ validation_tests = yaml.load(open(validation_fn), Loader=yaml.SafeLoader)
 
 
 @pytest.mark.parametrize("test", validation_tests["sha512t24u"])
-def test_digest(test):
+def test_sha512t24u(test):
     assert test["out"] == sha512t24u(blob=test["in"]["blob"].encode())
