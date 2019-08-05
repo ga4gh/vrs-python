@@ -11,5 +11,5 @@ finally:
 
 from ._internal.digests import sha512t24u
 from ._internal.exceptions import GA4GHError
-from ._internal.identifiers import ga4gh_digest, ga4gh_identify, ga4gh_serialize
+from ._internal.identifiers import ga4gh_digest, ga4gh_identify, ga4gh_serialize, is_ga4gh_identifier, parse_ga4gh_identifier
 from ._internal.jsonschema import build_models, is_class, is_identifiable, is_literal

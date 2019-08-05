@@ -5,11 +5,11 @@ are entangled.
 
 For example, here is a call path for ga4gh_identify called on an Allele:
     ga4gh_identify(allele)
-    > ga4gh_digest(allele)
-    >> ga4gh_serialize(allele)
-    >>> ga4gh_digest(allele.location)
-    >>>> ga4gh_serialize(allele.location)
-    >>> ga4gh_serialize(allele.state)
+    + ga4gh_digest(allele)
+    ++ ga4gh_serialize(allele)
+    +++ ga4gh_digest(allele.location)
+    ++++ ga4gh_serialize(allele.location)
+    +++ ga4gh_serialize(allele.state)
 
 For that reason, they are implemented here in one file.
 
@@ -48,10 +48,39 @@ ns_w_sep = namespace + curie_sep
 
 
 def is_ga4gh_identifier(ir):
+    """
+
+    >>> is_ga4gh_identifier("ga4gh:SQ.0123abcd")
+    True
+
+    >>> is_ga4gh_identifier("refseq:NM_01234.5")
+    False
+
+    >>> is_ga4gh_identifier(None)
+    False
+
+    """
     return str(ir).startswith(ns_w_sep)
 
+
 def parse_ga4gh_identifier(ir):
-    return ga4gh_ir_regexp.match(str(ir)).groupdict()
+    """
+    Parses a GA4GH identifier, returning a dict with type and digest components
+    
+    >>> parse_ga4gh_identifier("ga4gh:SQ.0123abcd")
+    {'type': 'SQ', 'digest': '0123abcd'}
+    
+    >>> parse_ga4gh_identifier("notga4gh:SQ.0123abcd")
+    Traceback (most recent call last):
+    ...
+    ValueError: notga4gh:SQ.0123abcd
+    
+    """
+
+    try:
+        return ga4gh_ir_regexp.match(str(ir)).groupdict()
+    except AttributeError:
+        raise ValueError(ir)
 
 
 def ga4gh_identify(vro):
@@ -59,13 +88,10 @@ def ga4gh_identify(vro):
     (string)
 
     >>> import ga4gh.vr
-    >>> interval = ga4gh.vr.models.Interval(start=10,end=11)
-    >>> location = ga4gh.vr.models.Location(sequence_id="ga4gh:SQ.0123abcd", interval=interval)
-
-    # Compute computed id: 
-    >>> cid = ga4gh_identify(location)
-    >>> cid
-    ga4gh:SL.lGBsEujtdjKPTxBMCPAeGArLgNEuPN99
+    >>> ival = ga4gh.vr.models.SimpleInterval(start=44908821, end=44908822)
+    >>> location = ga4gh.vr.models.Location(sequence_id="ga4gh:SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl", interval=ival)
+    >>> ga4gh_identify(location)
+    'ga4gh:VSL.u5fspwVbQ79QkX6GHLF8tXPCAXFJqRPx'
 
     """
 
@@ -79,11 +105,10 @@ def ga4gh_digest(vro):
     """return the GA4GH digest for the object
 
     >>> import ga4gh.vr
-    >>> interval = ga4gh.vr.models.Interval(start=10,end=11)
-    >>> location = ga4gh.vr.models.Location(sequence_id="ga4gh:SQ.0123abcd", interval=interval)
-
+    >>> ival = ga4gh.vr.models.SimpleInterval(start=44908821, end=44908822)
+    >>> location = ga4gh.vr.models.Location(sequence_id="ga4gh:SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl", interval=ival)
     >>> ga4gh_digest(location)
-    lGBsEujtdjKPTxBMCPAeGArLgNEuPN99
+    'u5fspwVbQ79QkX6GHLF8tXPCAXFJqRPx'
 
     """
 
@@ -109,11 +134,10 @@ def ga4gh_serialize(vro):
     have not yet been ratified.
 
     >>> import ga4gh.vr
-    >>> interval = ga4gh.vr.models.Interval(start=10,end=11)
-    >>> location = ga4gh.vr.models.Location(sequence_id="ga4gh:SQ.0123abcd", interval=interval)
-
+    >>> ival = ga4gh.vr.models.SimpleInterval(start=44908821, end=44908822)
+    >>> location = ga4gh.vr.models.Location(sequence_id="ga4gh:SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl", interval=ival)
     >>> ga4gh_serialize(location)
-    b'{"interval":{"end":11,"start":10,"type":"SimpleInterval"},"sequence_id":"ga4gh:SQ.0123abcd","type":"SequenceLocation"}'
+    b'{"interval":{"end":44908822,"start":44908821,"type":"SimpleInterval"},"sequence_id":"IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl","type":"SequenceLocation"}'
 
     """
 
@@ -126,8 +150,6 @@ def ga4gh_serialize(vro):
 
         """
 
-        if vro is None:
-            return None
         if is_literal(vro):
             v = vro._value
             if is_ga4gh_identifier(v):
@@ -140,7 +162,9 @@ def ga4gh_serialize(vro):
             return {k: dictify(vro[k], enref=True)
                     for k in vro
                     if not (k.startswith("_") or vro[k] is None)}
-        return vro
+        if vro is None:         # pragma: no cover
+            return None
+        assert False, "dictify reached unexpected case"  # pragma: no cover
 
 
     # The canonicaljson package does everything we want. Use that with
