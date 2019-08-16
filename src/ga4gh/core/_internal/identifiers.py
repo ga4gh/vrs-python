@@ -113,9 +113,7 @@ def ga4gh_digest(vro):
     """
 
     assert is_identifiable(vro), "ga4gh_digest called with non-identifiable object"
-    if vro._digest is None:
-        vro._digest = sha512t24u(ga4gh_serialize(vro))
-    return vro._digest._value
+    return sha512t24u(ga4gh_serialize(vro))
     
 
 def ga4gh_serialize(vro):

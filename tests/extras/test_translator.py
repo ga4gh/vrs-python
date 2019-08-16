@@ -11,9 +11,7 @@ inputs = {
 }
 
 output = {
-    '_digest': 'n9ax-9x6gOC0OEt73VMYqCBfqfxG1XUH',
     'location': {
-        '_digest': 'v9K0mcjQVugxTDIcdi7GBJ_R6fZ1lsYq',
         'interval': {'end': 32936732, 'start': 32936731, 'type': 'SimpleInterval'},
         'sequence_id': 'ga4gh:SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT',
         'type': 'SequenceLocation'},
@@ -43,9 +41,7 @@ def test_from_vcf(tlr):
     
 hgvs_tests = (
     ("NC_000013.11:g.32936732C=",
-     {'_digest': 'n9ax-9x6gOC0OEt73VMYqCBfqfxG1XUH',
-      'location': {'_digest': 'v9K0mcjQVugxTDIcdi7GBJ_R6fZ1lsYq',
-                   'interval': {'end': 32936732,
+     {'location': {'interval': {'end': 32936732,
                                 'start': 32936731,
                                 'type': 'SimpleInterval'},
                    'sequence_id': 'ga4gh:SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT',
@@ -54,9 +50,7 @@ hgvs_tests = (
       'type': 'Allele'}), 
 
     ("NC_000007.14:g.55181320A>T",
-     {'_digest': 'vU0meY5wGjpyRLCjSxCfb2Jlruyn2adL',
-      'location': {'_digest': '5D9eG-ev4fA7mYIpOpDEe-4Am1lzPZlQ',
-                   'interval': {'end': 55181320,
+     {'location': {'interval': {'end': 55181320,
                                 'start': 55181319,
                                 'type': 'SimpleInterval'},
                    'sequence_id': 'ga4gh:SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul',
@@ -65,9 +59,7 @@ hgvs_tests = (
       'type': 'Allele'}),
 
     ("NC_000007.14:g.55181220del",
-     {'_digest': 'csOXic4ezsVVEPJjM7jdcx4cCYuWNvFx',
-      'location': {'_digest': 'eDAO6enI-Mok9nCCJotVmsKzi0vwBF9t',
-                   'interval': {'end': 55181220,
+     {'location': {'interval': {'end': 55181220,
                                 'start': 55181219,
                                 'type': 'SimpleInterval'},
                    'sequence_id': 'ga4gh:SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul',
@@ -76,9 +68,7 @@ hgvs_tests = (
       'type': 'Allele'}),
 
     ("NC_000007.14:g.55181230_55181231insGGCT",
-     {'_digest': 'mL71zVuJ7BKsB6U825nJuGv31S84puyd',
-      'location': {'_digest': 'YRGVXC7g1ScsKl_z594KbS8FLflV3sLV',
-                   'interval': {'end': 55181230,
+     {'location': {'interval': {'end': 55181230,
                                 'start': 55181230,
                                 'type': 'SimpleInterval'},
                    'sequence_id': 'ga4gh:SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul',
