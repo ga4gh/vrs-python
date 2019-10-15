@@ -6,10 +6,22 @@ import sys
 
 
 def _format_time(timespan, precision=3):
-    # lovingly borrowed from
-    # https://github.com/ipython/ipython/blob/master/IPython/core/magics/execution.py
+    """Formats the timespan in a human readable form
+    
+    >>> _format_time(0.35)
+    '350 ms'
 
-    """Formats the timespan in a human readable form"""
+    >>> _format_time(35)
+    '35 s'
+
+    >>> _format_time(3500)
+    '58min 20s'
+
+
+    lovingly borrowed from
+    https://github.com/ipython/ipython/blob/master/IPython/core/magics/execution.py
+
+    """
 
     if timespan >= 60.0:
         # we have more than a minute, format that in a human readable form
@@ -26,19 +38,7 @@ def _format_time(timespan, precision=3):
                 break
         return " ".join(time)
 
-    
-    # Unfortunately the unicode 'micro' symbol can cause problems in
-    # certain terminals.  
-    # See bug: https://bugs.launchpad.net/ipython/+bug/348466
-    # Try to prevent crashes by being more secure than it needs to
-    # E.g. eclipse is able to print a µ, but has no sys.stdout.encoding set.
-    units = [u"s", u"ms",u'us',"ns"] # the save value   
-    if hasattr(sys.stdout, 'encoding') and sys.stdout.encoding:
-        try:
-            u'\xb5'.encode(sys.stdout.encoding)
-            units = [u"s", u"ms",u'\xb5s',"ns"]
-        except:
-            pass
+    units = [u"s", u"ms", u"us", u"ns"]  # the save value   
     scaling = [1, 1e3, 1e6, 1e9]
         
     if timespan > 0.0:
@@ -49,6 +49,14 @@ def _format_time(timespan, precision=3):
 
 
 def isoformat(o):
+    """convert datetime.datetime to iso formatted timestamp
+
+    >>> dt = datetime.datetime(2019, 10, 15, 10, 23, 41, 115927)
+    >>> isoformat(dt)
+    '2019-10-15T10:23:41.115927Z'
+
+    """
+
     # stolen from connexion flask_app.py
     assert isinstance(o, datetime.datetime)
     if o.tzinfo:

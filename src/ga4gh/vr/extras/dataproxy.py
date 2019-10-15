@@ -111,11 +111,11 @@ class _SeqRepoDataProxyBase(_DataProxy):
         return ir.replace("ga4gh:SQ.", "VMC:GS_").replace("refseq:", "RefSeq:")
 
     @abstractmethod
-    def _get_metadata(self, identifier):
+    def _get_metadata(self, identifier):  # pragma: no cover
         pass
 
     @abstractmethod
-    def _get_sequence(self, identifier, start=None, end=None):
+    def _get_sequence(self, identifier, start=None, end=None):  # pragma: no cover
         pass
 
 

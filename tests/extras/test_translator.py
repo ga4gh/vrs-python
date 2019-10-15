@@ -80,3 +80,22 @@ hgvs_tests = (
 @vcr.use_cassette()
 def test_hgvs(tlr, hgvsexpr, expected):
     assert expected == tlr.from_hgvs(hgvsexpr).as_dict()
+
+
+
+def test_errors(tlr):
+    with pytest.raises(ValueError):
+        tlr.from_beacon("bogus")
+
+    with pytest.raises(ValueError):
+        tlr.from_hgvs("NM_182763.2:c.688+403C>T")
+        
+    with pytest.raises(ValueError):
+        tlr.from_hgvs("NM_182763.2:c.688_690inv")
+        
+    with pytest.raises(ValueError):
+        tlr.from_spdi("NM_182763.2:c.688+403C>T")
+        
+    with pytest.raises(ValueError):
+        tlr.from_vcf("NM_182763.2:c.688+403C>T")
+        
