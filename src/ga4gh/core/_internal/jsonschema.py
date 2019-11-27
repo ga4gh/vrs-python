@@ -30,3 +30,6 @@ def is_literal(o):
     return isinstance(o, pjs.literals.LiteralValue)
 
 
+def is_array(o):
+    """return True if object is a python jsonschema object array"""
+    return getattr(o, "type", None) == "array"

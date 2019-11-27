@@ -22,7 +22,7 @@ import pkg_resources
 import yaml
 
 from .digests import sha512t24u
-from .jsonschema import is_class, is_identifiable, is_literal
+from .jsonschema import is_array, is_class, is_identifiable, is_literal
 
 
 from canonicaljson import encode_canonical_json
@@ -162,7 +162,9 @@ def ga4gh_serialize(vro):
                     if not (k.startswith("_") or vro[k] is None)}
         if vro is None:         # pragma: no cover
             return None
-        assert False, "dictify reached unexpected case"  # pragma: no cover
+        if is_array(vro):
+            return sorted(dictify(o) for o in vro.data)
+        assert False, f"dictify reached unexpected case {vro}"  # pragma: no cover
 
 
     # The canonicaljson package does everything we want. Use that with
