@@ -11,10 +11,11 @@ import hgvs.parser
 from ga4gh.vr import models, ga4gh_identify
 from .decorators import lazy_property
 
+
 _logger = logging.getLogger(__name__)
 
 
-beacon_re = re.compile(r"(?P<chr>[^-]+):(?P<pos>\d+)(?P<ref>\w+)>(?P<alt>\w+)")
+beacon_re = re.compile(r"(?P<chr>[^-]+)\s*:\s*(?P<pos>\d+)\s*(?P<ref>\w+)\s*>\s*(?P<alt>\w+)")
 vcf_re = re.compile(r"(?P<chr>[^-]+)-(?P<pos>\d+)-(?P<ref>\w+)-(?P<alt>\w+)")
 spdi_re = re.compile(r"(?P<ac>[^:]+):(?P<pos>\d+):(?P<del_len>\d+):(?P<ins_seq>\w+)")
 
