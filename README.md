@@ -25,7 +25,7 @@ This repository contains several related components:
 ## Using pip
 
 ```
-pip install ga4gh.vr
+$ pip install ga4gh.vr
 ```
 
 ## Installing for development
@@ -34,9 +34,9 @@ The following instructions are for Ubuntu 18.04+ and MacOS.
 vr-python is unlikely to work on Windows due to dependencies.
 
 ```
-git clone --recurse-submodules https://github.com/ga4gh/vr-python.git
-cd vr-python
-make devready
+$ git clone --recurse-submodules https://github.com/ga4gh/vr-python.git
+$ cd vr-python
+$ make devready
 ```
 
 (Python 3.5 and 3.6 should also work.)
@@ -54,13 +54,22 @@ tools that provide these data.
 
 
 ```
-docker-compose -f misc/stack/docker-compose.yml up
+$ docker-compose -f misc/stack/docker-compose.yml up
 ```
 
 This should start three containers:
 * [seqrepo](https://github.com/biocommons/seqrepo): a non-redundant archive of sequences
 * [seqrepo-rest-service](https://github.com/biocommons/seqrepo-rest-service): a REST service on seqrepo (localhost:5000)
 * [uta](https://github.com/biocommons/uta): a database of transcripts and alignments (localhost:5432)
+
+The seqrepo container will exit as soon as the data are downloaded.
+
+```
+$ docker ps
+CONTAINER ID        IMAGE                                    //  NAMES
+86e872ab0c69        biocommons/seqrepo-rest-service:latest   //  stack_seqrepo-rest-service_1
+a40576b8cf1f        biocommons/uta:uta_20180821              //  stack_uta_1
+```
 
 
 
@@ -69,8 +78,8 @@ This should start three containers:
 Once installed as described above, type:
 
 ```
-source venv/3.7/bin/activate
-jupyter notebook --notebook-dir notebooks/
+$ source venv/3.7/bin/activate
+$ jupyter notebook --notebook-dir notebooks/
 ```
 
 
