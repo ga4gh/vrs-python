@@ -1,0 +1,31 @@
+version: "3"
+
+services:
+  seqrepo:
+    # verifies that an instance of seqrepo exists
+    image: biocommons/seqrepo:latest
+    volumes:
+      - /usr/local/share/seqrepo:/usr/local/share/seqrepo
+    
+  seqrepo-rest-service:    
+    # Test: curl http://localhost:5000/seqrepo/1/sequence/refseq:NM_000551.3
+    depends_on:
+      - seqrepo
+    image: biocommons/seqrepo-rest-service:latest
+    volumes:
+      - /usr/local/share/seqrepo:/usr/local/share/seqrepo
+    network_mode: host
+    
+  uta:
+    # Test:
+    # psql -XAt postgres://anonymous@localhost/uta -c 'select count(*) from transcript'
+    # 249909
+    image: biocommons/uta:uta_20180821
+    volumes:
+      - uta_data:/var/lib/postgresql/data
+    network_mode: host
+
+  # vr-rest-interface:
+
+volumes:
+  uta_data:

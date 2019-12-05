@@ -13,9 +13,6 @@ archive
 build
 dist
 doc
+misc/clinvar
 notes
 venv
-wing.wpr
-wing.wpu
-
-misc/clinvar
