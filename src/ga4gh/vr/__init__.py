@@ -5,7 +5,7 @@ implementation
 """
 
 
-__all__ = """ga4gh_identify ga4gh_serialize models normalize   schema_path""".split()
+__all__ = """models normalize schema_path""".split()
 
 
 import warnings
@@ -20,5 +20,4 @@ finally:
 
 
 from bioutils.normalize import normalize
-from ga4gh.core import ga4gh_digest, ga4gh_identify, ga4gh_serialize
 from ._internal.models import models, schema_path

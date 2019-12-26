@@ -35,10 +35,9 @@ __all__ = "ga4gh_digest ga4gh_identify ga4gh_serialize is_ga4gh_identifier parse
 _logger = logging.getLogger(__name__)
 
 
-# TODO: move to ga4gh.core.identfiers
 schema_dir = pkg_resources.resource_filename(__name__, "data/schema")
 cfg = yaml.safe_load(open(schema_dir + "/ga4gh.yaml"))
-type_prefix_map = cfg["identifiers"]["type_prefix_map"]
+type_prefix_map_default = cfg["identifiers"]["type_prefix_map"]
 namespace = cfg["identifiers"]["namespace"]
 curie_sep = cfg["identifiers"]["curie_sep"]
 ref_sep = cfg["identifiers"]["ref_sep"]
@@ -83,7 +82,7 @@ def parse_ga4gh_identifier(ir):
         raise ValueError(ir)
 
 
-def ga4gh_identify(vro):
+def ga4gh_identify(vro, type_prefix_map=None):
     """return the GA4GH digest-based id for the object, as a CURIE
     (string)
 
@@ -95,6 +94,8 @@ def ga4gh_identify(vro):
 
     """
 
+    if type_prefix_map is None:
+        type_prefix_map = type_prefix_map_default
     pfx = type_prefix_map[vro.type]
     digest = ga4gh_digest(vro)
     ir = f"{namespace}{curie_sep}{pfx}{ref_sep}{digest}"
