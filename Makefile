@@ -87,8 +87,8 @@ reformat:
 	git commit -a -m "reformatted with yapf"
 
 #=> docs -- make sphinx docs
-.PHONY: doc docs
-doc docs: develop
+.PHONY: docs
+docs: develop
 	# RTD makes json. Build here to ensure that it works.
 	make -C doc html json
 
@@ -108,8 +108,8 @@ cleaner: clean
 	find . -name __pycache__ -print0 | xargs -0r rm -fr
 
 #=> cleanest: remove files and directories that require more time/network fetches to rebuild
-.PHONY: cleanest distclean
-cleanest distclean: cleaner
+.PHONY: cleanest
+cleanest: cleaner
 	rm -fr .eggs .tox venv
 
 
