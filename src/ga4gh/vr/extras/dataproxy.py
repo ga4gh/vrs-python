@@ -64,9 +64,12 @@ class _DataProxy(ABC):
 
 
     @functools.lru_cache()
-    def translate_sequence_identifier(self, identifier, namespace):
+    def translate_sequence_identifier(self, identifier, namespace=None):
         """Translate given identifier to a list of identifiers in the
-        specified namespace
+        specified namespace.
+
+        `identifier` must be a string
+        `namespace` is case-sensitive
 
         On success, returns string identifier.  Raises KeyError if given
         identifier isn't found.
@@ -77,7 +80,11 @@ class _DataProxy(ABC):
             md = self.get_metadata(identifier)
         except (ValueError, KeyError, IndexError):
             raise KeyError(identifier)
-        return [a for a in md["aliases"] if a.startswith(namespace + ":")]
+        aliases = list(set(md["aliases"]))  # ensure uniqueness
+        if namespace is not None:
+            nsd = namespace + ":"
+            aliases = [a for a in aliases if a.startswith(nsd)]
+        return aliases
 
 
 class _SeqRepoDataProxyBase(_DataProxy):
@@ -129,7 +136,6 @@ class SeqRepoDataProxy(_SeqRepoDataProxyBase):
     def _get_sequence(self, identifier, start=None, end=None):
         # fetch raises KeyError if not found
         return self.sr.fetch(identifier, start, end)
-        
 
     def _get_metadata(self, identifier):
         ns, a = coerce_namespace(identifier).split(":", 2)
