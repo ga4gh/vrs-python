@@ -77,7 +77,7 @@ class Translator:
         sstate = models.SequenceState(sequence=ins_seq)
         allele = models.Allele(location=location, state=sstate)
         if self.identify:
-            ga4gh_identify(allele)
+            allele._id = ga4gh_identify(allele)
         return allele
 
 
@@ -126,7 +126,7 @@ class Translator:
         sstate = models.SequenceState(sequence=state)
         allele = models.Allele(location=location, state=sstate)
         if self.identify:
-            ga4gh_identify(allele)
+            allele._id = ga4gh_identify(allele)
         return allele
 
     
@@ -250,7 +250,7 @@ class Translator:
         sstate = models.SequenceState(sequence=ins_seq)
         allele = models.Allele(location=location, state=sstate)
         if self.identify:
-            ga4gh_identify(allele)
+            allele._id = ga4gh_identify(allele)
         return allele
 
 
@@ -288,7 +288,7 @@ class Translator:
         sstate = models.SequenceState(sequence=ins_seq)
         allele = models.Allele(location=location, state=sstate)
         if self.identify:
-            ga4gh_identify(allele)
+            allele._id = ga4gh_identify(allele)
         return allele
 
 
