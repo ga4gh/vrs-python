@@ -4,6 +4,7 @@ vr.extras, and a concrete implementation based on seqrepo.
 """
 
 from abc import ABC, abstractmethod
+from collections import Sequence
 from datetime import datetime
 import functools
 import itertools
@@ -184,6 +185,39 @@ class SeqRepoRESTDataProxy(_SeqRepoDataProxyBase):
         return data
     
 
+class SequenceProxy(Sequence):
+    """Provides efficient and transparent string-like access to a
+    biological sequence
+
+    """
+
+    def __init__(self, dp, alias):
+        self.dp = dp
+        self.alias = alias
+        self._md = self.dp.get_metadata(self.alias)
+        
+    def __str__(self):
+        return self.dp.get_sequence(self.alias)
+
+    def __len__(self):
+        return self._md["length"]
+
+    def __reversed__(self):
+        raise NotImplementedError("Reversed iteration of a SequenceProxy is not implemented")
+
+    def __getitem__(self, key):
+        """return sequence for key (slice), fetching if necessary
+
+        """
+
+        if isinstance(key, int):
+            key = slice(key, key+1)
+        if key.step is not None:
+            raise ValueError("Only contiguous sequence slices are supported")
+
+        return self.dp.get_sequence(self.alias, key.start, key.stop)
+
+
  
 # Future implementations
 # * The RefGetDataProxy is waiting on support for sequence lookup by alias
@@ -192,3 +226,9 @@ class SeqRepoRESTDataProxy(_SeqRepoDataProxyBase):
 #         super().__init__()
 #         self.base_url = base_url
 
+
+
+if __name__ == "__main__":
+    seqrepo_rest_service_url = "http://localhost:5000/seqrepo" 
+    dp = SeqRepoRESTDataProxy(base_url=seqrepo_rest_service_url) 
+    sp = SequenceProxy(dp, "refseq:NM_000551.3")

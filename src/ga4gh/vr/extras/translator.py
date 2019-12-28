@@ -1,11 +1,15 @@
 """Translates various formats into VR models.
 
+TODO: move translate, normalize, identify functionality to separate module
+
 """
 
+import copy
 import logging
 import re
 
 from bioutils.accessions import coerce_namespace
+from bioutils.normalize import normalize, NormalizationMode
 import hgvs.parser
 
 import hgvs.location
@@ -15,12 +19,14 @@ import hgvs.sequencevariant
 
 from ga4gh.core import ga4gh_identify
 from ga4gh.vr import models
-from .decorators import lazy_property
 
+from .dataproxy import SequenceProxy
+from .decorators import lazy_property
 
 _logger = logging.getLogger(__name__)
 
 
+# TODO: move inside class
 beacon_re = re.compile(r"(?P<chr>[^-]+)\s*:\s*(?P<pos>\d+)\s*(?P<ref>\w+)\s*>\s*(?P<alt>\w+)")
 vcf_re = re.compile(r"(?P<chr>[^-]+)-(?P<pos>\d+)-(?P<ref>\w+)-(?P<alt>\w+)")
 spdi_re = re.compile(r"(?P<ac>[^:]+):(?P<pos>\d+):(?P<del_len>\d+):(?P<ins_seq>\w+)")
@@ -36,11 +42,13 @@ class Translator:
                  data_proxy,
                  default_assembly_name="GRCh38",
                  translate_sequence_identifiers=True,
+                 normalize=True,
                  identify=True):
         self.default_assembly_name = default_assembly_name
-        self.translate_sequence_identifiers = translate_sequence_identifiers
         self.data_proxy = data_proxy
+        self.translate_sequence_identifiers = translate_sequence_identifiers
         self.identify = identify
+        self.normalize = normalize
 
 
     def from_beacon(self, beacon_expr, assembly_name=None):
@@ -73,11 +81,10 @@ class Translator:
         ins_seq = alt
 
         interval = models.SimpleInterval(start=start, end=end)
-        location = models.Location(sequence_id=self._seq_id_mapper(sequence_id), interval=interval)
+        location = models.Location(sequence_id=sequence_id, interval=interval)
         sstate = models.SequenceState(sequence=ins_seq)
         allele = models.Allele(location=location, state=sstate)
-        if self.identify:
-            allele._id = ga4gh_identify(allele)
+        allele = self._post_process_imported_allele(allele)
         return allele
 
 
@@ -122,11 +129,10 @@ class Translator:
         else:
             raise ValueError(f"HGVS variant type {sv.posedit.edit.type} is unsupported")
 
-        location = models.Location(sequence_id=self._seq_id_mapper(sequence_id), interval=interval)
+        location = models.Location(sequence_id=sequence_id, interval=interval)
         sstate = models.SequenceState(sequence=state)
         allele = models.Allele(location=location, state=sstate)
-        if self.identify:
-            allele._id = ga4gh_identify(allele)
+        allele = self._post_process_imported_allele(allele)
         return allele
 
     
@@ -209,6 +215,7 @@ class Translator:
             # skip GRCh accessions unless specifically requested
             # because they are ambiguous without their namespace,
             # which can't be included in HGVS expressions
+            # TODO: use default_assembly_name here
             if ns.startswith("GRC") and namespace is None:
                 continue
             var.ac = a
@@ -246,11 +253,10 @@ class Translator:
         ins_seq = g["ins_seq"]
 
         interval = models.SimpleInterval(start=start, end=end)
-        location = models.Location(sequence_id=self._seq_id_mapper(sequence_id), interval=interval)
+        location = models.Location(sequence_id=sequence_id, interval=interval)
         sstate = models.SequenceState(sequence=ins_seq)
         allele = models.Allele(location=location, state=sstate)
-        if self.identify:
-            allele._id = ga4gh_identify(allele)
+        allele = self._post_process_imported_allele(allele)
         return allele
 
 
@@ -284,11 +290,10 @@ class Translator:
         ins_seq = alt
 
         interval = models.SimpleInterval(start=start, end=end)
-        location = models.Location(sequence_id=self._seq_id_mapper(sequence_id), interval=interval)
+        location = models.Location(sequence_id=sequence_id, interval=interval)
         sstate = models.SequenceState(sequence=ins_seq)
         allele = models.Allele(location=location, state=sstate)
-        if self.identify:
-            allele._id = ga4gh_identify(allele)
+        allele = self._post_process_imported_allele(allele)
         return allele
 
 
@@ -303,7 +308,57 @@ class Translator:
         return hgvs.parser.Parser()
 
 
+    def _post_process_imported_allele(self, allele):
+        """Provide common post-processing for imported Alleles IN-PLACE.
+
+        """
+        
+        if self.translate_sequence_identifiers:
+            seq_id = self.data_proxy.translate_sequence_identifier(allele.location.sequence_id._value, "ga4gh")[0]
+            allele.location.sequence_id = seq_id
+
+        if self.normalize:
+            self._normalize_allele(allele)
+
+        if self.identify:
+            allele._id = ga4gh_identify(allele)
+
+        return allele
+
+
+
     def _seq_id_mapper(self, ir):
         if self.translate_sequence_identifiers:
             return self.data_proxy.translate_sequence_identifier(ir, "ga4gh")[0]
         return ir
+
+
+    def _normalize_allele(self, allele):
+        sequence = SequenceProxy(self.data_proxy, allele.location.sequence_id._value)
+        ival = (allele.location.interval.start._value, allele.location.interval.end._value)
+        alleles = (None, allele.state.sequence._value)
+        try:
+            new_ival, new_alleles = normalize(sequence, ival,
+                                            alleles=alleles,
+                                            mode=NormalizationMode.EXPAND,
+                                            anchor_length=0)
+            allele.location.interval.start = new_ival[0]
+            allele.location.interval.end = new_ival[1]
+            allele.state.sequence = new_alleles[1]
+        except ValueError:
+            # Occurs when alt = ref
+            # e.g., NC_000013.11:g.32936732G>C, where ref is actually C,
+            # results in a C>C allele, which can't be normalized
+            pass
+        return allele
+
+
+if __name__ == "__main__":
+    from .dataproxy import SeqRepoRESTDataProxy
+
+    seqrepo_rest_service_url = "http://localhost:5000/seqrepo" 
+    dp = SeqRepoRESTDataProxy(base_url=seqrepo_rest_service_url) 
+
+    tlr = Translator(data_proxy=dp)
+
+    a = tlr.from_hgvs("NC_000013.11:g.32936732G>C")
