@@ -22,7 +22,7 @@ import pkg_resources
 import yaml
 
 from .digests import sha512t24u
-from .jsonschema import is_array, is_class, is_identifiable, is_literal
+from .jsonschema import is_array, is_class, is_curie, is_identifiable, is_literal
 
 
 from canonicaljson import encode_canonical_json
@@ -151,21 +151,24 @@ def ga4gh_serialize(vro):
 
         if is_literal(vro):
             v = vro._value
-            if is_ga4gh_identifier(v):
-                # strip ga4gh identifier to just the digest
+            if is_curie(vro):
+                if not is_ga4gh_identifier(v):
+                    raise ValueError(f"ga4gh_serialize requires that referenced objects use CURIEs in the {namespace} namespace")
+                # CURIEs are stripped to just the digest so that digests are independent of type prefixes
                 v = v.split(ref_sep, 1)[1]
             return v
         if is_class(vro):
             if is_identifiable(vro) and enref:
                 return ga4gh_digest(vro)
-            return {k: dictify(vro[k], enref=True)
-                    for k in vro
-                    if not (k.startswith("_") or vro[k] is None)}
+            d = {k: dictify(vro[k], enref=True)
+                 for k in vro
+                 if not (k.startswith("_") or vro[k] is None)}
+            return d
         if vro is None:         # pragma: no cover
             return None
         if is_array(vro):
             return sorted(dictify(o) for o in vro.data)
-        assert False, f"dictify reached unexpected case {vro}"  # pragma: no cover
+        raise ValueError(f"Don't know how to serialize {vro}")  # pragma: no cover
 
 
     # The canonicaljson package does everything we want. Use that with

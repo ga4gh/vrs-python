@@ -17,6 +17,12 @@ def is_class(o):
     return isinstance(o, pjs.classbuilder.ProtocolBase)
 
 
+def is_curie(o):
+    """return True if object is a python jsonschema class that represents
+    a CURIE, e.g., sequence_id"""
+    return o.__class__.__name__.endswith("/CURIE")
+
+
 def is_identifiable(o):
     """return True if object is identifiable
 
