@@ -13,10 +13,13 @@ def dataproxy():
 
 @pytest.fixture(scope="session")
 def tlr(dataproxy):
-    return Translator(data_proxy=dataproxy,
-                      identify=True,
-                      translate_sequence_identifiers=True,
-                      default_assembly_name="GRCh38")
+    return Translator(
+        data_proxy=dataproxy,
+        default_assembly_name="GRCh38",
+        identify=False,
+        normalize=False,
+        translate_sequence_identifiers=True,
+    )
 
 
 # See https://github.com/ga4gh/vr-python/issues/24

@@ -3,7 +3,8 @@ import os
 import pytest
 import yaml
 
-from ga4gh.vr import models, ga4gh_serialize
+from ga4gh.core import ga4gh_serialize
+from ga4gh.vr import models
 
 
 validation_fn = os.path.join(os.path.dirname(__file__), "data", "models.yaml")

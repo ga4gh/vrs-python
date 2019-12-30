@@ -1,5 +1,5 @@
-from ga4gh.core import sha512t24u
-from ga4gh.vr import models, ga4gh_digest, ga4gh_serialize, ga4gh_identify
+from ga4gh.core import sha512t24u, ga4gh_digest, ga4gh_serialize, ga4gh_identify
+from ga4gh.vr import models
 
 allele_dict = {
     'location': {'interval': {
