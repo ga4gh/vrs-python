@@ -1,0 +1,29 @@
+#!/usr/bin/env python3
+
+import yaml
+
+from ga4gh.core import *
+from ga4gh.vr import *
+from ga4gh.vr._internal.models import _load_vr_models
+
+import IPython
+
+
+test_fns = {
+    "models": "tests/validation/data/models.yaml",
+    "functions": "tests/validation/data/functions.yaml"
+    }
+tests = {
+    k: yaml.load(open(test_fns[k]), Loader=yaml.SafeLoader)
+    for k in test_fns
+    }
+
+
+a0 = models.Allele(**tests["models"]["Allele"][0]["in"])
+a0._id = ga4gh_identify(a0)
+
+a1 = models.Allele(**tests["models"]["Allele"][1]["in"])
+a1._id = ga4gh_identify(a1)
+
+
+IPython.embed()
