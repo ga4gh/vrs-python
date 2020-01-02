@@ -149,6 +149,9 @@ def ga4gh_serialize(vro):
 
         """
 
+        if vro is None:         # pragma: no cover
+            return None
+
         if is_literal(vro):
             v = vro._value
             if is_curie(vro):
@@ -157,6 +160,13 @@ def ga4gh_serialize(vro):
                 # CURIEs are stripped to just the digest so that digests are independent of type prefixes
                 v = v.split(ref_sep, 1)[1]
             return v
+
+        if isinstance(vro, str):
+            v = vro
+            if is_ga4gh_identifier(v):
+                v = v.split(ref_sep, 1)[1]
+            return v
+
         if is_class(vro):
             if is_identifiable(vro) and enref:
                 return ga4gh_digest(vro)
@@ -164,10 +174,10 @@ def ga4gh_serialize(vro):
                  for k in vro
                  if not (k.startswith("_") or vro[k] is None)}
             return d
-        if vro is None:         # pragma: no cover
-            return None
+
         if is_array(vro):
             return sorted(dictify(o) for o in vro.data)
+
         raise ValueError(f"Don't know how to serialize {vro}")  # pragma: no cover
 
 

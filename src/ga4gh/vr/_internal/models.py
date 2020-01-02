@@ -37,8 +37,8 @@ schema_path = schema_dir + "/vr.json"
 
 models = None
 
-def _build_models():
-    """load/reload models
+def _load_vr_models():
+    """load/reload models from `schema_path`
 
     This function facilitates reloading changes to the schema during
     development.
@@ -50,4 +50,4 @@ def _build_models():
     return models
 
 
-_build_models()
+_load_vr_models()
