@@ -54,6 +54,8 @@ tools that provide these data.
 
 
 ```
+$ docker volume create --name=uta_vol
+$ docker volume create --name=seqrepo_vol
 $ docker-compose -f misc/stack/docker-compose.yml up
 ```
 
