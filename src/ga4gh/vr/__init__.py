@@ -5,7 +5,8 @@ implementation
 """
 
 
-__all__ = """models normalize schema_path""".split()
+__all__ = """class_refatt_map models normalize schema_path""".split()
+
 
 
 import warnings
@@ -20,4 +21,4 @@ finally:
 
 
 from bioutils.normalize import normalize
-from ._internal.models import models, schema_path
+from ._internal.models import class_refatt_map, models, schema_path

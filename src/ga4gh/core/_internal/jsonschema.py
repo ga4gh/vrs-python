@@ -1,9 +1,17 @@
-"""Support for JSON Schema and GA4GH schema conventions 
+"""Support for JSON Schema and GA4GH schema conventions using
+python-jsonschema-objects
 
 """
 
+import logging
+
 import python_jsonschema_objects as pjs
 
+_logger = logging.getLogger(__name__)
+
+
+############################################################################
+# Schema Functions
 
 def build_models(path, standardize_names):
     """load models from json schema at path"""
@@ -12,10 +20,59 @@ def build_models(path, standardize_names):
     return models
 
 
-def is_class(o):
+def build_class_referable_attribute_map(models):
+    """given a set of json schema models (as from build_models()), return
+    a map of classes ⇒ referrable attributes
+
+    The practical meaning is to define a map like
+       {"Allele": ["location"], ...}
+    for any json schema class that has one or more attributes
+    that may be either an object or a CURIE.
+
+    """
+    cra_map = {cn: get_referable_attributes(models[cn]) for cn in models}
+    return {cn: refatts for cn, refatts in cra_map.items()
+            if refatts}
+
+
+def get_referable_attributes(type):
+
+    """for a given pjs class, return list of attributes that may be either
+    objects or CURIEs
+
+    ie, a list of attributes that may be inlined objects or references
+    to them
+
+    """
+    def is_referable(json_subschema):
+        if "oneOf" not in json_subschema:
+            return False
+        refs = [oo.get("$ref", None) for oo in json_subschema["oneOf"]]
+        return (any(r.endswith("/CURIE") for r in refs)
+                and any(not r.endswith("/CURIE") for r in refs))
+    if not is_pjs_class(type):
+        return None
+    atts = type.__prop_names__
+    return [att for att in atts if is_referable(type.propinfo(att))]
+
+
+############################################################################
+# Class Functions
+
+def is_pjs_class(k):
+    return pjs.classbuilder.ProtocolBase in k.__mro__
+
+
+############################################################################
+# Instance/object Functions
+
+def is_pjs_instance(o):
     """return True if object is a python jsonschema object"""
     return isinstance(o, pjs.classbuilder.ProtocolBase)
 
+
+############################################################################
+# Attribute Functions
 
 def is_curie(o):
     """return True if object is a python jsonschema class that represents
@@ -28,7 +85,7 @@ def is_identifiable(o):
 
     An object is considered identifiable if it contains an `_id` attribute
     """
-    return is_class(o) and ("_id" in o)
+    return is_pjs_instance(o) and ("_id" in o)
 
 
 def is_literal(o):

@@ -22,6 +22,7 @@ import os
 import pkg_resources
 
 from ga4gh.core import build_models
+from ga4gh.core import build_class_referable_attribute_map
 
 
 try:
@@ -31,11 +32,9 @@ except KeyError:
 
 schema_path = schema_dir + "/vr.json"
 
-## Unused? Commenting out to see who complains. -Reece 2019-11-24
-# schema_file = os.path.basename(schema_path)
-
 
 models = None
+class_refatt_map = None
 
 def _load_vr_models():
     """load/reload models from `schema_path`
@@ -45,8 +44,9 @@ def _load_vr_models():
 
     """
 
-    global models
+    global class_refatt_map, models
     models = build_models(schema_path, standardize_names=False)
+    class_refatt_map = build_class_referable_attribute_map(models)
     return models
 
 
