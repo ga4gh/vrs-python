@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
 
+import redis
 import yaml
 
 from ga4gh.core import *
 from ga4gh.vr import *
 from ga4gh.vr._internal.models import _load_vr_models
+
+from ga4gh.vr.extras.redisobjectstore import RedisObjectStore
 
 import IPython
 
@@ -26,4 +29,12 @@ a1 = models.Allele(**tests["models"]["Allele"][1]["in"])
 a1._id = ga4gh_identify(a1)
 
 
+ros = RedisObjectStore(redis=redis.Redis(db=15), models=models)
+ros.redis.flushdb()             # Danger!
+
+ros[str(a0._id)] = a0
+a0b = ros[str(a0._id)]
+
+
 IPython.embed()
+
