@@ -69,6 +69,9 @@ build_class_referable_attribute_map() in .models.py.
 from .identifiers import ga4gh_identify
 from .jsonschema import is_identifiable, is_pjs_instance
 
+def _ga4gh_copy(o):
+    return o.__class__(**o.as_dict())
+
 
 def ga4gh_enref(o, cra_map, object_store=None, max_depth=None):
     """Convert "referable attributes" in-place from inlined to referenced
@@ -80,6 +83,8 @@ def ga4gh_enref(o, cra_map, object_store=None, max_depth=None):
     """
 
     assert is_pjs_instance(o)
+
+    o = _ga4gh_copy(o)
 
     if o.type not in cra_map:
         return o
@@ -108,6 +113,8 @@ def ga4gh_deref(o, cra_map, object_store, max_depth=None):
     if o.type not in cra_map:
         return o
     
+    o = _ga4gh_copy(o)
+
     for att in cra_map[o.type]:
         if is_identifiable(o[att]):  # refatt is already an instance
             continue
