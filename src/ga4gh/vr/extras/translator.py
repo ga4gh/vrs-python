@@ -29,7 +29,7 @@ _logger = logging.getLogger(__name__)
 # TODO: move inside class
 beacon_re = re.compile(r"(?P<chr>[^-]+)\s*:\s*(?P<pos>\d+)\s*(?P<ref>\w+)\s*>\s*(?P<alt>\w+)")
 vcf_re = re.compile(r"(?P<chr>[^-]+)-(?P<pos>\d+)-(?P<ref>\w+)-(?P<alt>\w+)")
-spdi_re = re.compile(r"(?P<ac>[^:]+):(?P<pos>\d+):(?P<del_len>\d+):(?P<ins_seq>\w+)")
+spdi_re = re.compile(r"(?P<ac>[^:]+):(?P<pos>\d+):(?P<del_len_or_seq>\w+):(?P<ins_seq>\w+)")
 
 
 
@@ -248,7 +248,10 @@ class Translator:
         g = m.groupdict()
         sequence_id = coerce_namespace(g["ac"])
         start = int(g["pos"])
-        del_len = int(g["del_len"])
+        try:
+            del_len = int(g["del_len_or_seq"])
+        except ValueError:
+            del_len = len(g["del_len_or_seq"])
         end = start + del_len
         ins_seq = g["ins_seq"]
 
