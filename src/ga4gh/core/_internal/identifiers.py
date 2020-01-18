@@ -22,7 +22,7 @@ import pkg_resources
 import yaml
 
 from .digests import sha512t24u
-from .jsonschema import is_array, is_class, is_curie, is_identifiable, is_literal
+from .jsonschema import is_array, is_pjs_instance, is_curie, is_identifiable, is_literal
 
 
 from canonicaljson import encode_canonical_json
@@ -167,7 +167,7 @@ def ga4gh_serialize(vro):
                 v = v.split(ref_sep, 1)[1]
             return v
 
-        if is_class(vro):
+        if is_pjs_instance(vro):
             if is_identifiable(vro) and enref:
                 return ga4gh_digest(vro)
             d = {k: dictify(vro[k], enref=True)
