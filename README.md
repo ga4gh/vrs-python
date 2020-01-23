@@ -25,8 +25,12 @@ This repository contains several related components:
 ## Using pip
 
 ```
-$ pip install ga4gh.vr
+$ pip install ga4gh.vr[extras]
 ```
+
+The `[extras]` argument tells pip to install packages to fullfill the
+dependencies of the `ga4gh.vr.extras` package.
+
 
 ## Installing for development
 
