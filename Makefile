@@ -45,8 +45,8 @@ venv/%:
 	pip install --upgrade pip setuptools
 
 #=> develop: install package in develop mode
-.PHONY: develop
-develop:
+.PHONY: develop setup
+develop setup:
 	pip install -e .[dev,extras,notebooks]
 
 #=> devready: create venv, install prerequisites, install pkg in develop mode
