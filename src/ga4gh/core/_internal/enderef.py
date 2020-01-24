@@ -7,62 +7,6 @@ These functions require a "class referable attribute" map, which will
 typically be generated from the schema by
 build_class_referable_attribute_map() in .models.py.
 
-
->>> a0.as_dict()
-{
-   "_id": "ga4gh:VA.EgHPXXhULTwoP4-ACfs-YCXaeUQJBjH_",
-   "location": {
-      "interval": {
-         "end": 44908822,
-         "start": 44908821,
-         "type": "SimpleInterval"
-      },
-      "sequence_id": "ga4gh:SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl",
-      "type": "SequenceLocation"
-   },
-   "state": {
-      "sequence": "T",
-      "type": "SequenceState"
-   },
-   "type": "Allele"
-}
-
->>> os={}
-
->>> ga4gh_enref(a0, cra_map=class_refatt_map, object_store=os).as_dict()
-{
-   "_id": "ga4gh:VA.EgHPXXhULTwoP4-ACfs-YCXaeUQJBjH_",
-   "location": "ga4gh:VSL.u5fspwVbQ79QkX6GHLF8tXPCAXFJqRPx",
-   "state": {
-      "sequence": "T",
-      "type": "SequenceState"
-   },
-   "type": "Allele"
-}
-
->>> os
-{"ga4gh:VSL.u5fspwVbQ79QkX6GHLF8tXPCAXFJqRPx": <SequenceLocation _id=None interval=<SimpleInterval end=<Literal<int> 44908822> start=<Literal<int> 44908821> type=<Literal<str> SimpleInterval>> sequence_id=<Literal<str> ga4gh:SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl> type=<Literal<str> SequenceLocation>>}
-
->>> ga4gh_deref(a0, cra_map=class_refatt_map, object_store=os).as_dict()
-{
-   "_id": "ga4gh:VA.EgHPXXhULTwoP4-ACfs-YCXaeUQJBjH_",
-   "location": {
-      "interval": {
-         "end": 44908822,
-         "start": 44908821,
-         "type": "SimpleInterval"
-      },
-      "sequence_id": "ga4gh:SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl",
-      "type": "SequenceLocation"
-   },
-   "state": {
-      "sequence": "T",
-      "type": "SequenceState"
-   },
-   "type": "Allele"
-}
-
-
 """
 
 
