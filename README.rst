@@ -108,7 +108,7 @@ AT YOUR OWN RISK AND RESPONSIBILITY to arrange for a security audit.
 
 
 .. |pypi_rel| image:: https://badge.fury.io/py/ga4gh.vr.png
-  :target: https://pypi.org/pypi?name=ga4gh.vr
+  :target: https://pypi.org/project/ga4gh.vr
   :align: middle
 
 .. |ci_rel| image:: https://travis-ci.org/ga4gh/vr-python.svg?branch=master
