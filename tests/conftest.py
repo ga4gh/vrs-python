@@ -6,12 +6,12 @@ from ga4gh.vr.extras.translator import Translator
 from ga4gh.vr.extras.dataproxy import SeqRepoRESTDataProxy
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def dataproxy():
     return SeqRepoRESTDataProxy(base_url="http://localhost:5000/seqrepo")
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def tlr(dataproxy):
     return Translator(
         data_proxy=dataproxy,
