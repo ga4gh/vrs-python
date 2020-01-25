@@ -111,9 +111,9 @@ AT YOUR OWN RISK AND RESPONSIBILITY to arrange for a security audit.
   :target: https://pypi.org/pypi?name=ga4gh.vr
   :align: middle
 
-.. |ci_rel| image:: https://travis-ci.org/ga4gh/ga4gh.vr.svg?branch=master
-  :target: https://travis-ci.org/ga4gh/ga4gh.vr
+.. |ci_rel| image:: https://travis-ci.org/ga4gh/vr-python.svg?branch=master
+  :target: https://travis-ci.org/ga4gh/vr-python
   :align: middle 
 
-.. |cov| image:: https://coveralls.io/repos/github/ga4gh/ga4gh.vr/badge.svg?branch=
-  :target: https://coveralls.io/github/ga4gh/ga4gh.vr?branch=
+.. |cov| image:: https://coveralls.io/repos/github/ga4gh/vr-python/badge.svg?branch=
+  :target: https://coveralls.io/github/ga4gh/vr-python?branch=
