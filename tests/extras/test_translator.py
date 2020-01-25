@@ -1,8 +1,5 @@
 import pytest
 
-from vcr_support import vcr
-
-
 inputs = {
     "hgvs": "NC_000013.11:g.32936732G>C",
     "beacon": "13 : 32936732 G > C",
@@ -21,19 +18,19 @@ output = {
 
 
 
-@vcr.use_cassette()
+@pytest.mark.vcr
 def test_from_beacon(tlr):
     assert tlr.from_beacon(inputs["beacon"]).as_dict() == output
 
-@vcr.use_cassette()
+@pytest.mark.vcr
 def test_from_hgvs(tlr):
     assert tlr.from_hgvs(inputs["hgvs"]).as_dict() == output
 
-@vcr.use_cassette()
+@pytest.mark.vcr
 def test_from_spdi(tlr):
     assert tlr.from_spdi(inputs["spdi"]).as_dict() == output
 
-@vcr.use_cassette()
+@pytest.mark.vcr
 def test_from_vcf(tlr):
     assert tlr.from_vcf(inputs["vcf"]).as_dict() == output
 
@@ -77,12 +74,13 @@ hgvs_tests = (
       'type': 'Allele'}),
 )
 @pytest.mark.parametrize("hgvsexpr,expected", hgvs_tests)
-@vcr.use_cassette()
+@pytest.mark.vcr
 def test_hgvs(tlr, hgvsexpr, expected):
     assert expected == tlr.from_hgvs(hgvsexpr).as_dict()
 
 
 
+@pytest.mark.vcr
 def test_errors(tlr):
     with pytest.raises(ValueError):
         tlr.from_beacon("bogus")

@@ -1,7 +1,7 @@
-from vcr_support import vcr
+import pytest
 
 
-@vcr.use_cassette()
+@pytest.mark.vcr
 def test_dataproxy_rest(dataproxy):
     r = dataproxy.get_metadata("NM_000551.3")
     assert 4560 == r["length"]
