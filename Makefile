@@ -77,6 +77,11 @@ install-extras:
 test:
 	python setup.py pytest
 
+#=> doctest: execute documentation tests (requires extra data)
+.PHONY: doctest
+doctest:
+	python setup.py pytest --doctest-modules
+
 #=> tox: execute tests via tox
 .PHONY: tox
 tox:
