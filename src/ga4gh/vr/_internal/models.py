@@ -21,11 +21,11 @@ import os
 
 import pkg_resources
 
-from ga4gh.core import build_models
-from ga4gh.core import build_class_referable_attribute_map
+from ga4gh.core import build_models, build_class_referable_attribute_map
 
 
 try:
+    # specify VR_SCHEMA_DIR to use a schema other than the one embedded in VR
     schema_dir = os.environ["VR_SCHEMA_DIR"]
 except KeyError:
     schema_dir = pkg_resources.resource_filename(__name__, "data/schema")

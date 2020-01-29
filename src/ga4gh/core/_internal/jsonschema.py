@@ -53,7 +53,8 @@ def get_referable_attributes(type):
     if not is_pjs_class(type):
         return None
     atts = type.__prop_names__
-    return [att for att in atts if is_referable(type.propinfo(att))]
+    refatts = [att for att in atts if is_referable(type.propinfo(att))]
+    return refatts
 
 
 ############################################################################
