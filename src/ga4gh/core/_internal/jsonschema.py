@@ -35,7 +35,7 @@ def build_class_referable_attribute_map(models):
             if refatts}
 
 
-def get_referable_attributes(type):
+def get_referable_attributes(cls):
 
     """for a given pjs class, return list of attributes that may be either
     objects or CURIEs
@@ -44,17 +44,35 @@ def get_referable_attributes(type):
     to them
 
     """
-    def is_referable(json_subschema):
-        if "oneOf" not in json_subschema:
-            return False
+    if not is_pjs_class(cls):
+        return None
+    atts = cls.__prop_names__
+    refatts = [att for att in atts if is_referable(cls.propinfo(att))]
+    return refatts
+
+
+def is_referable(json_subschema):
+    """return True if field is a referable object, or a list of referable
+    objects
+
+    """
+
+    if "oneOf" in json_subschema:
+        # schema is oneOf of a CURIE and non-CURIE type
         refs = [oo.get("$ref", None) for oo in json_subschema["oneOf"]]
         return (any(r.endswith("/CURIE") for r in refs)
-                and any(not r.endswith("/CURIE") for r in refs))
-    if not is_pjs_class(type):
-        return None
-    atts = type.__prop_names__
-    refatts = [att for att in atts if is_referable(type.propinfo(att))]
-    return refatts
+                    and any(not r.endswith("/CURIE") for r in refs))
+
+    if "type" in json_subschema:
+        t = json_subschema["type"]
+        if t == "array":
+            # an array of referable types
+            return is_referable(json_subschema["items"])
+
+    return False
+
+
+
 
 
 ############################################################################

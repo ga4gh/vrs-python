@@ -1,15 +1,17 @@
 #!/usr/bin/env python3
 
-import redis
 import yaml
 
 from ga4gh.core import *
 from ga4gh.vr import *
 from ga4gh.vr._internal.models import _load_vr_models
 
-from ga4gh.vr.extras.redisobjectstore import RedisObjectStore
+from ga4gh.core._internal.jsonschema import get_referable_attributes
+
 
 import IPython
+
+use_redis = False
 
 
 test_fns = {
@@ -29,12 +31,13 @@ a1 = models.Allele(**tests["models"]["Allele"][1]["in"])
 a1._id = ga4gh_identify(a1)
 
 
-ros = RedisObjectStore(redis=redis.Redis(db=15), models=models)
-ros.redis.flushdb()             # Danger!
+
+if use_redis:
+    from ga4gh.vr.extras.redisobjectstore import RedisObjectStore
+    ros = RedisObjectStore(redis=redis.Redis(db=15), models=models)
+    ros.redis.flushdb()             # Danger!
+else:
+    ros = {}
 
 ros[str(a0._id)] = a0
 a0b = ros[str(a0._id)]
-
-
-IPython.embed()
-
