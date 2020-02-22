@@ -1,6 +1,15 @@
 """Support for JSON Schema and GA4GH schema conventions using
 python-jsonschema-objects
 
+This module has evolved to include several different kinds of
+functions:
+
+ * schema functions operate on entire json schemas and
+   subschemas
+ * pjs class functions interrogate python_jsonschema_objects (pjs) classes
+ * instance functions interrogate pjs objects/instances
+ * attribute functions interrogate pjs attributes
+
 """
 
 import logging
@@ -88,6 +97,14 @@ def is_pjs_class(k):
 def is_pjs_instance(o):
     """return True if object is a python jsonschema object"""
     return isinstance(o, pjs.classbuilder.ProtocolBase)
+
+def pjs_copy(o):
+    """create a new instance of a pjs object.
+
+    A bug in pjs prevents using Python's more efficient copy module.
+
+    """
+    return o.__class__(**o.as_dict())
 
 
 ############################################################################

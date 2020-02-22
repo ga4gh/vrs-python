@@ -9,6 +9,7 @@ from ga4gh.vr._internal.models import _load_vr_models
 from ga4gh.core._internal.jsonschema import get_referable_attributes
 
 
+
 import IPython
 
 use_redis = False
@@ -41,3 +42,16 @@ else:
 
 ros[str(a0._id)] = a0
 a0b = ros[str(a0._id)]
+
+
+gos = {}
+def vr_enref(o): return ga4gh_enref(o, cra_map=class_refatt_map, object_store=gos)
+def vr_deref(o): return ga4gh_deref(o, cra_map=class_refatt_map, object_store=gos)
+
+
+dvs = models.DiscreteVariationSet(members=[a0])
+
+dvs2 = vr_enref(dvs)
+
+dvs3 = vr_deref(dvs2)
+
