@@ -1,3 +1,4 @@
+*.bak
 *-checkpoint.ipynb
 *.egg-info
 *.orig

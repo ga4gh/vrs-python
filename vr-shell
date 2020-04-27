@@ -8,22 +8,11 @@ from ga4gh.vr._internal.models import _load_vr_models
 
 from ga4gh.core._internal.jsonschema import get_referable_attributes
 
-
-
 import IPython
 
 use_redis = False
-
-
-test_fns = {
-    "models": "tests/validation/data/models.yaml",
-    "functions": "tests/validation/data/functions.yaml"
-    }
-tests = {
-    k: yaml.load(open(test_fns[k]), Loader=yaml.SafeLoader)
-    for k in test_fns
-    }
-
+test_fns = {"models": "tests/validation/data/models.yaml", "functions": "tests/validation/data/functions.yaml"}
+tests = {k: yaml.load(open(test_fns[k]), Loader=yaml.SafeLoader) for k in test_fns}
 
 a0 = models.Allele(**tests["models"]["Allele"][0]["in"])
 a0._id = ga4gh_identify(a0)
@@ -31,27 +20,67 @@ a0._id = ga4gh_identify(a0)
 a1 = models.Allele(**tests["models"]["Allele"][1]["in"])
 a1._id = ga4gh_identify(a1)
 
-
-
 if use_redis:
     from ga4gh.vr.extras.redisobjectstore import RedisObjectStore
     ros = RedisObjectStore(redis=redis.Redis(db=15), models=models)
-    ros.redis.flushdb()             # Danger!
+    ros.redis.flushdb()    # Danger!
 else:
     ros = {}
 
 ros[str(a0._id)] = a0
 a0b = ros[str(a0._id)]
 
-
 gos = {}
-def vr_enref(o): return ga4gh_enref(o, cra_map=class_refatt_map, object_store=gos)
-def vr_deref(o): return ga4gh_deref(o, cra_map=class_refatt_map, object_store=gos)
 
 
-dvs = models.DiscreteVariationSet(members=[a0])
+def vr_enref(o):
+    return ga4gh_enref(o, cra_map=class_refatt_map, object_store=gos)
 
-dvs2 = vr_enref(dvs)
 
-dvs3 = vr_deref(dvs2)
+def vr_deref(o):
+    return ga4gh_deref(o, cra_map=class_refatt_map, object_store=gos)
 
+
+hap_dict = {
+    'completeness':
+    'UNKNOWN',
+    'members': [{
+        'location': {
+            'interval': {
+                'end': 44908684,
+                'start': 44908683,
+                'type': 'SimpleInterval'
+            },
+            'sequence_id': 'ga4gh:SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl',
+            'type': 'SequenceLocation'
+        },
+        'state': {
+            'sequence': 'C',
+            'type': 'SequenceState'
+        },
+        'type': 'Allele'
+    }, {
+        'location': {
+            'interval': {
+                'end': 44908822,
+                'start': 44908821,
+                'type': 'SimpleInterval'
+            },
+            'sequence_id': 'ga4gh:SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl',
+            'type': 'SequenceLocation'
+        },
+        'state': {
+            'sequence': 'T',
+            'type': 'SequenceState'
+        },
+        'type': 'Allele'
+    }],
+    'type':
+    'Haplotype'
+}
+
+hap = models.Haplotype(**hap_dict)
+
+hap2 = vr_enref(hap)
+
+pass
