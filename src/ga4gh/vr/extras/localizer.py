@@ -18,12 +18,37 @@ class Localizer:
 
     """
 
-    def __init__(self, default_assembly_name="GRCh38"):
-        self.default_assembly_name = default_assembly_name
+    def __init__(self):
+        # _cb_maps: maps bands to chromosomal locations
+        # {'ucsc-hg19': {'1': {'p11.1': [121500000, 125000000, 'acen'],
+        #              'p11.2': [120600000, 121500000, 'gneg'],
+        #              'p12': [117800000, 120600000, 'gpos50'],
+        #              'p13.1': [116100000, 117800000, 'gneg'],
+        #              'p13.2': [111800000, 116100000, 'gpos50'],
+
         self._cb_maps = get_cytoband_maps()
+
+        # _ana_maps: maps names to accessions for each assembly
+        # {
+        #     'GRCh37': {
+        #         '1': 'NC_000001.10',
+        #         '2': 'NC_000002.11',
+        #         '3': 'NC_000003.11',
+        #     ...
+        # }
         self._ana_maps = {k: make_name_ac_map(k) for k in assy_name_to_map_name}
-        
-    def localize_cytoband(self, loc, assembly_name=None):
+
+
+    def localize_allele(self, allele):
+        # copy input variant and replace location
+        # N.B. deepcopy leads to recursion errors
+        allele_sl = ga4gh.vr.models.Variation(**allele.as_dict())
+        del allele_sl._id
+        allele_sl.location = self.localize(allele.location)
+        return allele_sl
+
+
+    def localize_cytoband(self, loc, assembly_name):
         assert loc.type._value == "CytobandLocation", "Expected a CytobandLocation object"
 
         def _get_coords(m, cb):
@@ -32,9 +57,6 @@ class Localizer:
                 return None
             return chr_cb_map[cb][0:2]
             
-        if assembly_name is None:
-            assembly_name = self.default_assembly_name
-
         try:
             map_name = assy_name_to_map_name[assembly_name]
         except KeyError:
@@ -73,30 +95,9 @@ class Localizer:
             )
 
 
-    def localize(self, v):
-        loc = v.location
-        typ = loc.type._value
-
-        if typ == "CytobandLocation":
-            sloc = self._localize_cytoband(loc)
-        else:
-            raise ValueError(f"Cannot localized variation with location type {typ}")
-
-        # copy input variant and replace location
-        # using as_dict() to copy because deepcopy led to recursion errors
-        v2 = ga4gh.vr.models.Variation(**v.as_dict())
-        del v2.id
-        v2.location = sloc
-        return v2
 
 
     
 if __name__ == "__main__":
-    from ga4gh.vr.extras.localizer import Localizer
     cbl = ga4gh.vr.models.CytobandLocation(chr="11", start="q22.3", end="q23.1")
-    cnvstate = ga4gh.vr.models.CNVState(min_copies=3, max_copies=5, copy_measure="RELATIVE")
-    a = ga4gh.vr.models.Allele(location=cbl, state=cnvstate)
-    a.id = ga4gh.vr.computed_id(a)
-
-    lczr = Localizer()
-    
+    lr = Localizer()
