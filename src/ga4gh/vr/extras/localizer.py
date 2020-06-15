@@ -8,7 +8,7 @@ import ga4gh.vr
 
 
 assy_name_to_map_name = {
-    "GRCh37": "ucsc-hg37",
+    "GRCh37": "ucsc-hg19",
     "GRCh38": "ucsc-hg38",
     }
 
