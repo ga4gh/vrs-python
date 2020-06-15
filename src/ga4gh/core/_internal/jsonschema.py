@@ -110,11 +110,12 @@ def pjs_copy(o):
 ############################################################################
 # Attribute Functions
 
-def is_curie(o):
+def is_curie_type(o):
     """return True if object is a python jsonschema class that represents
     a CURIE, e.g., sequence_id"""
     return o.__class__.__name__.endswith("/CURIE")
 
+is_curie = is_curie_type
 
 def is_identifiable(o):
     """return True if object is identifiable
