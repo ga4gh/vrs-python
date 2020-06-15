@@ -22,7 +22,7 @@ import pkg_resources
 import yaml
 
 from .digests import sha512t24u
-from .jsonschema import is_array, is_pjs_instance, is_curie, is_identifiable, is_literal
+from .jsonschema import is_array, is_pjs_instance, is_curie_type, is_identifiable, is_literal
 
 
 from canonicaljson import encode_canonical_json
@@ -154,11 +154,10 @@ def ga4gh_serialize(vro):
 
         if is_literal(vro):
             v = vro._value
-            if is_curie(vro):
-                if not is_ga4gh_identifier(v):
-                    raise ValueError(f"ga4gh_serialize requires that referenced objects use CURIEs in the {namespace} namespace")
-                # CURIEs are stripped to just the digest so that digests are independent of type prefixes
-                v = v.split(ref_sep, 1)[1]
+            if is_curie_type(vro):
+                if is_ga4gh_identifier(v):
+                    # CURIEs are stripped to just the digest so that digests are independent of type prefixes
+                    v = v.split(ref_sep, 1)[1]
             return v
 
         if isinstance(vro, str):
