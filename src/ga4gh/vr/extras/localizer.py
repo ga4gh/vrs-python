@@ -49,7 +49,7 @@ class Localizer:
 
 
     def localize_cytoband(self, loc, assembly_name):
-        assert loc.type._value == "CytobandLocation", "Expected a CytobandLocation object"
+        assert loc.type._value == "ChromosomeLocation", "Expected a ChromosomeLocation object"
 
         def _get_coords(m, cb):
             """return (start,end) of band `cb` in map `m`"""
@@ -73,13 +73,13 @@ class Localizer:
         try:
             coords += _get_coords(chr_cb_map, loc.start)
         except:
-            raise ValueError(f"{loc.start}: CytobandLocation not in map for {assembly_name}, chr {loc.chr}")
+            raise ValueError(f"{loc.start}: ChromosomeLocation not in map for {assembly_name}, chr {loc.chr}")
         
         if loc.end is not None:
             try:
                 coords += _get_coords(chr_cb_map, loc.end)
             except:
-                raise ValueError(f"{loc.end}: CytobandLocation not in map for {assembly_name}, chr {loc.chr}")
+                raise ValueError(f"{loc.end}: ChromosomeLocation not in map for {assembly_name}, chr {loc.chr}")
  
         # the following works regardless of orientation of bands and number of bands
         start, end = min(coords), max(coords)
@@ -99,5 +99,5 @@ class Localizer:
 
     
 if __name__ == "__main__":
-    cbl = ga4gh.vr.models.CytobandLocation(chr="11", start="q22.3", end="q23.1")
+    cbl = ga4gh.vr.models.ChromosomeLocation(chr="11", start="q22.3", end="q23.1")
     lr = Localizer()
