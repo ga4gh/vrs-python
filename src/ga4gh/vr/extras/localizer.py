@@ -14,7 +14,8 @@ assy_name_to_map_name = {
 
 
 class Localizer:
-    """convert Location object to a SequenceLocation
+    """provides conversion of ChromosomeLocation objects to
+    SequenceLocation objects
 
     """
 
@@ -48,7 +49,11 @@ class Localizer:
         return allele_sl
 
 
-    def localize_cytoband(self, loc, assembly_name):
+    def localize_named_feature(self, loc, assembly_name):
+        """converts named features to sequence locations
+
+        """
+
         assert loc.type._value == "ChromosomeLocation", "Expected a ChromosomeLocation object"
 
         def _get_coords(m, cb):
@@ -71,15 +76,13 @@ class Localizer:
         
         coords = []
         try:
-            coords += _get_coords(chr_cb_map, loc.start)
+            coords += _get_coords(chr_cb_map, loc.interval.start)
         except:
-            raise ValueError(f"{loc.start}: ChromosomeLocation not in map for {assembly_name}, chr {loc.chr}")
-        
-        if loc.end is not None:
-            try:
-                coords += _get_coords(chr_cb_map, loc.end)
-            except:
-                raise ValueError(f"{loc.end}: ChromosomeLocation not in map for {assembly_name}, chr {loc.chr}")
+            raise ValueError(f"{loc.interval.start}: ChromosomeLocation not in map for {assembly_name}, chr {loc.chr}")
+        try:
+            coords += _get_coords(chr_cb_map, loc.interval.end)
+        except:
+            raise ValueError(f"{loc.interval.end}: ChromosomeLocation not in map for {assembly_name}, chr {loc.chr}")
  
         # the following works regardless of orientation of bands and number of bands
         start, end = min(coords), max(coords)
