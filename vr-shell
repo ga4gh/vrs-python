@@ -49,9 +49,7 @@ def vr_enref(o): return ga4gh_enref(o, cra_map=class_refatt_map, object_store=go
 def vr_deref(o): return ga4gh_deref(o, cra_map=class_refatt_map, object_store=gos)
 
 
-dvs = models.DiscreteVariationSet(members=[a0])
-
-dvs2 = vr_enref(dvs)
-
-dvs3 = vr_deref(dvs2)
+#dvs = models.DiscreteVariationSet(members=[a0])
+#dvs2 = vr_enref(dvs)
+#dvs3 = vr_deref(dvs2)
 
