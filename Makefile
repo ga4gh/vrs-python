@@ -18,7 +18,7 @@ XRM=xargs -0${_XRM_R} rm
 
 PKG=ga4gh.vr
 PKGD=$(subst .,/,${PKG})
-PYV:=3.7
+PYV:=3.8
 VEDIR=venv/${PYV}
 
 export SEQREPO_ROOT_DIR=tests/data/seqrepo
