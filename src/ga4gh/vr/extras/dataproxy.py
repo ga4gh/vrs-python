@@ -93,30 +93,12 @@ class _SeqRepoDataProxyBase(_DataProxy):
     # `ga4gh` identifiers.
 
     def get_metadata(self, identifier):
-        def xl(ir):
-            yield ir
-            # and inject other translations
-            ns, a = ir.split(":", 1)
-            if ns == "VMC":
-                yield ir.replace("VMC:GS_", "ga4gh:SQ.")
-                yield "TRUNC512:" + base64url_to_hex(a.replace("GS_",""))
-            elif ns == "RefSeq":
-                yield ir
-                yield ir.replace("RefSeq:", "refseq:")
-
-        identifier2 = self._lookup_ir_xl(identifier)
-        md = self._get_metadata(identifier2)
-        md["aliases"] = list(itertools.chain.from_iterable(xl(a) for a in md["aliases"]))
+        md = self._get_metadata(identifier)
+        md["aliases"] = list(a for a in md["aliases"])
         return md
 
     def get_sequence(self, identifier, start=None, end=None):
-        identifier2 = self._lookup_ir_xl(identifier)
-        return self._get_sequence(identifier2, start=start, end=end)
-
-    @staticmethod
-    def _lookup_ir_xl(ir):
-        """translate lookup identifier to seqrepo-friendly identifier"""
-        return ir.replace("ga4gh:SQ.", "VMC:GS_").replace("refseq:", "RefSeq:")
+        return self._get_sequence(identifier, start=start, end=end)
 
     @abstractmethod
     def _get_metadata(self, identifier):  # pragma: no cover
@@ -140,7 +122,6 @@ class SeqRepoDataProxy(_SeqRepoDataProxyBase):
 
     def _get_metadata(self, identifier):
         ns, a = coerce_namespace(identifier).split(":", 2)
-        ns = "RefSeq" if ns == "refseq" else ns
         r = self.sr.aliases.find_aliases(namespace=ns, alias=a).fetchone()
         if r is None:
             raise KeyError(identifier) 
