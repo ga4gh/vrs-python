@@ -9,7 +9,6 @@ import logging
 import re
 
 from bioutils.accessions import coerce_namespace
-from bioutils.normalize import normalize, NormalizationMode
 import hgvs.parser
 
 import hgvs.location
@@ -20,7 +19,7 @@ import hgvs.sequencevariant
 from ga4gh.core import ga4gh_identify
 from ga4gh.vr import models
 
-from .dataproxy import SequenceProxy
+from ..normalize import normalize
 from .decorators import lazy_property
 
 _logger = logging.getLogger(__name__)
@@ -321,7 +320,7 @@ class Translator:
             allele.location.sequence_id = seq_id
 
         if self.normalize:
-            self._normalize_allele(allele)
+            allele = normalize(allele)
 
         if self.identify:
             allele._id = ga4gh_identify(allele)
@@ -336,24 +335,6 @@ class Translator:
         return ir
 
 
-    def _normalize_allele(self, allele):
-        sequence = SequenceProxy(self.data_proxy, allele.location.sequence_id._value)
-        ival = (allele.location.interval.start._value, allele.location.interval.end._value)
-        alleles = (None, allele.state.sequence._value)
-        try:
-            new_ival, new_alleles = normalize(sequence, ival,
-                                            alleles=alleles,
-                                            mode=NormalizationMode.EXPAND,
-                                            anchor_length=0)
-            allele.location.interval.start = new_ival[0]
-            allele.location.interval.end = new_ival[1]
-            allele.state.sequence = new_alleles[1]
-        except ValueError:
-            # Occurs when alt = ref
-            # e.g., NC_000013.11:g.32936732G>C, where ref is actually C,
-            # results in a C>C allele, which can't be normalized
-            pass
-        return allele
 
 
 if __name__ == "__main__":

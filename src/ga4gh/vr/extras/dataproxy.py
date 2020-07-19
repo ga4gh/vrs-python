@@ -167,8 +167,9 @@ class SeqRepoRESTDataProxy(_SeqRepoDataProxyBase):
     
 
 class SequenceProxy(Sequence):
-    """Provides efficient and transparent string-like access to a
-    biological sequence
+    """Provides efficient and transparent string-like access, including
+    random access slicing and reversing, to a biological sequence that
+    is stored elsewhere.
 
     """
 

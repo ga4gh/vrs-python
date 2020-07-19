@@ -86,6 +86,7 @@ def is_referable(json_subschema):
 
 ############################################################################
 # Class Functions
+# (argument is a pjs class)
 
 def is_pjs_class(k):
     return pjs.classbuilder.ProtocolBase in k.__mro__
@@ -93,10 +94,33 @@ def is_pjs_class(k):
 
 ############################################################################
 # Instance/object Functions
+# (argument is a pjs object instance)
 
 def is_pjs_instance(o):
     """return True if object is a python jsonschema object"""
     return isinstance(o, pjs.classbuilder.ProtocolBase)
+
+
+def is_pjs_literal(o):
+    """return True if object is a python jsonschema object literal"""
+    return isinstance(o, pjs.literals.LiteralValue)
+is_literal = is_pjs_literal
+
+
+def is_pjs_array(o):
+    """return True if object is a python jsonschema object array"""
+    return getattr(o, "type", None) == "array"
+is_array = is_pjs_array
+
+
+def is_curie_type(o):
+    """return True if object is a python jsonschema class that represents
+    a CURIE, e.g., sequence_id
+
+    """
+    return o.__class__.__name__.endswith("/CURIE")
+is_curie = is_curie_type
+
 
 def pjs_copy(o):
     """create a new instance of a pjs object.
@@ -110,26 +134,12 @@ def pjs_copy(o):
 ############################################################################
 # Attribute Functions
 
-def is_curie_type(o):
-    """return True if object is a python jsonschema class that represents
-    a CURIE, e.g., sequence_id"""
-    return o.__class__.__name__.endswith("/CURIE")
-
-is_curie = is_curie_type
-
 def is_identifiable(o):
     """return True if object is identifiable
 
-    An object is considered identifiable if it contains an `_id` attribute
+    An object is considered identifiable if it contains an `_id`
+    attribute
+
     """
+
     return is_pjs_instance(o) and ("_id" in o)
-
-
-def is_literal(o):
-    """return True if object is a python jsonschema object literal"""
-    return isinstance(o, pjs.literals.LiteralValue)
-
-
-def is_array(o):
-    """return True if object is a python jsonschema object array"""
-    return getattr(o, "type", None) == "array"
