@@ -7,7 +7,7 @@ $ ipython -m ga4gh.vr -i
 from ga4gh.core import *
 from ga4gh.vr import *
 
-from ga4gh.vr.extras.dataproxy import SeqRepoRESTDataProxy
+from ga4gh.vr.dataproxy import SeqRepoRESTDataProxy
 from ga4gh.vr.extras.translator import Translator
 
 

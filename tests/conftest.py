@@ -3,7 +3,7 @@ import os
 import pytest
 
 from ga4gh.vr.extras.translator import Translator
-from ga4gh.vr.extras.dataproxy import SeqRepoRESTDataProxy
+from ga4gh.vr.dataproxy import SeqRepoRESTDataProxy
 
 
 @pytest.fixture(scope="session")

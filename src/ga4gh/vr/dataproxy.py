@@ -13,7 +13,6 @@ import logging
 from bioutils.accessions import coerce_namespace
 import requests
 
-from .utils import isoformat, base64url_to_hex
 
 
 _logger = logging.getLogger(__name__)
@@ -198,6 +197,26 @@ class SequenceProxy(Sequence):
             raise ValueError("Only contiguous sequence slices are supported")
 
         return self.dp.get_sequence(self.alias, key.start, key.stop)
+
+
+
+def isoformat(o):
+    """convert datetime.datetime to iso formatted timestamp
+
+    >>> dt = datetime.datetime(2019, 10, 15, 10, 23, 41, 115927)
+    >>> isoformat(dt)
+    '2019-10-15T10:23:41.115927Z'
+
+    """
+
+    # stolen from connexion flask_app.py
+    assert isinstance(o, datetime.datetime)
+    if o.tzinfo:
+        # eg: '2015-09-25T23:14:42.588601+00:00'
+        return o.isoformat('T')
+    # No timezone present - assume UTC.
+    # eg: '2015-09-25T23:14:42.588601Z'
+    return o.isoformat('T') + 'Z'
 
 
  

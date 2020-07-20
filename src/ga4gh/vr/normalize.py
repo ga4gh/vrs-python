@@ -4,7 +4,7 @@ from bioutils.normalize import normalize as _normalize, NormalizationMode
 
 from ga4gh.core import is_pjs_instance, pjs_copy
 from ga4gh.vr import models
-from ga4gh.vr.extras.dataproxy import SequenceProxy
+from ga4gh.vr.dataproxy import SequenceProxy
 
 
 _logger = logging.getLogger(__name__)
@@ -53,7 +53,7 @@ def normalize(vo, data_proxy):
 
 if __name__ == "__main__":
     # Requires seqrepo REST interface is running on this URL (e.g., using docker image)
-    from ga4gh.vr.extras.dataproxy import SeqRepoRESTDataProxy
+    from ga4gh.vr.dataproxy import SeqRepoRESTDataProxy
     seqrepo_rest_service_url = "http://localhost:5000/seqrepo"
     dp = SeqRepoRESTDataProxy(base_url=seqrepo_rest_service_url)
 
