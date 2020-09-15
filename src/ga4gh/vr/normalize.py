@@ -20,9 +20,9 @@ def _normalize_allele(allele, data_proxy):
 
     try:
         new_ival, new_alleles = _normalize(sequence, ival,
-                                        alleles=alleles,
-                                        mode=NormalizationMode.EXPAND,
-                                        anchor_length=0)
+                                           alleles=alleles,
+                                           mode=NormalizationMode.EXPAND,
+                                           anchor_length=0)
         new_allele.location.interval.start = new_ival[0]
         new_allele.location.interval.end = new_ival[1]
         new_allele.state.sequence = new_alleles[1]
@@ -35,13 +35,13 @@ def _normalize_allele(allele, data_proxy):
 
 handlers = {
     "Allele": _normalize_allele,
-    }
+}
 
 def normalize(vo, data_proxy):
     assert is_pjs_instance(vo)
 
     vo_type = vo.type._value
-    
+
     if vo_type in handlers:
         handler = handlers[vo_type]
         return handler(vo, data_proxy)

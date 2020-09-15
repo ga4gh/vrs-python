@@ -1,6 +1,5 @@
 import bz2
 import collections.abc
-import functools
 import json
 
 class RedisObjectStore(collections.abc.MutableMapping):

@@ -21,10 +21,10 @@ def ga4gh_enref(o, cra_map, object_store=None):
     """Recursively convert "referable attributes" from inlined to
     referenced form.  Returns a new object.
 
-    If `object_store` is provided, it must be an abc.Mapping subclass
-    and will be used to store objects as they are referenced.  If
-    `object_store` is not provided (or None), referenced objects will
-    not be stored.
+    If `object_store` is provided, it must be an
+    collections.abc.MutableMapping subclass and will be used to store
+    objects as they are referenced.  If `object_store` is not provided
+    (or None), referenced objects will not be stored.
 
     """
     def _id_and_store(o):
