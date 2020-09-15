@@ -3,6 +3,8 @@ clog format: 1; -*-outline-*-
 Changes since 0.4.0 (2020-01-24).
 ** Special Attention
 This is the first version with changelog.
+** Deprecations and Removals
+*** REMOVED: redisobjectstore and clinvarparser were moved to anyvar
 ** New Features
 *** Added generalized vrs normalize function [47673ec] (Reece Hart)
 *** Closes #42: dataproxy uses namespaces directly (and remove previous workarounds)

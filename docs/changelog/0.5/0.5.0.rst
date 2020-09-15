@@ -9,6 +9,11 @@ $$$$$$$$$$$$$$$$$$
 
 This is the first version with changelog.
 
+Deprecations and Removals
+$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+* REMOVED: redisobjectstore and clinvarparser were moved to anyvar
+
 New Features
 $$$$$$$$$$$$$
 
