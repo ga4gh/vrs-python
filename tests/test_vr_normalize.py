@@ -1,3 +1,5 @@
+import pytest
+
 from ga4gh.vr import models, normalize
 
 
@@ -24,6 +26,7 @@ allele_dict = {
 }
 
 
+@pytest.mark.vcr
 def test_normalize_allele(dataproxy):
     allele1 = models.Allele(**allele_dict)
     allele2 = normalize(allele1, dataproxy)
