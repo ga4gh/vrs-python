@@ -37,6 +37,7 @@ handlers = {
     "Allele": _normalize_allele,
 }
 
+
 def normalize(vo, data_proxy):
     assert is_pjs_instance(vo)
 
