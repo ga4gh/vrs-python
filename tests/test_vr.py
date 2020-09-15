@@ -1,5 +1,5 @@
 from ga4gh.core import sha512t24u, ga4gh_digest, ga4gh_serialize, ga4gh_identify
-from ga4gh.vr import models
+from ga4gh.vr import models, vr_deref, vr_enref
 
 allele_dict = {
     'location': {'interval': {
@@ -34,3 +34,13 @@ def test_vr():
                                         'type': 'SequenceLocation'},
                            'state': {'sequence': 'T', 'type': 'SequenceState'},
                            'type': 'Allele'}
+    
+    vros = {}
+    a2 = vr_enref(a, vros)
+    assert ga4gh_identify(a) == ga4gh_identify(a2)
+    assert a2.location == "ga4gh:VSL.5D9eG-ev4fA7mYIpOpDEe-4Am1lzPZlQ"
+    assert a2.location in vros
+    assert ga4gh_identify(a) in vros
+
+    a3 = vr_deref(a2, vros)
+    assert a == a3
