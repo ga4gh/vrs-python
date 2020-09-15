@@ -2,9 +2,9 @@ import logging
 
 from bioutils.normalize import normalize as _normalize, NormalizationMode
 
-from ga4gh.core import is_pjs_instance, pjs_copy
-from ga4gh.vr import models
-from ga4gh.vr.dataproxy import SequenceProxy
+from ..core import is_pjs_instance, pjs_copy
+from ._internal import models
+from .dataproxy import SequenceProxy
 
 
 _logger = logging.getLogger(__name__)

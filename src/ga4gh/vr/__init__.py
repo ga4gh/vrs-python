@@ -20,6 +20,7 @@ finally:
     del get_distribution, DistributionNotFound
 
 
-from .normalize import normalize
 from ._internal.enderef import vr_deref, vr_enref
 from ._internal.models import models, schema_path
+
+from .normalize import normalize
