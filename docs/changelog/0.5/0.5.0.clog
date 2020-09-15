@@ -22,6 +22,7 @@ This is the first version with changelog.
 ** Other Changes
 *** Allow CURIEs from any namespace (for taxonomy, e.g.) [933b728] (Reece Hart)
 *** Added tests for enderef [498f753] (Reece Hart)
+*** Added tests for normalize (Reece Hart)
 *** Update ga4gh.vr.__init__.py to use ga4gh normalize (not bioutils) [e8781ef] (Reece Hart)
 ** Internal and Developer Changes
 *** Updated stale bot config [740bd42] (Reece Hart)
