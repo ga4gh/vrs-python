@@ -5,7 +5,7 @@ implementation
 """
 
 
-__all__ = """class_refatt_map models normalize schema_path""".split()
+__all__ = """models normalize schema_path vr_deref vr_enref""".split()
 
 
 
@@ -21,4 +21,5 @@ finally:
 
 
 from bioutils.normalize import normalize
-from ._internal.models import class_refatt_map, models, schema_path
+from ._internal.enderef import vr_deref, vr_enref
+from ._internal.models import models, schema_path
