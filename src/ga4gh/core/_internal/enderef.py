@@ -35,10 +35,7 @@ def ga4gh_enref(o, cra_map, object_store=None):
 
     def _enref(o):
         """depth-first recursive, in-place enref of object; returns id of object"""
-        if o.type not in cra_map:
-            return o
-
-        ref_att_names = cra_map[o.type]
+        ref_att_names = cra_map.get(o.type, [])
         for ran in ref_att_names:
             v = o[ran]
             if is_array(v):
