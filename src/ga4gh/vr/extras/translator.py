@@ -4,6 +4,8 @@ TODO: move translate, normalize, identify functionality to separate module
 
 """
 
+raise Exception("This file was moved to anyvar")
+
 import copy
 import logging
 import re
@@ -320,7 +322,7 @@ class Translator:
             allele.location.sequence_id = seq_id
 
         if self.normalize:
-            allele = normalize(allele)
+            allele = normalize(allele, self.data_proxy)
 
         if self.identify:
             allele._id = ga4gh_identify(allele)
