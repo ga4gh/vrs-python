@@ -5,7 +5,7 @@ vr.extras, and a concrete implementation based on seqrepo.
 
 from abc import ABC, abstractmethod
 from collections import Sequence
-from datetime import datetime
+import datetime
 import functools
 import itertools
 import logging
@@ -117,15 +117,16 @@ class SeqRepoDataProxy(_SeqRepoDataProxyBase):
 
     def _get_sequence(self, identifier, start=None, end=None):
         # fetch raises KeyError if not found
-        return self.sr.fetch(identifier, start, end)
+        return self.sr.fetch_uri(identifier, start, end)
 
     def _get_metadata(self, identifier):
         ns, a = coerce_namespace(identifier).split(":", 2)
-        r = self.sr.aliases.find_aliases(namespace=ns, alias=a).fetchone()
-        if r is None:
+        r = list(self.sr.aliases.find_aliases(namespace=ns, alias=a))
+        if len(r) == 0:
             raise KeyError(identifier) 
-        seqinfo = self.sr.sequences.fetch_seqinfo(r["seq_id"])
-        aliases = self.sr.aliases.fetch_aliases(r["seq_id"])
+        seq_id = r[0]["seq_id"]
+        seqinfo = self.sr.sequences.fetch_seqinfo(seq_id)
+        aliases = self.sr.aliases.find_aliases(seq_id=seq_id)
         return {
             "length": seqinfo["len"],
             "alphabet": seqinfo["alpha"],
