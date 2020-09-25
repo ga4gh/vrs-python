@@ -4,11 +4,12 @@ vr.extras, and a concrete implementation based on seqrepo.
 """
 
 from abc import ABC, abstractmethod
-from collections import Sequence
+from collections.abc import Sequence
 import datetime
 import functools
-import itertools
 import logging
+import os
+from urllib.parse import urlparse
 
 from bioutils.accessions import coerce_namespace
 import requests
@@ -130,7 +131,7 @@ class SeqRepoDataProxy(_SeqRepoDataProxyBase):
         return {
             "length": seqinfo["len"],
             "alphabet": seqinfo["alpha"],
-            "added": isoformat(seqinfo["added"]),
+            "added": _isoformat(seqinfo["added"]),
             "aliases": [f"{a['namespace']}:{a['alias']}" for a in aliases],
             }
         return md
@@ -201,11 +202,11 @@ class SequenceProxy(Sequence):
 
 
 
-def isoformat(o):
+def _isoformat(o):
     """convert datetime.datetime to iso formatted timestamp
 
     >>> dt = datetime.datetime(2019, 10, 15, 10, 23, 41, 115927)
-    >>> isoformat(dt)
+    >>> _isoformat(dt)
     '2019-10-15T10:23:41.115927Z'
 
     """
@@ -219,7 +220,6 @@ def isoformat(o):
     # eg: '2015-09-25T23:14:42.588601Z'
     return o.isoformat('T') + 'Z'
 
-
  
 # Future implementations
 # * The RefGetDataProxy is waiting on support for sequence lookup by alias
@@ -230,7 +230,62 @@ def isoformat(o):
 
 
 
+def create_dataproxy(uri: str) -> _DataProxy:
+    """Create a dataproxy from uri or GA4GH_VR_DATAPROXY_URI
+    
+    Currently accepted URI schemes:
+
+    * seqrepo+file:///path/to/seqrepo/root
+    * seqrepo+:../relative/path/to/seqrepo/root
+    * seqrepo+http://localhost:5000/seqrepo
+    * seqrepo+https://somewhere:5000/seqrepo
+
+    """
+
+    uri = uri or os.environ["GA4GH_VR_DATAPROXY_URI"] or os.environ("SEQREPO_DIR")
+
+    parsed_uri = urlparse(uri)
+    scheme = parsed_uri.scheme
+    
+    if "+" not in scheme:
+        raise ValueError("create_dataproxy scheme must include provider (e.g., `seqrepo+http:...`)")
+
+    provider, proto = scheme.split("+")
+
+    if provider == "seqrepo":
+        if proto in ("", "file"):
+            from biocommons.seqrepo import SeqRepo
+            sr = SeqRepo(root_dir=parsed_uri.path)
+            dp = SeqRepoDataProxy(sr)
+        elif proto in ("http", "https"):
+            dp = SeqRepoRESTDataProxy(uri[len(provider)+1:])
+        else:
+            raise ValueError(f"SeqRepo URI scheme {parsed_uri.scheme} not implemented")
+
+    else:
+        raise ValueError(f"DataProxy provider {provider} not implemented")
+
+    return dp
+
+
+
+
 if __name__ == "__main__":
-    seqrepo_rest_service_url = "http://localhost:5000/seqrepo" 
-    dp = SeqRepoRESTDataProxy(base_url=seqrepo_rest_service_url) 
-    sp = SequenceProxy(dp, "refseq:NM_000551.3")
+    # Before running, do something like this:
+    # snafu$ docker run \
+    # >   --name seqrepo-rest-service \
+    # >   --detach --rm -p 5000:5000 \
+    # >   -v /usr/local/share/seqrepo/:/usr/local/share/seqrepo/ \
+    # >   biocommons/seqrepo-rest-service
+
+    dp1 = create_dataproxy("seqrepo+http://localhost:5000/seqrepo")
+    dp2 = create_dataproxy("seqrepo+file:///usr/local/share/seqrepo/latest")
+
+    ir = "refseq:NM_000551.3"
+
+    print(f"dp1 = {dp1}")
+    print(f"dp2 = {dp2}")
+
+    assert dp1.get_metadata(ir) == dp2.get_metadata(ir)
+    assert dp1.get_sequence(ir) == dp2.get_sequence(ir)
+    
