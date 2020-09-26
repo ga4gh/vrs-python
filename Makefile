@@ -16,7 +16,7 @@ else
 endif
 XRM=xargs -0${_XRM_R} rm
 
-PKG=ga4gh.vr
+PKG=ga4gh.vrs
 PKGD=$(subst .,/,${PKG})
 PYV:=3.8
 VEDIR=venv/${PYV}

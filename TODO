@@ -50,8 +50,6 @@ DeletionState(type=WITHIN|EXACT|CONTAINING|OVERLAPPING)
 
 ** implement localizer
 
-** rename vmc -> ga4gh.vr
-
 ** implement VOCA normalization
 
 
