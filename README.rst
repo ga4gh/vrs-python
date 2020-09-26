@@ -10,32 +10,32 @@ Representation Specification
 
 This repository contains several related components:
 
-* **ga4gh.vr package** Python language support for the spec. 
+* **ga4gh.vrs package** Python language support for the spec. 
 
-* **ga4gh.vr.extras package** Python language support for additional
+* **ga4gh.vrs.extras package** Python language support for additional
   functionality, including translating from and to other variant
   formats and a REST service to similar functionality.
-  `ga4gh.vr.extras` requires access to supporting data, as described
+  `ga4gh.vrs.extras` requires access to supporting data, as described
   below.
 
 * **Jupyter notebooks** Demonstrations of the functionality of
-  `ga4gh.vr` and `ga4gh.vr.extras` in the form of easy-to-read
+  `ga4gh.vrs` and `ga4gh.vrs.extras` in the form of easy-to-read
   notebooks.
 
 
 
-Installing ga4gh.vr
-!!!!!!!!!!!!!!!!!!!
+Installing ga4gh.vrs
+!!!!!!!!!!!!!!!!!!!!
 
 Installating with pip
 @@@@@@@@@@@@@@@@@@@@@
 
 ::
 
-   $ pip install ga4gh.vr[extras]
+   $ pip install ga4gh.vrs[extras]
 
 The `[extras]` argument tells pip to install packages to fullfill the
-dependencies of the `ga4gh.vr.extras` package.
+dependencies of the `ga4gh.vrs.extras` package.
 
 
 Installing for development
@@ -54,11 +54,11 @@ vr-python is unlikely to work on Windows due to dependencies.
 
 
 
-Installing Dependencies for ga4gh.vr.extras
+Installing Dependencies for ga4gh.vrs.extras
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-The `ga4gh.vr.extras` modules are not part of the VR spec per se.
-They are bundled with ga4gh.vr for development and installation
+The `ga4gh.vrs.extras` modules are not part of the VR spec per se.
+They are bundled with ga4gh.vrs for development and installation
 convenience.  These modules depend directly and indrectly on external
 data sources of sequences, transcripts, and genome-transcript
 alignments.  This section recommends one way to install the biocommons
@@ -107,8 +107,8 @@ applications. If you integrate this code into your application it is
 AT YOUR OWN RISK AND RESPONSIBILITY to arrange for a security audit.
 
 
-.. |pypi_rel| image:: https://badge.fury.io/py/ga4gh.vr.png
-  :target: https://pypi.org/project/ga4gh.vr
+.. |pypi_rel| image:: https://badge.fury.io/py/ga4gh.vrs.png
+  :target: https://pypi.org/project/ga4gh.vrs
   :align: middle
 
 .. |ci_rel| image:: https://travis-ci.org/ga4gh/vr-python.svg?branch=master
