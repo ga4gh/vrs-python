@@ -54,7 +54,7 @@ def normalize(vo, data_proxy):
 
 if __name__ == "__main__":      # pragma: no cover
     # Requires seqrepo REST interface is running on this URL (e.g., using docker image)
-    from ga4gh.vr.dataproxy import SeqRepoRESTDataProxy
+    from ga4gh.vrs.dataproxy import SeqRepoRESTDataProxy
     seqrepo_rest_service_url = "http://localhost:5000/seqrepo"
     dp = SeqRepoRESTDataProxy(base_url=seqrepo_rest_service_url)
 

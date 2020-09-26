@@ -86,9 +86,9 @@ def ga4gh_identify(vro, type_prefix_map=None):
     """return the GA4GH digest-based id for the object, as a CURIE
     (string)
 
-    >>> import ga4gh.vr
-    >>> ival = ga4gh.vr.models.SimpleInterval(start=44908821, end=44908822)
-    >>> location = ga4gh.vr.models.Location(sequence_id="ga4gh:SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl", interval=ival)
+    >>> import ga4gh.vrs
+    >>> ival = ga4gh.vrs.models.SimpleInterval(start=44908821, end=44908822)
+    >>> location = ga4gh.vrs.models.Location(sequence_id="ga4gh:SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl", interval=ival)
     >>> ga4gh_identify(location)
     'ga4gh:VSL.u5fspwVbQ79QkX6GHLF8tXPCAXFJqRPx'
 
@@ -105,9 +105,9 @@ def ga4gh_identify(vro, type_prefix_map=None):
 def ga4gh_digest(vro):
     """return the GA4GH digest for the object
 
-    >>> import ga4gh.vr
-    >>> ival = ga4gh.vr.models.SimpleInterval(start=44908821, end=44908822)
-    >>> location = ga4gh.vr.models.Location(sequence_id="ga4gh:SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl", interval=ival)
+    >>> import ga4gh.vrs
+    >>> ival = ga4gh.vrs.models.SimpleInterval(start=44908821, end=44908822)
+    >>> location = ga4gh.vrs.models.Location(sequence_id="ga4gh:SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl", interval=ival)
     >>> ga4gh_digest(location)
     'u5fspwVbQ79QkX6GHLF8tXPCAXFJqRPx'
 
@@ -132,9 +132,9 @@ def ga4gh_serialize(vro):
     These requirements are a distillation of several proposals which
     have not yet been ratified.
 
-    >>> import ga4gh.vr
-    >>> ival = ga4gh.vr.models.SimpleInterval(start=44908821, end=44908822)
-    >>> location = ga4gh.vr.models.Location(sequence_id="ga4gh:SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl", interval=ival)
+    >>> import ga4gh.vrs
+    >>> ival = ga4gh.vrs.models.SimpleInterval(start=44908821, end=44908822)
+    >>> location = ga4gh.vrs.models.Location(sequence_id="ga4gh:SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl", interval=ival)
     >>> ga4gh_serialize(location)
     b'{"interval":{"end":44908822,"start":44908821,"type":"SimpleInterval"},"sequence_id":"IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl","type":"SequenceLocation"}'
 

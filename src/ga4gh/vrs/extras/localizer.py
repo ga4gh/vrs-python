@@ -4,7 +4,7 @@ from bioutils.accessions import coerce_namespace
 from bioutils.assemblies import make_name_ac_map
 from bioutils.cytobands import get_cytoband_maps
 
-import ga4gh.vr
+import ga4gh.vrs
 
 
 assy_name_to_map_name = {
@@ -43,7 +43,7 @@ class Localizer:
     def localize_allele(self, allele):
         # copy input variant and replace location
         # N.B. deepcopy leads to recursion errors
-        allele_sl = ga4gh.vr.models.Variation(**allele.as_dict())
+        allele_sl = ga4gh.vrs.models.Variation(**allele.as_dict())
         del allele_sl._id
         allele_sl.location = self.localize(allele.location)
         return allele_sl
@@ -92,9 +92,9 @@ class Localizer:
         except KeyError:
             raise ValueError(f"No accssion for {loc.chr} in assembly {assembly_name}")
 
-        return ga4gh.vr.models.SequenceLocation(
+        return ga4gh.vrs.models.SequenceLocation(
             sequence_id = coerce_namespace(ac),
-            interval = ga4gh.vr.models.SimpleInterval(start=start, end=end)
+            interval = ga4gh.vrs.models.SimpleInterval(start=start, end=end)
             )
 
 
@@ -102,5 +102,5 @@ class Localizer:
 
     
 if __name__ == "__main__":
-    cbl = ga4gh.vr.models.ChromosomeLocation(chr="11", start="q22.3", end="q23.1")
+    cbl = ga4gh.vrs.models.ChromosomeLocation(chr="11", start="q22.3", end="q23.1")
     lr = Localizer()

@@ -13,7 +13,7 @@ from pkg_resources import get_distribution, DistributionNotFound
 
 #if "vrs" not in __file__:
 #    import warnings
-#    raise FutureWarning("`ga4gh.vr` is being renamed to `ga4gh.vrs`. Migrate to `ga4gh.vrs`"
+#    raise FutureWarning("`ga4gh.vrs` is being renamed to `ga4gh.vrs`. Migrate to `ga4gh.vrs`"
 #                            " now. The old name will be removed in the next release.")
 
 

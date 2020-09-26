@@ -2,8 +2,8 @@ import os
 
 import pytest
 
-from ga4gh.vr.extras.translator import Translator
-from ga4gh.vr.dataproxy import SeqRepoRESTDataProxy
+from ga4gh.vrs.extras.translator import Translator
+from ga4gh.vrs.dataproxy import SeqRepoRESTDataProxy
 
 
 @pytest.fixture(scope="session")
@@ -23,7 +23,7 @@ def tlr(dataproxy):
     )
 
 
-# See https://github.com/ga4gh/vr-python/issues/24
+# See https://github.com/ga4gh/vrs-python/issues/24
 # @pytest.fixture(autouse=True)
 # def setup_doctest(doctest_namespace, tlr):
 #     doctest_namespace["tlr"] = tlr

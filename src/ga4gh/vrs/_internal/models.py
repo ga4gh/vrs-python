@@ -4,11 +4,11 @@
 
 Users should use one of the following:
 
-  * `from ga4gh.vr import models`, and refer to models with the
+  * `from ga4gh.vrs import models`, and refer to models with the
     abbreviated name, e.g., `models.Allele` (recommended)
 
-  * `import ga4gh.vr`, and refer to models using the fully-qualified
-    module name, e.g., `ga4gh.vr.models.Allele`
+  * `import ga4gh.vrs`, and refer to models using the fully-qualified
+    module name, e.g., `ga4gh.vrs.models.Allele`
 
 
 This module reads the spec and generates classes at runtime.  The
@@ -30,7 +30,7 @@ try:
 except KeyError:
     schema_dir = pkg_resources.resource_filename(__name__, "data/schema")
 
-schema_path = schema_dir + "/vr.json"
+schema_path = schema_dir + "/vrs.json"
 
 
 models = None
