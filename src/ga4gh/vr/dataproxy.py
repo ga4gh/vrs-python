@@ -31,10 +31,10 @@ class _DataProxy(ABC):
     """
 
     @abstractmethod
-    def get_sequence(identifier, start=None, end=None):
+    def get_sequence(self, identifier, start=None, end=None):
         """return the specified sequence or subsequence
 
-        start and end are optional
+n        start and end are optional
 
         If the given sequence does not exist, KeyError is raised.
 
@@ -44,7 +44,7 @@ class _DataProxy(ABC):
         """
 
     @abstractmethod
-    def get_metadata(identifier):
+    def get_metadata(self, identifier):
         """for a given identifier, return a structure (dict) containing
         sequence length, aliases, and other optional info
 
@@ -230,8 +230,8 @@ def _isoformat(o):
 
 
 
-def create_dataproxy(uri: str) -> _DataProxy:
-    """Create a dataproxy from uri or GA4GH_VR_DATAPROXY_URI
+def create_dataproxy(uri: str = None) -> _DataProxy:
+    """Create a dataproxy from uri or GA4GH_VRS_DATAPROXY_URI
     
     Currently accepted URI schemes:
 
@@ -242,7 +242,11 @@ def create_dataproxy(uri: str) -> _DataProxy:
 
     """
 
-    uri = uri or os.environ["GA4GH_VR_DATAPROXY_URI"] or os.environ("SEQREPO_DIR")
+    uri = (uri
+           or os.environ.get("GA4GH_VRS_DATAPROXY_URI", None))
+
+    if uri is None:
+        raise ValueError("No data proxy URI provided or found in GA4GH_VRS_DATAPROXY_URI")
 
     parsed_uri = urlparse(uri)
     scheme = parsed_uri.scheme
