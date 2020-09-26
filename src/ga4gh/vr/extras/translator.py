@@ -1,11 +1,11 @@
-"""Translates various formats into VR models.
+"""Translates various external formats into VRS models.
 
-TODO: move translate, normalize, identify functionality to separate module
+Input formats: VRS (serialized), hgvs, spdi, gnomad (vcf), beacon
+Output formats: VRS (serialized), hgvs, spdi, gnomad (vcf)
 
 """
 
-raise Exception("This file was moved to anyvar")
-
+from collections.abc import Mapping
 import copy
 import logging
 import re
@@ -19,25 +19,29 @@ import hgvs.edit
 import hgvs.sequencevariant
 
 from ga4gh.core import ga4gh_identify
-from ga4gh.vr import models
-
-from ..normalize import normalize
-from .decorators import lazy_property
+from ga4gh.vr import models, normalize
+from ga4gh.vr.extras.decorators import lazy_property  # this should be relocated
 
 _logger = logging.getLogger(__name__)
-
-
-# TODO: move inside class
-beacon_re = re.compile(r"(?P<chr>[^-]+)\s*:\s*(?P<pos>\d+)\s*(?P<ref>\w+)\s*>\s*(?P<alt>\w+)")
-vcf_re = re.compile(r"(?P<chr>[^-]+)-(?P<pos>\d+)-(?P<ref>\w+)-(?P<alt>\w+)")
-spdi_re = re.compile(r"(?P<ac>[^:]+):(?P<pos>\d+):(?P<del_len_or_seq>\w+):(?P<ins_seq>\w+)")
 
 
 
 class Translator:
     """Translates various variation formats to and from GA4GH VR models
 
+    All `from_` methods follow this pattern:
+    * If the argument does not appear to be an appropriate type, None is returned
+    * Otherwise, the argument is expected to be of the correct type.  If an error occurs during processing,
+      an exception is raised.
+    * Otherwise, the VRS object is returned
+
     """
+
+    beacon_re = re.compile(r"(?P<chr>[^-]+)\s*:\s*(?P<pos>\d+)\s*(?P<ref>\w+)\s*>\s*(?P<alt>\w+)")
+    gnomad_re = re.compile(r"(?P<chr>[^-]+)-(?P<pos>\d+)-(?P<ref>\w+)-(?P<alt>\w+)")
+    hgvs_re = re.compile(r"[^:]+:[cgnpr]\.")
+    spdi_re = re.compile(r"(?P<ac>[^:]+):(?P<pos>\d+):(?P<del_len_or_seq>\w+):(?P<ins_seq>\w+)")
+
 
     def __init__(self,
                  data_proxy,
@@ -52,7 +56,38 @@ class Translator:
         self.normalize = normalize
 
 
-    def from_beacon(self, beacon_expr, assembly_name=None):
+    def translate_from(self, var, fmt=None):
+        """Translate variation `var` to VRS object
+        
+        If fmt is None, guess the appropriate format and return the variant.
+        If fmt is specified, try only that format.
+        See also notes about `from_` and `to_` methods.   
+        """
+
+        if fmt:
+            t = self.from_translators[fmt]
+            o = t(self, var)
+            if o is None:
+                raise ValueError(f"Unable to parse data as {fmt} variation")
+            return o
+
+        for fmt, t in self.from_translators.items():
+            o = t(self, var)
+            if o:
+                return o
+
+        formats = list(self.from_translators.keys())
+        raise ValueError(f"Unable to parse data as {', '.join(formats)}")
+
+    def translate_to(self, vo, fmt):
+        t = self.to_translators[fmt]
+        return t(self, vo)
+
+
+    ############################################################################
+    ## INTERNAL
+
+    def _from_beacon(self, beacon_expr, assembly_name=None):
         """Parse beacon expression into VR Allele
         
         #>>> a = tlr.from_beacon("13 : 32936732 G > C")
@@ -65,11 +100,13 @@ class Translator:
          'state': {'sequence': 'C', 'type': 'SequenceState'},
          'type': 'Allele'}
 
-        """          
-        
-        m = beacon_re.match(beacon_expr.replace(" ", ""))
+        """
+
+        if not isinstance(beacon_expr, str):
+            return None
+        m = self.beacon_re.match(beacon_expr.replace(" ", ""))
         if not m:
-            raise ValueError(f"Not a Beacon expression: {beacon_expr}")
+            return None
 
         g = m.groupdict()
         if assembly_name is None:
@@ -89,7 +126,46 @@ class Translator:
         return allele
 
 
-    def from_hgvs(self, hgvs_expr):
+    def _from_gnomad(self, gnomad_expr, assembly_name=None):
+        """Parse gnomAD-style VCF expression into VR Allele
+
+        #>>> a = tlr.from_gnomad("1-55516888-G-GA")
+        #>>> a.as_dict()
+        {'location': {'interval': {'end': 55516888,
+           'start': 55516887,
+           'type': 'SimpleInterval'},
+          'sequence_id': 'GRCh38:1',
+          'type': 'SequenceLocation'},
+         'state': {'sequence': 'GA', 'type': 'SequenceState'},
+         'type': 'Allele'}
+        
+        """
+
+        if not isinstance(gnomad_expr, str):
+            return None
+        m = self.gnomad_re.match(gnomad_expr)
+        if not m:
+            return None
+
+        g = m.groupdict()
+        if assembly_name is None:
+            assembly_name = self.default_assembly_name
+        sequence_id = assembly_name + ":" + g["chr"]
+        start = int(g["pos"]) - 1
+        ref = g["ref"]
+        alt = g["alt"]
+        end = start + len(ref)
+        ins_seq = alt
+
+        interval = models.SimpleInterval(start=start, end=end)
+        location = models.Location(sequence_id=sequence_id, interval=interval)
+        sstate = models.SequenceState(sequence=ins_seq)
+        allele = models.Allele(location=location, state=sstate)
+        allele = self._post_process_imported_allele(allele)
+        return allele
+
+
+    def _from_hgvs(self, hgvs_expr):
         """parse hgvs into a VR object (typically an Allele)
 
         #>>> a = tlr.from_hgvs("NM_012345.6:c.22A>T")
@@ -105,6 +181,12 @@ class Translator:
         }
 
         """
+
+        if not isinstance(hgvs_expr, str):
+            return None
+        if not self.hgvs_re.match(hgvs_expr):
+            return None
+
         sv = self._hgvs_parser.parse_hgvs_variant(hgvs_expr)
 
         # prefix accession with namespace
@@ -136,9 +218,63 @@ class Translator:
         allele = self._post_process_imported_allele(allele)
         return allele
 
-    
-    def to_hgvs(self, allele, namespace=None):
-        """generates a list of HGVS expressions for VR Allele.
+
+    def _from_spdi(self, spdi_expr):
+
+        """Parse SPDI expression in to a GA4GH Allele
+
+        #>>> a = tlr.from_spdi("NM_012345.6:21:1:T")
+        #>>> a.as_dict()
+        {
+          'location': {
+            'interval': {'end': 22, 'start': 21, 'type': 'SimpleInterval'},
+            'sequence_id': 'refseq:NM_012345.6',
+            'type': 'SequenceLocation'
+          },
+          'state': {'sequence': 'T', 'type': 'SequenceState'},
+          'type': 'Allele'
+        }
+        """
+
+        if not isinstance(spdi_expr, str):
+            return None
+        m = self.spdi_re.match(spdi_expr)
+        if not m:
+            return None
+
+        g = m.groupdict()
+        sequence_id = coerce_namespace(g["ac"])
+        start = int(g["pos"])
+        try:
+            del_len = int(g["del_len_or_seq"])
+        except ValueError:
+            del_len = len(g["del_len_or_seq"])
+        end = start + del_len
+        ins_seq = g["ins_seq"]
+
+        interval = models.SimpleInterval(start=start, end=end)
+        location = models.Location(sequence_id=sequence_id, interval=interval)
+        sstate = models.SequenceState(sequence=ins_seq)
+        allele = models.Allele(location=location, state=sstate)
+        allele = self._post_process_imported_allele(allele)
+        return allele
+
+
+    def _from_vrs(self, var):
+        """convert from dict representation of VR JSON to VR object"""
+        if not isinstance(var, Mapping):
+            return None
+        if "type" not in var:
+            return None
+        try:
+            model = models[var["type"]]
+        except KeyError:
+            return None
+        return model(**var)
+
+
+    def _to_hgvs(self, vo, namespace="refseq"):
+        """generates a *list* of HGVS expressions for VR Allele.
 
         If `namespace` is not None, returns HGVS strings for the
         specified namespace.
@@ -167,12 +303,12 @@ class Translator:
             return None
 
 
-        if (type(allele).__name__ != "Allele"
-            or type(allele.location).__name__ != "SequenceLocation"
-            or type(allele.state).__name__ != "SequenceState"):
-            raise ValueError(f"to_hgvs requires a VR Allele with SequenceLocation and SequenceState")
+        if (type(vo).__name__ != "Allele"
+            or type(vo.location).__name__ != "SequenceLocation"
+            or type(vo.state).__name__ != "SequenceState"):
+            raise ValueError(f"_to_hgvs requires a VRS Allele with SequenceLocation and SequenceState")
 
-        sequence_id = str(allele.location.sequence_id)
+        sequence_id = str(vo.location.sequence_id)
         aliases = self.data_proxy.translate_sequence_identifier(sequence_id, namespace)
 
         # infer type of sequence based on accession
@@ -186,10 +322,10 @@ class Translator:
         if stype == "p":
             raise ValueError("Only nucleic acid variation is currently supported")
             # ival = hgvs.location.Interval(start=start, end=end)
-            # edit = hgvs.edit.AARefAlt(ref=None, alt=allele.state.sequence)
+            # edit = hgvs.edit.AARefAlt(ref=None, alt=vo.state.sequence)
         else:
-            start = allele.location.interval.start
-            end = allele.location.interval.end
+            start = vo.location.interval.start
+            end = vo.location.interval.end
             # ib: 0 1 2 3 4 5
             #  h:  1 2 3 4 5
             if start == end:    # insert: hgvs uses *exclusive coords*
@@ -201,7 +337,7 @@ class Translator:
             ival = hgvs.location.Interval(
                 start=hgvs.location.SimplePosition(base=start),
                 end=hgvs.location.SimplePosition(base=end))
-            alt = str(allele.state.sequence) or None  # "" => None
+            alt = str(vo.state.sequence) or None  # "" => None
             edit = hgvs.edit.NARefAlt(ref=ref, alt=alt)
 
         posedit = hgvs.posedit.PosEdit(pos=ival, edit=edit)
@@ -209,7 +345,7 @@ class Translator:
             ac=None,
             type=stype,
             posedit=posedit)
-        
+
         hgvs_exprs = []
         for alias in aliases:
             ns, a = alias.split(":")
@@ -224,86 +360,6 @@ class Translator:
 
         return list(set(hgvs_exprs))
 
-    
-    def from_spdi(self, spdi_expr):
-
-        """Parse SPDI expression in to a GA4GH Allele
-
-        #>>> a = tlr.from_spdi("NM_012345.6:21:1:T")
-        #>>> a.as_dict()
-        {
-          'location': {
-            'interval': {'end': 22, 'start': 21, 'type': 'SimpleInterval'},
-            'sequence_id': 'refseq:NM_012345.6',
-            'type': 'SequenceLocation'
-          },
-          'state': {'sequence': 'T', 'type': 'SequenceState'},
-          'type': 'Allele'
-        }
-        """
-
-        m = spdi_re.match(spdi_expr)
-        if not m:
-            raise ValueError(f"Not a SPDI expression: {spdi_expr}")
-
-        g = m.groupdict()
-        sequence_id = coerce_namespace(g["ac"])
-        start = int(g["pos"])
-        try:
-            del_len = int(g["del_len_or_seq"])
-        except ValueError:
-            del_len = len(g["del_len_or_seq"])
-        end = start + del_len
-        ins_seq = g["ins_seq"]
-
-        interval = models.SimpleInterval(start=start, end=end)
-        location = models.Location(sequence_id=sequence_id, interval=interval)
-        sstate = models.SequenceState(sequence=ins_seq)
-        allele = models.Allele(location=location, state=sstate)
-        allele = self._post_process_imported_allele(allele)
-        return allele
-
-
-    def from_vcf(self, vcf_expr, assembly_name=None):
-        """Parse gnomAD-style VCF expression into VR Allele
-
-        #>>> a = tlr.from_vcf("1-55516888-G-GA")
-        #>>> a.as_dict()
-        {'location': {'interval': {'end': 55516888,
-           'start': 55516887,
-           'type': 'SimpleInterval'},
-          'sequence_id': 'GRCh38:1',
-          'type': 'SequenceLocation'},
-         'state': {'sequence': 'GA', 'type': 'SequenceState'},
-         'type': 'Allele'}
-        
-        """          
-        
-        m = vcf_re.match(vcf_expr)
-        if not m:
-            raise ValueError(f"Not a vcf/gnomAD expression: {vcf_expr}")
-
-        g = m.groupdict()
-        if assembly_name is None:
-            assembly_name = self.default_assembly_name
-        sequence_id = assembly_name + ":" + g["chr"]
-        start = int(g["pos"]) - 1
-        ref = g["ref"]
-        alt = g["alt"]
-        end = start + len(ref)
-        ins_seq = alt
-
-        interval = models.SimpleInterval(start=start, end=end)
-        location = models.Location(sequence_id=sequence_id, interval=interval)
-        sstate = models.SequenceState(sequence=ins_seq)
-        allele = models.Allele(location=location, state=sstate)
-        allele = self._post_process_imported_allele(allele)
-        return allele
-
-
-    
-    ############################################################################
-    ## INTERNAL
 
     @lazy_property
     def _hgvs_parser(self):
@@ -316,7 +372,7 @@ class Translator:
         """Provide common post-processing for imported Alleles IN-PLACE.
 
         """
-        
+
         if self.translate_sequence_identifiers:
             seq_id = self.data_proxy.translate_sequence_identifier(allele.location.sequence_id._value, "ga4gh")[0]
             allele.location.sequence_id = seq_id
@@ -330,21 +386,73 @@ class Translator:
         return allele
 
 
-
     def _seq_id_mapper(self, ir):
         if self.translate_sequence_identifiers:
             return self.data_proxy.translate_sequence_identifier(ir, "ga4gh")[0]
         return ir
 
 
+    from_translators = {
+        "beacon": _from_beacon,
+        "gnomad": _from_gnomad,
+        "hgvs": _from_hgvs,
+        "spdi": _from_spdi,
+        "vrs": _from_vrs,
+    }
+
+    to_translators = {
+        "hgvs": _to_hgvs,
+        #"spdi": to_spdi,
+        #"gnomad": to_gnomad,
+    }
+
+
 
 
 if __name__ == "__main__":
-    from .dataproxy import SeqRepoRESTDataProxy
+    import coloredlogs
+    coloredlogs.install(level="INFO")
 
-    seqrepo_rest_service_url = "http://localhost:5000/seqrepo" 
-    dp = SeqRepoRESTDataProxy(base_url=seqrepo_rest_service_url) 
-
+    from ga4gh.vr.dataproxy import create_dataproxy
+    dp = create_dataproxy("seqrepo+file:///usr/local/share/seqrepo/latest")
     tlr = Translator(data_proxy=dp)
 
-    a = tlr.from_hgvs("NC_000013.11:g.32936732G>C")
+    expressions = [
+        "bogus",
+        "1-55516888-G-GA", 
+        "13 : 32936732 G > C",
+        "NC_000013.11:g.32936732G>C",
+        "NM_000551.3:21:1:T", {
+            'location': {
+                'interval': {
+                    'end': 22,
+                    'start': 21,
+                    'type': 'SimpleInterval'
+                },
+                'sequence_id': 'ga4gh:SQ.v_QTc1p-MUYdgrRv4LMT6ByXIOsdw3C_',
+                'type': 'SequenceLocation'
+            },
+            'state': {
+                'sequence': 'T',
+                'type': 'SequenceState'
+            },
+            'type': 'Allele'
+        }, {
+            'end': 22,
+            'start': 21,
+            'type': 'SimpleInterval'
+        }
+    ]
+    formats = ["hgvs", "gnomad", "beacon", "spdi", "vrs", None]
+
+    for e in expressions:
+        print(f"* {e}")
+        for f in formats:
+            try:
+                o = tlr.translate_from(e, f)
+                r = o.type
+            except ValueError:
+                r = "-"
+            except Exception as ex:
+                r = ex.__class__.__name__
+            print(f"  {f}: {r}")

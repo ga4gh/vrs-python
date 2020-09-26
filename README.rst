@@ -6,7 +6,7 @@ vr-python
 
 vr-python provides Python language support for the [GA4GH Variation
 Representation Specification
-(vr-spec)](https://github.com/ga4gh/vr-spec).
+(VRS)](https://github.com/ga4gh/vr-spec).
 
 This repository contains several related components:
 
