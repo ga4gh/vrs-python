@@ -175,7 +175,9 @@ def ga4gh_serialize(vro):
             return d
 
         if is_array(vro):
-            return sorted(dictify(o) for o in vro.data)
+            if is_curie_type(vro[0]):
+                return sorted(dictify(o) for o in vro.data)
+            return [dictify(o) for o in vro.data]
 
         raise ValueError(f"Don't know how to serialize {vro}")  # pragma: no cover
 
