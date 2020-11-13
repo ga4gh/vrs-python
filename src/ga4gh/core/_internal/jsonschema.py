@@ -22,10 +22,10 @@ _logger = logging.getLogger(__name__)
 ############################################################################
 # Schema Functions
 
-def build_models(path, standardize_names):
+def build_models(path, standardize_names=False):
     """load models from json schema at path"""
     builder = pjs.ObjectBuilder(path)
-    models = builder.build_classes(standardize_names=False)
+    models = builder.build_classes(standardize_names=standardize_names)
     return models
 
 
@@ -81,15 +81,13 @@ def is_referable(json_subschema):
     return False
 
 
-
-
-
 ############################################################################
 # Class Functions
 # (argument is a pjs class)
 
-def is_pjs_class(k):
-    return pjs.classbuilder.ProtocolBase in k.__mro__
+def is_pjs_class(c):
+    mro = getattr(c, "__mro__", [])
+    return pjs.classbuilder.ProtocolBase in mro
 
 
 ############################################################################
@@ -104,13 +102,11 @@ def is_pjs_instance(o):
 def is_pjs_literal(o):
     """return True if object is a python jsonschema object literal"""
     return isinstance(o, pjs.literals.LiteralValue)
-is_literal = is_pjs_literal
 
 
 def is_pjs_array(o):
     """return True if object is a python jsonschema object array"""
     return getattr(o, "type", None) == "array"
-is_array = is_pjs_array
 
 
 def is_curie_type(o):
@@ -119,7 +115,6 @@ def is_curie_type(o):
 
     """
     return o.__class__.__name__.endswith("/CURIE")
-is_curie = is_curie_type
 
 
 def pjs_copy(o):
@@ -129,6 +124,12 @@ def pjs_copy(o):
 
     """
     return o.__class__(**o.as_dict())
+
+
+# backward compatibility
+is_literal = is_pjs_literal
+is_array = is_pjs_array
+is_curie = is_curie_type
 
 
 ############################################################################
