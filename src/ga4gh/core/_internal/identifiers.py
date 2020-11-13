@@ -189,8 +189,8 @@ def ga4gh_serialize(vro):
     # The following alternative does the same thing for our use case.
     # It's included here as an outline for anyone implementing in
     # another language.  (canonicaljson escapes unicode characters, as
-    # required by the VR spec, but this doesn't apply to any known
-    # uses so these are equivalent.)
+    # required by VRS, but this doesn't apply to any known uses so
+    # these are equivalent.)
 
     # >> import json
     # >> def cjdump(a):

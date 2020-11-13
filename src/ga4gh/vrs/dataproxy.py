@@ -1,5 +1,7 @@
 """provides an abstract class for all data access required for
-vr.extras, and a concrete implementation based on seqrepo.
+VRS, and a concrete implementation based on seqrepo.
+
+See https://vr-spec.readthedocs.io/en/1.1/impl-guide/required_data.html
 
 """
 
@@ -20,7 +22,7 @@ _logger = logging.getLogger(__name__)
 
 
 class _DataProxy(ABC):
-    """abstract class / interface for vr data needs
+    """abstract class / interface for VRS data needs
     
     The proxy MUST support the use of GA4GH sequence identifers (i.e.,
     `ga4gh:SQ...`) as keys, and return these identifiers among the

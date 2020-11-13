@@ -1,8 +1,8 @@
-"""Generate VR models at runtime from the spec
+"""Generate VRS models at runtime from the json schema
 
-**This file should not be imported directly.**
+**This module should not be imported directly.**
 
-Users should use one of the following:
+Instead, users should use one of the following:
 
   * `from ga4gh.vrs import models`, and refer to models with the
     abbreviated name, e.g., `models.Allele` (recommended)
@@ -32,7 +32,8 @@ if "VR_SCHEMA_DIR" in os.environ:
     _logger.warning("VR_SCHEMA_DIR is defined but being ignored; Use VRS_SCHEMA_DIR instead")
 
 try:
-    # specify VRS_SCHEMA_DIR to use a schema other than the one embedded in VR
+    # specify VRS_SCHEMA_DIR to use a schema other than the one
+    # embedded in vrs-python
     schema_dir = os.environ["VRS_SCHEMA_DIR"]
 except KeyError:
     schema_dir = pkg_resources.resource_filename(__name__, "data/schema")
