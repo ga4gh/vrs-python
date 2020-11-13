@@ -5,7 +5,7 @@ implementation
 """
 
 
-__all__ = """models normalize schema_path vr_deref vr_enref""".split()
+__all__ = """models normalize schema_path vrs_deref vrs_enref""".split()
 
 
 from pkg_resources import get_distribution, DistributionNotFound
@@ -25,6 +25,11 @@ finally:
     del get_distribution, DistributionNotFound
 
 
-from ._internal.enderef import vr_deref, vr_enref
+from ._internal.enderef import vrs_deref, vrs_enref
 from ._internal.models import models, schema_path
 from .normalize import normalize
+
+
+# backward compatibility
+vr_enref = vrs_enref
+vr_deref = vrs_deref

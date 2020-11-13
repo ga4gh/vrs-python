@@ -17,6 +17,7 @@ models are always in sync with the spec.
 
 """
 
+import logging
 import os
 
 import pkg_resources
@@ -24,9 +25,15 @@ import pkg_resources
 from ga4gh.core import build_models, build_class_referable_attribute_map
 
 
+_logger = logging.getLogger(__name__)
+
+
+if "VR_SCHEMA_DIR" in os.environ:
+    _logger.warning("VR_SCHEMA_DIR is defined but being ignored; Use VRS_SCHEMA_DIR instead")
+
 try:
-    # specify VR_SCHEMA_DIR to use a schema other than the one embedded in VR
-    schema_dir = os.environ["VR_SCHEMA_DIR"]
+    # specify VRS_SCHEMA_DIR to use a schema other than the one embedded in VR
+    schema_dir = os.environ["VRS_SCHEMA_DIR"]
 except KeyError:
     schema_dir = pkg_resources.resource_filename(__name__, "data/schema")
 
@@ -36,7 +43,7 @@ schema_path = schema_dir + "/vrs.json"
 models = None
 class_refatt_map = None
 
-def _load_vr_models():
+def _load_vrs_models():
     """load/reload models from `schema_path`
 
     This function facilitates reloading changes to the schema during
@@ -50,4 +57,4 @@ def _load_vr_models():
     return models
 
 
-_load_vr_models()
+_load_vrs_models()
