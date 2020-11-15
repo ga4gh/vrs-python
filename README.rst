@@ -96,6 +96,14 @@ Once installed as described above, type::
   $ jupyter notebook --notebook-dir notebooks/
 
 
+The following jupyter extensions are recommended but not required::
+
+  $ pip install jupyter_contrib_nbextensions
+  $ jupyter contrib nbextension install --user
+  $ jupyter nbextension enable toc2/main
+  
+
+
 Security Note (from the GA4GH Security Team)
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 

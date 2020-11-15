@@ -69,7 +69,7 @@ def is_referable(json_subschema):
     if "oneOf" in json_subschema:
         # schema is oneOf of a CURIE and non-CURIE type
         refs = [oo.get("$ref", None) for oo in json_subschema["oneOf"]]
-        return (any(r.endswith("/CURIE") for r in refs)
+        return (any(r and r.endswith("/CURIE") for r in refs)
                     and any(not r.endswith("/CURIE") for r in refs))
 
     if "type" in json_subschema:
