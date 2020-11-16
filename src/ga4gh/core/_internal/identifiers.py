@@ -22,6 +22,7 @@ import pkg_resources
 import yaml
 
 from .digests import sha512t24u
+from .exceptions import GA4GHError
 from .jsonschema import is_array, is_pjs_instance, is_curie_type, is_identifiable, is_literal
 
 
@@ -96,7 +97,10 @@ def ga4gh_identify(vro, type_prefix_map=None):
 
     if type_prefix_map is None:
         type_prefix_map = type_prefix_map_default
-    pfx = type_prefix_map[vro.type]
+    try:
+        pfx = type_prefix_map[vro.type]
+    except KeyError:
+        raise GA4GHError(f"No identifier prefix is defined for {vro.type}; check ga4gh.yaml")
     digest = ga4gh_digest(vro)
     ir = f"{namespace}{curie_sep}{pfx}{ref_sep}{digest}"
     return ir
