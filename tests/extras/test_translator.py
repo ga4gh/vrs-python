@@ -35,16 +35,16 @@ def test_from_spdi(tlr):
     assert tlr._from_spdi(inputs["spdi"]).as_dict() == output
 
 
-    
+
 hgvs_tests = (
-    ("NC_000013.11:g.32936732C=",
+    ("NC_000013.11:g.32936732=",
      {'location': {'interval': {'end': 32936732,
                                 'start': 32936731,
                                 'type': 'SimpleInterval'},
                    'sequence_id': 'ga4gh:SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT',
                    'type': 'SequenceLocation'},
       'state': {'sequence': 'C', 'type': 'SequenceState'},
-      'type': 'Allele'}), 
+      'type': 'Allele'}),
 
     ("NC_000007.14:g.55181320A>T",
      {'location': {'interval': {'end': 55181320,
@@ -76,8 +76,13 @@ hgvs_tests = (
 @pytest.mark.parametrize("hgvsexpr,expected", hgvs_tests)
 @pytest.mark.vcr
 def test_hgvs(tlr, hgvsexpr, expected):
-    assert expected == tlr._from_hgvs(hgvsexpr).as_dict()
+    tlr.normalize = True
+    allele = tlr.translate_from(hgvsexpr, "hgvs")
+    assert expected == allele.as_dict()
 
+    to_hgvs = tlr.translate_to(allele, "hgvs")
+    assert 1 == len(to_hgvs)
+    assert hgvsexpr == to_hgvs[0]
 
 
 # TODO: Readd these tests
@@ -85,16 +90,16 @@ def test_hgvs(tlr, hgvsexpr, expected):
 # def test_errors(tlr):
 #     with pytest.raises(ValueError):
 #         tlr._from_beacon("bogus")
-#         
+#
 #     with pytest.raises(ValueError):
 #         tlr._from_gnomad("NM_182763.2:c.688+403C>T")
-# 
+#
 #     with pytest.raises(ValueError):
 #         tlr._from_hgvs("NM_182763.2:c.688+403C>T")
-#         
+#
 #     with pytest.raises(ValueError):
 #         tlr._from_hgvs("NM_182763.2:c.688_690inv")
-#         
+#
 #     with pytest.raises(ValueError):
 #         tlr._from_spdi("NM_182763.2:c.688+403C>T")
-        
+
