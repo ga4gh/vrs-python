@@ -38,7 +38,7 @@ try:
 except KeyError:
     schema_dir = pkg_resources.resource_filename(__name__, "data/schema")
 
-schema_path = schema_dir + "/vrs.json"
+schema_path = schema_dir + "/vr.json"
 
 
 models = None
