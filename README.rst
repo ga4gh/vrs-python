@@ -55,7 +55,7 @@ vr-python is unlikely to work on Windows due to dependencies.
 
 
 Installing Dependencies for ga4gh.vrs.extras
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 The `ga4gh.vrs.extras` modules are not part of the VR spec per se.
 They are bundled with ga4gh.vrs for development and installation
