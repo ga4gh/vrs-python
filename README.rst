@@ -1,10 +1,10 @@
-vr-python
-!!!!!!!!!
+vrs-python
+!!!!!!!!!!
 
 
 |ci_rel| | |cov| | |pypi_rel|
 
-vr-python provides Python language support for the [GA4GH Variation
+vrs-python provides Python language support for the [GA4GH Variation
 Representation Specification
 (VRS)](https://github.com/ga4gh/vr-spec).
 
@@ -42,12 +42,12 @@ Installing for development
 @@@@@@@@@@@@@@@@@@@@@@@@@@
 
 The following instructions are for Ubuntu 18.04+ and MacOS.
-vr-python is unlikely to work on Windows due to dependencies.
+vrs-python is unlikely to work on Windows due to dependencies.
 
 ::
 
-   $ git clone --recurse-submodules https://github.com/ga4gh/vr-python.git
-   $ cd vr-python
+   $ git clone --recurse-submodules https://github.com/ga4gh/vrs-python.git
+   $ cd vrs-python
    $ make devready
 
 (Python 3.5 and 3.6 should also work.)
@@ -119,9 +119,9 @@ AT YOUR OWN RISK AND RESPONSIBILITY to arrange for a security audit.
   :target: https://pypi.org/project/ga4gh.vrs
   :align: middle
 
-.. |ci_rel| image:: https://travis-ci.org/ga4gh/vr-python.svg?branch=master
-  :target: https://travis-ci.org/ga4gh/vr-python
+.. |ci_rel| image:: https://travis-ci.org/ga4gh/vrs-python.svg?branch=master
+  :target: https://travis-ci.org/ga4gh/vrs-python
   :align: middle 
 
-.. |cov| image:: https://coveralls.io/repos/github/ga4gh/vr-python/badge.svg?branch=
-  :target: https://coveralls.io/github/ga4gh/vr-python?branch=
+.. |cov| image:: https://coveralls.io/repos/github/ga4gh/vrs-python/badge.svg?branch=
+  :target: https://coveralls.io/github/ga4gh/vrs-python?branch=
