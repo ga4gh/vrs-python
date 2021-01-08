@@ -25,7 +25,7 @@ jobs:
       user: ga4gh
       skip_upload_docs: true
       skip_cleanup: true
-      distributions: sdist bdist_egg bdist_wheel
+      distributions: bdist_egg bdist_wheel
       on:
         tags: true
         branch: master
