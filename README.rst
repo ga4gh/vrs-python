@@ -27,8 +27,8 @@ This repository contains several related components:
 Installing ga4gh.vrs
 !!!!!!!!!!!!!!!!!!!!
 
-Installating with pip
-@@@@@@@@@@@@@@@@@@@@@
+Installing with pip
+@@@@@@@@@@@@@@@@@@@
 
 ::
 
