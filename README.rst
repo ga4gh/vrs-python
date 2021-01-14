@@ -23,6 +23,19 @@ This repository contains several related components:
   notebooks.
 
 
+VRS-Python and VRS Versioning
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+The vrs-python repo embeds vr-spec as a submodule, and therefore each
+ga4gh.vrs package on PyPi contains a particular version of VRS. The
+correspondences between the packages may be summarized as:
+
+* **develop ~ develop**: The vrs-python develop branch tracks the vr-spec develop branch.
+* **0.6 ~ 1.1**: vrs-python 0.6 branch tracks the vr-spec 1.1 branch.
+
+  * **0.6.2 ~ 1.1.2**
+
+
 
 Installing ga4gh.vrs
 !!!!!!!!!!!!!!!!!!!!
