@@ -4,6 +4,7 @@ language: python
 python:
 - '3.6'
 - '3.7'
+- '3.8'
 cache: pip
 before_install:
 - git submodule update --init
@@ -17,7 +18,7 @@ stages:
 jobs:
   include:
   - stage: deploy
-    python: 3.7
+    python: 3.8
     install: skip
     script: skip
     deploy:
@@ -28,7 +29,7 @@ jobs:
       distributions: bdist_egg bdist_wheel
       on:
         tags: true
-        branch: master
+        branch: develop
       password:
         secure: HWsxDri2EoC7+PBva7xU1EFFRFwukKBnTZ73fJnwdaJ/hpsGQHjS/OnlYNI+mm8RjCqEmOKr2O+fpd8ZCoDh8hWD+1DAwRlculxgt2stB3sjF+pG6+/It9MyWw6pdik0/t1kcmhzN7gFUgdgyekMFTnf4utYuv2rUljBjmExdZUQl4oGR01Zu7K71JuMSd+RGdvkznfTVtrXALTDz1yTQnBJpqgCLFcmzAn39yYwIcO/ysp4Er4+XpJOLvyzPYEc75wEQoMJY9O90wq3awEHcDMe7bdQDF5mf8pf6Cq2uynsYdt0LtHm/HpSVQfLQcHjANEuYXuBaPSrYl8M/epd0veFbGsWPpRuxE9PljRJzTPdR25GaqC6mODgoWQdCCt8sEj6JxPDM+O5SyUhJt7DpIggLB1ytI8lpxGHkXBRuLqVmcITitC8QbIKndVe0AezgQSDloDNRpsNvP677IXiyyTdNhqXtajTFxopsY62d5a5OQMgT5naC7VyyhQY5DAj5o5kcjowGBdA2dwpYRnWmE275hTvxfvF9iEBQOVFa/bxyKbvWBV00irb+XYNN6o1yuiINYRMLs6gwLwWc+mynY+I5Doo35IurRX2Em9c43mpQhf0h1P3XzSRY36e9aeuWcomcrwZy0Hoex/X8kzH/koac+7y2nAqsFkDvuf7EA4=
 notifications:
