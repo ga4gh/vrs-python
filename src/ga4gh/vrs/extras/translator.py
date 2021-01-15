@@ -346,6 +346,13 @@ class Translator:
             type=stype,
             posedit=posedit)
 
+        # TODO: renormalize variant per hgvs
+        # hgvs.normalizer will do this, but it requires a connection
+        # to UTA and I don't want that dependency at this time.
+        # VRS normalizer could work too, but it won't translate ins to dup, etc.
+        # So, warn for now.
+        _logger.info("HGVS normalization is not yet implemented in the VRS translator")
+
         hgvs_exprs = []
         for alias in aliases:
             ns, a = alias.split(":")
@@ -359,6 +366,41 @@ class Translator:
             hgvs_exprs += [str(var)]
 
         return list(set(hgvs_exprs))
+
+
+    def _to_spdi(self, vo, namespace="refseq"):
+        """generates a *list* of SPDI expressions for VRS Allele.
+
+        If `namespace` is not None, returns SPDI strings for the
+        specified namespace.
+
+        If `namespace` is None, returns SPDI strings for all alias
+        translations.
+
+        If no alias translations are available, an empty list is
+        returned.
+
+        If the VRS object cannot be expressed as SPDI, raises ValueError.
+
+        SPDI and VRS use identical normalization. The incoming Allele
+        is expected to be normalized per VRS spec.
+
+        """
+
+        if (type(vo).__name__ != "Allele"
+            or type(vo.location).__name__ != "SequenceLocation"
+            or type(vo.state).__name__ != "SequenceState"):
+            raise ValueError(f"_to_hgvs requires a VRS Allele with SequenceLocation and SequenceState")
+
+        sequence_id = str(vo.location.sequence_id)
+        aliases = self.data_proxy.translate_sequence_identifier(sequence_id, namespace)
+        aliases = [a.split(":")[1] for a in aliases]
+
+        start = vo.location.interval.start
+        end = vo.location.interval.end
+        spdi_tail = f":{start}:{end-start}:{vo.state.sequence}"
+        spdis = [a + spdi_tail for a in aliases]
+        return spdis
 
 
     @lazy_property
@@ -402,7 +444,7 @@ class Translator:
 
     to_translators = {
         "hgvs": _to_hgvs,
-        #"spdi": to_spdi,
+        "spdi": _to_spdi,
         #"gnomad": to_gnomad,
     }
 
