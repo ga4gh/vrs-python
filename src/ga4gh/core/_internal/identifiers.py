@@ -16,6 +16,7 @@ For that reason, they are implemented here in one file.
 """
 
 import logging
+import os
 import re
 
 import pkg_resources
@@ -36,7 +37,8 @@ __all__ = "ga4gh_digest ga4gh_identify ga4gh_serialize is_ga4gh_identifier parse
 _logger = logging.getLogger(__name__)
 
 
-schema_dir = pkg_resources.resource_filename(__name__, "data/schema")
+# Assume that ga4gh.yaml and vrs.yaml files are in the same directory for now
+schema_dir = os.environ.get("VRS_SCHEMA_DIR", pkg_resources.resource_filename(__name__, "data/schema"))
 cfg = yaml.safe_load(open(schema_dir + "/ga4gh.yaml"))
 type_prefix_map_default = cfg["identifiers"]["type_prefix_map"]
 namespace = cfg["identifiers"]["namespace"]

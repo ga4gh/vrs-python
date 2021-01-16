@@ -28,18 +28,10 @@ from ga4gh.core import build_models, build_class_referable_attribute_map
 _logger = logging.getLogger(__name__)
 
 
-if "VR_SCHEMA_DIR" in os.environ:
-    _logger.warning("VR_SCHEMA_DIR is defined but being ignored; Use VRS_SCHEMA_DIR instead")
-
-try:
-    # specify VRS_SCHEMA_DIR to use a schema other than the one
-    # embedded in vrs-python
-    schema_dir = os.environ["VRS_SCHEMA_DIR"]
-except KeyError:
-    schema_dir = pkg_resources.resource_filename(__name__, "data/schema")
-
+# specify VRS_SCHEMA_DIR to use a schema other than the one embedded
+# in vrs-python
+schema_dir = os.environ.get("VRS_SCHEMA_DIR", pkg_resources.resource_filename(__name__, "data/schema"))
 schema_path = schema_dir + "/vrs.json"
-
 
 models = None
 class_refatt_map = None
