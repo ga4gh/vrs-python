@@ -6,11 +6,15 @@ vrs-python
 
 vrs-python provides Python language support for the [GA4GH Variation
 Representation Specification
-(VRS)](https://github.com/ga4gh/vr-spec).
+(VRS)](https://github.com/ga4gh/vrs).
 
 This repository contains several related components:
 
-* **ga4gh.vrs package** Python language support for the spec. 
+* **ga4gh.core package** Python language support for certain nascent
+  standards in GA4GH.  Eventually, this package should be moved to a
+  distinct repo.
+
+* **ga4gh.vrs package** Python language support for VRS. 
 
 * **ga4gh.vrs.extras package** Python language support for additional
   functionality, including translating from and to other variant
@@ -26,12 +30,13 @@ This repository contains several related components:
 VRS-Python and VRS Versioning
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-The vrs-python repo embeds vr-spec as a submodule, and therefore each
-ga4gh.vrs package on PyPi contains a particular version of VRS. The
-correspondences between the packages may be summarized as:
+The ga4gh/vrs-python repo embeds the ga4gh/vrs repo as a submodule,
+and therefore each ga4gh.vrs package on PyPi contains a particular
+version of VRS. The correspondences between the packages may be
+summarized as:
 
-* **develop ~ develop**: The vrs-python develop branch tracks the vr-spec develop branch.
-* **0.6 ~ 1.1**: vrs-python 0.6 branch tracks the vr-spec 1.1 branch.
+* **develop ~ develop**: The vrs-python develop branch tracks the vrs develop branch.
+* **0.6 ~ 1.1**: vrs-python 0.6 branch tracks the vrs 1.1 branch.
 
   * **0.6.2 ~ 1.1.2**
 
@@ -64,6 +69,18 @@ vrs-python is unlikely to work on Windows due to dependencies.
    $ make devready
 
 (Python 3.5 and 3.6 should also work.)
+
+
+Testing
+@@@@@@@
+
+This package implements typical unit tests for ga4gh.core and
+ga4gh.vrs.  This package also implements the compliance tests from vrs
+(vrs/validation) in the tests/validation/ directory.
+
+::
+
+   $ make test
 
 
 
