@@ -17,13 +17,14 @@ import hgvs.location
 import hgvs.posedit
 import hgvs.edit
 import hgvs.sequencevariant
+import hgvs.dataproviders.uta
 
 from ga4gh.core import ga4gh_identify
 from ga4gh.vrs import models, normalize
 from ga4gh.vrs.extras.decorators import lazy_property  # this should be relocated
+from ga4gh.vrs.utils.hgvs_tools import HgvsTools
 
 _logger = logging.getLogger(__name__)
-
 
 
 class Translator:
@@ -54,6 +55,7 @@ class Translator:
         self.translate_sequence_identifiers = translate_sequence_identifiers
         self.identify = identify
         self.normalize = normalize
+        self.hgvs_tools = None
 
 
     def translate_from(self, var, fmt=None):
@@ -209,6 +211,15 @@ class Translator:
                                                      sv.posedit.pos.end.base)
             else:
                 state = sv.posedit.edit.alt or ''
+        elif sv.posedit.edit.type == 'dup':
+
+            interval = models.SimpleInterval(start=sv.posedit.pos.start.base - 1,
+                                             end=sv.posedit.pos.end.base)
+
+            ref = self.data_proxy.get_sequence(sv.ac,
+                                               sv.posedit.pos.start.base - 1,
+                                               sv.posedit.pos.end.base)
+            state = ref + ref
         else:
             raise ValueError(f"HGVS variant type {sv.posedit.edit.type} is unsupported")
 
@@ -272,6 +283,13 @@ class Translator:
             return None
         return model(**var)
 
+    def _get_hgvs_tools(self):
+        """ Only create UTA db connection if needed. There will be one connectionn per translator.
+        """
+        if self.hgvs_tools is None:
+            uta_conn = hgvs.dataproviders.uta.connect()
+            self.hgvs_tools = HgvsTools(uta_conn)
+        return self.hgvs_tools
 
     def _to_hgvs(self, vo, namespace="refseq"):
         """generates a *list* of HGVS expressions for VRS Allele.
@@ -301,7 +319,6 @@ class Translator:
             if a.startswith("GRCh"):
                 return "g"
             return None
-
 
         if (type(vo).__name__ != "Allele"
             or type(vo.location).__name__ != "SequenceLocation"
@@ -346,13 +363,6 @@ class Translator:
             type=stype,
             posedit=posedit)
 
-        # TODO: renormalize variant per hgvs
-        # hgvs.normalizer will do this, but it requires a connection
-        # to UTA and I don't want that dependency at this time.
-        # VRS normalizer could work too, but it won't translate ins to dup, etc.
-        # So, warn for now.
-        _logger.info("HGVS normalization is not yet implemented in the VRS translator")
-
         hgvs_exprs = []
         for alias in aliases:
             ns, a = alias.split(":")
@@ -363,10 +373,16 @@ class Translator:
             if ns.startswith("GRC") and namespace is None:
                 continue
             var.ac = a
+
+            if not namespace.startswith("GRC"):
+                # if the namespace is GRC, can't normalize, since hgvs can't deal with it
+                hgvs_tools = self._get_hgvs_tools()
+                parsed = hgvs_tools.parse(str(var))
+                var = hgvs_tools.normalize(parsed)
+
             hgvs_exprs += [str(var)]
 
         return list(set(hgvs_exprs))
-
 
     def _to_spdi(self, vo, namespace="refseq"):
         """generates a *list* of SPDI expressions for VRS Allele.
