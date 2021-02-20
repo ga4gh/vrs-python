@@ -1,0 +1,9 @@
+clog format: 1; -*-outline-*-
+* 0.6.4 (2021-02-20)
+Changes since 0.6.3 (2021-01-14).
+** Bug Fixes
+*** setup.cfg: fix package data to use vr (not vrs) prefix [0e2162f] (Reece Hart)
+** Internal and Developer Changes
+*** #52: move vrs submodule back to 1.1 branch [75028c3] (Reece Hart)
+*** show the git submodule status during travis build [000b3c5] (Reece Hart)
+*** travis: add --remote --recursive to git submodule update [23fe1a0] (Reece Hart)

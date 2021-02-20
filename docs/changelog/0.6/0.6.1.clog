@@ -1,0 +1,18 @@
+clog format: 1; -*-outline-*-
+* 0.6.1 (2021-01-06)
+Changes since 0.5.0 (2020-09-14).
+** Special Attention
+*** rename vr → vrs in README [c5d605d] (Reece Hart)
+** New Features
+*** Support array jsonschema types (e.g., `type: ["integer", "null"]`) [a743b6f] (Reece Hart)
+** Other Changes
+*** Updating README for valid `long_description` text [d1f96aa] (Alex Handler Wagner)
+*** update Transcript Locations notebook [1a5bd28] (Reece Hart)
+** Internal and Developer Changes
+*** Added support for GA4GH_VRS_DATAPROXY_URI to configure dataproxy [e7a471a] (Reece Hart)
+*** For arrays that aren't curies, return dictified elements in input order [827b699] (Reece Hart)
+*** Migrate from deprecated fetch_aliases → find_aliases for SeqRepo [ac1dbda] (Reece Hart)
+*** added create_dataproxy(uri) factory [8955c0f] (Reece Hart)
+*** jsonschema.py: handle anonymous types (e.g., in oneOf) [1ebf1bf] (Reece Hart)
+*** raise GA4GHError if identifiable type doesn't have prefix defined [d4a9f18] (Reece Hart)
+*** streamline type lookup in cra_map [dde669c] (Reece Hart)
