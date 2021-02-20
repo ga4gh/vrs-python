@@ -8,6 +8,7 @@ python:
 cache: pip
 before_install:
 - git submodule update --init
+- git submodule status
 install: pip install tox-travis
 script: make tox
 after_success:
