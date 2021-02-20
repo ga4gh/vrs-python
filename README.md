@@ -116,6 +116,8 @@ and switching branches, it is important to make sure that the
 submodule tracks vrs-python correctly.  The recommended way to do this
 is `git config --global submodule.recurse true`.
 
+Alternatively, see `misc/githooks/`. 
+
 ## Testing
 
 This package implements typical unit tests for ga4gh.core and
