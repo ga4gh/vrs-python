@@ -1,0 +1,32 @@
+
+0.6.1 (2021-01-06)
+###################
+
+Changes since 0.5.0 (2020-09-14).
+
+Special Attention
+$$$$$$$$$$$$$$$$$$
+
+* rename vr → vrs in README [`c5d605d <https://github.com/ga4gh/vr-python/commit/c5d605d>`_] (Reece Hart)
+
+New Features
+$$$$$$$$$$$$$
+
+* Support array jsonschema types (e.g., `type: ["integer", "null"]`) [`a743b6f <https://github.com/ga4gh/vr-python/commit/a743b6f>`_] (Reece Hart)
+
+Other Changes
+$$$$$$$$$$$$$$
+
+* Updating README for valid `long_description` text [`d1f96aa <https://github.com/ga4gh/vr-python/commit/d1f96aa>`_] (Alex Handler Wagner)
+* update Transcript Locations notebook [`1a5bd28 <https://github.com/ga4gh/vr-python/commit/1a5bd28>`_] (Reece Hart)
+
+Internal and Developer Changes
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+* Added support for GA4GH_VRS_DATAPROXY_URI to configure dataproxy [`e7a471a <https://github.com/ga4gh/vr-python/commit/e7a471a>`_] (Reece Hart)
+* For arrays that aren't curies, return dictified elements in input order [`827b699 <https://github.com/ga4gh/vr-python/commit/827b699>`_] (Reece Hart)
+* Migrate from deprecated fetch_aliases → find_aliases for SeqRepo [`ac1dbda <https://github.com/ga4gh/vr-python/commit/ac1dbda>`_] (Reece Hart)
+* added create_dataproxy(uri) factory [`8955c0f <https://github.com/ga4gh/vr-python/commit/8955c0f>`_] (Reece Hart)
+* jsonschema.py: handle anonymous types (e.g., in oneOf) [`1ebf1bf <https://github.com/ga4gh/vr-python/commit/1ebf1bf>`_] (Reece Hart)
+* raise GA4GHError if identifiable type doesn't have prefix defined [`d4a9f18 <https://github.com/ga4gh/vr-python/commit/d4a9f18>`_] (Reece Hart)
+* streamline type lookup in cra_map [`dde669c <https://github.com/ga4gh/vr-python/commit/dde669c>`_] (Reece Hart)

@@ -1,0 +1,17 @@
+
+0.6.4 (2021-02-20)
+###################
+
+Changes since 0.6.3 (2021-01-14).
+
+Bug Fixes
+$$$$$$$$$$
+
+* setup.cfg: fix package data to use vr (not vrs) prefix [`0e2162f <https://github.com/ga4gh/vr-python/commit/0e2162f>`_] (Reece Hart)
+
+Internal and Developer Changes
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+* `#52 <https://github.com/ga4gh/vr-python/issues/52/>`_: move vrs submodule back to 1.1 branch [`75028c3 <https://github.com/ga4gh/vr-python/commit/75028c3>`_] (Reece Hart)
+* show the git submodule status during travis build [`000b3c5 <https://github.com/ga4gh/vr-python/commit/000b3c5>`_] (Reece Hart)
+* travis: add --remote --recursive to git submodule update [`23fe1a0 <https://github.com/ga4gh/vr-python/commit/23fe1a0>`_] (Reece Hart)
