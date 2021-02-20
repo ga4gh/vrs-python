@@ -1,0 +1,9 @@
+#!/bin/sh -x
+
+# git's submodule functionality has significant shortcomings.  This
+# hook ensures that the submodule is updated on checkout
+
+# cp this file to your .git/hooks/ directory in this repo.
+
+git submodule update
+git submodule status
