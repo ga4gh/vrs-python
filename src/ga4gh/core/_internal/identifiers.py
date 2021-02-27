@@ -87,7 +87,7 @@ def parse_ga4gh_identifier(ir):
 
 def ga4gh_identify(vro, type_prefix_map=None):
     """return the GA4GH digest-based id for the object, as a CURIE
-    (string)
+    (string).  Returns None if object is not identifiable.
 
     >>> import ga4gh.vrs
     >>> ival = ga4gh.vrs.models.SimpleInterval(start=44908821, end=44908822)
@@ -102,7 +102,8 @@ def ga4gh_identify(vro, type_prefix_map=None):
     try:
         pfx = type_prefix_map[vro.type]
     except KeyError:
-        raise GA4GHError(f"No identifier prefix is defined for {vro.type}; check ga4gh.yaml")
+        _logger.debug(f"No identifier prefix is defined for {vro.type}; check ga4gh.yaml")
+        return None
     digest = ga4gh_digest(vro)
     ir = f"{namespace}{curie_sep}{pfx}{ref_sep}{digest}"
     return ir

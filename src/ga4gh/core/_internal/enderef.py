@@ -21,6 +21,8 @@ def ga4gh_enref(o, cra_map, object_store=None):
     """Recursively convert "referable attributes" from inlined to
     referenced form.  Returns a new object.
 
+    cra_map: class referrable-attribute map; { o.type: [attr, attr, ...] }
+
     If `object_store` is provided, it must be an
     collections.abc.MutableMapping subclass and will be used to store
     objects as they are referenced.  If `object_store` is not provided
@@ -29,7 +31,7 @@ def ga4gh_enref(o, cra_map, object_store=None):
     """
     def _id_and_store(o):
         _id = ga4gh_identify(o)
-        if object_store is not None:
+        if _id and object_store is not None:
             object_store[_id] = o
         return _id
 
@@ -40,10 +42,14 @@ def ga4gh_enref(o, cra_map, object_store=None):
             v = o[ran]
             if is_array(v):
                 o[ran] = [_enref(o2) for o2 in v]
+            elif isinstance(v, str):
+                pass
             elif is_curie(v):    # already a reference
                 assert is_ga4gh_identifier(v), "Identifiable attribute CURIE is contains an invalid identifier"
             elif v is not None:
-                o[ran] = _id_and_store(v)
+                _id = _id_and_store(v)
+                if _id:
+                    o[ran] = _id
 
         return _id_and_store(o)
 
