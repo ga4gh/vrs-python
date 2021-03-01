@@ -92,15 +92,6 @@ The seqrepo container will exit as soon as the data are downloaded.
     a40576b8cf1f        biocommons/uta:uta_20180821              //  stack_uta_1
 
 
-# Testing
-
-This package implements typical unit tests for ga4gh.core and
-ga4gh.vrs.  This package also implements the compliance tests from vrs
-(vrs/validation) in the tests/validation/ directory.
-
-    $ make test
-
-
 # Running the Notebooks
 
 Once installed as described above, type
