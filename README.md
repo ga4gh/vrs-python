@@ -101,7 +101,6 @@ ga4gh.vrs.  This package also implements the compliance tests from vrs
     $ make test
 
 
-
 # Running the Notebooks
 
 Once installed as described above, type
