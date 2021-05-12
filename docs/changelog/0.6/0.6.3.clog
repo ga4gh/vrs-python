@@ -1,0 +1,9 @@
+clog format: 1; -*-outline-*-
+* 0.6.3 (2021-01-14)
+Changes since 0.6.2 (2021-01-07).
+** Special Attention
+N.B. The pypi version of this release didn't include the schema files
+and was non-functional.  This is fixed in 0.6.4.
+** Internal and Developer Changes
+*** updated vr-spec subrepo to 1.1.2 [c5c43b3] (Reece Hart)
+*** revert to using vr.json (not vrs.json) for vrs-python 0.6 branch [b55c028] (Reece Hart)
