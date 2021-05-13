@@ -14,27 +14,25 @@ interactions:
     uri: http://localhost:5000/seqrepo/1/metadata/refseq:NC_000007.14
   response:
     body:
-      string: "{\n  \"added\": \"2016-08-27T21:23:35Z\",\n  \"aliases\": [\n    \"\
-        GRCh38:7\",\n    \"GRCh38:chr7\",\n    \"GRCh38.p1:7\",\n    \"GRCh38.p1:chr7\"\
-        ,\n    \"GRCh38.p10:7\",\n    \"GRCh38.p10:chr7\",\n    \"GRCh38.p11:7\",\n\
-        \    \"GRCh38.p11:chr7\",\n    \"GRCh38.p12:7\",\n    \"GRCh38.p12:chr7\"\
-        ,\n    \"GRCh38.p2:7\",\n    \"GRCh38.p2:chr7\",\n    \"GRCh38.p3:7\",\n \
-        \   \"GRCh38.p3:chr7\",\n    \"GRCh38.p4:7\",\n    \"GRCh38.p4:chr7\",\n \
-        \   \"GRCh38.p5:7\",\n    \"GRCh38.p5:chr7\",\n    \"GRCh38.p6:7\",\n    \"\
-        GRCh38.p6:chr7\",\n    \"GRCh38.p7:7\",\n    \"GRCh38.p7:chr7\",\n    \"GRCh38.p8:7\"\
-        ,\n    \"GRCh38.p8:chr7\",\n    \"GRCh38.p9:7\",\n    \"GRCh38.p9:chr7\",\n\
-        \    \"MD5:cc044cc2256a1141212660fb07b6171e\",\n    \"NCBI:NC_000007.14\"\
-        ,\n    \"refseq:NC_000007.14\",\n    \"SEGUID:4+JjCcBVhPCr8vdIhUKFycPv8bY\"\
-        ,\n    \"SHA1:e3e26309c05584f0abf2f748854285c9c3eff1b6\",\n    \"VMC:GS_F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul\"\
-        ,\n    \"sha512t24u:F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul\",\n    \"ga4gh:SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul\"\
-        \n  ],\n  \"alphabet\": \"ACGNRSTY\",\n  \"length\": 159345973\n}\n"
+      string: "{\n  \"added\": \"2016-08-27T21:23:35Z\",\n  \"aliases\": [\n    \"GRCh38:7\",\n
+        \   \"GRCh38:chr7\",\n    \"GRCh38.p1:7\",\n    \"GRCh38.p1:chr7\",\n    \"GRCh38.p10:7\",\n
+        \   \"GRCh38.p10:chr7\",\n    \"GRCh38.p11:7\",\n    \"GRCh38.p11:chr7\",\n
+        \   \"GRCh38.p12:7\",\n    \"GRCh38.p12:chr7\",\n    \"GRCh38.p2:7\",\n    \"GRCh38.p2:chr7\",\n
+        \   \"GRCh38.p3:7\",\n    \"GRCh38.p3:chr7\",\n    \"GRCh38.p4:7\",\n    \"GRCh38.p4:chr7\",\n
+        \   \"GRCh38.p5:7\",\n    \"GRCh38.p5:chr7\",\n    \"GRCh38.p6:7\",\n    \"GRCh38.p6:chr7\",\n
+        \   \"GRCh38.p7:7\",\n    \"GRCh38.p7:chr7\",\n    \"GRCh38.p8:7\",\n    \"GRCh38.p8:chr7\",\n
+        \   \"GRCh38.p9:7\",\n    \"GRCh38.p9:chr7\",\n    \"MD5:cc044cc2256a1141212660fb07b6171e\",\n
+        \   \"NCBI:NC_000007.14\",\n    \"refseq:NC_000007.14\",\n    \"SEGUID:4+JjCcBVhPCr8vdIhUKFycPv8bY\",\n
+        \   \"SHA1:e3e26309c05584f0abf2f748854285c9c3eff1b6\",\n    \"VMC:GS_F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul\",\n
+        \   \"sha512t24u:F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul\",\n    \"ga4gh:SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul\"\n
+        \ ],\n  \"alphabet\": \"ACGNRSTY\",\n  \"length\": 159345973\n}\n"
     headers:
       Content-Length:
       - '977'
       Content-Type:
       - application/json
       Date:
-      - Wed, 23 Dec 2020 03:17:18 GMT
+      - Sat, 23 Jan 2021 17:22:45 GMT
       Server:
       - Werkzeug/1.0.1 Python/3.8.5
     status:
@@ -55,27 +53,25 @@ interactions:
     uri: http://localhost:5000/seqrepo/1/metadata/ga4gh:SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul
   response:
     body:
-      string: "{\n  \"added\": \"2016-08-27T21:23:35Z\",\n  \"aliases\": [\n    \"\
-        GRCh38:7\",\n    \"GRCh38:chr7\",\n    \"GRCh38.p1:7\",\n    \"GRCh38.p1:chr7\"\
-        ,\n    \"GRCh38.p10:7\",\n    \"GRCh38.p10:chr7\",\n    \"GRCh38.p11:7\",\n\
-        \    \"GRCh38.p11:chr7\",\n    \"GRCh38.p12:7\",\n    \"GRCh38.p12:chr7\"\
-        ,\n    \"GRCh38.p2:7\",\n    \"GRCh38.p2:chr7\",\n    \"GRCh38.p3:7\",\n \
-        \   \"GRCh38.p3:chr7\",\n    \"GRCh38.p4:7\",\n    \"GRCh38.p4:chr7\",\n \
-        \   \"GRCh38.p5:7\",\n    \"GRCh38.p5:chr7\",\n    \"GRCh38.p6:7\",\n    \"\
-        GRCh38.p6:chr7\",\n    \"GRCh38.p7:7\",\n    \"GRCh38.p7:chr7\",\n    \"GRCh38.p8:7\"\
-        ,\n    \"GRCh38.p8:chr7\",\n    \"GRCh38.p9:7\",\n    \"GRCh38.p9:chr7\",\n\
-        \    \"MD5:cc044cc2256a1141212660fb07b6171e\",\n    \"NCBI:NC_000007.14\"\
-        ,\n    \"refseq:NC_000007.14\",\n    \"SEGUID:4+JjCcBVhPCr8vdIhUKFycPv8bY\"\
-        ,\n    \"SHA1:e3e26309c05584f0abf2f748854285c9c3eff1b6\",\n    \"VMC:GS_F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul\"\
-        ,\n    \"sha512t24u:F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul\",\n    \"ga4gh:SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul\"\
-        \n  ],\n  \"alphabet\": \"ACGNRSTY\",\n  \"length\": 159345973\n}\n"
+      string: "{\n  \"added\": \"2016-08-27T21:23:35Z\",\n  \"aliases\": [\n    \"GRCh38:7\",\n
+        \   \"GRCh38:chr7\",\n    \"GRCh38.p1:7\",\n    \"GRCh38.p1:chr7\",\n    \"GRCh38.p10:7\",\n
+        \   \"GRCh38.p10:chr7\",\n    \"GRCh38.p11:7\",\n    \"GRCh38.p11:chr7\",\n
+        \   \"GRCh38.p12:7\",\n    \"GRCh38.p12:chr7\",\n    \"GRCh38.p2:7\",\n    \"GRCh38.p2:chr7\",\n
+        \   \"GRCh38.p3:7\",\n    \"GRCh38.p3:chr7\",\n    \"GRCh38.p4:7\",\n    \"GRCh38.p4:chr7\",\n
+        \   \"GRCh38.p5:7\",\n    \"GRCh38.p5:chr7\",\n    \"GRCh38.p6:7\",\n    \"GRCh38.p6:chr7\",\n
+        \   \"GRCh38.p7:7\",\n    \"GRCh38.p7:chr7\",\n    \"GRCh38.p8:7\",\n    \"GRCh38.p8:chr7\",\n
+        \   \"GRCh38.p9:7\",\n    \"GRCh38.p9:chr7\",\n    \"MD5:cc044cc2256a1141212660fb07b6171e\",\n
+        \   \"NCBI:NC_000007.14\",\n    \"refseq:NC_000007.14\",\n    \"SEGUID:4+JjCcBVhPCr8vdIhUKFycPv8bY\",\n
+        \   \"SHA1:e3e26309c05584f0abf2f748854285c9c3eff1b6\",\n    \"VMC:GS_F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul\",\n
+        \   \"sha512t24u:F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul\",\n    \"ga4gh:SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul\"\n
+        \ ],\n  \"alphabet\": \"ACGNRSTY\",\n  \"length\": 159345973\n}\n"
     headers:
       Content-Length:
       - '977'
       Content-Type:
       - application/json
       Date:
-      - Wed, 23 Dec 2020 03:17:18 GMT
+      - Sat, 23 Jan 2021 17:22:45 GMT
       Server:
       - Werkzeug/1.0.1 Python/3.8.5
     status:
@@ -103,7 +99,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Wed, 23 Dec 2020 03:17:18 GMT
+      - Sat, 23 Jan 2021 17:22:45 GMT
       Server:
       - Werkzeug/1.0.1 Python/3.8.5
     status:
@@ -131,7 +127,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Wed, 23 Dec 2020 03:17:18 GMT
+      - Sat, 23 Jan 2021 17:22:45 GMT
       Server:
       - Werkzeug/1.0.1 Python/3.8.5
     status:
@@ -159,7 +155,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Wed, 23 Dec 2020 03:17:18 GMT
+      - Sat, 23 Jan 2021 17:22:45 GMT
       Server:
       - Werkzeug/1.0.1 Python/3.8.5
     status:
@@ -187,7 +183,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Wed, 23 Dec 2020 03:17:18 GMT
+      - Sat, 23 Jan 2021 17:22:45 GMT
       Server:
       - Werkzeug/1.0.1 Python/3.8.5
     status:
@@ -215,7 +211,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Wed, 23 Dec 2020 03:17:18 GMT
+      - Sat, 23 Jan 2021 17:22:45 GMT
       Server:
       - Werkzeug/1.0.1 Python/3.8.5
     status:
@@ -243,7 +239,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Wed, 23 Dec 2020 03:17:18 GMT
+      - Sat, 23 Jan 2021 17:22:45 GMT
       Server:
       - Werkzeug/1.0.1 Python/3.8.5
     status:
@@ -264,27 +260,25 @@ interactions:
     uri: http://localhost:5000/seqrepo/1/metadata/ga4gh:SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul
   response:
     body:
-      string: "{\n  \"added\": \"2016-08-27T21:23:35Z\",\n  \"aliases\": [\n    \"\
-        GRCh38:7\",\n    \"GRCh38:chr7\",\n    \"GRCh38.p1:7\",\n    \"GRCh38.p1:chr7\"\
-        ,\n    \"GRCh38.p10:7\",\n    \"GRCh38.p10:chr7\",\n    \"GRCh38.p11:7\",\n\
-        \    \"GRCh38.p11:chr7\",\n    \"GRCh38.p12:7\",\n    \"GRCh38.p12:chr7\"\
-        ,\n    \"GRCh38.p2:7\",\n    \"GRCh38.p2:chr7\",\n    \"GRCh38.p3:7\",\n \
-        \   \"GRCh38.p3:chr7\",\n    \"GRCh38.p4:7\",\n    \"GRCh38.p4:chr7\",\n \
-        \   \"GRCh38.p5:7\",\n    \"GRCh38.p5:chr7\",\n    \"GRCh38.p6:7\",\n    \"\
-        GRCh38.p6:chr7\",\n    \"GRCh38.p7:7\",\n    \"GRCh38.p7:chr7\",\n    \"GRCh38.p8:7\"\
-        ,\n    \"GRCh38.p8:chr7\",\n    \"GRCh38.p9:7\",\n    \"GRCh38.p9:chr7\",\n\
-        \    \"MD5:cc044cc2256a1141212660fb07b6171e\",\n    \"NCBI:NC_000007.14\"\
-        ,\n    \"refseq:NC_000007.14\",\n    \"SEGUID:4+JjCcBVhPCr8vdIhUKFycPv8bY\"\
-        ,\n    \"SHA1:e3e26309c05584f0abf2f748854285c9c3eff1b6\",\n    \"VMC:GS_F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul\"\
-        ,\n    \"sha512t24u:F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul\",\n    \"ga4gh:SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul\"\
-        \n  ],\n  \"alphabet\": \"ACGNRSTY\",\n  \"length\": 159345973\n}\n"
+      string: "{\n  \"added\": \"2016-08-27T21:23:35Z\",\n  \"aliases\": [\n    \"GRCh38:7\",\n
+        \   \"GRCh38:chr7\",\n    \"GRCh38.p1:7\",\n    \"GRCh38.p1:chr7\",\n    \"GRCh38.p10:7\",\n
+        \   \"GRCh38.p10:chr7\",\n    \"GRCh38.p11:7\",\n    \"GRCh38.p11:chr7\",\n
+        \   \"GRCh38.p12:7\",\n    \"GRCh38.p12:chr7\",\n    \"GRCh38.p2:7\",\n    \"GRCh38.p2:chr7\",\n
+        \   \"GRCh38.p3:7\",\n    \"GRCh38.p3:chr7\",\n    \"GRCh38.p4:7\",\n    \"GRCh38.p4:chr7\",\n
+        \   \"GRCh38.p5:7\",\n    \"GRCh38.p5:chr7\",\n    \"GRCh38.p6:7\",\n    \"GRCh38.p6:chr7\",\n
+        \   \"GRCh38.p7:7\",\n    \"GRCh38.p7:chr7\",\n    \"GRCh38.p8:7\",\n    \"GRCh38.p8:chr7\",\n
+        \   \"GRCh38.p9:7\",\n    \"GRCh38.p9:chr7\",\n    \"MD5:cc044cc2256a1141212660fb07b6171e\",\n
+        \   \"NCBI:NC_000007.14\",\n    \"refseq:NC_000007.14\",\n    \"SEGUID:4+JjCcBVhPCr8vdIhUKFycPv8bY\",\n
+        \   \"SHA1:e3e26309c05584f0abf2f748854285c9c3eff1b6\",\n    \"VMC:GS_F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul\",\n
+        \   \"sha512t24u:F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul\",\n    \"ga4gh:SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul\"\n
+        \ ],\n  \"alphabet\": \"ACGNRSTY\",\n  \"length\": 159345973\n}\n"
     headers:
       Content-Length:
       - '977'
       Content-Type:
       - application/json
       Date:
-      - Wed, 23 Dec 2020 03:17:18 GMT
+      - Sat, 23 Jan 2021 17:22:45 GMT
       Server:
       - Werkzeug/1.0.1 Python/3.8.5
     status:
@@ -312,9 +306,132 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Wed, 23 Dec 2020 03:17:18 GMT
+      - Sat, 23 Jan 2021 17:22:45 GMT
       Server:
       - Werkzeug/1.0.1 Python/3.8.5
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.25.1
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nucleotide&id=NC_000007.14&rettype=fasta&seq_start=55181320&seq_stop=55181320&tool=bioutils&email=biocommons-dev@googlegroups.com
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAALLzc443AAFzPUMTK1NTQwtDYyMDXRhDwSM/N1+hOLEgMzWvWCE5owjILc7PTVUw
+        11FwD3LOMLbQKzA0VggoysxNLKpUcCwuTs1NyqnkcuTiAgAAAP//AwC5fMd6WgAAAA==
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      Cache-Control:
+      - private
+      Connection:
+      - Keep-Alive
+      Content-Disposition:
+      - attachment; filename="sequence.fasta"
+      Content-Security-Policy:
+      - upgrade-insecure-requests
+      Content-Type:
+      - text/plain
+      Date:
+      - Sat, 23 Jan 2021 17:22:49 GMT
+      Keep-Alive:
+      - timeout=4, max=40
+      NCBI-PHID:
+      - 939B4EA6D58C97450000319340072830.1.1.m_5
+      NCBI-SID:
+      - 51DB7D27F6BDE327_80F2SID
+      Server:
+      - Finatra
+      Set-Cookie:
+      - ncbi_sid=51DB7D27F6BDE327_80F2SID; domain=.nih.gov; path=/; expires=Sun, 23
+        Jan 2022 17:22:50 GMT
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubDomains; preload
+      Transfer-Encoding:
+      - chunked
+      X-RateLimit-Limit:
+      - '3'
+      X-RateLimit-Remaining:
+      - '1'
+      X-UA-Compatible:
+      - IE=Edge
+      X-XSS-Protection:
+      - 1; mode=block
+      content-encoding:
+      - gzip
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.25.1
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nucleotide&id=NC_000007.14&rettype=fasta&seq_start=55181320&seq_stop=55181340&tool=bioutils&email=biocommons-dev@googlegroups.com
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAALLzc443AAFzPUMTK1NTQwtDYyMDXQjDxEDBIz83X6E4sSAzNa9YITmjCMgtzs9N
+        VTDXUXAPcs4wttArMDRWCCjKzE0sqlRwLC5OzU3KqeRydHQGAUdn9xAgdHYGohB3Li4AAAAA//8D
+        AKJ09/5uAAAA
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      Cache-Control:
+      - private
+      Connection:
+      - Keep-Alive
+      Content-Disposition:
+      - attachment; filename="sequence.fasta"
+      Content-Security-Policy:
+      - upgrade-insecure-requests
+      Content-Type:
+      - text/plain
+      Date:
+      - Sat, 23 Jan 2021 17:22:49 GMT
+      Keep-Alive:
+      - timeout=4, max=40
+      NCBI-PHID:
+      - 322C614090D211150000578D6F2E2B93.1.1.m_5
+      NCBI-SID:
+      - E3A20D32A826A219_8A4CSID
+      Server:
+      - Finatra
+      Set-Cookie:
+      - ncbi_sid=E3A20D32A826A219_8A4CSID; domain=.nih.gov; path=/; expires=Sun, 23
+        Jan 2022 17:22:50 GMT
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubDomains; preload
+      Transfer-Encoding:
+      - chunked
+      X-RateLimit-Limit:
+      - '3'
+      X-RateLimit-Remaining:
+      - '1'
+      X-UA-Compatible:
+      - IE=Edge
+      X-XSS-Protection:
+      - 1; mode=block
+      content-encoding:
+      - gzip
     status:
       code: 200
       message: OK
