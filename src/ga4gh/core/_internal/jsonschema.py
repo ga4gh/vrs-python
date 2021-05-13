@@ -15,6 +15,9 @@ functions:
 import logging
 
 import python_jsonschema_objects as pjs
+import yaml
+
+from submodules.vrs.schema.helpers import pjs_filter
 
 _logger = logging.getLogger(__name__)
 
@@ -24,7 +27,9 @@ _logger = logging.getLogger(__name__)
 
 def build_models(path, standardize_names=False):
     """load models from json schema at path"""
-    builder = pjs.ObjectBuilder(path)
+    with open(path, 'r') as yaml_file:
+        y = yaml.load(yaml_file, yaml.SafeLoader)
+    builder = pjs.ObjectBuilder(pjs_filter(y))
     models = builder.build_classes(standardize_names=standardize_names)
     return models
 
