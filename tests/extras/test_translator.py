@@ -17,23 +17,24 @@ output = {
 }
 
 
-
 @pytest.mark.vcr
 def test_from_beacon(tlr):
     assert tlr._from_beacon(inputs["beacon"]).as_dict() == output
+
 
 @pytest.mark.vcr
 def test_from_gnomad(tlr):
     assert tlr._from_gnomad(inputs["gnomad"]).as_dict() == output
 
+
 @pytest.mark.vcr
 def test_from_hgvs(tlr):
     assert tlr._from_hgvs(inputs["hgvs"]).as_dict() == output
 
+
 @pytest.mark.vcr
 def test_from_spdi(tlr):
     assert tlr._from_spdi(inputs["spdi"]).as_dict() == output
-
 
 
 hgvs_tests = (
@@ -72,7 +73,24 @@ hgvs_tests = (
                    'type': 'SequenceLocation'},
       'state': {'sequence': 'GGCT', 'type': 'SequenceState'},
       'type': 'Allele'}),
+    ("NC_000013.11:g.32331093_32331094dup",
+     {'location': {'interval': {'end': 32331094,
+                                'start': 32331082, 'type': 'SimpleInterval'},
+                   'sequence_id': 'ga4gh:SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT',
+                   'type': 'SequenceLocation'},
+      'state': {'sequence': 'TTTTTTTTTTTTTT', 'type': 'SequenceState'},
+      'type': 'Allele'}),
+     ("NC_000013.11:g.32316467dup",
+      {'location': {'interval': {'end': 32316467,
+                                'start': 32316466,
+                                'type': 'SimpleInterval'},
+                   'sequence_id': 'ga4gh:SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT',
+                   'type': 'SequenceLocation'},
+      'state': {'sequence': 'AA', 'type': 'SequenceState'},
+       'type': 'Allele'}),
 )
+
+
 @pytest.mark.parametrize("hgvsexpr,expected", hgvs_tests)
 @pytest.mark.vcr
 def test_hgvs(tlr, hgvsexpr, expected):
@@ -83,7 +101,6 @@ def test_hgvs(tlr, hgvsexpr, expected):
     to_hgvs = tlr.translate_to(allele, "hgvs")
     assert 1 == len(to_hgvs)
     assert hgvsexpr == to_hgvs[0]
-
 
 # TODO: Readd these tests
 # @pytest.mark.vcr
@@ -102,4 +119,3 @@ def test_hgvs(tlr, hgvsexpr, expected):
 #
 #     with pytest.raises(ValueError):
 #         tlr._from_spdi("NM_182763.2:c.688+403C>T")
-
