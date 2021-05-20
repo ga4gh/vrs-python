@@ -17,7 +17,7 @@ import logging
 import python_jsonschema_objects as pjs
 import yaml
 
-from submodules.vrs.schema.helpers import pjs_filter
+from .helpers import pjs_filter
 
 _logger = logging.getLogger(__name__)
 
