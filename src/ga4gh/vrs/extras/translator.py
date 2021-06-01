@@ -286,6 +286,12 @@ class Translator:
             return None
         return model(**var)
 
+    # assembly ID patterns
+    chrom_re = re.compile(r'(chr)?(?P<chrom>[0-2]?[0-9])', re.IGNORECASE)
+    grch_re = re.compile(r'GRCh(?P<version>3[8|9])', re.IGNORECASE)
+    ncbi_re = re.compile(r'NCBI(?P<version>3[4|5|6])', re.IGNORECASE)
+    hg_re = re.compile(r'hg(?P<version>(1[6-9]|38))', re.IGNORECASE)
+    b_re = re.compile(r'b(?P<version>3[67])', re.IGNORECASE)
 
     def _from_vcf_record(self, chrom, pos, ref, alt, assembly_version=None):
         """Given provided record attributes, return a VRS Allele object,
@@ -293,12 +299,10 @@ class Translator:
         if not, will try to parse it from the VCF headers or use
 
         Currently working:
-         * SNPs
+         * Basic SNPs
 
         TODO:
          * more flexible handling of sequence_id
-            * handle ensembl?
-            * handle other forms of identifiers (eg GrCHXX, BXX, hgXX)
          * other types of variations
          * handle inference of reference sequence
          * microsatellite vs copy number variation?
@@ -319,14 +323,36 @@ class Translator:
         interval = models.SimpleInterval(start=start, end=end)
 
         def get_sequence_id(chrom, assembly_version):
-            return f'refseq:NC_0000{chrom:02}.{assembly_version - 27}'
+            """TODO:
+            * ensembl
+            * get Alex to confirm/augment identifier matches
+            """
+            if isinstance(chrom, str):
+                chrom = int(self.chrom_re.match(chrom).groupdict()['chrom'])
+            for pattern in (self.grch_re, self.ncbi_re, self.hg_re,
+                            self.b_re):
+                m = pattern.match(assembly_version)
+                if m:
+                    version = int(m.groupdict()['version'])
+                    if version > 34:
+                        version = version - 27
+                    else:
+                        version = version - 9
+                    break
+            if not m:
+                return None
+            return f'refseq:NC_0000{chrom:02}.{assembly_version}'
 
         if assembly_version:
-            sequence_id = get_sequence_id(int(chrom), int(assembly_version))
+            sequence_id = get_sequence_id(chrom, assembly_version)
         elif self.default_assembly_name:
-            sequence_id = get_sequence_id(int(chrom), int(self.default_assembly_name))
+            sequence_id = get_sequence_id(chrom, self.default_assembly_name)
         else:
-            # TODO infer assembly by checking ref base against seqrepo? raise exception?
+            # TODO infer assembly by checking ref base against seqrepo?
+            # raise exception?
+            return None
+
+        if not sequence_id:
             return None
         location = models.Location(sequence_id=sequence_id, interval=interval)
 
