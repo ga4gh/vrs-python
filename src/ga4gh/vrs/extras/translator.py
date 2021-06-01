@@ -24,6 +24,9 @@ from ga4gh.vrs import models, normalize
 from ga4gh.vrs.extras.decorators import lazy_property  # this should be relocated
 from ga4gh.vrs.utils.hgvs_tools import HgvsTools
 
+import allel
+
+
 _logger = logging.getLogger(__name__)
 
 
@@ -60,10 +63,10 @@ class Translator:
 
     def translate_from(self, var, fmt=None):
         """Translate variation `var` to VRS object
-        
+
         If fmt is None, guess the appropriate format and return the variant.
         If fmt is specified, try only that format.
-        See also notes about `from_` and `to_` methods.   
+        See also notes about `from_` and `to_` methods.
         """
 
         if fmt:
@@ -91,7 +94,7 @@ class Translator:
 
     def _from_beacon(self, beacon_expr, assembly_name=None):
         """Parse beacon expression into VRS Allele
-        
+
         #>>> a = tlr.from_beacon("13 : 32936732 G > C")
         #>>> a.as_dict()
         {'location': {'interval': {'end': 32936732,
@@ -140,7 +143,7 @@ class Translator:
           'type': 'SequenceLocation'},
          'state': {'sequence': 'GA', 'type': 'SequenceState'},
          'type': 'Allele'}
-        
+
         """
 
         if not isinstance(gnomad_expr, str):
@@ -282,6 +285,84 @@ class Translator:
         except KeyError:
             return None
         return model(**var)
+
+
+    def _from_vcf_record(self, chrom, pos, ref, alt, assembly_version=None):
+        """Given provided record attributes, return a VRS Allele object,
+        or None if parsing fails. Can optionally pass an assembly name --
+        if not, will try to parse it from the VCF headers or use
+
+        Currently working:
+         * SNPs
+
+        TODO:
+         * more flexible handling of sequence_id
+            * handle ensembl?
+            * handle other forms of identifiers (eg GrCHXX, BXX, hgXX)
+         * other types of variations
+         * handle inference of reference sequence
+         * microsatellite vs copy number variation?
+         * handle indels, deletions, insertions
+         * handle multiple alleles -- waiting on future versions of VRS?
+        """
+        # construct interval
+        start = int(pos) - 1
+        if ref == '.':
+            raise NotImplementedError
+        elif not any(alt):
+            raise NotImplementedError
+
+        # construct location
+        pos_int = int(pos)
+        start = pos_int - 1
+        end = pos_int
+        interval = models.SimpleInterval(start=start, end=end)
+
+        def get_sequence_id(chrom, assembly_version):
+            return f'refseq:NC_0000{chrom:02}.{assembly_version - 27}'
+
+        if assembly_version:
+            sequence_id = get_sequence_id(int(chrom), int(assembly_version))
+        elif self.default_assembly_name:
+            sequence_id = get_sequence_id(int(chrom), int(self.default_assembly_name))
+        else:
+            # TODO infer assembly by checking ref base against seqrepo? raise exception?
+            return None
+        location = models.Location(sequence_id=sequence_id, interval=interval)
+
+        # construct state
+        sequence = [a for a in alt if a][0]
+        seqstate = models.SequenceState(sequence=sequence)
+
+        # construct return object
+        allele = models.Allele(location=location, state=seqstate)
+        allele = self._post_process_imported_allele(allele)
+        return allele
+
+    def _from_vcf(self, vcf_path, assembly_version=None):
+        """Given a path to a VCF file (as a str) and optionally a RefSeq
+        accession number, parse the file and return a List of valid VRS Allele
+        objects.
+
+        TODO:
+         * how to handle GT fields? (May need to wait on future VRS versions)
+        """
+        callset = allel.read_vcf(vcf_path)
+        records = [(v[1], v[2], v[3], v[4])
+                   for v in zip(callset['variants/FILTER_PASS'],
+                                callset['variants/CHROM'],
+                                callset['variants/POS'],
+                                callset['variants/REF'],
+                                callset['variants/ALT'])
+                   if v[0]]  # drop filter-rejected records
+        vrs_alleles = []
+        for record in records:
+            vrs_allele = self._from_vcf_record(*record, assembly_version)
+            if vrs_allele:
+                vrs_alleles.append(vrs_allele)
+
+        return vrs_alleles
+
 
     def _get_hgvs_tools(self):
         """ Only create UTA db connection if needed. There will be one connectionn per translator.
@@ -465,8 +546,6 @@ class Translator:
     }
 
 
-
-
 if __name__ == "__main__":
     import coloredlogs
     coloredlogs.install(level="INFO")
@@ -477,7 +556,7 @@ if __name__ == "__main__":
 
     expressions = [
         "bogus",
-        "1-55516888-G-GA", 
+        "1-55516888-G-GA",
         "13 : 32936732 G > C",
         "NC_000013.11:g.32936732G>C",
         "NM_000551.3:21:1:T", {
