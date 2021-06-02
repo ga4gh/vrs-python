@@ -286,12 +286,13 @@ class Translator:
             return None
         return model(**var)
 
-    # assembly ID patterns
+    # patterns for from_VCF
     chrom_re = re.compile(r'(chr)?(?P<chrom>[0-2]?[0-9])', re.IGNORECASE)
-    grch_re = re.compile(r'GRCh(?P<version>3[8|9])', re.IGNORECASE)
+    grch_re = re.compile(r'GRCh(?P<version>3[7|8])', re.IGNORECASE)
     ncbi_re = re.compile(r'NCBI(?P<version>3[4|5|6])', re.IGNORECASE)
     hg_re = re.compile(r'hg(?P<version>(1[6-9]|38))', re.IGNORECASE)
-    b_re = re.compile(r'b(?P<version>3[67])', re.IGNORECASE)
+    b_re = re.compile(r'B(?P<version>3[67])', re.IGNORECASE)
+    num_re = re.compile(r'(?P<version>3[6-8])')
 
     def _from_vcf_record(self, chrom, pos, ref, alt, assembly_version=None):
         """Given provided record attributes, return a VRS Allele object,
@@ -325,12 +326,12 @@ class Translator:
         def get_sequence_id(chrom, assembly_version):
             """TODO:
             * ensembl
-            * get Alex to confirm/augment identifier matches
+            * consult Alex on identifier patterns
             """
             if isinstance(chrom, str):
                 chrom = int(self.chrom_re.match(chrom).groupdict()['chrom'])
             for pattern in (self.grch_re, self.ncbi_re, self.hg_re,
-                            self.b_re):
+                            self.b_re, self.num_re):
                 m = pattern.match(assembly_version)
                 if m:
                     version = int(m.groupdict()['version'])
@@ -341,7 +342,7 @@ class Translator:
                     break
             if not m:
                 return None
-            return f'refseq:NC_0000{chrom:02}.{assembly_version}'
+            return f'refseq:NC_0000{chrom:02}.{version}'
 
         if assembly_version:
             sequence_id = get_sequence_id(chrom, assembly_version)
@@ -351,9 +352,9 @@ class Translator:
             # TODO infer assembly by checking ref base against seqrepo?
             # raise exception?
             return None
-
         if not sequence_id:
             return None
+
         location = models.Location(sequence_id=sequence_id, interval=interval)
 
         # construct state
@@ -365,22 +366,29 @@ class Translator:
         allele = self._post_process_imported_allele(allele)
         return allele
 
-    def _from_vcf(self, vcf_path, assembly_version=None):
+    def _from_vcf(self, vcf_path, assembly_version=None, enforce_filter=True):
         """Given a path to a VCF file (as a str) and optionally a RefSeq
         accession number, parse the file and return a List of valid VRS Allele
-        objects.
+        objects. If `enforce_filter`, drop records that don't pass the filter.
 
         TODO:
          * how to handle GT fields? (May need to wait on future VRS versions)
+         * worth trying to parse info fields to get an assembly ID?
         """
         callset = allel.read_vcf(vcf_path)
-        records = [(v[1], v[2], v[3], v[4])
-                   for v in zip(callset['variants/FILTER_PASS'],
-                                callset['variants/CHROM'],
-                                callset['variants/POS'],
-                                callset['variants/REF'],
-                                callset['variants/ALT'])
-                   if v[0]]  # drop filter-rejected records
+        if enforce_filter:
+            records = [(v[1], v[2], v[3], v[4])
+                       for v in zip(callset['variants/FILTER_PASS'],
+                                    callset['variants/CHROM'],
+                                    callset['variants/POS'],
+                                    callset['variants/REF'],
+                                    callset['variants/ALT'])
+                       if v[0]]
+        else:
+            records = list(zip(callset['variants/CHROM'],
+                               callset['variants/POS'],
+                               callset['variants/REF'],
+                               callset['variants/ALT']))
         vrs_alleles = []
         for record in records:
             vrs_allele = self._from_vcf_record(*record, assembly_version)
