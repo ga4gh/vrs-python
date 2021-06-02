@@ -287,7 +287,7 @@ class Translator:
         return model(**var)
 
     # patterns for from_VCF
-    chrom_re = re.compile(r'(chr)?(?P<chrom>[0-2]?[0-9])', re.IGNORECASE)
+    chrom_re = re.compile(r'(chr)?(?P<chrom>([0-2]?[0-9]|X|Y))', re.IGNORECASE)
     grch_re = re.compile(r'GRCh(?P<version>3[7|8])', re.IGNORECASE)
     ncbi_re = re.compile(r'NCBI(?P<version>3[4|5|6])', re.IGNORECASE)
     hg_re = re.compile(r'hg(?P<version>(1[6-9]|38))', re.IGNORECASE)
@@ -296,8 +296,9 @@ class Translator:
 
     def _from_vcf_record(self, chrom, pos, ref, alt, assembly_version=None):
         """Given provided record attributes, return a VRS Allele object,
-        or None if parsing fails. Can optionally pass an assembly name --
-        if not, will try to parse it from the VCF headers or use
+        or None if parsing fails. Can optionally pass an assembly version
+        name -- if not, will try to use the class `default_assembly_name`
+        value.
 
         Currently working:
          * Basic SNPs
@@ -310,6 +311,8 @@ class Translator:
          * handle indels, deletions, insertions
          * handle multiple alleles -- waiting on future versions of VRS?
         """
+        alternate_bases = list(filter(None, alt))[0]
+
         # construct interval
         start = int(pos) - 1
         if ref == '.':
@@ -320,7 +323,7 @@ class Translator:
         # construct location
         pos_int = int(pos)
         start = pos_int - 1
-        end = pos_int
+        end = start + len(alternate_bases)
         interval = models.SimpleInterval(start=start, end=end)
 
         def get_sequence_id(chrom, assembly_version):
@@ -328,10 +331,13 @@ class Translator:
             * ensembl
             * consult Alex on identifier patterns
             """
-            if isinstance(chrom, str):
-                chrom = int(self.chrom_re.match(chrom).groupdict()['chrom'])
-            for pattern in (self.grch_re, self.ncbi_re, self.hg_re,
-                            self.b_re, self.num_re):
+            chrom = self.chrom_re.match(chrom).groupdict()['chrom']
+            if chrom in 'xXyY':
+                chrom = ord(chrom.lower()) - 97
+            else:
+                chrom = int(chrom)
+            for pattern in (self.grch_re, self.ncbi_re, self.hg_re, self.b_re,
+                            self.num_re):
                 m = pattern.match(assembly_version)
                 if m:
                     version = int(m.groupdict()['version'])
@@ -358,8 +364,7 @@ class Translator:
         location = models.Location(sequence_id=sequence_id, interval=interval)
 
         # construct state
-        sequence = [a for a in alt if a][0]
-        seqstate = models.SequenceState(sequence=sequence)
+        seqstate = models.SequenceState(sequence=alternate_bases)
 
         # construct return object
         allele = models.Allele(location=location, state=seqstate)
@@ -369,7 +374,8 @@ class Translator:
     def _from_vcf(self, vcf_path, assembly_version=None, enforce_filter=True):
         """Given a path to a VCF file (as a str) and optionally a RefSeq
         accession number, parse the file and return a List of valid VRS Allele
-        objects. If `enforce_filter`, drop records that don't pass the filter.
+        objects. If `enforce_filter`, drop records with failing FILTER_PASS
+        values.
 
         TODO:
          * how to handle GT fields? (May need to wait on future VRS versions)
