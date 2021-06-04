@@ -288,13 +288,8 @@ class Translator:
 
     # patterns for from_VCF
     chrom_re = re.compile(r'(chr)?(?P<chrom>([0-2]?[0-9]|X|Y))', re.IGNORECASE)
-    grch_re = re.compile(r'GRCh(?P<version>3[7|8])', re.IGNORECASE)
-    ncbi_re = re.compile(r'NCBI(?P<version>3[4|5|6])', re.IGNORECASE)
-    hg_re = re.compile(r'hg(?P<version>(1[6-9]|38))', re.IGNORECASE)
-    b_re = re.compile(r'B(?P<version>3[67])', re.IGNORECASE)
-    num_re = re.compile(r'(?P<version>3[6-8])')
 
-    def _from_vcf_record(self, chrom, pos, ref, alt, assembly_version=None):
+    def _from_vcf_record(self, chrom, pos, ref, alt, assembly_name=None):
         """Given provided record attributes, return a VRS Allele object,
         or None if parsing fails. Can optionally pass an assembly version
         name -- if not, will try to use the class `default_assembly_name`
@@ -302,58 +297,33 @@ class Translator:
 
         Currently working:
          * Basic SNPs
+         * Basic insertions
 
         TODO:
-         * more flexible handling of sequence_id
+         * Handle 0th coordinate refs
+         * sequence_id: ensembl
          * other types of variations
          * handle inference of reference sequence
          * microsatellite vs copy number variation?
-         * handle indels, deletions, insertions
+         * handle indels, deletions
          * handle multiple alleles -- waiting on future versions of VRS?
         """
-        alternate_bases = list(filter(None, alt))[0]
 
         # construct interval
         start = int(pos) - 1
-        if ref == '.':
-            raise NotImplementedError
-        elif not any(alt):
+        if ref == '.':  # TODO necessary?
             raise NotImplementedError
 
         # construct location
         pos_int = int(pos)
         start = pos_int - 1
-        end = start + len(alternate_bases)
+        end = start + len(ref)
         interval = models.SimpleInterval(start=start, end=end)
 
-        def get_sequence_id(chrom, assembly_version):
-            """TODO:
-            * ensembl
-            * consult Alex on identifier patterns
-            """
-            chrom = self.chrom_re.match(chrom).groupdict()['chrom']
-            if chrom in 'xXyY':
-                chrom = ord(chrom.lower()) - 97
-            else:
-                chrom = int(chrom)
-            for pattern in (self.grch_re, self.ncbi_re, self.hg_re, self.b_re,
-                            self.num_re):
-                m = pattern.match(assembly_version)
-                if m:
-                    version = int(m.groupdict()['version'])
-                    if version > 34:
-                        version = version - 27
-                    else:
-                        version = version - 9
-                    break
-            if not m:
-                return None
-            return f'refseq:NC_0000{chrom:02}.{version}'
-
-        if assembly_version:
-            sequence_id = get_sequence_id(chrom, assembly_version)
+        if assembly_name:
+            sequence_id = f'{assembly_name}:{chrom}'
         elif self.default_assembly_name:
-            sequence_id = get_sequence_id(chrom, self.default_assembly_name)
+            sequence_id = f'{self.default_assembly_name}:{chrom}'
         else:
             # TODO infer assembly by checking ref base against seqrepo?
             # raise exception?
@@ -364,6 +334,7 @@ class Translator:
         location = models.Location(sequence_id=sequence_id, interval=interval)
 
         # construct state
+        alternate_bases = list(filter(None, alt))[0]
         seqstate = models.SequenceState(sequence=alternate_bases)
 
         # construct return object
@@ -371,7 +342,7 @@ class Translator:
         allele = self._post_process_imported_allele(allele)
         return allele
 
-    def _from_vcf(self, vcf_path, assembly_version=None, enforce_filter=True):
+    def _from_vcf(self, vcf_path, assembly_name=None, enforce_filter=True):
         """Given a path to a VCF file (as a str) and optionally a RefSeq
         accession number, parse the file and return a List of valid VRS Allele
         objects. If `enforce_filter`, drop records with failing FILTER_PASS
@@ -397,7 +368,7 @@ class Translator:
                                callset['variants/ALT']))
         vrs_alleles = []
         for record in records:
-            vrs_allele = self._from_vcf_record(*record, assembly_version)
+            vrs_allele = self._from_vcf_record(*record, assembly_name)
             if vrs_allele:
                 vrs_alleles.append(vrs_allele)
 
