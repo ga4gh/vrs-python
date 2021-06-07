@@ -298,8 +298,10 @@ class Translator:
         Currently working:
          * Basic SNPs
          * Basic insertions
+         * Basic deletions
 
         TODO:
+         * Plan some logic branches for SVs (raise not implemented etc)
          * Handle 0th coordinate refs
          * sequence_id: ensembl
          * other types of variations
@@ -308,6 +310,7 @@ class Translator:
          * handle indels, deletions
          * handle multiple alleles -- waiting on future versions of VRS?
         """
+        print(chrom, pos, ref, alt, assembly_name)
 
         # construct interval
         start = int(pos) - 1
