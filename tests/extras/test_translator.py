@@ -4,7 +4,8 @@ inputs = {
     "hgvs": "NC_000013.11:g.32936732G>C",
     "beacon": "13 : 32936732 G > C",
     "spdi": "NC_000013.11:32936731:1:C",
-    "gnomad": "13-32936732-G-C"
+    "gnomad": "13-32936732-G-C",
+    "vcf": ['13', '32936732', 'G', 'C']
 }
 
 output = {
@@ -36,6 +37,10 @@ def test_from_hgvs(tlr):
 def test_from_spdi(tlr):
     assert tlr._from_spdi(inputs["spdi"]).as_dict() == output
 
+
+@pytest.mark.vcr
+def test_from_vcf(tlr):
+    assert tlr._from_vcf(inputs["vcf"]).as_dict() == output
 
 hgvs_tests = (
     ("NC_000013.11:g.32936732=",
@@ -119,3 +124,111 @@ def test_hgvs(tlr, hgvsexpr, expected):
 #
 #     with pytest.raises(ValueError):
 #         tlr._from_spdi("NM_182763.2:c.688+403C>T")
+
+
+vcf_tests = (
+    # SNPs
+    (
+        ('1', '92633', 'C', ['T']),
+        {
+            'type': 'Allele',
+            'location': {
+                'type': 'SequenceLocation',
+                'sequence_id': 'ga4gh:GS.S_KjnFVz-FE7M0W6yoaUDgYxLPc1jyWU',
+                'interval': {
+                    'type': 'SimpleInterval',
+                    'start': 92632, 'end': 92633
+                }
+            },
+            'state': {'type': 'SequenceState', 'sequence': 'T'}
+        }
+    ),
+    (
+        ('1', '63002', 'A', ['G']),
+        {
+            'type': 'Allele',
+            'location': {
+                'type': 'SequenceLocation',
+                'sequence_id': 'ga4gh:GS.S_KjnFVz-FE7M0W6yoaUDgYxLPc1jyWU',
+                'interval': {
+                    'type': 'SimpleInterval',
+                    'start': 63001,
+                    'end': 63002
+                }
+            },
+            'state': {'type': 'SequenceState', 'sequence': 'G'}
+        }
+    ),
+    # ins
+    (
+        ('Y', '22304601', 'G', ['GA']),
+        {
+            'type': 'Allele',
+            'location': {
+                'type': 'SequenceLocation',
+                'sequence_id': 'ga4gh:GS.BT7QyW5iXaX_1PSX-msSGYsqRdMKqkj-',
+                'interval': {
+                    'type': 'SimpleInterval',
+                    'start': 22304601,
+                    'end': 22304601
+                }
+            },
+            'state': {'type': 'SequenceState', 'sequence': 'A'}
+        }
+    ),
+    (
+        ('1', '72297', 'G', ['GTAT']),
+        {
+            'type': 'Allele',
+            'location': {
+                'type': 'SequenceLocation',
+                'sequence_id': 'ga4gh:GS.S_KjnFVz-FE7M0W6yoaUDgYxLPc1jyWU',
+                'interval': {
+                    'type': 'SimpleInterval',
+                    'start': 72297,
+                    'end': 72301
+                }
+            },
+            'state': {'type': 'SequenceState', 'sequence': 'TATTATT'}
+        }
+    ),
+    # del
+    (
+        ('17', '29204173', 'TACA', ['T']),
+        {
+            'type': 'Allele',
+            'location': {
+                'type': 'SequenceLocation',
+                'sequence_id': 'ga4gh:GS.AjWXsI7AkTK35XW9pgd3UbjpC3MAevlz',
+                'interval': {
+                    'type': 'SimpleInterval',
+                    'start': 29204173,
+                    'end': 29204176
+                }
+            },
+            'state': {'type': 'SequenceState', 'sequence': ''}
+        }
+    ),
+    (
+        ('4', '116619313', 'GT', ['G']),
+        {
+            'type': 'Allele',
+            'location': {
+                'type': 'SequenceLocation',
+                'sequence_id': 'ga4gh:GS.iy7Zfceb5_VGtTQzJ-v5JpPbpeifHD_V',
+                'interval': {
+                    'type': 'SimpleInterval',
+                    'start': 116619312,
+                    'end': 116619314
+                }
+            },
+            'state': {'type': 'SequenceState', 'sequence': 'G'}
+        }
+    )
+)
+
+@pytest.mark.parametrize("record,expected", vcf_tests)
+def test_vcf(tlr, record, expected):
+    tlr.normalize = True
+    allele = tlr._from_vcf_record(*record, 'GRCh37')
+    assert allele.as_dict() == expected
