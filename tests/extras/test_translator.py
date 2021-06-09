@@ -1,4 +1,5 @@
 import pytest
+from tempfile import TemporaryFile
 
 inputs = {
     "hgvs": "NC_000013.11:g.32936732G>C",
@@ -235,29 +236,44 @@ def test_vcf(tlr, record, expected):
     assert allele.as_dict() == expected
 
 
-vcf_file = """
-    ##fileformat=VCFv4.3
-    ##reference=file:///seq/references/1000GenomesPilot-NCBI36.fasta
-    ##contig=<ID=20,length=62435964,assembly=B36,md5=f126cdf8a6e0c7f379d618ff66beb2da,species="Homo sapiens",taxonomy=x>
-    ##INFO=<ID=DP,Number=1,Type=Integer,Description="Total Depth">
-    ##INFO=<ID=AF,Number=A,Type=Float,Description="Allele Frequency">
-    ##INFO=<ID=DB,Number=0,Type=Flag,Description="dbSNP membership, build 129">
-    ##FILTER=<ID=q10,Description="Quality below 10">
-    ##FILTER=<ID=s50,Description="Less than 50% of samples have data">
-    ##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
-    ##FORMAT=<ID=DP,Number=1,Type=Integer,Description="Read Depth">
-    #CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	NA00001	NA00002	NA00003
-    20	14370	rs6054257	G	A	29	PASS	DP=14;AF=0.5;DB	GT:DP	0/0:1	0/1:8	1/1:5
-    """
+vcf_files = (
+    [
+        '##fileformat=VCFv4.3\n' + \
+        '##reference=file:///seq/references/1000GenomesPilot-NCBI36.fasta\n' + \
+        '##contig=<ID=20,length=62435964,assembly=B36,md5=f126cdf8a6e0c7f379d618ff66beb2da,species="Homo sapiens",taxonomy=x>\n' + \
+        '##INFO=<ID=DP,Number=1,Type=Integer,Description="Total Depth">\n' + \
+        '##INFO=<ID=AF,Number=A,Type=Float,Description="Allele Frequency">\n' + \
+        '##INFO=<ID=DB,Number=0,Type=Flag,Description="dbSNP membership, build 129">\n' + \
+        '##FILTER=<ID=q10,Description="Quality below 10">\n' + \
+        '##FILTER=<ID=s50,Description="Less than 50% of samples have data">\n' + \
+        '##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">\n' + \
+        '##FORMAT=<ID=DP,Number=1,Type=Integer,Description="Read Depth">\n' + \
+        '#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tNA00001\tNA00002\tNA00003\n' + \
+        '20\t14370\trs6054257\tG\tA\t29\tPASS\tDP=14;AF=0.5;DB\tGT:DP\t0/0:1\t0/1:8\t1/1:5\n',
+        {
+            'type': 'Allele',
+            'location': {
+                'type': 'SequenceLocation',
+                'sequence_id': 'ga4gh:GS.-A1QmD_MatoqxvgVxBLZTONHz9-c7nQo',
+                'interval': {
+                    'type': 'SimpleInterval', 'start': 14369, 'end': 14370
+                }
+            },
+            'state': {
+                'type': 'SequenceState', 'sequence': 'A'
+            }
+        }
+    ],
+)
 
-vcf_file_expected = {
-    'type': 'Allele',
-    'location'
-}
 
 
+
+@pytest.mark.parametrize("vcf_file,vcf_file_expected", vcf_files)
 def test_vcf_file(tlr, vcf_file, vcf_file_expected):
-
-
-    allele = tlr._from_vcf(test, 'GRCh37')
-    assert allele
+    v = vcf_file.encode('utf-8')
+    fp = TemporaryFile()
+    fp.write(v)
+    fp.seek(0)
+    alleles = tlr._from_vcf(fp)
+    assert alleles[0].as_dict() == vcf_file_expected
