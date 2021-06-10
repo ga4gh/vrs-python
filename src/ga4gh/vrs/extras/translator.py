@@ -305,13 +305,10 @@ class Translator:
          * Handle 0th coordinate refs
          * sequence_id: ensembl
          * other types of variations
-         * handle inference of reference sequence
+         * perform inference of reference sequence?
          * microsatellite vs copy number variation?
-         * handle indels, deletions
          * handle multiple alleles -- waiting on future versions of VRS?
         """
-        print(chrom, pos, ref, alt, assembly_name)
-
         # construct interval
         start = int(pos) - 1
         if ref == '.':  # TODO necessary?
@@ -371,6 +368,7 @@ class Translator:
                                callset['variants/ALT']))
         vrs_alleles = []
         for record in records:
+            print(record)
             vrs_allele = self._from_vcf_record(*record, assembly_name)
             if vrs_allele:
                 vrs_alleles.append(vrs_allele)
@@ -513,6 +511,25 @@ class Translator:
         spdis = [a + spdi_tail for a in aliases]
         return spdis
 
+    def _to_vcf(self, vo, namespace="refseq"):
+        """
+         * np-ify arrays
+        """
+        if (type(vo).__name__ != "Allele"
+            or type(vo.location).__name__ != "SequenceLocation"
+            or type(vo.state).__name__ != "SequenceState"):
+            raise ValueError(f"_to_vcf requires a VRS Allele with SequenceLocation and SequenceState")
+
+        sequence_id = str(vo.location.sequence_id)
+        aliases = self.data_proxy.translate_sequence_identifier(sequence_id, namespace)
+        aliases = [a.split(":")[1] for a in aliases]
+
+        callset = {
+            'variants/ALT': [vo.state.sequence],
+            'variants/CHROM': None # TODO working
+        }
+
+
 
     @lazy_property
     def _hgvs_parser(self):
@@ -551,12 +568,14 @@ class Translator:
         "hgvs": _from_hgvs,
         "spdi": _from_spdi,
         "vrs": _from_vrs,
+        "vcf": _from_vcf,
     }
 
     to_translators = {
         "hgvs": _to_hgvs,
         "spdi": _to_spdi,
         #"gnomad": to_gnomad,
+        "vcf": _to_vcf,
     }
 
 
