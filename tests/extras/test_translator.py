@@ -132,13 +132,15 @@ vcf_tests = (
     (
         ('1', '92633', 'C', ['T']),
         {
+            '_id': 'ga4gh:VA.qAK6JCN3-AVa9_6Qq3AqAuppUU0bWgfH',
             'type': 'Allele',
             'location': {
                 'type': 'SequenceLocation',
-                'sequence_id': 'ga4gh:GS.S_KjnFVz-FE7M0W6yoaUDgYxLPc1jyWU',
+                'sequence_id': 'ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO',
                 'interval': {
                     'type': 'SimpleInterval',
-                    'start': 92632, 'end': 92633
+                    'start': 92632,
+                    'end': 92633
                 }
             },
             'state': {'type': 'SequenceState', 'sequence': 'T'}
@@ -147,10 +149,11 @@ vcf_tests = (
     (
         ('1', '63002', 'A', ['G']),
         {
+           '_id': 'ga4gh:VA.VewFnlxS7DmjEdKMkj0xZK-9GaHGMJcx',
             'type': 'Allele',
             'location': {
                 'type': 'SequenceLocation',
-                'sequence_id': 'ga4gh:GS.S_KjnFVz-FE7M0W6yoaUDgYxLPc1jyWU',
+                'sequence_id': 'ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO',
                 'interval': {
                     'type': 'SimpleInterval',
                     'start': 63001,
@@ -164,26 +167,28 @@ vcf_tests = (
     (
         ('Y', '22304601', 'G', ['GA']),
         {
+            '_id': 'ga4gh:VA.TDba99qQKLMUiooxOgIX_EEFDgyNPBAq',
             'type': 'Allele',
             'location': {
                 'type': 'SequenceLocation',
-                'sequence_id': 'ga4gh:GS.BT7QyW5iXaX_1PSX-msSGYsqRdMKqkj-',
+                'sequence_id': 'ga4gh:SQ.8_liLu1aycC0tPQPFmUaGXJLDs5SbPZ5',
                 'interval': {
                     'type': 'SimpleInterval',
                     'start': 22304601,
-                    'end': 22304601
+                    'end': 22304607
                 }
             },
-            'state': {'type': 'SequenceState', 'sequence': 'A'}
+            'state': {'type': 'SequenceState', 'sequence': 'AAAAAAA'}
         }
     ),
     (
         ('1', '72297', 'G', ['GTAT']),
         {
+            '_id': 'ga4gh:VA.wbhpDCQ0MRtG0pZZWH-yarqSdOjGNJEL',
             'type': 'Allele',
             'location': {
                 'type': 'SequenceLocation',
-                'sequence_id': 'ga4gh:GS.S_KjnFVz-FE7M0W6yoaUDgYxLPc1jyWU',
+                'sequence_id': 'ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO',
                 'interval': {
                     'type': 'SimpleInterval',
                     'start': 72297,
@@ -197,83 +202,103 @@ vcf_tests = (
     (
         ('17', '29204173', 'TACA', ['T']),
         {
+            '_id': 'ga4gh:VA.mId9FgDqwHkP3mBt1lgfSr2-bhCJaxGg',
             'type': 'Allele',
             'location': {
                 'type': 'SequenceLocation',
-                'sequence_id': 'ga4gh:GS.AjWXsI7AkTK35XW9pgd3UbjpC3MAevlz',
+                'sequence_id': 'ga4gh:SQ.dLZ15tNO1Ur0IcGjwc3Sdi_0A6Yf4zm7',
                 'interval': {
                     'type': 'SimpleInterval',
-                    'start': 29204173,
-                    'end': 29204176
+                    'start': 29204173, 'end': 29204179
                 }
             },
-            'state': {'type': 'SequenceState', 'sequence': ''}
+            'state': {'type': 'SequenceState', 'sequence': 'ACA'}
         }
     ),
     (
         ('4', '116619313', 'GT', ['G']),
         {
+            '_id': 'ga4gh:VA.GVcxxtyjvhuuCtcdpcNAvVhRHWbzAhra',
             'type': 'Allele',
             'location': {
                 'type': 'SequenceLocation',
-                'sequence_id': 'ga4gh:GS.iy7Zfceb5_VGtTQzJ-v5JpPbpeifHD_V',
+                'sequence_id': 'ga4gh:SQ.HxuclGHh0XCDuF8x6yQrpHUBL7ZntAHc',
                 'interval': {
                     'type': 'SimpleInterval',
-                    'start': 116619312,
+                    'start': 116619313,
                     'end': 116619314
                 }
             },
-            'state': {'type': 'SequenceState', 'sequence': 'G'}
+            'state': {'type': 'SequenceState', 'sequence': ''}
         }
     )
 )
 
 
 @pytest.mark.parametrize("record,expected", vcf_tests)
-def test_vcf(tlr, record, expected):
-    tlr.normalize = True
-    allele = tlr._from_vcf_record(*record, 'GRCh37')
+def test_vcf(tlr_norm, record, expected):
+    tlr_norm.normalize = True
+    allele = tlr_norm._from_vcf_record(*record)
     assert allele.as_dict() == expected
 
 
-vcf_files = (
-    [
-        '##fileformat=VCFv4.3\n' + \
-        '##reference=file:///seq/references/1000GenomesPilot-NCBI36.fasta\n' + \
-        '##contig=<ID=20,length=62435964,assembly=B36,md5=f126cdf8a6e0c7f379d618ff66beb2da,species="Homo sapiens",taxonomy=x>\n' + \
-        '##INFO=<ID=DP,Number=1,Type=Integer,Description="Total Depth">\n' + \
-        '##INFO=<ID=AF,Number=A,Type=Float,Description="Allele Frequency">\n' + \
-        '##INFO=<ID=DB,Number=0,Type=Flag,Description="dbSNP membership, build 129">\n' + \
-        '##FILTER=<ID=q10,Description="Quality below 10">\n' + \
-        '##FILTER=<ID=s50,Description="Less than 50% of samples have data">\n' + \
-        '##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">\n' + \
-        '##FORMAT=<ID=DP,Number=1,Type=Integer,Description="Read Depth">\n' + \
-        '#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tNA00001\tNA00002\tNA00003\n' + \
-        '20\t14370\trs6054257\tG\tA\t29\tPASS\tDP=14;AF=0.5;DB\tGT:DP\t0/0:1\t0/1:8\t1/1:5\n',
+@pytest.fixture(scope="session")
+def vcf_file():
+    file_string = '##fileformat=VCFv4.3\n' + \
+                  '##reference=file:///seq/references/1000GenomesPilot-NCBI36.fasta\n' + \
+                  '##contig=<ID=20,length=62435964,assembly=B36,md5=f126cdf8a6e0c7f379d618ff66beb2da,species="Homo sapiens",taxonomy=x>\n' + \
+                  '##INFO=<ID=DP,Number=1,Type=Integer,Description="Total Depth">\n' + \
+                  '##INFO=<ID=AF,Number=A,Type=Float,Description="Allele Frequency">\n' + \
+                  '##INFO=<ID=DB,Number=0,Type=Flag,Description="dbSNP membership, build 129">\n' + \
+                  '##FILTER=<ID=q10,Description="Quality below 10">\n' + \
+                  '##FILTER=<ID=s50,Description="Less than 50% of samples have data">\n' + \
+                  '##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">\n' + \
+                  '##FORMAT=<ID=DP,Number=1,Type=Integer,Description="Read Depth">\n' + \
+                  '#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tNA00001\tNA00002\tNA00003\n' + \
+                  '20\t14370\trs6054257\tG\tA\t29\tPASS\tDP=14;AF=0.5;DB\tGT:DP\t0/0:1\t0/1:8\t1/1:5\n' + \
+                  '4\t116612759\trs566366173\tATTGTT\tA\t.\tPASS\tRS=566366173;RSPOS=116612760;dbSNPBuildID=142;SSR=0;SAO=0;VP=0x050000000005040026000200;WGT=1;VC=DIV;ASP;VLD;KGPhase3;CAF=0.9968,0.003195;COMMON=1;TOPMED=0.99684633027522935,0.00315366972477064'
+    file_bytes = file_string.encode('utf-8')
+    fp = TemporaryFile()
+    fp.write(file_bytes)
+    fp.seek(0)
+    return fp
+
+
+@pytest.fixture(scope="session")
+def vcf_file_expected():
+    return [
         {
+            '_id': 'ga4gh:VA.m8e1aRLy--eKkjzCJWz5w7fZEBmOhbXZ',
             'type': 'Allele',
             'location': {
                 'type': 'SequenceLocation',
-                'sequence_id': 'ga4gh:GS.-A1QmD_MatoqxvgVxBLZTONHz9-c7nQo',
+                'sequence_id': 'ga4gh:SQ.-A1QmD_MatoqxvgVxBLZTONHz9-c7nQo',
                 'interval': {
-                    'type': 'SimpleInterval', 'start': 14369, 'end': 14370
+                    'type': 'SimpleInterval',
+                    'start': 14369,
+                    'end': 14370
                 }
             },
-            'state': {
-                'type': 'SequenceState', 'sequence': 'A'
-            }
+            'state': {'type': 'SequenceState', 'sequence': 'A'}
+        },
+        {
+            '_id': 'ga4gh:VA.EG07sjR0AIU2XOTHvlXvM__egaimtuPT',
+            'type': 'Allele',
+            'location': {
+                'type': 'SequenceLocation',
+                'sequence_id': 'ga4gh:SQ.HxuclGHh0XCDuF8x6yQrpHUBL7ZntAHc',
+                'interval': {
+                    'type': 'SimpleInterval',
+                    'start': 116612759,
+                    'end': 116612766
+                }
+            },
+            'state': {'type': 'SequenceState', 'sequence': 'TT'}
         }
-    ],
-)
+    ]
 
 
-
-
-@pytest.mark.parametrize("vcf_file,vcf_file_expected", vcf_files)
-def test_vcf_file(tlr, vcf_file, vcf_file_expected):
-    v = vcf_file.encode('utf-8')
-    fp = TemporaryFile()
-    fp.write(v)
-    fp.seek(0)
-    alleles = tlr._from_vcf(fp)
-    assert alleles[0].as_dict() == vcf_file_expected
+def test_vcf_file(tlr_norm, vcf_file, vcf_file_expected):
+    alleles = tlr_norm._from_vcf(vcf_file)
+    for i in range(len(alleles)):
+        assert alleles[i].as_dict() == vcf_file_expected[i]
