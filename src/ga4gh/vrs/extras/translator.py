@@ -346,7 +346,7 @@ class Translator:
         """Given a path to a VCF file (as a str) and optionally a RefSeq
         accession number, parse the file and return a List of valid VRS Allele
         objects. If `enforce_filter`, drop records with failing FILTER_PASS
-        values.
+        values (field value '.' is interpreted as failing).
 
         TODO:
          * how to handle GT fields? (May need to wait on future VRS versions)
@@ -368,7 +368,6 @@ class Translator:
                                callset['variants/ALT']))
         vrs_alleles = []
         for record in records:
-            print(record)
             vrs_allele = self._from_vcf_record(*record, assembly_name)
             if vrs_allele:
                 vrs_alleles.append(vrs_allele)
@@ -511,24 +510,64 @@ class Translator:
         spdis = [a + spdi_tail for a in aliases]
         return spdis
 
-    def _to_vcf(self, vo, namespace="refseq"):
-        """
-         * np-ify arrays
+    def _allele_to_vcf(self, vo, namespace="refseq"):
+        """Given a VRS Allele object, return a Dict containing basic VCF values
+        (chromosome/position/reference base/alternate base(s))
+
+        TODO
+         * restore left-justification
+         * more elegant way of getting CHR
         """
         if (type(vo).__name__ != "Allele"
             or type(vo.location).__name__ != "SequenceLocation"
             or type(vo.state).__name__ != "SequenceState"):
             raise ValueError(f"_to_vcf requires a VRS Allele with SequenceLocation and SequenceState")
 
+        start = vo.location.interval.start
+        end = vo.location.interval.end
+        record = {}
+
         sequence_id = str(vo.location.sequence_id)
-        aliases = self.data_proxy.translate_sequence_identifier(sequence_id, namespace)
-        aliases = [a.split(":")[1] for a in aliases]
+        aliases = self.data_proxy.translate_sequence_identifier(vo.location.sequence_id,
+                                                                namespace)
+        if namespace == 'refseq':
+            record['variants/CHROM'] = str(int(aliases[0][14:16]))  # drop leading 0
+        else:
+            raise NotImplementedError  # TODO
 
-        callset = {
-            'variants/ALT': [vo.state.sequence],
-            'variants/CHROM': None # TODO working
-        }
+        record['variants/POS'] = str(int(start) + 1)
 
+        namespace_id = [a.split(":")[1] for a in aliases][0]
+        ref_sequence = self.data_proxy.get_sequence(sequence_id, start, end)
+        record['variants/REF'] = ref_sequence
+
+        record['variants/ALT'] = str(vo.state.sequence)
+
+        return record
+
+    def _to_vcf(self, vrs_objects, file_path, namespace="refseq"):
+        """Given a list-like collection of VRS Alleles, write to `file_path`
+        a basic VCF file.
+
+        Raises ValueError if provided list contains non-Allele objects, or
+        if they don't have SequenceLocation and SequenceState attributes.
+
+        WORKING
+         * basic SNPs
+
+        TODO
+         * be more intelligent about getting namespace IDs
+         * other variation types
+        """
+        callset = {'variants/CHROM': [], 'variants/POS': [], 'variants/REF': [],
+                   'variants/ALT': []}
+        for vo in vrs_objects:
+            record = self._allele_to_vcf(vo, namespace)
+            for key in record:
+                callset[key].append(record[key])
+
+        # print(callset)
+        allel.write_vcf(file_path, callset)
 
 
     @lazy_property
