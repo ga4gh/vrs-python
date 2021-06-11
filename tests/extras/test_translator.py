@@ -1,5 +1,6 @@
 import pytest
 from tempfile import TemporaryFile
+from ga4gh.vrs import models
 
 inputs = {
     "hgvs": "NC_000013.11:g.32936732G>C",
@@ -127,7 +128,8 @@ def test_hgvs(tlr, hgvsexpr, expected):
 #         tlr._from_spdi("NM_182763.2:c.688+403C>T")
 
 
-vcf_tests = (
+# provide test inputs and expected outputs testing Translator._from_vcf_record
+to_vcf_tests = (
     # SNPs
     (
         ('1', '92633', 'C', ['T']),
@@ -235,15 +237,17 @@ vcf_tests = (
 )
 
 
-@pytest.mark.parametrize("record,expected", vcf_tests)
-def test_vcf(tlr_norm, record, expected):
+@pytest.mark.parametrize("record,expected", to_vcf_tests)
+def test_from_vcf_record(tlr_norm, record, expected):
+    """Test Translator._from_vcf_record"""
     tlr_norm.normalize = True
     allele = tlr_norm._from_vcf_record(*record)
     assert allele.as_dict() == expected
 
 
 @pytest.fixture(scope="session")
-def vcf_file():
+def vcf_file_in():
+    """Provide input file fixture to test Translator._from_vcf"""
     file_string = '##fileformat=VCFv4.3\n' + \
                   '##reference=file:///seq/references/1000GenomesPilot-NCBI36.fasta\n' + \
                   '##contig=<ID=20,length=62435964,assembly=B36,md5=f126cdf8a6e0c7f379d618ff66beb2da,species="Homo sapiens",taxonomy=x>\n' + \
@@ -265,7 +269,8 @@ def vcf_file():
 
 
 @pytest.fixture(scope="session")
-def vcf_file_expected():
+def vcf_from_file_expected():
+    """Provide expected output to test Translator._from_vcf"""
     return [
         {
             '_id': 'ga4gh:VA.m8e1aRLy--eKkjzCJWz5w7fZEBmOhbXZ',
@@ -298,7 +303,48 @@ def vcf_file_expected():
     ]
 
 
-def test_vcf_file(tlr_norm, vcf_file, vcf_file_expected):
-    alleles = tlr_norm._from_vcf(vcf_file)
+def test_from_vcf_file(tlr_norm, vcf_file_in, vcf_from_file_expected):
+    """Test Translator._from_vcf"""
+    alleles = tlr_norm._from_vcf(vcf_file_in)
     for i in range(len(alleles)):
-        assert alleles[i].as_dict() == vcf_file_expected[i]
+        assert alleles[i].as_dict() == vcf_from_file_expected[i]
+
+
+@pytest.fixture(scope="session")
+def vcf_file_vrs_input():
+    """Provide VRS Allele objects as input to test Translator._to_vcf"""
+    return [
+        models.Allele(
+            _id='ga4gh:VA.VewFnlxS7DmjEdKMkj0xZK-9GaHGMJcx',
+            location=models.Location(
+                sequence_id='ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO',
+                interval=models.SimpleInterval(start=63001, end=63002)
+            ),
+            state=models.SequenceState(sequence='G')
+        ),
+        models.Allele(
+            _id='ga4gh:VA.qAK6JCN3-AVa9_6Qq3AqAuppUU0bWgfH',
+            location=models.Location(
+                sequence_id='ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO',
+                interval=models.SimpleInterval(start=92632, end=92633)
+            ),
+            state=models.SequenceState(sequence='T')
+        )
+    ]
+
+@pytest.fixture(scope="session")
+def vcf_from_file_expected():
+    """Provide expected output for Translator._to_vcf"""
+    return [
+        '1\t63002\t.\tA\tG\t.\t.\t.\n',
+        '1\t92633\t.\tC\tT\t.\t.\t.\n'
+    ]
+
+def test_to_vcf(tlr_norm, vcf_file_vrs_input, vcf_from_file_expected):
+    """Test Translator._to_vcf"""
+    outfile_path = "test_out.vcf"
+    tlr_norm._to_vcf(vcf_file_vrs_input, outfile_path)
+    with open(outfile_path) as f:
+        outfile_lines = list(f.readlines())
+    assert outfile_lines[4] == vcf_from_file_expected[0]
+    assert outfile_lines[5] == vcf_from_file_expected[1]
