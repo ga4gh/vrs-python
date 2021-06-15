@@ -24,8 +24,8 @@ from ga4gh.vrs import models, normalize
 from ga4gh.vrs.extras.decorators import lazy_property  # this should be relocated
 from ga4gh.vrs.utils.hgvs_tools import HgvsTools
 
-import allel
-
+from pysam import VariantFile, VariantHeader, VariantRecord
+from difflib import ndiff
 
 _logger = logging.getLogger(__name__)
 
@@ -289,14 +289,14 @@ class Translator:
     # patterns for from_VCF
     chrom_re = re.compile(r'(chr)?(?P<chrom>([0-2]?[0-9]|X|Y))', re.IGNORECASE)
 
-    def _from_vcf_record(self, chrom, pos, ref, alt, assembly_name=None):
+    def _from_vcf_record(self, chrom, pos, ref, alts, assembly_name=None):
         """Given provided record attributes, return a VRS Allele object,
         or None if parsing fails. Can optionally pass an assembly version
         name -- if not, will try to use the class `default_assembly_name`
         value.
 
         Currently working:
-         * Basic SNPs
+         * Basic SNVs
          * Basic insertions
          * Basic deletions
 
@@ -309,14 +309,8 @@ class Translator:
          * microsatellite vs copy number variation?
          * handle multiple alleles -- waiting on future versions of VRS?
         """
-        # construct interval
-        start = int(pos) - 1
-        if ref == '.':  # TODO necessary?
-            raise NotImplementedError
-
         # construct location
-        pos_int = int(pos)
-        start = pos_int - 1
+        start = int(pos) - 1
         end = start + len(ref)
         interval = models.SimpleInterval(start=start, end=end)
 
@@ -334,7 +328,7 @@ class Translator:
         location = models.Location(sequence_id=sequence_id, interval=interval)
 
         # construct state
-        alternate_bases = list(filter(None, alt))[0]
+        alternate_bases = list(filter(None, alts))[0]
         seqstate = models.SequenceState(sequence=alternate_bases)
 
         # construct return object
@@ -342,38 +336,25 @@ class Translator:
         allele = self._post_process_imported_allele(allele)
         return allele
 
-    def _from_vcf(self, vcf_path, assembly_name=None, enforce_filter=True):
-        """Given a path to a VCF file (as a str) and optionally a RefSeq
-        accession number, parse the file and return a List of valid VRS Allele
-        objects. If `enforce_filter`, drop records with failing FILTER_PASS
-        values (field value '.' is interpreted as failing).
+    def _from_vcf(self, vcf_path, assembly_name=None):
+        """Given a path to a VCF file (as a str) and optionally an assembly
+        name, parse the file and return a List of valid VRS Allele objects.
 
         TODO:
          * how to handle GT fields? (May need to wait on future VRS versions)
          * worth trying to parse info fields to get an assembly ID?
+         * enforce filter requirements?
         """
-        callset = allel.read_vcf(vcf_path)
-        if enforce_filter:
-            records = [(v[1], v[2], v[3], v[4])
-                       for v in zip(callset['variants/FILTER_PASS'],
-                                    callset['variants/CHROM'],
-                                    callset['variants/POS'],
-                                    callset['variants/REF'],
-                                    callset['variants/ALT'])
-                       if v[0]]
-        else:
-            records = list(zip(callset['variants/CHROM'],
-                               callset['variants/POS'],
-                               callset['variants/REF'],
-                               callset['variants/ALT']))
+        vcf_in = VariantFile(vcf_path)
         vrs_alleles = []
-        for record in records:
-            vrs_allele = self._from_vcf_record(*record, assembly_name)
+        for record in vcf_in:
+            vrs_allele = self._from_vcf_record(record.chrom, record.pos,
+                                               record.ref, record.alts,
+                                               assembly_name)
             if vrs_allele:
                 vrs_alleles.append(vrs_allele)
 
         return vrs_alleles
-
 
     def _get_hgvs_tools(self):
         """ Only create UTA db connection if needed. There will be one connectionn per translator.
@@ -510,13 +491,13 @@ class Translator:
         spdis = [a + spdi_tail for a in aliases]
         return spdis
 
-    def _allele_to_vcf(self, vo, namespace="refseq"):
-        """Given a VRS Allele object, return a Dict containing basic VCF values
-        (chromosome/position/reference base/alternate base(s))
+    def _allele_to_vcf(self, vcfh, vo, namespace="refseq"):
+        """Given a Pysam VariantHeader object `vcfh`, and a VRS Allele object
+        `vo`, return a Pysam VariantRecord
 
         TODO
          * restore left-justification
-         * more elegant way of getting CHR
+         * more elegant way of getting chrom
         """
         if (type(vo).__name__ != "Allele"
             or type(vo.location).__name__ != "SequenceLocation"
@@ -525,28 +506,43 @@ class Translator:
 
         start = vo.location.interval.start
         end = vo.location.interval.end
-        record = {}
-
+        alt = str(vo.state.sequence)
+        alt_sequence_length = len(alt)
+        interval_length = end - start
         sequence_id = str(vo.location.sequence_id)
-        aliases = self.data_proxy.translate_sequence_identifier(vo.location.sequence_id,
+        ref_sequence = self.data_proxy.get_sequence(sequence_id, start, end)
+        aliases = self.data_proxy.translate_sequence_identifier(sequence_id,
                                                                 namespace)
+
+        if interval_length == alt_sequence_length:
+            # SNVs/MNVs
+            pos = str(int(start) + 1)
+            ref = ref_sequence
+        elif interval_length > alt_sequence_length:
+            # del
+            raise NotImplementedError
+        else:
+            # ins
+            diff_bases = [i[2] for i in ndiff(ref_sequence[::-1], alt[::-1])
+                          if i.startswith('+ ')][::-1]
+            diff = ''.join(diff_bases)
+            pos = start
+            ref = self.data_proxy.get_sequence(sequence_id, start, start + 1)
+            alt = ref + diff
+
         if namespace == 'refseq':
-            record['variants/CHROM'] = str(int(aliases[0][14:16]))  # drop leading 0
+            chrom = str(int(aliases[0][14:16]))  # drop leading 0
         else:
             raise NotImplementedError  # TODO
+        if chrom not in vcfh.contigs.keys():
+            vcfh.add_meta('contig', items=[('ID', chrom)])
 
-        record['variants/POS'] = str(int(start) + 1)
-
-        namespace_id = [a.split(":")[1] for a in aliases][0]
-        ref_sequence = self.data_proxy.get_sequence(sequence_id, start, end)
-        record['variants/REF'] = ref_sequence
-
-        record['variants/ALT'] = str(vo.state.sequence)
-
+        record = vcfh.new_record(contig=chrom, start=pos,
+                                 alleles=(ref, alt))
         return record
 
     def _to_vcf(self, vrs_objects, file_path, namespace="refseq"):
-        """Given a list-like collection of VRS Alleles, write to `file_path`
+        """Given an iterable collection of VRS Alleles, write to `file_path`
         a basic VCF file.
 
         Raises ValueError if provided list contains non-Allele objects, or
@@ -558,16 +554,18 @@ class Translator:
         TODO
          * be more intelligent about getting namespace IDs
          * other variation types
+         * does write order matter?
         """
-        callset = {'variants/CHROM': [], 'variants/POS': [], 'variants/REF': [],
-                   'variants/ALT': []}
-        for vo in vrs_objects:
-            record = self._allele_to_vcf(vo, namespace)
-            for key in record:
-                callset[key].append(record[key])
+        vcfh = VariantHeader()
+        records = []
 
-        # print(callset)
-        allel.write_vcf(file_path, callset)
+        for vo in vrs_objects:
+            records.append(self._allele_to_vcf(vcfh, vo, namespace))
+
+        vcf = VariantFile(file_path, 'w', header=vcfh)
+        for record in records:
+            vcf.write(record)
+        vcf.close()
 
 
     @lazy_property
