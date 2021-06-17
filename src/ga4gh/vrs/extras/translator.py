@@ -496,7 +496,6 @@ class Translator:
         `vo`, return a Pysam VariantRecord
 
         TODO
-         * restore left-justification
          * more elegant way of getting chrom
         """
         if (type(vo).__name__ != "Allele"
@@ -552,18 +551,18 @@ class Translator:
         if they don't have SequenceLocation and SequenceState attributes.
 
         WORKING
-         * basic SNPs
+         * basic SNVs, insertions, deletions
 
         TODO
          * be more intelligent about getting namespace IDs
          * other variation types
-         * does write order matter? sort() by contig + start position
         """
         vcfh = VariantHeader()
         records = []
 
         for vo in vrs_objects:
             records.append(self._allele_to_vcf(vcfh, vo, namespace))
+        records.sort(key=lambda r: ((r.chrom).zfill(2), r.pos))
 
         vcf = VariantFile(file_path, 'w', header=vcfh)
         for record in records:
