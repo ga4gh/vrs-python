@@ -341,7 +341,7 @@ class Translator:
         name, parse the file and return a List of valid VRS Allele objects.
 
         TODO:
-         * how to handle GT fields? (May need to wait on future VRS versions)
+         * how to handle GT fields? (May need to wait on future VRS versions?)
          * worth trying to parse info fields to get an assembly ID?
          * enforce filter requirements?
         """
@@ -504,8 +504,8 @@ class Translator:
             or type(vo.state).__name__ != "SequenceState"):
             raise ValueError(f"_to_vcf requires a VRS Allele with SequenceLocation and SequenceState")
 
-        start = vo.location.interval.start
-        end = vo.location.interval.end
+        start = int(vo.location.interval.start)
+        end = int(vo.location.interval.end)
         alt = str(vo.state.sequence)
         alt_sequence_length = len(alt)
         interval_length = end - start
@@ -516,18 +516,21 @@ class Translator:
 
         if interval_length == alt_sequence_length:
             # SNVs/MNVs
-            pos = str(int(start) + 1)
+            pos = int(start)
             ref = ref_sequence
         elif interval_length > alt_sequence_length:
             # del
-            raise NotImplementedError
+            length_diff = interval_length - alt_sequence_length
+            ref = self.data_proxy.get_sequence(sequence_id, start - 1, start + length_diff)
+            alt = self.data_proxy.get_sequence(sequence_id, start - 1, start)
+            pos = start - 1
         else:
             # ins
             diff_bases = [i[2] for i in ndiff(ref_sequence[::-1], alt[::-1])
                           if i.startswith('+ ')][::-1]
             diff = ''.join(diff_bases)
-            pos = start
-            ref = self.data_proxy.get_sequence(sequence_id, start, start + 1)
+            pos = start - 1
+            ref = self.data_proxy.get_sequence(sequence_id, start - 1, start)
             alt = ref + diff
 
         if namespace == 'refseq':
@@ -554,7 +557,7 @@ class Translator:
         TODO
          * be more intelligent about getting namespace IDs
          * other variation types
-         * does write order matter?
+         * does write order matter? sort() by contig + start position
         """
         vcfh = VariantHeader()
         records = []
