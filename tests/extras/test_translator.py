@@ -460,20 +460,3 @@ def test_to_vcf(tlr_norm, vcf_to_file):
         assert outfile_lines[i + 15] == format_as_vcf_row(vcf_to_file[i][0])
 
     remove(outfile_path)
-
-
-# def test_to_vcf(tlr_norm, )
-#     vcfh = VariantHeader()
-#     assert tlr_norm._allele_to_vcf(vcfh, record) == tlr_norm._from_vrs(expected)
-
-
-# def test_to_vcf(tlr_norm, vcf_file_vrs_input, vcf_to_file_expected):
-#     """Test Translator._to_vcf"""
-#     outfile_path = "test_out.vcf"
-#     tlr_norm._to_vcf(vcf_file_vrs_input, outfile_path)
-#     with open(outfile_path) as f:
-#         outfile_lines = list(f.readlines())
-#     assert outfile_lines[5] == vcf_to_file_expected[0]
-#     assert outfile_lines[6] == vcf_to_file_expected[1]
-#     assert outfile_lines[7] == vcf_to_file_expected[2]
-#     remove(outfile_path)
