@@ -10,7 +10,7 @@ inputs = {
     "beacon": "13 : 32936732 G > C",
     "spdi": "NC_000013.11:32936731:1:C",
     "gnomad": "13-32936732-G-C",
-    "vcf": ['13', '32936732', 'G', 'C']
+    "vcf": ['13', '32936732', 'G', ['C']]
 }
 
 output = {
@@ -135,10 +135,95 @@ def test_hgvs(tlr, hgvsexpr, expected):
 
 # provide test inputs and expected outputs testing Translator._from_vcf_record
 to_vcf_tests = (
+    # multiple alleles
+    (
+        ('1', '29881425', 'C', ['A', 'T']),
+        [{'_id': 'ga4gh:VA.32Q-JABVQ7pecrW2RPlYYLxBeP6j6ZN_',
+          'location': {'interval': {'end': 29881425,
+                                    'start': 29881424,
+                                    'type': 'SimpleInterval'},
+                       'sequence_id': 'ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO',
+                       'type': 'SequenceLocation'},
+          'state': {'sequence': 'A', 'type': 'SequenceState'},
+          'type': 'Allele'},
+         {'_id': 'ga4gh:VA.wUquYEB9ztjtsc9Xc4BnlpdQHOP4SvwN',
+          'location': {'interval': {'end': 29881425,
+                                    'start': 29881424,
+                                    'type': 'SimpleInterval'},
+                       'sequence_id': 'ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO',
+                       'type': 'SequenceLocation'},
+          'state': {'sequence': 'T', 'type': 'SequenceState'},
+          'type': 'Allele'}]
+    ),
+    (
+        ('4', '147973044', 'C', ['A', 'T']),
+        [{'_id': 'ga4gh:VA.I-Ol7SHx4gVYmvSDZ4tSrbKjQFQFnmAF',
+          'location': {'interval': {'end': 147973044,
+                                    'start': 147973043,
+                                    'type': 'SimpleInterval'},
+                       'sequence_id': 'ga4gh:SQ.HxuclGHh0XCDuF8x6yQrpHUBL7ZntAHc',
+                       'type': 'SequenceLocation'},
+          'state': {'sequence': 'A', 'type': 'SequenceState'},
+          'type': 'Allele'},
+         {'_id': 'ga4gh:VA.SPrLYmcDQqlPOGYZWvE3AZ5skV9_EnXe',
+          'location': {'interval': {'end': 147973044,
+                                    'start': 147973043,
+                                    'type': 'SimpleInterval'},
+                       'sequence_id': 'ga4gh:SQ.HxuclGHh0XCDuF8x6yQrpHUBL7ZntAHc',
+                       'type': 'SequenceLocation'},
+          'state': {'sequence': 'T', 'type': 'SequenceState'},
+          'type': 'Allele'}]
+    ),
+    (
+        ('7', '142149548', 'G', ['GT', 'GTT']),
+        [{'_id': 'ga4gh:VA.y8-6HmQkyOLtgYCWozwfuSy8I8HbQocl',
+          'location': {'interval': {'end': 142149558,
+                                    'start': 142149548,
+                                    'type': 'SimpleInterval'},
+                       'sequence_id': 'ga4gh:SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul',
+                       'type': 'SequenceLocation'},
+          'state': {'sequence': 'TTTTTTTTTTT', 'type': 'SequenceState'},
+          'type': 'Allele'},
+         {'_id': 'ga4gh:VA.z8z9fvWr1RHnOa_LjIr22rDnmXU7WkjZ',
+          'location': {'interval': {'end': 142149558,
+                                    'start': 142149548,
+                                    'type': 'SimpleInterval'},
+                       'sequence_id': 'ga4gh:SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul',
+                       'type': 'SequenceLocation'},
+          'state': {'sequence': 'TTTTTTTTTTTT', 'type': 'SequenceState'},
+          'type': 'Allele'}]
+    ),
+    (
+        ('12', '49520727', 'A', ['AT', 'ATT', 'ATTT']),
+        [{'_id': 'ga4gh:VA.y7R6DdlWtMVpe9H_1cKtuMS2egyf4inX',
+          'location': {'interval': {'end': 49520742,
+                                    'start': 49520727,
+                                    'type': 'SimpleInterval'},
+                       'sequence_id': 'ga4gh:SQ.6wlJpONE3oNb4D69ULmEXhqyDZ4vwNfl',
+                       'type': 'SequenceLocation'},
+          'state': {'sequence': 'TTTTTTTTTTTTTTTT', 'type': 'SequenceState'},
+          'type': 'Allele'},
+         {'_id': 'ga4gh:VA.uZ_O9g5pteehH2E_gmjv4WkKK3lk4QOd',
+          'location': {'interval': {'end': 49520742,
+                                    'start': 49520727,
+                                    'type': 'SimpleInterval'},
+                       'sequence_id': 'ga4gh:SQ.6wlJpONE3oNb4D69ULmEXhqyDZ4vwNfl',
+                       'type': 'SequenceLocation'},
+          'state': {'sequence': 'TTTTTTTTTTTTTTTTT', 'type': 'SequenceState'},
+          'type': 'Allele'},
+         {'_id': 'ga4gh:VA.kNYqY6TpWQ2EM400mW6fZrwRL1HZmz9S',
+          'location': {'interval': {'end': 49520742,
+                                    'start': 49520727,
+                                    'type': 'SimpleInterval'},
+                       'sequence_id': 'ga4gh:SQ.6wlJpONE3oNb4D69ULmEXhqyDZ4vwNfl',
+                       'type': 'SequenceLocation'},
+          'state': {'sequence': 'TTTTTTTTTTTTTTTTTT', 'type': 'SequenceState'},
+          'type': 'Allele'}]
+    ),
     # SNPs
     (
         ('1', '92633', 'C', ['T']),
-        {
+        [{
             '_id': 'ga4gh:VA.qAK6JCN3-AVa9_6Qq3AqAuppUU0bWgfH',
             'type': 'Allele',
             'location': {
@@ -151,11 +236,11 @@ to_vcf_tests = (
                 }
             },
             'state': {'type': 'SequenceState', 'sequence': 'T'}
-        }
+        }]
     ),
     (
         ('1', '63002', 'A', ['G']),
-        {
+        [{
             '_id': 'ga4gh:VA.VewFnlxS7DmjEdKMkj0xZK-9GaHGMJcx',
             'type': 'Allele',
             'location': {
@@ -168,63 +253,63 @@ to_vcf_tests = (
                 }
             },
             'state': {'type': 'SequenceState', 'sequence': 'G'}
-        }
+        }]
     ),
     (
         ('3', '166125806', 'G', ['A']),
-        {'_id': 'ga4gh:VA.UAcSqA7iJtI36BysCOYXR8wPGVwUm4En',
+        [{'_id': 'ga4gh:VA.UAcSqA7iJtI36BysCOYXR8wPGVwUm4En',
          'type': 'Allele',
          'location': {'type': 'SequenceLocation',
                       'sequence_id': 'ga4gh:SQ.Zu7h9AggXxhTaGVsy7h_EZSChSZGcmgX',
                       'interval': {'type': 'SimpleInterval',
                                    'start': 166125805,
                                    'end': 166125806}},
-         'state': {'type': 'SequenceState', 'sequence': 'A'}}
+         'state': {'type': 'SequenceState', 'sequence': 'A'}}]
     ),
     (
         ('5', '1100700', 'G', ['A']),
-        {'_id': 'ga4gh:VA.UrXpOOJGuCHAQgQ2sY85FsZ3CztIwI6C',
+        [{'_id': 'ga4gh:VA.UrXpOOJGuCHAQgQ2sY85FsZ3CztIwI6C',
          'type': 'Allele',
          'location': {'type': 'SequenceLocation',
                       'sequence_id': 'ga4gh:SQ.aUiQCzCPZ2d0csHbMSbh2NzInhonSXwI',
                       'interval': {'type': 'SimpleInterval', 'start': 1100699, 'end': 1100700}},
-         'state': {'type': 'SequenceState', 'sequence': 'A'}}
+         'state': {'type': 'SequenceState', 'sequence': 'A'}}]
     ),
     (
         ('7', '108934752', 'T', ['C']),
-        {'_id': 'ga4gh:VA.pwoWgFDuLdigDfQRTEU7gCdSB4DoHED1',
+        [{'_id': 'ga4gh:VA.pwoWgFDuLdigDfQRTEU7gCdSB4DoHED1',
          'type': 'Allele',
          'location': {'type': 'SequenceLocation',
                       'sequence_id': 'ga4gh:SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul',
                       'interval': {'type': 'SimpleInterval',
                                    'start': 108934751,
                                    'end': 108934752}},
-         'state': {'type': 'SequenceState', 'sequence': 'C'}}
+         'state': {'type': 'SequenceState', 'sequence': 'C'}}]
     ),
     (
         ('13', '59140800', 'G', ['A']),
-        {'_id': 'ga4gh:VA.Ii5EzfJNVealFy9Wc7UMjd4WrzqSpbmg',
+        [{'_id': 'ga4gh:VA.Ii5EzfJNVealFy9Wc7UMjd4WrzqSpbmg',
          'type': 'Allele',
          'location': {'type': 'SequenceLocation',
                       'sequence_id': 'ga4gh:SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT',
                       'interval': {'type': 'SimpleInterval', 'start': 59140799, 'end': 59140800}},
-         'state': {'type': 'SequenceState', 'sequence': 'A'}}
+         'state': {'type': 'SequenceState', 'sequence': 'A'}}]
     ),
     (
         ('23', '127226377', 'A', ['G']),
-        {'_id': 'ga4gh:VA.nyaA37BGIVLcP6LPfpT1GKg-nfLhxPOD',
+        [{'_id': 'ga4gh:VA.nyaA37BGIVLcP6LPfpT1GKg-nfLhxPOD',
          'type': 'Allele',
          'location': {'type': 'SequenceLocation',
                       'sequence_id': 'ga4gh:SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP',
                       'interval': {'type': 'SimpleInterval',
                                    'start': 127226376,
                                    'end': 127226377}},
-         'state': {'type': 'SequenceState', 'sequence': 'G'}}
+         'state': {'type': 'SequenceState', 'sequence': 'G'}}]
     ),
     # ins
     (
         ('1', '72297', 'G', ['GTAT']),
-        {
+        [{
             '_id': 'ga4gh:VA.wbhpDCQ0MRtG0pZZWH-yarqSdOjGNJEL',
             'type': 'Allele',
             'location': {
@@ -237,55 +322,55 @@ to_vcf_tests = (
                 }
             },
             'state': {'type': 'SequenceState', 'sequence': 'TATTATT'}
-        }
+        }]
     ),
     (
         ('3', '166114496', 'T', ['TA']),
-        {'_id': 'ga4gh:VA.LVqeAmYsZxO3kYb-lvmYOrqnoY1NbKWd',
+        [{'_id': 'ga4gh:VA.LVqeAmYsZxO3kYb-lvmYOrqnoY1NbKWd',
          'type': 'Allele',
          'location': {'type': 'SequenceLocation',
                       'sequence_id': 'ga4gh:SQ.Zu7h9AggXxhTaGVsy7h_EZSChSZGcmgX',
                       'interval': {'type': 'SimpleInterval',
                                    'start': 166114496,
                                    'end': 166114496}},
-         'state': {'type': 'SequenceState', 'sequence': 'A'}}
+         'state': {'type': 'SequenceState', 'sequence': 'A'}}]
     ),
     (
         ('5', '127031196', 'C', ['CG']),
-        {'_id': 'ga4gh:VA.4lIsTJ1zxjQ7UjXTSnCLb-HF2jw733NK',
+        [{'_id': 'ga4gh:VA.4lIsTJ1zxjQ7UjXTSnCLb-HF2jw733NK',
          'type': 'Allele',
          'location': {'type': 'SequenceLocation',
                       'sequence_id': 'ga4gh:SQ.aUiQCzCPZ2d0csHbMSbh2NzInhonSXwI',
                       'interval': {'type': 'SimpleInterval',
                                    'start': 127031196,
                                    'end': 127031201}},
-         'state': {'type': 'SequenceState', 'sequence': 'GGGGGG'}}
+         'state': {'type': 'SequenceState', 'sequence': 'GGGGGG'}}]
     ),
     (
         ('7', '156408692', 'C', ['CAT']),
-        {'_id': 'ga4gh:VA.uvVtM0pr6hFMLfKTurDcdFj_3rRHbBqp',
+        [{'_id': 'ga4gh:VA.uvVtM0pr6hFMLfKTurDcdFj_3rRHbBqp',
          'type': 'Allele',
          'location': {'type': 'SequenceLocation',
                       'sequence_id': 'ga4gh:SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul',
                       'interval': {'type': 'SimpleInterval',
                                    'start': 156408692,
                                    'end': 156408703}},
-         'state': {'type': 'SequenceState', 'sequence': 'ATATATATATATA'}}
+         'state': {'type': 'SequenceState', 'sequence': 'ATATATATATATA'}}]
     ),
     (
         ('10', '106329140', 'C', ['CATTT']),
-        {'_id': 'ga4gh:VA.7tZ-MNUx-ZXdOElypDtzWJ1jL5JbMYgE',
+        [{'_id': 'ga4gh:VA.7tZ-MNUx-ZXdOElypDtzWJ1jL5JbMYgE',
          'type': 'Allele',
          'location': {'type': 'SequenceLocation',
                       'sequence_id': 'ga4gh:SQ.ss8r_wB0-b9r44TQTMmVTI92884QvBiB',
                       'interval': {'type': 'SimpleInterval',
                                    'start': 106329140,
                                    'end': 106329143}},
-         'state': {'type': 'SequenceState', 'sequence': 'ATTTATT'}}
+         'state': {'type': 'SequenceState', 'sequence': 'ATTTATT'}}]
     ),
     (
         ('24', '22304601', 'G', ['GA']),
-        {
+        [{
             '_id': 'ga4gh:VA.TDba99qQKLMUiooxOgIX_EEFDgyNPBAq',
             'type': 'Allele',
             'location': {
@@ -298,87 +383,87 @@ to_vcf_tests = (
                 }
             },
             'state': {'type': 'SequenceState', 'sequence': 'AAAAAAA'}
-        }
+        }]
     ),
     # del
     (
         ('4', '116619313', 'GT', ['G']),
-        {
+        [{
             '_id': 'ga4gh:VA.GVcxxtyjvhuuCtcdpcNAvVhRHWbzAhra',
             'type': 'Allele',
             'location': {'type': 'SequenceLocation',
                          'sequence_id': 'ga4gh:SQ.HxuclGHh0XCDuF8x6yQrpHUBL7ZntAHc',
                          'interval': {'type': 'SimpleInterval', 'start': 116619313, 'end': 116619314}},
             'state': {'type': 'SequenceState', 'sequence': ''}
-        }
+        }]
     ),
     (
         ('5', '81229982', 'TG', ['T']),
-        {'_id': 'ga4gh:VA.UU86eospaxRFVjtkX0VHKBbcNenwDfU3',
+        [{'_id': 'ga4gh:VA.UU86eospaxRFVjtkX0VHKBbcNenwDfU3',
          'type': 'Allele',
          'location': {'type': 'SequenceLocation',
                       'sequence_id': 'ga4gh:SQ.aUiQCzCPZ2d0csHbMSbh2NzInhonSXwI',
                       'interval': {'type': 'SimpleInterval', 'start': 81229982, 'end': 81229983}},
-         'state': {'type': 'SequenceState', 'sequence': ''}}
+         'state': {'type': 'SequenceState', 'sequence': ''}}]
     ),
     (
         ('5', '81230677', 'AG', ['A']),
-        {'_id': 'ga4gh:VA.xJctu09E74WfvRu-TvtjesE8S_spoKoB',
+        [{'_id': 'ga4gh:VA.xJctu09E74WfvRu-TvtjesE8S_spoKoB',
          'type': 'Allele',
          'location': {'type': 'SequenceLocation',
                       'sequence_id': 'ga4gh:SQ.aUiQCzCPZ2d0csHbMSbh2NzInhonSXwI',
                       'interval': {'type': 'SimpleInterval', 'start': 81230677, 'end': 81230684}},
-         'state': {'type': 'SequenceState', 'sequence': 'GGGGGG'}}
+         'state': {'type': 'SequenceState', 'sequence': 'GGGGGG'}}]
     ),
     (
         ('5', '81233450', 'TGGA', ['T']),
-        {'_id': 'ga4gh:VA.JxnxekfJP329pXfBum6U8a5u0NSNFmnp',
+        [{'_id': 'ga4gh:VA.JxnxekfJP329pXfBum6U8a5u0NSNFmnp',
          'type': 'Allele',
          'location': {'type': 'SequenceLocation',
                       'sequence_id': 'ga4gh:SQ.aUiQCzCPZ2d0csHbMSbh2NzInhonSXwI',
                       'interval': {'type': 'SimpleInterval', 'start': 81233450, 'end': 81233457}},
-         'state': {'type': 'SequenceState', 'sequence': 'GGAG'}}
+         'state': {'type': 'SequenceState', 'sequence': 'GGAG'}}]
     ),
     (
         ('5', '81233494', 'GCTGA', ['G']),
-        {'_id': 'ga4gh:VA.-lNWDXnYR4hs2u6fFncH1ZOqILu4xZT8',
+        [{'_id': 'ga4gh:VA.-lNWDXnYR4hs2u6fFncH1ZOqILu4xZT8',
          'type': 'Allele',
          'location': {'type': 'SequenceLocation',
                       'sequence_id': 'ga4gh:SQ.aUiQCzCPZ2d0csHbMSbh2NzInhonSXwI',
                       'interval': {'type': 'SimpleInterval', 'start': 81233494, 'end': 81233501}},
-         'state': {'type': 'SequenceState', 'sequence': 'CTG'}}
+         'state': {'type': 'SequenceState', 'sequence': 'CTG'}}]
     ),
     (
         ('8', '62540756', 'TCTC', ['T']),
-        {'_id': 'ga4gh:VA.oq5H3D7ea1BLpVONa-UmLhDiKug7kOaU',
+        [{'_id': 'ga4gh:VA.oq5H3D7ea1BLpVONa-UmLhDiKug7kOaU',
          'type': 'Allele',
          'location': {'type': 'SequenceLocation',
                       'sequence_id': 'ga4gh:SQ.209Z7zJ-mFypBEWLk4rNC6S_OxY5p7bs',
                       'interval': {'type': 'SimpleInterval', 'start': 62540756, 'end': 62540761}},
-         'state': {'type': 'SequenceState', 'sequence': 'CT'}}
+         'state': {'type': 'SequenceState', 'sequence': 'CT'}}]
     ),
     (
         ('10', '106332351', 'CAT', ['C']),
-        {'_id': 'ga4gh:VA.xti_mlNXAekytcegCcaqk9csAQ5f5pYw',
+        [{'_id': 'ga4gh:VA.xti_mlNXAekytcegCcaqk9csAQ5f5pYw',
          'type': 'Allele',
          'location': {'type': 'SequenceLocation',
                       'sequence_id': 'ga4gh:SQ.ss8r_wB0-b9r44TQTMmVTI92884QvBiB',
                       'interval': {'type': 'SimpleInterval',
                                    'start': 106332351,
                                    'end': 106332355}},
-         'state': {'type': 'SequenceState', 'sequence': 'AT'}}
+         'state': {'type': 'SequenceState', 'sequence': 'AT'}}]
     ),
     (
         ('17', '29204173', 'TACA', ['T']),
-        {'_id': 'ga4gh:VA.mId9FgDqwHkP3mBt1lgfSr2-bhCJaxGg',
+        [{'_id': 'ga4gh:VA.mId9FgDqwHkP3mBt1lgfSr2-bhCJaxGg',
          'type': 'Allele',
          'location': {'type': 'SequenceLocation',
                       'sequence_id': 'ga4gh:SQ.dLZ15tNO1Ur0IcGjwc3Sdi_0A6Yf4zm7',
                       'interval': {'type': 'SimpleInterval',
                                    'start': 29204173,
                                    'end': 29204179}},
-            'state': {'type': 'SequenceState', 'sequence': 'ACA'}
-         }
+         'state': {'type': 'SequenceState', 'sequence': 'ACA'}
+         }]
     ),
 )
 
@@ -387,8 +472,9 @@ to_vcf_tests = (
 def test_from_vcf_record(tlr_norm, record, expected):
     """Test Translator._from_vcf_record"""
     tlr_norm.normalize = True
-    allele = tlr_norm._from_vcf_record(*record)
-    assert allele.as_dict() == expected
+    alleles = tlr_norm._from_vcf_record(*record)
+    for allele, allele_expected in zip(alleles, expected):
+        assert allele.as_dict() == allele_expected
 
 
 @pytest.fixture(scope="session")
@@ -396,7 +482,8 @@ def vcf_file_in():
     """Provide input file fixture to test Translator._from_vcf"""
     file_string = '##fileformat=VCFv4.3\n' + \
                   '##reference=file:///seq/references/1000GenomesPilot-NCBI36.fasta\n' + \
-                  '##contig=<ID=20,length=62435964,assembly=B36,md5=f126cdf8a6e0c7f379d618ff66beb2da,species="Homo sapiens",taxonomy=x>\n' + \
+                  '##contig=<ID=20,length=62435964,assembly=B36,md5=f126cdf8a6e0c7f379d618ff66beb2da,' + \
+                  'species="Homo sapiens",taxonomy=x>\n' + \
                   '##INFO=<ID=DP,Number=1,Type=Integer,Description="Total Depth">\n' + \
                   '##INFO=<ID=AF,Number=A,Type=Float,Description="Allele Frequency">\n' + \
                   '##INFO=<ID=DB,Number=0,Type=Flag,Description="dbSNP membership, build 129">\n' + \
