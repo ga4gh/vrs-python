@@ -584,10 +584,8 @@ class Translator:
             else:
                 alts = ','.join([r.alts[0] for r in group])
                 record = vcfh.new_record(contig=group[0].chrom,
-                                         start=group[0].pos,
+                                         start=group[0].pos - 1,
                                          alleles=(group[0].ref, alts))
-                # record = group[0]  # arbitrarily selecting first item in group
-                # record.alts = (r.alts[0] for r in group)
                 records_out.append(record)
 
         records_out.sort(key=lambda r: ((r.chrom).zfill(2), r.pos))
