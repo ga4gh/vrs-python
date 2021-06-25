@@ -324,10 +324,10 @@ class Translator:
         else:
             # infer assembly?
             # raise exception?
-            return None
+            return []
 
         if not sequence_id:
-            return None
+            return []
 
         location = models.Location(sequence_id=sequence_id, interval=interval)
 
@@ -356,11 +356,9 @@ class Translator:
         vcf_in = VariantFile(vcf_path)
         vrs_alleles = []
         for record in vcf_in:
-            vrs_allele = self._from_vcf_record(record.chrom, record.pos,
-                                               record.ref, record.alts,
-                                               assembly_name)
-            if vrs_allele:
-                vrs_alleles.append(vrs_allele)
+            vrs_alleles += self._from_vcf_record(record.chrom, record.pos,
+                                                 record.ref, record.alts,
+                                                 assembly_name)
 
         return vrs_alleles
 
@@ -570,10 +568,32 @@ class Translator:
 
         for vo in vrs_objects:
             records.append(self._allele_to_vcf(vcfh, vo, namespace))
-        records.sort(key=lambda r: ((r.chrom).zfill(2), r.pos))
+
+        records_grouped = {}
+        for record in records:
+            key = (record.chrom, record.pos)
+            if key in records_grouped.keys():
+                records_grouped[key] += [record]
+            else:
+                records_grouped[key] = [record]
+
+        records_out = []
+        for group in records_grouped.values():
+            if len(group) == 1:
+                records_out.append(group[0])
+            else:
+                alts = ','.join([r.alts[0] for r in group])
+                record = vcfh.new_record(contig=group[0].chrom,
+                                         start=group[0].pos,
+                                         alleles=(group[0].ref, alts))
+                # record = group[0]  # arbitrarily selecting first item in group
+                # record.alts = (r.alts[0] for r in group)
+                records_out.append(record)
+
+        records_out.sort(key=lambda r: ((r.chrom).zfill(2), r.pos))
 
         vcf = VariantFile(file_path, 'w', header=vcfh)
-        for record in records:
+        for record in records_out:
             vcf.write(record)
         vcf.close()
 
