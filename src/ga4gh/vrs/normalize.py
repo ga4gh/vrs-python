@@ -2,7 +2,7 @@ import logging
 
 from bioutils.normalize import normalize as _normalize, NormalizationMode
 
-from ..core import is_pjs_instance, pjs_copy
+from ..core import is_pjs_instance, pjs_copy, ga4gh_digest
 from ._internal import models
 from .dataproxy import SequenceProxy
 
@@ -32,13 +32,23 @@ def _normalize_allele(allele, data_proxy):
 
     return new_allele
 
+def _normalize_haplotype(o, data_proxy=None):
+    o.members = sorted(o.members, key=lambda o: ga4gh_digest(o))
+    return o
+
+def _normalize_variationset(o, data_proxy=None):
+    o.members = sorted(o.members, key=lambda o: ga4gh_digest(o))
+    return o
+
 
 handlers = {
     "Allele": _normalize_allele,
+    "Haplotype": _normalize_haplotype,
+    "VariationSet": _normalize_variationset,
 }
 
 
-def normalize(vo, data_proxy):
+def normalize(vo, data_proxy=None):
     assert is_pjs_instance(vo)
 
     vo_type = vo.type._value
