@@ -286,14 +286,14 @@ class Translator:
             return None
         return model(**var)
 
-    # patterns for from_VCF
+    # for from_VCF
     chrom_re = re.compile(r'(chr)?(?P<chrom>([0-2]?[0-9]|X|Y))', re.IGNORECASE)
 
     def _from_vcf_record(self, chrom, pos, ref, alts, assembly_name=None):
-        """Given provided record attributes, return a VRS Allele object,
-        or None if parsing fails. Can optionally pass an assembly version
-        name -- if not, will try to use the class `default_assembly_name`
-        value.
+        """Given provided record attributes, return a List of VRS Allele
+        objects, or None if parsing fails. Can optionally pass an assembly
+        version name -- if not, will try to use the instance
+        `default_assembly_name` value.
 
         Currently working:
          * Basic SNVs
@@ -303,45 +303,53 @@ class Translator:
         TODO:
          * Plan some logic branches for SVs (raise not implemented etc)
          * Handle 0th coordinate refs
-         * sequence_id: ensembl
+         * ensembl assembly names?
          * other types of variations
-         * perform inference of reference sequence?
          * microsatellite vs copy number variation?
-         * handle multiple alleles -- waiting on future versions of VRS?
         """
         # construct location
         start = int(pos) - 1
         end = start + len(ref)
         interval = models.SimpleInterval(start=start, end=end)
 
+        if chrom == '23':
+            chrom = 'X'
+        elif chrom == '24':
+            chrom = 'Y'
+
         if assembly_name:
             sequence_id = f'{assembly_name}:{chrom}'
         elif self.default_assembly_name:
             sequence_id = f'{self.default_assembly_name}:{chrom}'
         else:
-            # TODO infer assembly by checking ref base against seqrepo?
+            # infer assembly?
             # raise exception?
             return None
+
         if not sequence_id:
             return None
 
         location = models.Location(sequence_id=sequence_id, interval=interval)
 
+        alleles = []
         # construct state
-        alternate_bases = list(filter(None, alts))[0]
-        seqstate = models.SequenceState(sequence=alternate_bases)
+        alts = list(filter(None, alts))
+        for alt in alts:
+            seqstate = models.SequenceState(sequence=alt)
 
-        # construct return object
-        allele = models.Allele(location=location, state=seqstate)
-        allele = self._post_process_imported_allele(allele)
-        return allele
+            # construct return object
+            allele = models.Allele(location=location, state=seqstate)
+            allele = self._post_process_imported_allele(allele)
+            alleles.append(allele)
+
+        return alleles
 
     def _from_vcf(self, vcf_path, assembly_name=None):
         """Given a path to a VCF file (as a str) and optionally an assembly
         name, parse the file and return a List of valid VRS Allele objects.
 
         TODO:
-         * how to handle GT fields? (May need to wait on future VRS versions?)
+         * handling genotype
          * worth trying to parse info fields to get an assembly ID?
          * enforce filter requirements?
         """
@@ -496,7 +504,7 @@ class Translator:
         `vo`, return a Pysam VariantRecord
 
         TODO
-         * more elegant way of getting chrom
+         * more elegant way of extracting chrom
         """
         if (type(vo).__name__ != "Allele"
             or type(vo.location).__name__ != "SequenceLocation"
