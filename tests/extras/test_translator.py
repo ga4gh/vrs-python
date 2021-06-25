@@ -464,7 +464,7 @@ to_vcf_tests = (
                                    'end': 29204179}},
          'state': {'type': 'SequenceState', 'sequence': 'ACA'}
          }]
-    ),
+    )
 )
 
 
@@ -534,16 +534,19 @@ def vcf_to_file():
 
 
 def test_to_vcf(tlr_norm, vcf_to_file):
-    alleles = [tlr_norm._from_vrs(i[1]) for i in vcf_to_file]
+    alleles = [tlr_norm._from_vrs(i) for j in vcf_to_file for i in j[1]]
     outfile_path = "test_out.vcf"
     tlr_norm._to_vcf(alleles, outfile_path)
     with open(outfile_path) as f:
         outfile_lines = list(f.readlines())
 
     def format_as_vcf_row(tup):
-        return f'{tup[0]}\t{tup[1]}\t.\t{tup[2]}\t{tup[3][0]}\t.\t.\tEND=0\n'
+        return f'{tup[0]}\t{tup[1]}\t.\t{tup[2]}\t{",".join(tup[3])}\t.\t.\tEND=0\n'
+
+    expected = [i[0] for i in vcf_to_file]
+    expected.sort(key=lambda r: (r[0].zfill(2), int(r[1])))
 
     for i in range(len(vcf_to_file)):
-        assert outfile_lines[i + 15] == format_as_vcf_row(vcf_to_file[i][0])
+        assert outfile_lines[i + 16] == format_as_vcf_row(expected[i])
 
-    remove(outfile_path)
+    # remove(outfile_path)
