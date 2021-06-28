@@ -271,9 +271,6 @@ class Translator:
             return None
         return model(**var)
 
-    # for from_VCF
-    chrom_re = re.compile(r'(chr)?(?P<chrom>([0-2]?[0-9]|X|Y))', re.IGNORECASE)
-
     def _from_vcf_record(self, chrom, pos, ref, alts, assembly_name):
         """Given provided record attributes, return an instance of a VRS
         Variation (either an Allele or a VariationSet) or None if no
