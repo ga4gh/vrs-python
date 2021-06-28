@@ -793,11 +793,11 @@ def test_to_vcf_file(tlr_norm, vcf_to_file):
 
     # build expected rows -- sort to match output rules
     def format_as_vcf_row(tup):
-        return f'{tup[0]}\t{tup[1]}\t.\t{tup[2]}\t{",".join(tup[3])}\t.\t.\tEND=0\n'
+        return f'{tup[0]}\t{tup[1]}\t.\t{tup[2]}\t{",".join(tup[3])}\t.\t.\t.\n'
     expected = [i[0] for i in vcf_to_file]
     expected.sort(key=lambda r: (int(r[0]), int(r[1])) if r[0] not in ('X', 'Y') else (ord(r[0]), int(r[1])))
 
     for i in range(len(vcf_to_file)):
-        assert outfile_lines[i + 16] == format_as_vcf_row(expected[i])
+        assert outfile_lines[i + 15] == format_as_vcf_row(expected[i])
 
     remove(outfile_path)

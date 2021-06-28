@@ -457,7 +457,7 @@ class Translator:
         return spdis
 
     # INFO fields and values for VCF output, as declared in v4.3 spec
-    vcf_info_params = {
+    _vcf_info_params = {
         'AA': (1, 'String', 'Ancestral allele'),
         'AC': ('A', 'Integer', 'Allele count in genotypes, for each ALT allele, in the same order as listed'),
         'AD': ('R', 'Integer', 'Total read depth for each allele'),
@@ -542,25 +542,23 @@ class Translator:
             ref = self.data_proxy.get_sequence(sequence_id, start - 1, start)
             alt = ref + diff
 
-        if namespace == 'refseq':
-            chrom = str(int(aliases[0][14:16]))    # drop leading 0
-            if chrom == "23":
-                chrom = "X"
-            elif chrom == "24":
-                chrom = "Y"
-        else:
-            raise NotImplementedError    # TODO
+        chrom = str(int(aliases[0][14:16]))    # drop leading 0
+        if chrom == "23":
+            chrom = "X"
+        elif chrom == "24":
+            chrom = "Y"
+
         if chrom not in vcfh.contigs.keys():
             vcfh.add_meta('contig', items=[('ID', chrom)])
 
         for key in info.keys():
             if key not in vcfh.info.keys():
-                key_meta = self.vcf_info_params.get(key)
+                key_meta = self._vcf_info_params.get(key)
                 if not key_meta:
                     raise ValueError(f'Unrecognized INFO key: {key}')
                 vcfh.info.add(key, *key_meta)
 
-        record = vcfh.new_record(contig=chrom, start=pos, alleles=(ref, alt), info=info)
+        record = vcfh.new_record(contig=chrom, start=pos, stop=pos + len(ref), alleles=(ref, alt), info=info)
         return [record]
 
     def _to_vcf(self, vrs_objects, file_path, namespace="refseq", info=[]):
@@ -612,7 +610,9 @@ class Translator:
                 records_out.append(group[0])    # use meta from first record (arbitrary)
             else:
                 alts = ','.join([r.alts[0] for r in group])
-                record = vcfh.new_record(contig=group[0].chrom, start=group[0].pos - 1, alleles=(group[0].ref, alts))
+                pos = group[0].pos - 1
+                ref = group[0].ref
+                record = vcfh.new_record(contig=group[0].chrom, start=pos, stop=pos + len(ref), alleles=(ref, alts))
                 records_out.append(record)
 
         records_out.sort(
