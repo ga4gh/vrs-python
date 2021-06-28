@@ -275,20 +275,12 @@ class Translator:
     chrom_re = re.compile(r'(chr)?(?P<chrom>([0-2]?[0-9]|X|Y))', re.IGNORECASE)
 
     def _from_vcf_record(self, chrom, pos, ref, alts, assembly_name):
-        """Given provided record attributes, return a List of VRS Allele
-        objects, or None if parsing fails.
+        """Given provided record attributes, return an instance of a VRS
+        Variation (either an Allele or a VariationSet) or None if no
+        valid objects can be constructed.
 
-        Currently working:
-         * Basic SNVs
-         * Basic insertions
-         * Basic deletions
-
-        TODO:
-         * Plan some logic branches for SVs (raise not implemented etc)
-         * Handle 0th coordinate refs
-         * ensembl assembly names?
-         * other types of variations
-         * microsatellite vs copy number variation?
+        `chrom`, `pos`, and `ref` should be strings. `alts` should be an
+        iterable of one or more strings (which can be empty).
         """
         # construct location
         start = int(pos) - 1
@@ -301,43 +293,40 @@ class Translator:
             chrom = 'Y'
 
         sequence_id = f'{assembly_name}:{chrom}'
-
-        if not sequence_id:
-            return []
-
         location = models.Location(sequence_id=sequence_id, interval=interval)
 
+        # construct state, build final allele(s)
         alleles = []
-        # construct state
-        alts = list(filter(None, alts))
-        for alt in alts:
+        for alt in filter(None, alts):    # only iterate through non-empty values
             seqstate = models.SequenceState(sequence=alt)
 
-            # construct return object
             allele = models.Allele(location=location, state=seqstate)
             allele = self._post_process_imported_allele(allele)
             alleles.append(allele)
 
-        return alleles
+        if len(alleles) > 1:
+            return models.VariationSet(members=alleles)
+        elif len(alleles) > 0:
+            return alleles[0]
+        else:
+            return None
 
     def _from_vcf(self, vcf_path, assembly_name=None):
         """Given a path to a VCF file (as a str) and optionally an assembly
-        name, parse the file and return a List of valid VRS Allele objects.
-
-        TODO:
-         * handling genotype
-         * worth trying to parse info fields to get an assembly ID?
-         * enforce filter requirements?
+        name, parse the file and return a List of valid VRS Variation instances
+        (either Alleles or VariationSets)
         """
         if not assembly_name:
             assembly_name = self.default_assembly_name
 
         vcf_in = VariantFile(vcf_path)
-        vrs_alleles = []
+        vrs_variations = []
         for record in vcf_in:
-            vrs_alleles += self._from_vcf_record(record.chrom, record.pos, record.ref, record.alts, assembly_name)
+            vrs_variation = self._from_vcf_record(record.chrom, record.pos, record.ref, record.alts, assembly_name)
+            if vrs_variation:
+                vrs_variations.append(vrs_variation)
 
-        return vrs_alleles
+        return vrs_variations
 
     def _get_hgvs_tools(self):
         """ Only create UTA db connection if needed. There will be one connectionn per translator.
@@ -467,6 +456,7 @@ class Translator:
         spdis = [a + spdi_tail for a in aliases]
         return spdis
 
+    # INFO fields and values for VCF output, as declared in v4.3 spec
     vcf_info_params = {
         'AA': (1, 'String', 'Ancestral allele'),
         'AC': ('A', 'Integer', 'Allele count in genotypes, for each ALT allele, in the same order as listed'),
@@ -494,20 +484,36 @@ class Translator:
         '1000G': (0, 'Flag', '1000 Genomes membership')
     }
 
-    def _allele_to_vcf(self, vcfh, vo, namespace="refseq", info={}):
-        """Given a Pysam VariantHeader object `vcfh`, and a VRS Allele object
-        `vo`, return a Pysam VariantRecord. Optionally provide a `namespace`
-        string for sequence ID translation purposes, and/or an `info` dict
-        keying valid reserved INFO keys to values for the record.
+    def _variation_to_vcf(self, vcfh, vo, namespace="refseq", info={}):
+        """Given a Pysam VariantHeader object `vcfh`, and a VRS Variation instance
+        `vo` (either an Allele or a VariationSet), return a List of Pysam VariantRecords.
+        Optionally provide a `namespace` string for sequence ID translation
+        purposes, and/or an `info` dict keying valid reserved INFO keys to values
+        for the record.
 
-        Raises ValueError if given unrecognized INFO key.
-
-        TODO
-         * more elegant way of extracting chrom
+        Raises ValueError if:
+         * `vo` is a VariationSet with members of any type other than Allele
+         * `vo` is a VariationSet containing Alleles with non-identical SequenceLocations
+         * `vo` is an Allele but lacks SequenceLocation, SequenceState
+         * `vo` is not an Allele or VariationSet
+         * Provided unrecognized INFO key.
         """
-        if (type(vo).__name__ != "Allele" or type(vo.location).__name__ != "SequenceLocation"
-                or type(vo.state).__name__ != "SequenceState"):
-            raise ValueError(f"_to_vcf requires a VRS Allele with SequenceLocation and SequenceState")
+        if type(vo).__name__ == "VariationSet":
+            if any([type(member).__name__ != "Allele" for member in vo.members]):
+                raise ValueError("_variation_to_vcf requires VariationSets' members to be of type Allele")
+            elif len({member.location.sequence_id for member in vo.members}) > 1:
+                raise ValueError(
+                    "_variation_to_vcf requires VariationSets to consist only of Alleles with identical Sequence IDs")
+            else:
+                records = []
+                for member in vo.members:
+                    records += self._variation_to_vcf(vcfh, member, namespace, info)
+                return records
+        elif type(vo).__name__ == "Allele":
+            if (type(vo.location).__name__ != "SequenceLocation" or type(vo.state).__name__ != "SequenceState"):
+                raise ValueError("_variation_to_vcf requires a VRS Allele with SequenceLocation and SequenceState")
+        else:
+            raise ValueError("_variation_to_vcf requires either a VRS Allele or a VRS VariationSet")
 
         start = int(vo.location.interval.start)
         end = int(vo.location.interval.end)
@@ -555,7 +561,7 @@ class Translator:
                 vcfh.info.add(key, *key_meta)
 
         record = vcfh.new_record(contig=chrom, start=pos, alleles=(ref, alt), info=info)
-        return record
+        return [record]
 
     def _to_vcf(self, vrs_objects, file_path, namespace="refseq", info=[]):
         """Given an iterable collection of VRS Alleles, write to `file_path`
@@ -567,7 +573,7 @@ class Translator:
         Raises ValueError if
          * Provided list contains non-Allele objects or if they don't have
            SequenceLocation and SequenceState attributes.
-         * if len(info) != 0 and len(info) != len(vrs_objects)
+         * len(info) != 0 and len(info) != len(vrs_objects)
 
         WORKING
          * basic SNVs, insertions, deletions
@@ -587,10 +593,10 @@ class Translator:
 
         if info:
             for vo, vo_info in zip(vrs_objects, info):
-                records.append(self._allele_to_vcf(vcfh, vo, namespace, vo_info))
+                records += self._variation_to_vcf(vcfh, vo, namespace, vo_info)
         else:
             for vo in vrs_objects:
-                records.append(self._allele_to_vcf(vcfh, vo, namespace))
+                records += self._variation_to_vcf(vcfh, vo, namespace)
 
         records_grouped = {}
         for record in records:
@@ -603,13 +609,14 @@ class Translator:
         records_out = []
         for group in records_grouped.values():
             if len(group) == 1:
-                records_out.append(group[0])
+                records_out.append(group[0])    # use meta from first record (arbitrary)
             else:
                 alts = ','.join([r.alts[0] for r in group])
                 record = vcfh.new_record(contig=group[0].chrom, start=group[0].pos - 1, alleles=(group[0].ref, alts))
                 records_out.append(record)
 
-        records_out.sort(key=lambda r: (int(r.chrom), int(r.pos)) if r.chrom not in ('X', 'Y') else (ord(r.chrom), int(r.pos)))
+        records_out.sort(
+            key=lambda r: (int(r.chrom), int(r.pos)) if r.chrom not in ('X', 'Y') else (ord(r.chrom), int(r.pos)))
 
         vcf = VariantFile(file_path, 'w', header=vcfh)
         for record in records_out:
