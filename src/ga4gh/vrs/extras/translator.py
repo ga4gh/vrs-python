@@ -274,11 +274,9 @@ class Translator:
     # for from_VCF
     chrom_re = re.compile(r'(chr)?(?P<chrom>([0-2]?[0-9]|X|Y))', re.IGNORECASE)
 
-    def _from_vcf_record(self, chrom, pos, ref, alts, assembly_name=None):
+    def _from_vcf_record(self, chrom, pos, ref, alts, assembly_name):
         """Given provided record attributes, return a List of VRS Allele
-        objects, or None if parsing fails. Can optionally pass an assembly
-        version name -- if not, will try to use the instance
-        `default_assembly_name` value.
+        objects, or None if parsing fails.
 
         Currently working:
          * Basic SNVs
@@ -297,19 +295,12 @@ class Translator:
         end = start + len(ref)
         interval = models.SimpleInterval(start=start, end=end)
 
-        if chrom == '23':
+        if chrom == '23' and assembly_name == 'GRCh38':
             chrom = 'X'
-        elif chrom == '24':
+        elif chrom == '24' and assembly_name == 'GRCh38':
             chrom = 'Y'
 
-        if assembly_name:
-            sequence_id = f'{assembly_name}:{chrom}'
-        elif self.default_assembly_name:
-            sequence_id = f'{self.default_assembly_name}:{chrom}'
-        else:
-            # infer assembly?
-            # raise exception?
-            return []
+        sequence_id = f'{assembly_name}:{chrom}'
 
         if not sequence_id:
             return []
@@ -338,7 +329,9 @@ class Translator:
          * worth trying to parse info fields to get an assembly ID?
          * enforce filter requirements?
         """
-        print('here')
+        if not assembly_name:
+            assembly_name = self.default_assembly_name
+
         vcf_in = VariantFile(vcf_path)
         vrs_alleles = []
         for record in vcf_in:
@@ -526,7 +519,7 @@ class Translator:
         aliases = self.data_proxy.translate_sequence_identifier(sequence_id, namespace)
 
         if interval_length == alt_sequence_length:
-            # SNVs/MNVs
+            # SNVs
             pos = int(start)
             ref = ref_sequence
         elif interval_length > alt_sequence_length:
@@ -545,6 +538,10 @@ class Translator:
 
         if namespace == 'refseq':
             chrom = str(int(aliases[0][14:16]))    # drop leading 0
+            if chrom == "23":
+                chrom = "X"
+            elif chrom == "24":
+                chrom = "Y"
         else:
             raise NotImplementedError    # TODO
         if chrom not in vcfh.contigs.keys():
@@ -612,7 +609,7 @@ class Translator:
                 record = vcfh.new_record(contig=group[0].chrom, start=group[0].pos - 1, alleles=(group[0].ref, alts))
                 records_out.append(record)
 
-        records_out.sort(key=lambda r: ((r.chrom).zfill(2), r.pos))
+        records_out.sort(key=lambda r: (int(r.chrom), int(r.pos)) if r.chrom not in ('X', 'Y') else (ord(r.chrom), int(r.pos)))
 
         vcf = VariantFile(file_path, 'w', header=vcfh)
         for record in records_out:

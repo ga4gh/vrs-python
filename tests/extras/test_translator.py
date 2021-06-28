@@ -53,7 +53,7 @@ def test_from_spdi(tlr):
 
 @pytest.mark.vcr
 def test_from_vcf(tlr):
-    assert tlr._from_vcf_record(*inputs["vcf"]).as_dict() == output
+    assert tlr._from_vcf_record(*inputs["vcf"], assembly_name='GRCh38')[0].as_dict() == output
 
 
 hgvs_tests = (
@@ -440,7 +440,7 @@ to_vcf_tests = (
             'sequence': 'A'
         }
     }]),
-    (('23', '127226377', 'A', ['G']), [{
+    (('X', '127226377', 'A', ['G']), [{
         '_id': 'ga4gh:VA.nyaA37BGIVLcP6LPfpT1GKg-nfLhxPOD',
         'type': 'Allele',
         'location': {
@@ -543,7 +543,7 @@ to_vcf_tests = (
             'sequence': 'ATTTATT'
         }
     }]),
-    (('24', '22304601', 'G', ['GA']), [{
+    (('Y', '22304601', 'G', ['GA']), [{
         '_id': 'ga4gh:VA.TDba99qQKLMUiooxOgIX_EEFDgyNPBAq',
         'type': 'Allele',
         'location': {
@@ -703,7 +703,7 @@ to_vcf_tests = (
 def test_from_vcf_record(tlr_norm, record, expected):
     """Test Translator._from_vcf_record"""
     tlr_norm.normalize = True
-    alleles = tlr_norm._from_vcf_record(*record)
+    alleles = tlr_norm._from_vcf_record(record[0], record[1], record[2], record[3], assembly_name='GRCh38')
     for allele, allele_expected in zip(alleles, expected):
         assert allele.as_dict() == allele_expected
 
@@ -771,14 +771,16 @@ def test_to_vcf(tlr_norm, vcf_to_file):
     alleles = [tlr_norm._from_vrs(i) for j in vcf_to_file for i in j[1]]
     outfile_path = "test_out.vcf"
     tlr_norm._to_vcf(alleles, outfile_path)
+
+    # get actual rows
     with open(outfile_path) as f:
         outfile_lines = list(f.readlines())
 
+    # build expected rows
     def format_as_vcf_row(tup):
         return f'{tup[0]}\t{tup[1]}\t.\t{tup[2]}\t{",".join(tup[3])}\t.\t.\tEND=0\n'
-
     expected = [i[0] for i in vcf_to_file]
-    expected.sort(key=lambda r: (r[0].zfill(2), int(r[1])))
+    expected.sort(key=lambda r: (int(r[0]), int(r[1])) if r[0] not in ('X', 'Y') else (ord(r[0]), int(r[1])))
 
     for i in range(len(vcf_to_file)):
         assert outfile_lines[i + 16] == format_as_vcf_row(expected[i])
