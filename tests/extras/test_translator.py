@@ -782,7 +782,6 @@ def vcf_to_file():
 
 def test_to_vcf_file(tlr_norm, vcf_to_file):
     """Test Translator._to_vcf"""
-    # alleles = [tlr_norm._from_vrs(i) for j in vcf_to_file for i in j[1]]
     alleles = [tlr_norm._from_vrs(i[1]) for i in vcf_to_file]
     outfile_path = "test_out.vcf"
     tlr_norm._to_vcf(alleles, outfile_path)

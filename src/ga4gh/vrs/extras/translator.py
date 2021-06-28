@@ -576,10 +576,6 @@ class Translator:
         WORKING
          * basic SNVs, insertions, deletions
          * collapsing alleles at same position into single records
-
-        TODO
-         * be more intelligent about getting namespace IDs
-         * other variation types
         """
         if len(info) != 0 and len(info) != len(vrs_objects):
             raise ValueError(f'length of info param must be either 0 or '
