@@ -1,8 +1,10 @@
 import pytest
 
 
+@pytest.mark.parametrize("dp", ("rest_dataproxy","dataproxy"))
 @pytest.mark.vcr
-def test_dataproxy_rest(dataproxy):
+def tset_dataproxy(dp, request):
+    dataproxy = request.getfixturevalue(dp)
     r = dataproxy.get_metadata("NM_000551.3")
     assert 4560 == r["length"]
     assert "ga4gh:SQ.v_QTc1p-MUYdgrRv4LMT6ByXIOsdw3C_" in r["aliases"]
