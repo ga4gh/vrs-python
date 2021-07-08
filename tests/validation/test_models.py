@@ -31,8 +31,13 @@ def flatten_tests(vts):
     for cls, tests in validation_tests.items():
         for t in tests:
             for fn, exp in t["out"].items():
-                yield pytest.param(cls, t["in"], fn, exp, id=f"{cls}-{fn}")
+                test_name = t.get("name", cls)
+                test_name += f"-{fn}"
+                yield pytest.param(cls, t["in"], fn, exp, id=test_name)
 
+
+#tests, ids = zip(*list(flatten_tests(validation_tests)))
+#import IPython; IPython.embed()	  ### TODO: Remove IPython.embed()
 
 @pytest.mark.parametrize("cls,data,fn,exp", flatten_tests(validation_tests))
 def test_validation(cls, data, fn, exp):
