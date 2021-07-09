@@ -99,11 +99,11 @@ hgvs_tests = (
 )
 
 
-@pytest.mark.parametrize("translator", ("rest_tlr","tlr"))
+@pytest.mark.parametrize("tlr_fixture_name", ("rest_tlr","tlr"))
 @pytest.mark.parametrize("hgvsexpr,expected", hgvs_tests)
 @pytest.mark.vcr
-def test_hgvs_rest_dp(translator, hgvsexpr, expected, request):
-    tlr = request.getfixturevalue(translator)
+def test_hgvs_rest_dp(tlr_fixture_name, hgvsexpr, expected, request):
+    tlr = request.getfixturevalue(tlr_fixture_name)
     tlr.normalize = True
     allele = tlr.translate_from(hgvsexpr, "hgvs")
     assert expected == allele.as_dict()
