@@ -16,7 +16,7 @@ def tlr(dataproxy):
     return Translator(
         data_proxy=dataproxy,
         default_assembly_name="GRCh38",
-        # TODO: Set these to defaults and adjust relevant tests
+    # TODO: Set these to defaults and adjust relevant tests
         identify=False,
         normalize=False,
         translate_sequence_identifiers=True,
