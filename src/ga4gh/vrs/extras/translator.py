@@ -198,20 +198,20 @@ class Translator:
             if sv.posedit.pos.start.is_intronic or sv.posedit.pos.end.is_intronic:
                 raise ValueError("Intronic HGVS variants are not supported ({sv.posedit})")
 
-        if sv.posedit.edit.type == 'ins':
+        if sv.posedit.edit.type == "ins":
             interval = models.SimpleInterval(start=sv.posedit.pos.start.base,
                                         end=sv.posedit.pos.start.base)
             state = sv.posedit.edit.alt
-        elif sv.posedit.edit.type in ('sub', 'del', 'delins', 'identity'):
+        elif sv.posedit.edit.type in ("sub", "del", "delins", "identity"):
             interval = models.SimpleInterval(start=sv.posedit.pos.start.base - 1,
                                        end=sv.posedit.pos.end.base)
-            if sv.posedit.edit.type == 'identity':
+            if sv.posedit.edit.type == "identity":
                 state = self.data_proxy.get_sequence(sv.ac,
                                                      sv.posedit.pos.start.base - 1,
                                                      sv.posedit.pos.end.base)
             else:
-                state = sv.posedit.edit.alt or ''
-        elif sv.posedit.edit.type == 'dup':
+                state = sv.posedit.edit.alt or ""
+        elif sv.posedit.edit.type == "dup":
 
             interval = models.SimpleInterval(start=sv.posedit.pos.start.base - 1,
                                              end=sv.posedit.pos.end.base)
@@ -481,24 +481,24 @@ if __name__ == "__main__":
         "13 : 32936732 G > C",
         "NC_000013.11:g.32936732G>C",
         "NM_000551.3:21:1:T", {
-            'location': {
-                'interval': {
-                    'end': 22,
-                    'start': 21,
-                    'type': 'SimpleInterval'
+            "location": {
+                "interval": {
+                    "end": 22,
+                    "start": 21,
+                    "type": "SimpleInterval"
                 },
-                'sequence_id': 'ga4gh:SQ.v_QTc1p-MUYdgrRv4LMT6ByXIOsdw3C_',
-                'type': 'SequenceLocation'
+                "sequence_id": "ga4gh:SQ.v_QTc1p-MUYdgrRv4LMT6ByXIOsdw3C_",
+                "type": "SequenceLocation"
             },
-            'state': {
-                'sequence': 'T',
-                'type': 'SequenceState'
+            "state": {
+                "sequence": "T",
+                "type": "SequenceState"
             },
-            'type': 'Allele'
+            "type": "Allele"
         }, {
-            'end': 22,
-            'start': 21,
-            'type': 'SimpleInterval'
+            "end": 22,
+            "start": 21,
+            "type": "SimpleInterval"
         }
     ]
     formats = ["hgvs", "gnomad", "beacon", "spdi", "vrs", None]

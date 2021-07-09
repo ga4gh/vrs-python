@@ -64,15 +64,15 @@ class Localizer:
 
         try:
             map_name = assy_name_to_map_name[assembly_name]
-        except KeyError:
-            raise KeyError(f"No cytoband map for assembly {assembly_name}")
+        except KeyError as e:
+            raise KeyError(f"No cytoband map for assembly {assembly_name}") from e
 
         cb_map = self._cb_maps[map_name]
 
         try:
             chr_cb_map = cb_map[loc.chr]
-        except KeyError:
-            raise KeyError(f"{loc.chr}: Chromosome name doesn't exist in cytoband map ({assembly_name}/{map_name})")
+        except KeyError as e:
+            raise KeyError(f"{loc.chr}: Chromosome name doesn't exist in cytoband map ({assembly_name}/{map_name})") from e
 
         coords = []
         try:
@@ -89,8 +89,8 @@ class Localizer:
 
         try:
             ac = self._ana_maps[assembly_name][loc.chr]
-        except KeyError:
-            raise ValueError(f"No accssion for {loc.chr} in assembly {assembly_name}")
+        except KeyError as e:
+            raise ValueError(f"No accssion for {loc.chr} in assembly {assembly_name}") from e
 
         return ga4gh.vrs.models.SequenceLocation(
             sequence_id = coerce_namespace(ac),

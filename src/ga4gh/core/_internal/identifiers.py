@@ -19,15 +19,12 @@ import logging
 import os
 import re
 
+from canonicaljson import encode_canonical_json
 import pkg_resources
 import yaml
 
 from .digests import sha512t24u
-from .exceptions import GA4GHError
 from .jsonschema import is_array, is_pjs_instance, is_curie_type, is_identifiable, is_literal
-
-
-from canonicaljson import encode_canonical_json
 
 
 __all__ = "ga4gh_digest ga4gh_identify ga4gh_serialize is_ga4gh_identifier parse_ga4gh_identifier".split()
@@ -81,8 +78,8 @@ def parse_ga4gh_identifier(ir):
 
     try:
         return ga4gh_ir_regexp.match(str(ir)).groupdict()
-    except AttributeError:
-        raise ValueError(ir)
+    except AttributeError as e:
+        raise ValueError(ir) from e
 
 
 def ga4gh_identify(vro, type_prefix_map=None):
@@ -143,7 +140,7 @@ def ga4gh_serialize(vro):
     >>> ival = ga4gh.vrs.models.SimpleInterval(start=44908821, end=44908822)
     >>> location = ga4gh.vrs.models.Location(sequence_id="ga4gh:SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl", interval=ival)
     >>> ga4gh_serialize(location)
-    b'{"interval":{"end":44908822,"start":44908821,"type":"SimpleInterval"},"sequence_id":"IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl","type":"SequenceLocation"}'
+    b'{"interval":{"end":44908822,...,"type":"SequenceLocation"}'
 
     """
 

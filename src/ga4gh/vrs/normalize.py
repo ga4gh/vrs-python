@@ -1,8 +1,15 @@
+"""VRS object normalization functions
+
+See https://vrs.ga4gh.org/en/stable/impl-guide/normalization.html
+
+"""
+
+
 import logging
 
 from bioutils.normalize import normalize as _normalize, NormalizationMode
+from ga4gh.core import is_pjs_instance, pjs_copy, ga4gh_digest
 
-from ..core import is_pjs_instance, pjs_copy, ga4gh_digest
 from ._internal import models
 from .dataproxy import SequenceProxy
 
@@ -74,20 +81,20 @@ if __name__ == "__main__":      # pragma: no cover
     #  |820      |825      | 830
     #
     allele_dict = {
-        'location': {
-            'interval': {
-                'end': 44908822,
-                'start': 44908821,
-                'type': 'SimpleInterval'
+        "location": {
+            "interval": {
+                "end": 44908822,
+                "start": 44908821,
+                "type": "SimpleInterval"
             },
-            'sequence_id': 'refseq:NC_000019.10',
-            'type': 'SequenceLocation'
+            "sequence_id": "refseq:NC_000019.10",
+            "type": "SequenceLocation"
         },
-        'state': {
-            'sequence': 'A',
-            'type': 'SequenceState'
+        "state": {
+            "sequence": "A",
+            "type": "SequenceState"
         },
-        'type': 'Allele'
+        "type": "Allele"
     }
     allele = models.Allele(**allele_dict)
 

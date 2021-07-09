@@ -27,7 +27,7 @@ _logger = logging.getLogger(__name__)
 
 def build_models(path, standardize_names=False):
     """load models from json schema at path"""
-    with open(path, 'r') as yaml_file:
+    with open(path, "r") as yaml_file:
         y = yaml.load(yaml_file, yaml.SafeLoader)
     builder = pjs.ObjectBuilder(pjs_filter(y))
     models = builder.build_classes(standardize_names=standardize_names)
@@ -50,7 +50,6 @@ def build_class_referable_attribute_map(models):
 
 
 def get_referable_attributes(cls):
-
     """for a given pjs class, return list of attributes that may be either
     objects or CURIEs
 
@@ -58,6 +57,7 @@ def get_referable_attributes(cls):
     to them
 
     """
+
     if not is_pjs_class(cls):
         return None
     atts = cls.__prop_names__
@@ -91,6 +91,9 @@ def is_referable(json_subschema):
 # (argument is a pjs class)
 
 def is_pjs_class(c):
+    """return True if argument is a pjs class object
+
+    """
     mro = getattr(c, "__mro__", [])
     return pjs.classbuilder.ProtocolBase in mro
 

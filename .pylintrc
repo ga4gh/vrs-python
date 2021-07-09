@@ -9,7 +9,7 @@ good-names=i,
 
 # Good variable names regexes, separated by a comma. If names match any regex,
 # they will always be accepted
-good-names-rgxs=
+good-names-rgxs=[a-z]
 
 
 [FORMAT]

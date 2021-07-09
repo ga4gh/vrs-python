@@ -81,8 +81,8 @@ n        start and end are optional
 
         try:
             md = self.get_metadata(identifier)
-        except (ValueError, KeyError, IndexError):
-            raise KeyError(identifier)
+        except (ValueError, KeyError, IndexError) as e:
+            raise KeyError(identifier) from e
         aliases = list(set(md["aliases"]))  # ensure uniqueness
         if namespace is not None:
             nsd = namespace + ":"
@@ -130,7 +130,7 @@ class SeqRepoDataProxy(_SeqRepoDataProxyBase):
         seq_id = r[0]["seq_id"]
         seqinfo = self.sr.sequences.fetch_seqinfo(seq_id)
         aliases = self.sr.aliases.find_aliases(seq_id=seq_id)
-        return {
+        md = {
             "length": seqinfo["len"],
             "alphabet": seqinfo["alpha"],
             "added": _isoformat(seqinfo["added"]),
@@ -217,10 +217,10 @@ def _isoformat(o):
     assert isinstance(o, datetime.datetime)
     if o.tzinfo:
         # eg: '2015-09-25T23:14:42.588601+00:00'
-        return o.isoformat('T')
+        return o.isoformat("T")
     # No timezone present - assume UTC.
     # eg: '2015-09-25T23:14:42.588601Z'
-    return o.isoformat('T') + 'Z'
+    return o.isoformat("T") + "Z"
 
 
 # Future implementations
@@ -260,7 +260,7 @@ def create_dataproxy(uri: str = None) -> _DataProxy:
 
     if provider == "seqrepo":
         if proto in ("", "file"):
-            from biocommons.seqrepo import SeqRepo
+            from biocommons.seqrepo import SeqRepo  # pylint: disable=import-error
             sr = SeqRepo(root_dir=parsed_uri.path)
             dp = SeqRepoDataProxy(sr)
         elif proto in ("http", "https"):
@@ -294,4 +294,3 @@ if __name__ == "__main__":
 
     assert dp1.get_metadata(ir) == dp2.get_metadata(ir)
     assert dp1.get_sequence(ir) == dp2.get_sequence(ir)
-
