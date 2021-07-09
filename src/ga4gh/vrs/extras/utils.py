@@ -7,7 +7,7 @@ import sys
 
 def _format_time(timespan, precision=3):
     """Formats the timespan in a human readable form
-    
+
     >>> _format_time(0.35)
     '350 ms'
 
@@ -38,9 +38,9 @@ def _format_time(timespan, precision=3):
                 break
         return " ".join(time)
 
-    units = [u"s", u"ms", u"us", u"ns"]  # the save value   
+    units = [u"s", u"ms", u"us", u"ns"]  # the save value
     scaling = [1, 1e3, 1e6, 1e9]
-        
+
     if timespan > 0.0:
         order = min(-int(math.floor(math.log10(timespan)) // 3), 3)
     else:

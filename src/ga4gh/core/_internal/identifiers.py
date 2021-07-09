@@ -68,15 +68,15 @@ def is_ga4gh_identifier(ir):
 def parse_ga4gh_identifier(ir):
     """
     Parses a GA4GH identifier, returning a dict with type and digest components
-    
+
     >>> parse_ga4gh_identifier("ga4gh:SQ.0123abcd")
     {'type': 'SQ', 'digest': '0123abcd'}
-    
+
     >>> parse_ga4gh_identifier("notga4gh:SQ.0123abcd")
     Traceback (most recent call last):
     ...
     ValueError: notga4gh:SQ.0123abcd
-    
+
     """
 
     try:
@@ -122,7 +122,7 @@ def ga4gh_digest(vro):
 
     assert is_identifiable(vro), "ga4gh_digest called with non-identifiable object"
     return sha512t24u(ga4gh_serialize(vro))
-    
+
 
 def ga4gh_serialize(vro):
     """serialize object into a canonical format
@@ -135,7 +135,7 @@ def ga4gh_serialize(vro):
     * UTF-8 encoded
     * nested identifiable objects are replaced by their identifiers
     * arrays of identifiers are sorted lexographically
-    
+
     These requirements are a distillation of several proposals which
     have not yet been ratified.
 

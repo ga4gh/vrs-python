@@ -72,7 +72,7 @@ if __name__ == "__main__":      # pragma: no cover
     # >>> dp.get_sequence("refseq:NC_000019.10", 44908820, 44908830)
     # ' G C G C C T G G C A '
     #  |820      |825      | 830
-    # 
+    #
     allele_dict = {
         'location': {
             'interval': {
@@ -90,13 +90,13 @@ if __name__ == "__main__":      # pragma: no cover
         'type': 'Allele'
     }
     allele = models.Allele(**allele_dict)
-    
+
 
     allele2 = normalize(allele, dp)
-    
+
     allele.state.sequence = "C"
     allele3 = normalize(allele, dp)
-    
+
     allele.location.interval.end = 44908823
     allele.state.sequence = ""
     allele4 = normalize(allele, dp)

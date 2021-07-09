@@ -102,7 +102,7 @@ reformat:
 #=> lint -- static analysis check
 .PHONY: lint
 lint:
-	(cd src/ga4gh; pylint core vrs) | tee $@
+	pylint src/ga4gh/{core,vrs} | tee $@
 
 #=> docs -- make sphinx docs
 .PHONY: docs

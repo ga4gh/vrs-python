@@ -61,19 +61,19 @@ class Localizer:
             if cb is None:
                 return None
             return chr_cb_map[cb][0:2]
-            
+
         try:
             map_name = assy_name_to_map_name[assembly_name]
         except KeyError:
             raise KeyError(f"No cytoband map for assembly {assembly_name}")
-        
+
         cb_map = self._cb_maps[map_name]
-        
+
         try:
             chr_cb_map = cb_map[loc.chr]
         except KeyError:
             raise KeyError(f"{loc.chr}: Chromosome name doesn't exist in cytoband map ({assembly_name}/{map_name})")
-        
+
         coords = []
         try:
             coords += _get_coords(chr_cb_map, loc.interval.start)
@@ -83,10 +83,10 @@ class Localizer:
             coords += _get_coords(chr_cb_map, loc.interval.end)
         except:
             raise ValueError(f"{loc.interval.end}: ChromosomeLocation not in map for {assembly_name}, chr {loc.chr}")
- 
+
         # the following works regardless of orientation of bands and number of bands
         start, end = min(coords), max(coords)
-        
+
         try:
             ac = self._ana_maps[assembly_name][loc.chr]
         except KeyError:
@@ -100,7 +100,7 @@ class Localizer:
 
 
 
-    
+
 if __name__ == "__main__":
     cbl = ga4gh.vrs.models.ChromosomeLocation(chr="11", start="q22.3", end="q23.1")
     lr = Localizer()

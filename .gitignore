@@ -18,3 +18,4 @@ misc/clinvar
 notes
 venv
 .vscode/launch.json
+lint

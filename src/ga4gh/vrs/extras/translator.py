@@ -60,10 +60,10 @@ class Translator:
 
     def translate_from(self, var, fmt=None):
         """Translate variation `var` to VRS object
-        
+
         If fmt is None, guess the appropriate format and return the variant.
         If fmt is specified, try only that format.
-        See also notes about `from_` and `to_` methods.   
+        See also notes about `from_` and `to_` methods.
         """
 
         if fmt:
@@ -91,7 +91,7 @@ class Translator:
 
     def _from_beacon(self, beacon_expr, assembly_name=None):
         """Parse beacon expression into VRS Allele
-        
+
         #>>> a = tlr.from_beacon("13 : 32936732 G > C")
         #>>> a.as_dict()
         {'location': {'interval': {'end': 32936732,
@@ -140,7 +140,7 @@ class Translator:
           'type': 'SequenceLocation'},
          'state': {'sequence': 'GA', 'type': 'SequenceState'},
          'type': 'Allele'}
-        
+
         """
 
         if not isinstance(gnomad_expr, str):
@@ -477,7 +477,7 @@ if __name__ == "__main__":
 
     expressions = [
         "bogus",
-        "1-55516888-G-GA", 
+        "1-55516888-G-GA",
         "13 : 32936732 G > C",
         "NC_000013.11:g.32936732G>C",
         "NM_000551.3:21:1:T", {
