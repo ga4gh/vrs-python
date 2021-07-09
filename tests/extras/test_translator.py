@@ -17,31 +17,31 @@ output = {
 }
 
 
-@pytest.mark.parametrize("translator", ("rest_tlr","tlr"))
+@pytest.mark.parametrize("tlr_fixture_name", ("rest_tlr","tlr"))
 @pytest.mark.vcr
-def test_from_beacon(translator, request):
-    tlr = request.getfixturevalue(translator)
+def test_from_beacon(tlr_fixture_name, request):
+    tlr = request.getfixturevalue(tlr_fixture_name)
     assert tlr._from_beacon(inputs["beacon"]).as_dict() == output
 
 
-@pytest.mark.parametrize("translator", ("rest_tlr","tlr"))
+@pytest.mark.parametrize("tlr_fixture_name", ("rest_tlr","tlr"))
 @pytest.mark.vcr
-def test_from_gnomad(translator, request):
-    tlr = request.getfixturevalue(translator)
+def test_from_gnomad(tlr_fixture_name, request):
+    tlr = request.getfixturevalue(tlr_fixture_name)
     assert tlr._from_gnomad(inputs["gnomad"]).as_dict() == output
 
 
-@pytest.mark.parametrize("translator", ("rest_tlr","tlr"))
+@pytest.mark.parametrize("tlr_fixture_name", ("rest_tlr","tlr"))
 @pytest.mark.vcr
-def test_from_hgvs(translator, request):
-    tlr = request.getfixturevalue(translator)
+def test_from_hgvs(tlr_fixture_name, request):
+    tlr = request.getfixturevalue(tlr_fixture_name)
     assert tlr._from_hgvs(inputs["hgvs"]).as_dict() == output
 
 
-@pytest.mark.parametrize("translator", ("rest_tlr","tlr"))
+@pytest.mark.parametrize("tlr_fixture_name", ("rest_tlr","tlr"))
 @pytest.mark.vcr
-def test_from_spdi(translator, request):
-    tlr = request.getfixturevalue(translator)
+def test_from_spdi(tlr_fixture_name, request):
+    tlr = request.getfixturevalue(tlr_fixture_name)
     assert tlr._from_spdi(inputs["spdi"]).as_dict() == output
 
 
