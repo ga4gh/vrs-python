@@ -6,8 +6,12 @@ on:
   pull_request:
     branches: [ main ]
 
+
+# TODO: separate lint and test jobs; lint first, test "needs" lint
+# https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobs
+
 jobs:
-  build:
+  test:
 
     runs-on: ubuntu-latest
     strategy:
