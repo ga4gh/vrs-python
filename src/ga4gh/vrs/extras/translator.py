@@ -468,6 +468,8 @@ class Translator:
 
 
 if __name__ == "__main__":
+    # pylint: disable=ungrouped-imports
+
     import coloredlogs
     coloredlogs.install(level="INFO")
 

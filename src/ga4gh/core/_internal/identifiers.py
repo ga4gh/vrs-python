@@ -99,7 +99,7 @@ def ga4gh_identify(vro, type_prefix_map=None):
     try:
         pfx = type_prefix_map[vro.type]
     except KeyError:
-        _logger.debug(f"No identifier prefix is defined for {vro.type}; check ga4gh.yaml")
+        _logger.debug("No identifier prefix is defined for %s; check ga4gh.yaml", vro.type)
         return None
     digest = ga4gh_digest(vro)
     ir = f"{namespace}{curie_sep}{pfx}{ref_sep}{digest}"

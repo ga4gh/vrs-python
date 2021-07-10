@@ -36,7 +36,7 @@ class _DataProxy(ABC):
     def get_sequence(self, identifier, start=None, end=None):
         """return the specified sequence or subsequence
 
-n        start and end are optional
+        start and end are optional
 
         If the given sequence does not exist, KeyError is raised.
 
@@ -150,7 +150,7 @@ class SeqRepoRESTDataProxy(_SeqRepoDataProxyBase):
 
     def _get_sequence(self, identifier, start=None, end=None):
         url = self.base_url + f"sequence/{identifier}"
-        _logger.info("Fetching " + url)
+        _logger.info("Fetching %s", url)
         params = {"start": start, "end": end}
         resp = requests.get(url, params=params)
         if resp.status_code == 404:
@@ -160,7 +160,7 @@ class SeqRepoRESTDataProxy(_SeqRepoDataProxyBase):
 
     def _get_metadata(self, identifier):
         url = self.base_url + f"metadata/{identifier}"
-        _logger.info("Fetching " + url)
+        _logger.info("Fetching %s", url)
         resp = requests.get(url)
         if resp.status_code == 404:
             raise KeyError(identifier)
@@ -260,7 +260,8 @@ def create_dataproxy(uri: str = None) -> _DataProxy:
 
     if provider == "seqrepo":
         if proto in ("", "file"):
-            from biocommons.seqrepo import SeqRepo  # pylint: disable=import-error
+            # pylint: disable=import-error, import-outside-toplevel
+            from biocommons.seqrepo import SeqRepo
             sr = SeqRepo(root_dir=parsed_uri.path)
             dp = SeqRepoDataProxy(sr)
         elif proto in ("http", "https"):
