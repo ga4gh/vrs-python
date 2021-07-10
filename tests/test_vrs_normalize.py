@@ -2,12 +2,11 @@ import pytest
 
 from ga4gh.vrs import models, normalize
 
-
 # >>> dp.get_sequence("refseq:NC_000019.10", 44908820, 44908830)
 #  |820      |825      | 830
 # ' G C G C C T G G C A '
 #    |A| a1
-#    
+#
 allele_dict = {
     'location': {
         'interval': {
@@ -43,7 +42,7 @@ def test_normalize_allele(dataproxy):
     assert 44908824 == allele4.location.interval.end._value
     assert "GC" == allele4.state.sequence._value
 
-    
+
 def test_normalize_other(dataproxy):
     i = models.SimpleInterval(start=5, end=6)
     assert i == normalize(i, dataproxy)

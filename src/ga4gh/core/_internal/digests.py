@@ -1,3 +1,10 @@
+"""ga4gh digest algorithm
+
+Source: sha512t24u from biocommons.seqrepo
+https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0239883
+
+"""
+
 import base64
 import hashlib
 
@@ -8,7 +15,7 @@ def sha512t24u(blob):
 
     The sha512t24u digest is a convention for constructing and
     formatting digests for use as object identifiers. Specifically::
-    
+
         * generate a SHA512 digest on binary data
         * truncate at 24 bytes
         * encode using base64url encoding

@@ -23,7 +23,7 @@ _logger = logging.getLogger(__name__)
 
 class _DataProxy(ABC):
     """abstract class / interface for VRS data needs
-    
+
     The proxy MUST support the use of GA4GH sequence identifers (i.e.,
     `ga4gh:SQ...`) as keys, and return these identifiers among the
     aliases for a sequence.  These identifiers may be supported
@@ -36,7 +36,7 @@ class _DataProxy(ABC):
     def get_sequence(self, identifier, start=None, end=None):
         """return the specified sequence or subsequence
 
-n        start and end are optional
+        start and end are optional
 
         If the given sequence does not exist, KeyError is raised.
 
@@ -81,8 +81,8 @@ n        start and end are optional
 
         try:
             md = self.get_metadata(identifier)
-        except (ValueError, KeyError, IndexError):
-            raise KeyError(identifier)
+        except (ValueError, KeyError, IndexError) as e:
+            raise KeyError(identifier) from e
         aliases = list(set(md["aliases"]))  # ensure uniqueness
         if namespace is not None:
             nsd = namespace + ":"
@@ -126,11 +126,11 @@ class SeqRepoDataProxy(_SeqRepoDataProxyBase):
         ns, a = coerce_namespace(identifier).split(":", 2)
         r = list(self.sr.aliases.find_aliases(namespace=ns, alias=a))
         if len(r) == 0:
-            raise KeyError(identifier) 
+            raise KeyError(identifier)
         seq_id = r[0]["seq_id"]
         seqinfo = self.sr.sequences.fetch_seqinfo(seq_id)
         aliases = self.sr.aliases.find_aliases(seq_id=seq_id)
-        return {
+        md = {
             "length": seqinfo["len"],
             "alphabet": seqinfo["alpha"],
             "added": _isoformat(seqinfo["added"]),
@@ -150,24 +150,24 @@ class SeqRepoRESTDataProxy(_SeqRepoDataProxyBase):
 
     def _get_sequence(self, identifier, start=None, end=None):
         url = self.base_url + f"sequence/{identifier}"
-        _logger.info("Fetching " + url)
+        _logger.info("Fetching %s", url)
         params = {"start": start, "end": end}
         resp = requests.get(url, params=params)
         if resp.status_code == 404:
-            raise KeyError(identifier) 
+            raise KeyError(identifier)
         resp.raise_for_status()
         return resp.text
 
     def _get_metadata(self, identifier):
         url = self.base_url + f"metadata/{identifier}"
-        _logger.info("Fetching " + url)
+        _logger.info("Fetching %s", url)
         resp = requests.get(url)
         if resp.status_code == 404:
-            raise KeyError(identifier) 
+            raise KeyError(identifier)
         resp.raise_for_status()
         data = resp.json()
         return data
-    
+
 
 class SequenceProxy(Sequence):
     """Provides efficient and transparent string-like access, including
@@ -180,7 +180,7 @@ class SequenceProxy(Sequence):
         self.dp = dp
         self.alias = alias
         self._md = self.dp.get_metadata(self.alias)
-        
+
     def __str__(self):
         return self.dp.get_sequence(self.alias)
 
@@ -217,12 +217,12 @@ def _isoformat(o):
     assert isinstance(o, datetime.datetime)
     if o.tzinfo:
         # eg: '2015-09-25T23:14:42.588601+00:00'
-        return o.isoformat('T')
+        return o.isoformat("T")
     # No timezone present - assume UTC.
     # eg: '2015-09-25T23:14:42.588601Z'
-    return o.isoformat('T') + 'Z'
+    return o.isoformat("T") + "Z"
 
- 
+
 # Future implementations
 # * The RefGetDataProxy is waiting on support for sequence lookup by alias
 # class RefGetDataProxy(_DataProxy):
@@ -234,7 +234,7 @@ def _isoformat(o):
 
 def create_dataproxy(uri: str = None) -> _DataProxy:
     """Create a dataproxy from uri or GA4GH_VRS_DATAPROXY_URI
-    
+
     Currently accepted URI schemes:
 
     * seqrepo+file:///path/to/seqrepo/root
@@ -252,7 +252,7 @@ def create_dataproxy(uri: str = None) -> _DataProxy:
 
     parsed_uri = urlparse(uri)
     scheme = parsed_uri.scheme
-    
+
     if "+" not in scheme:
         raise ValueError("create_dataproxy scheme must include provider (e.g., `seqrepo+http:...`)")
 
@@ -260,6 +260,7 @@ def create_dataproxy(uri: str = None) -> _DataProxy:
 
     if provider == "seqrepo":
         if proto in ("", "file"):
+            # pylint: disable=import-error, import-outside-toplevel
             from biocommons.seqrepo import SeqRepo
             sr = SeqRepo(root_dir=parsed_uri.path)
             dp = SeqRepoDataProxy(sr)
@@ -294,4 +295,3 @@ if __name__ == "__main__":
 
     assert dp1.get_metadata(ir) == dp2.get_metadata(ir)
     assert dp1.get_sequence(ir) == dp2.get_sequence(ir)
-    

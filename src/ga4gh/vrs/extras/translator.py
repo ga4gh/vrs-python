@@ -6,13 +6,11 @@ Output formats: VRS (serialized), hgvs, spdi, gnomad (vcf)
 """
 
 from collections.abc import Mapping
-import copy
 import logging
 import re
 
 from bioutils.accessions import coerce_namespace
 import hgvs.parser
-
 import hgvs.location
 import hgvs.posedit
 import hgvs.edit
@@ -60,10 +58,11 @@ class Translator:
 
     def translate_from(self, var, fmt=None):
         """Translate variation `var` to VRS object
-        
-        If fmt is None, guess the appropriate format and return the variant.
-        If fmt is specified, try only that format.
-        See also notes about `from_` and `to_` methods.   
+
+        If `fmt` is None, guess the appropriate format and return the variant.
+        If `fmt` is specified, try only that format.
+
+        See also notes about `from_` and `to_` methods.
         """
 
         if fmt:
@@ -82,6 +81,7 @@ class Translator:
         raise ValueError(f"Unable to parse data as {', '.join(formats)}")
 
     def translate_to(self, vo, fmt):
+        """translate vrs object `vo` to named format `fmt`"""
         t = self.to_translators[fmt]
         return t(self, vo)
 
@@ -91,7 +91,7 @@ class Translator:
 
     def _from_beacon(self, beacon_expr, assembly_name=None):
         """Parse beacon expression into VRS Allele
-        
+
         #>>> a = tlr.from_beacon("13 : 32936732 G > C")
         #>>> a.as_dict()
         {'location': {'interval': {'end': 32936732,
@@ -140,7 +140,7 @@ class Translator:
           'type': 'SequenceLocation'},
          'state': {'sequence': 'GA', 'type': 'SequenceState'},
          'type': 'Allele'}
-        
+
         """
 
         if not isinstance(gnomad_expr, str):
@@ -198,11 +198,11 @@ class Translator:
             if sv.posedit.pos.start.is_intronic or sv.posedit.pos.end.is_intronic:
                 raise ValueError("Intronic HGVS variants are not supported ({sv.posedit})")
 
-        if sv.posedit.edit.type == 'ins':
+        if sv.posedit.edit.type == "ins":
             interval = models.SimpleInterval(start=sv.posedit.pos.start.base,
                                         end=sv.posedit.pos.start.base)
             state = sv.posedit.edit.alt
-        elif sv.posedit.edit.type in ('sub', 'del', 'delins', 'identity'):
+        elif sv.posedit.edit.type in ("sub", "del", "delins", "identity"):
             interval = models.SimpleInterval(start=sv.posedit.pos.start.base - 1,
                                        end=sv.posedit.pos.end.base)
             if sv.posedit.edit.type == 'identity':
@@ -210,8 +210,8 @@ class Translator:
                                                      sv.posedit.pos.start.base - 1,
                                                      sv.posedit.pos.end.base)
             else:
-                state = sv.posedit.edit.alt or ''
-        elif sv.posedit.edit.type == 'dup':
+                state = sv.posedit.edit.alt or ""
+        elif sv.posedit.edit.type == "dup":
 
             interval = models.SimpleInterval(start=sv.posedit.pos.start.base - 1,
                                              end=sv.posedit.pos.end.base)
@@ -340,7 +340,7 @@ class Translator:
             raise ValueError("Only nucleic acid variation is currently supported")
             # ival = hgvs.location.Interval(start=start, end=end)
             # edit = hgvs.edit.AARefAlt(ref=None, alt=vo.state.sequence)
-        else:
+        else:                   # pylint: disable=no-else-raise
             start = vo.location.interval.start
             end = vo.location.interval.end
             # ib: 0 1 2 3 4 5
@@ -468,6 +468,8 @@ class Translator:
 
 
 if __name__ == "__main__":
+    # pylint: disable=ungrouped-imports
+
     import coloredlogs
     coloredlogs.install(level="INFO")
 
@@ -477,28 +479,28 @@ if __name__ == "__main__":
 
     expressions = [
         "bogus",
-        "1-55516888-G-GA", 
+        "1-55516888-G-GA",
         "13 : 32936732 G > C",
         "NC_000013.11:g.32936732G>C",
         "NM_000551.3:21:1:T", {
-            'location': {
-                'interval': {
-                    'end': 22,
-                    'start': 21,
-                    'type': 'SimpleInterval'
+            "location": {
+                "interval": {
+                    "end": 22,
+                    "start": 21,
+                    "type": "SimpleInterval"
                 },
-                'sequence_id': 'ga4gh:SQ.v_QTc1p-MUYdgrRv4LMT6ByXIOsdw3C_',
-                'type': 'SequenceLocation'
+                "sequence_id": "ga4gh:SQ.v_QTc1p-MUYdgrRv4LMT6ByXIOsdw3C_",
+                "type": "SequenceLocation"
             },
-            'state': {
-                'sequence': 'T',
-                'type': 'SequenceState'
+            "state": {
+                "sequence": "T",
+                "type": "SequenceState"
             },
-            'type': 'Allele'
+            "type": "Allele"
         }, {
-            'end': 22,
-            'start': 21,
-            'type': 'SimpleInterval'
+            "end": 22,
+            "start": 21,
+            "type": "SimpleInterval"
         }
     ]
     formats = ["hgvs", "gnomad", "beacon", "spdi", "vrs", None]
