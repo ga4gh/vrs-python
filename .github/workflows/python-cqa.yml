@@ -21,11 +21,13 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
+    - name: Update pip and setuptools
+      run: |
+        python -m pip install --upgrade pip setuptools
     - name: Install dependencies
       run: |
-        python -m pip install --upgrade pip
-        pip install -e .[dev]
-    - name: Analysing the code with pylint
+        pip install -e .[dev,extras]
+    - name: Pylint static analysis
       run: |
         pylint src/ga4gh/{core,vrs}
     - name: Test with pytest
