@@ -6,13 +6,11 @@ Output formats: VRS (serialized), hgvs, spdi, gnomad (vcf)
 """
 
 from collections.abc import Mapping
-import copy
 import logging
 import re
 
 from bioutils.accessions import coerce_namespace
 import hgvs.parser
-
 import hgvs.location
 import hgvs.posedit
 import hgvs.edit
@@ -61,8 +59,9 @@ class Translator:
     def translate_from(self, var, fmt=None):
         """Translate variation `var` to VRS object
 
-        If fmt is None, guess the appropriate format and return the variant.
-        If fmt is specified, try only that format.
+        If `fmt` is None, guess the appropriate format and return the variant.
+        If `fmt` is specified, try only that format.
+
         See also notes about `from_` and `to_` methods.
         """
 
@@ -82,6 +81,7 @@ class Translator:
         raise ValueError(f"Unable to parse data as {', '.join(formats)}")
 
     def translate_to(self, vo, fmt):
+        """translate vrs object `vo` to named format `fmt`"""
         t = self.to_translators[fmt]
         return t(self, vo)
 
@@ -340,7 +340,7 @@ class Translator:
             raise ValueError("Only nucleic acid variation is currently supported")
             # ival = hgvs.location.Interval(start=start, end=end)
             # edit = hgvs.edit.AARefAlt(ref=None, alt=vo.state.sequence)
-        else:
+        else:                   # pylint: disable=no-else-raise
             start = vo.location.interval.start
             end = vo.location.interval.end
             # ib: 0 1 2 3 4 5

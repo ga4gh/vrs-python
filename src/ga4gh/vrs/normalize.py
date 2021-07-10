@@ -40,11 +40,11 @@ def _normalize_allele(allele, data_proxy):
     return new_allele
 
 def _normalize_haplotype(o, data_proxy=None):
-    o.members = sorted(o.members, key=lambda o: ga4gh_digest(o))
+    o.members = sorted(o.members, key=ga4gh_digest)
     return o
 
 def _normalize_variationset(o, data_proxy=None):
-    o.members = sorted(o.members, key=lambda o: ga4gh_digest(o))
+    o.members = sorted(o.members, key=ga4gh_digest)
     return o
 
 
@@ -56,6 +56,8 @@ handlers = {
 
 
 def normalize(vo, data_proxy=None):
+    """normalize given vrs object, regardless of type"""
+
     assert is_pjs_instance(vo)
 
     vo_type = vo.type._value
@@ -63,9 +65,9 @@ def normalize(vo, data_proxy=None):
     if vo_type in handlers:
         handler = handlers[vo_type]
         return handler(vo, data_proxy)
-    else:
-        # No handler for vo_type; pass-through unchanged
-        return vo
+
+    # No handler for vo_type; pass-through unchanged
+    return vo
 
 
 

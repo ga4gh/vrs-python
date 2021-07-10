@@ -1,3 +1,6 @@
+"""decorators for vrs-python"""
+
+
 def lazy_property(fn):
     """Decorator that makes a property lazy-evaluated.
 

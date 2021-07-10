@@ -1,8 +1,10 @@
+"""miscellaneous utility functions for vrs.extras
+
+"""
+
 from base64 import urlsafe_b64decode, urlsafe_b64encode
 from binascii import hexlify, unhexlify
-import datetime
 import math
-import sys
 
 
 def _format_time(timespan, precision=3):
@@ -33,7 +35,7 @@ def _format_time(timespan, precision=3):
             value = int(leftover / length)
             if value > 0:
                 leftover = leftover % length
-                time.append(u'%s%s' % (str(value), suffix))
+                time.append(u"%s%s" % (str(value), suffix))
             if leftover < 1:
                 break
         return " ".join(time)
@@ -49,8 +51,9 @@ def _format_time(timespan, precision=3):
 
 
 def hex_to_base64url(s):
+    """convert hex string to base64 string"""
     return urlsafe_b64encode(unhexlify(s)).decode("ascii")
 
 def base64url_to_hex(s):
+    """convert base64 string to hex string"""
     return hexlify(urlsafe_b64decode(s)).decode("ascii")
-

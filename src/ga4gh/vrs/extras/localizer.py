@@ -1,3 +1,8 @@
+"""convert named locations into SequenceLocations ("localize") by
+reference to external data
+
+"""
+
 import copy
 
 from bioutils.accessions import coerce_namespace
@@ -72,17 +77,20 @@ class Localizer:
         try:
             chr_cb_map = cb_map[loc.chr]
         except KeyError as e:
-            raise KeyError(f"{loc.chr}: Chromosome name doesn't exist in cytoband map ({assembly_name}/{map_name})") from e
+            raise KeyError(f"{loc.chr}: Chromosome name doesn't exist in cytoband"
+                           " map ({assembly_name}/{map_name})") from e
 
         coords = []
         try:
             coords += _get_coords(chr_cb_map, loc.interval.start)
-        except:
-            raise ValueError(f"{loc.interval.start}: ChromosomeLocation not in map for {assembly_name}, chr {loc.chr}")
+        except (KeyError, ValueError) as e:
+            raise ValueError(f"{loc.interval.start}: ChromosomeLocation not in"
+                             " map for {assembly_name}, chr {loc.chr}") from e
         try:
             coords += _get_coords(chr_cb_map, loc.interval.end)
-        except:
-            raise ValueError(f"{loc.interval.end}: ChromosomeLocation not in map for {assembly_name}, chr {loc.chr}")
+        except (KeyError, ValueError) as e:
+            raise ValueError(f"{loc.interval.end}: ChromosomeLocation not in"
+                             " map for {assembly_name}, chr {loc.chr}") from e
 
         # the following works regardless of orientation of bands and number of bands
         start, end = min(coords), max(coords)
