@@ -6,7 +6,7 @@ from ga4gh.vrs import models, normalize
 # ' G C G C C T G G C A '
 #    |A| a1
 #
-allele_dict = {
+deprecated_allele_dict = {
     'location': {
         'interval': {
             'end': 44908822,
@@ -22,6 +22,30 @@ allele_dict = {
     },
     'type': 'Allele'
 }
+
+allele_dict = {
+    "location": {
+        "interval": {
+            "end": {
+                "type": "Number",
+                "value": 26090951
+            },
+            "start": {
+                "type": "Number",
+                "value": 26090950
+            },
+            "type": "SequenceInterval"
+        },
+        "sequence_id": "refseq:NC_000006.12",
+        "type": "SequenceLocation"
+    },
+    "state": {
+        "sequence": "C",
+        "type": "LiteralSequenceExpression"
+      },
+    "type": "Allele"
+}
+
 
 # NC_000023.11:g.(?_155980375)_(155980377_?)del
 uncertain_del_allele = {
@@ -89,7 +113,7 @@ uncertain_dup_allele = {
 
 @pytest.mark.vcr
 def test_normalize_allele(dataproxy):
-    allele1 = models.Allele(**allele_dict)
+    allele1 = models.Allele(**deprecated_allele_dict)
     allele2 = normalize(allele1, dataproxy)
     assert allele1 == allele2
 
@@ -103,6 +127,10 @@ def test_normalize_allele(dataproxy):
     assert 44908820 == allele4.location.interval.start._value
     assert 44908824 == allele4.location.interval.end._value
     assert "GC" == allele4.state.sequence._value
+
+    allele1 = models.Allele(**allele_dict)
+    allele2 = normalize(allele1, dataproxy)
+    assert allele1 == allele2
 
     allele1 = models.Allele(**uncertain_del_allele)
     allele2 = normalize(allele1, dataproxy)

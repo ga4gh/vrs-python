@@ -25,9 +25,14 @@ def _normalize_allele(allele, data_proxy):
     except AttributeError:
         ival = (allele.location.interval.start.value, allele.location.interval.end.value)
 
-    try:
+    _allele_state = allele.state.type
+    _states_with_sequence = ['SequenceState', 'LiteralSequenceExpression']
+    if _allele_state in _states_with_sequence:
         alleles = (None, allele.state.sequence._value)
-    except AttributeError:
+    elif _allele_state == 'RepeatedSequenceExpression' and \
+            allele.state.seq_expr.type in _states_with_sequence:
+        alleles = (None, allele.state.seq_expr.sequence._value)
+    else:
         alleles = (None, '')
 
     new_allele = pjs_copy(allele)
