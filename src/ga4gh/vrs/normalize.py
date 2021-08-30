@@ -20,9 +20,11 @@ _logger = logging.getLogger(__name__)
 
 def _normalize_allele(allele, data_proxy):
     sequence = SequenceProxy(data_proxy, allele.location.sequence_id._value)
-    try:
+
+    _interval_type = allele.location.interval.type
+    if _interval_type == "SimpleInterval":
         ival = (allele.location.interval.start._value, allele.location.interval.end._value)
-    except AttributeError:
+    elif _interval_type == "SequenceInterval":
         ival = (allele.location.interval.start.value, allele.location.interval.end.value)
 
     _allele_state = allele.state.type
