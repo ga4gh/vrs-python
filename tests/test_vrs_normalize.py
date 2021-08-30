@@ -46,9 +46,7 @@ allele_dict = {
     "type": "Allele"
 }
 
-
-# NC_000023.11:g.(?_155980375)_(155980377_?)del
-uncertain_del_allele = {
+allele_dict2 = {
     "type": "Allele",
     "location": {
         "type": "SequenceLocation",
@@ -73,8 +71,6 @@ uncertain_del_allele = {
     }
 }
 
-
-# NC_000001.11:g.(?_244988599)_(244988601_?)dup
 seq_loc = {
         "type": "SequenceLocation",
         "sequence_id": "refseq:NC_000001.11",
@@ -93,7 +89,7 @@ seq_loc = {
         }
     }
 
-uncertain_dup_allele = {
+allele_dict3 = {
     "type": "Allele",
     "location": seq_loc,
     "state": {
@@ -132,11 +128,11 @@ def test_normalize_allele(dataproxy):
     allele2 = normalize(allele1, dataproxy)
     assert allele1 == allele2
 
-    allele1 = models.Allele(**uncertain_del_allele)
+    allele1 = models.Allele(**allele_dict2)
     allele2 = normalize(allele1, dataproxy)
     assert allele1 == allele2
 
-    allele1 = models.Allele(**uncertain_dup_allele)
+    allele1 = models.Allele(**allele_dict3)
     allele2 = normalize(allele1, dataproxy)
     assert allele1 == allele2
 

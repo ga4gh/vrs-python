@@ -44,13 +44,17 @@ def _normalize_allele(allele, data_proxy):
                                            alleles=alleles,
                                            mode=NormalizationMode.EXPAND,
                                            anchor_length=0)
-        try:
+
+        _new_allele_ival_type = new_allele.location.interval.type
+        if _new_allele_ival_type == "SimpleInterval":
             new_allele.location.interval.start = new_ival[0]
             new_allele.location.interval.end = new_ival[1]
-            new_allele.state.sequence = new_alleles[1]
-        except ValidationError:
+        elif _new_allele_ival_type == "SequenceInterval":
             new_allele.location.interval.start.value = new_ival[0]
             new_allele.location.interval.end.value = new_ival[1]
+
+        if new_allele.state.type in _states_with_sequence:
+            new_allele.state.sequence = new_alleles[1]
     except ValueError:
         # Occurs for ref agree Alleles (when alt = ref)
         pass
