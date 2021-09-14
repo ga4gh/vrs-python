@@ -25,23 +25,31 @@ output = {
 }
 
 
+@pytest.mark.parametrize("tlr_fixture_name", ("rest_tlr","tlr"))
 @pytest.mark.vcr
-def test_from_beacon(tlr):
+def test_from_beacon(tlr_fixture_name, request):
+    tlr = request.getfixturevalue(tlr_fixture_name)
     assert tlr._from_beacon(inputs["beacon"]).as_dict() == output
 
 
+@pytest.mark.parametrize("tlr_fixture_name", ("rest_tlr","tlr"))
 @pytest.mark.vcr
-def test_from_gnomad(tlr):
+def test_from_gnomad(tlr_fixture_name, request):
+    tlr = request.getfixturevalue(tlr_fixture_name)
     assert tlr._from_gnomad(inputs["gnomad"]).as_dict() == output
 
 
+@pytest.mark.parametrize("tlr_fixture_name", ("rest_tlr","tlr"))
 @pytest.mark.vcr
-def test_from_hgvs(tlr):
+def test_from_hgvs(tlr_fixture_name, request):
+    tlr = request.getfixturevalue(tlr_fixture_name)
     assert tlr._from_hgvs(inputs["hgvs"]).as_dict() == output
 
 
+@pytest.mark.parametrize("tlr_fixture_name", ("rest_tlr","tlr"))
 @pytest.mark.vcr
-def test_from_spdi(tlr):
+def test_from_spdi(tlr_fixture_name, request):
+    tlr = request.getfixturevalue(tlr_fixture_name)
     assert tlr._from_spdi(inputs["spdi"]).as_dict() == output
 
 
@@ -145,9 +153,11 @@ hgvs_tests = (
 )
 
 
+@pytest.mark.parametrize("tlr_fixture_name", ("rest_tlr","tlr"))
 @pytest.mark.parametrize("hgvsexpr,expected", hgvs_tests)
 @pytest.mark.vcr
-def test_hgvs(tlr, hgvsexpr, expected):
+def test_hgvs_rest_dp(tlr_fixture_name, hgvsexpr, expected, request):
+    tlr = request.getfixturevalue(tlr_fixture_name)
     tlr.normalize = True
     allele = tlr.translate_from(hgvsexpr, "hgvs")
     assert expected == allele.as_dict()
