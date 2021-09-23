@@ -9,9 +9,37 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.24.0
+      - python-requests/2.26.0
     method: GET
-    uri: http://localhost:5000/seqrepo/1/metadata/GRCh38:13
+    uri: http://localhost:5000/seqrepo/1/sequence/refseq:NC_000013.11?start=32936731&end=32936732
+  response:
+    body:
+      string: C
+    headers:
+      Content-Length:
+      - '1'
+      Content-Type:
+      - text/plain; charset=utf-8
+      Date:
+      - Thu, 23 Sep 2021 20:44:52 GMT
+      Server:
+      - Werkzeug/1.0.1 Python/3.8.12
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.26.0
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/metadata/ga4gh:SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT
   response:
     body:
       string: "{\n  \"added\": \"2016-08-27T23:50:14Z\",\n  \"aliases\": [\n    \"GRCh38:13\",\n
@@ -33,9 +61,37 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Mon, 13 Jul 2020 05:05:29 GMT
+      - Thu, 23 Sep 2021 20:44:52 GMT
       Server:
-      - Werkzeug/1.0.1 Python/3.8.2
+      - Werkzeug/1.0.1 Python/3.8.12
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.26.0
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT?start=32936731&end=32936732
+  response:
+    body:
+      string: C
+    headers:
+      Content-Length:
+      - '1'
+      Content-Type:
+      - text/plain; charset=utf-8
+      Date:
+      - Thu, 23 Sep 2021 20:44:52 GMT
+      Server:
+      - Werkzeug/1.0.1 Python/3.8.12
     status:
       code: 200
       message: OK
