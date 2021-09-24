@@ -1,6 +1,11 @@
 name: Python CQA
 
-on: [push, pull_request]
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
 
 # TODO: separate lint and test jobs; lint first, test "needs" lint
 # https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobs
