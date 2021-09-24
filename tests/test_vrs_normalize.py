@@ -46,97 +46,33 @@ allele_dict = {
     "type": "Allele"
 }
 
-allele_dict2 = {
-    "type": "Allele",
-    "location": {
-        "type": "SequenceLocation",
-        "sequence_id": "refseq:NC_000023.11",
-        "interval": {
-            "type": "SequenceInterval",
-            "start": {
-                "type": "IndefiniteRange",
-                "comparator": "<=",
-                "value": 155980375
-            },
-            "end": {
-                "type": "IndefiniteRange",
-                "comparator": ">=",
-                "value": 155980377
-            }
-        }
-    },
-    "state": {
-        "sequence": "",
-        "type": "LiteralSequenceExpression"
-    }
-}
 
-seq_loc = {
-        "type": "SequenceLocation",
-        "sequence_id": "refseq:NC_000001.11",
-        "interval": {
-            "type": "SequenceInterval",
-            "start": {
-                "type": "IndefiniteRange",
-                "comparator": "<=",
-                "value": 244988599
-            },
-            "end": {
-                "type": "IndefiniteRange",
-                "comparator": ">=",
-                "value": 244988601
-            }
-        }
-    }
-
-allele_dict3 = {
-    "type": "Allele",
-    "location": seq_loc,
-    "state": {
-        "type": "RepeatedSequenceExpression",
-        "seq_expr": {
-            "location": seq_loc,
-            "type": "DerivedSequenceExpression",
-            "reverse_complement": False
-        },
-        "count": {
-            "type": "Number",
-            "value": 2
-        }
-    }
-}
-
-
+@pytest.mark.parametrize("dp", ("dataproxy","rest_dataproxy"))
 @pytest.mark.vcr
-def test_normalize_allele(dataproxy):
+def test_normalize_allele(dp, request):
+    dp = request.getfixturevalue(dp)
     allele1 = models.Allele(**deprecated_allele_dict)
-    allele2 = normalize(allele1, dataproxy)
+    allele2 = normalize(allele1, dp)
     assert allele1 == allele2
 
     allele1.state.sequence = "C"
-    allele3 = normalize(allele1, dataproxy)
+    allele3 = normalize(allele1, dp)
     assert allele1 == allele3
 
     allele1.location.interval.end = 44908823
     allele1.state.sequence = ""
-    allele4 = normalize(allele1, dataproxy)
+    allele4 = normalize(allele1, dp)
     assert 44908820 == allele4.location.interval.start._value
     assert 44908824 == allele4.location.interval.end._value
     assert "GC" == allele4.state.sequence._value
 
     allele1 = models.Allele(**allele_dict)
-    allele2 = normalize(allele1, dataproxy)
-    assert allele1 == allele2
-
-    allele1 = models.Allele(**allele_dict2)
-    allele2 = normalize(allele1, dataproxy)
-    assert allele1 == allele2
-
-    allele1 = models.Allele(**allele_dict3)
-    allele2 = normalize(allele1, dataproxy)
+    allele2 = normalize(allele1, dp)
     assert allele1 == allele2
 
 
-def test_normalize_other(dataproxy):
+@pytest.mark.parametrize("dp", ("dataproxy","rest_dataproxy"))
+@pytest.mark.vcr
+def test_normalize_other(dp):
     i = models.SimpleInterval(start=5, end=6)
-    assert i == normalize(i, dataproxy)
+    assert i == normalize(i, dp)
