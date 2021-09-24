@@ -9,6 +9,7 @@ import logging
 
 from bioutils.normalize import normalize as _normalize, NormalizationMode
 from ga4gh.core import is_pjs_instance, pjs_copy, ga4gh_digest
+from python_jsonschema_objects.validators import ValidationError
 
 from ._internal import models
 from .dataproxy import SequenceProxy
@@ -17,11 +18,24 @@ from .dataproxy import SequenceProxy
 _logger = logging.getLogger(__name__)
 
 
-
 def _normalize_allele(allele, data_proxy):
     sequence = SequenceProxy(data_proxy, allele.location.sequence_id._value)
-    ival = (allele.location.interval.start._value, allele.location.interval.end._value)
-    alleles = (None, allele.state.sequence._value)
+
+    _interval_type = allele.location.interval.type
+    if _interval_type == "SimpleInterval":
+        ival = (allele.location.interval.start._value, allele.location.interval.end._value)
+    elif _interval_type == "SequenceInterval":
+        ival = (allele.location.interval.start.value, allele.location.interval.end.value)
+
+    _allele_state = allele.state.type
+    _states_with_sequence = ['SequenceState', 'LiteralSequenceExpression']
+    if _allele_state in _states_with_sequence:
+        alleles = (None, allele.state.sequence._value)
+    elif _allele_state == 'RepeatedSequenceExpression' and \
+            allele.state.seq_expr.type in _states_with_sequence:
+        alleles = (None, allele.state.seq_expr.sequence._value)
+    else:
+        alleles = (None, '')
 
     new_allele = pjs_copy(allele)
 
@@ -30,9 +44,17 @@ def _normalize_allele(allele, data_proxy):
                                            alleles=alleles,
                                            mode=NormalizationMode.EXPAND,
                                            anchor_length=0)
-        new_allele.location.interval.start = new_ival[0]
-        new_allele.location.interval.end = new_ival[1]
-        new_allele.state.sequence = new_alleles[1]
+
+        _new_allele_ival_type = new_allele.location.interval.type
+        if _new_allele_ival_type == "SimpleInterval":
+            new_allele.location.interval.start = new_ival[0]
+            new_allele.location.interval.end = new_ival[1]
+        elif _new_allele_ival_type == "SequenceInterval":
+            new_allele.location.interval.start.value = new_ival[0]
+            new_allele.location.interval.end.value = new_ival[1]
+
+        if new_allele.state.type in _states_with_sequence:
+            new_allele.state.sequence = new_alleles[1]
     except ValueError:
         # Occurs for ref agree Alleles (when alt = ref)
         pass
