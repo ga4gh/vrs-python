@@ -5,11 +5,7 @@ import pytest
 from ga4gh.vrs.extras.translator import Translator
 from biocommons.seqrepo import SeqRepo
 from ga4gh.vrs.dataproxy import SeqRepoRESTDataProxy, SeqRepoDataProxy
-from pathlib import Path
 
-APP_ROOT = Path(__file__).resolve().parents[1]
-SEQREPO_ROOT_DIR = os.environ.get("SEQREPO_ROOT_DIR",
-                                  f"{APP_ROOT}/tests/data/seqrepo/latest")
 
 @pytest.fixture(scope="session")
 def rest_dataproxy():
@@ -18,7 +14,7 @@ def rest_dataproxy():
 
 @pytest.fixture(scope="session")
 def dataproxy():
-    sr = SeqRepo(root_dir=SEQREPO_ROOT_DIR)
+    sr = SeqRepo(root_dir=os.environ.get("SEQREPO_ROOT_DIR", "/usr/local/share/seqrepo/latest"))
     return SeqRepoDataProxy(sr)
 
 
