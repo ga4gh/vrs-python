@@ -1,0 +1,553 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.26.0
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/metadata/refseq:NC_000019.10
+  response:
+    body:
+      string: "{\n  \"added\": \"2016-08-24T08:19:02Z\",\n  \"aliases\": [\n    \"Ensembl:19\",\n
+        \   \"ensembl:19\",\n    \"GRCh38:19\",\n    \"GRCh38:chr19\",\n    \"GRCh38.p1:19\",\n
+        \   \"GRCh38.p1:chr19\",\n    \"GRCh38.p10:19\",\n    \"GRCh38.p10:chr19\",\n
+        \   \"GRCh38.p11:19\",\n    \"GRCh38.p11:chr19\",\n    \"GRCh38.p12:19\",\n
+        \   \"GRCh38.p12:chr19\",\n    \"GRCh38.p2:19\",\n    \"GRCh38.p2:chr19\",\n
+        \   \"GRCh38.p3:19\",\n    \"GRCh38.p3:chr19\",\n    \"GRCh38.p4:19\",\n    \"GRCh38.p4:chr19\",\n
+        \   \"GRCh38.p5:19\",\n    \"GRCh38.p5:chr19\",\n    \"GRCh38.p6:19\",\n    \"GRCh38.p6:chr19\",\n
+        \   \"GRCh38.p7:19\",\n    \"GRCh38.p7:chr19\",\n    \"GRCh38.p8:19\",\n    \"GRCh38.p8:chr19\",\n
+        \   \"GRCh38.p9:19\",\n    \"GRCh38.p9:chr19\",\n    \"MD5:b0eba2c7bb5c953d1e06a508b5e487de\",\n
+        \   \"NCBI:NC_000019.10\",\n    \"refseq:NC_000019.10\",\n    \"SEGUID:AHxM5/L8jIX08UhBBkKXkiO5rhY\",\n
+        \   \"SHA1:007c4ce7f2fc8c85f4f148410642979223b9ae16\",\n    \"VMC:GS_IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl\",\n
+        \   \"sha512t24u:IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl\",\n    \"ga4gh:SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl\"\n
+        \ ],\n  \"alphabet\": \"ACGNT\",\n  \"length\": 58617616\n}\n"
+    headers:
+      Content-Length:
+      - '1035'
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 24 Sep 2021 17:42:41 GMT
+      Server:
+      - Werkzeug/1.0.1 Python/3.8.12
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.26.0
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/refseq:NC_000019.10?start=44908821&end=44908822
+  response:
+    body:
+      string: C
+    headers:
+      Content-Length:
+      - '1'
+      Content-Type:
+      - text/plain; charset=utf-8
+      Date:
+      - Fri, 24 Sep 2021 17:42:41 GMT
+      Server:
+      - Werkzeug/1.0.1 Python/3.8.12
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.26.0
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/refseq:NC_000019.10?start=44908820&end=44908821
+  response:
+    body:
+      string: G
+    headers:
+      Content-Length:
+      - '1'
+      Content-Type:
+      - text/plain; charset=utf-8
+      Date:
+      - Fri, 24 Sep 2021 17:42:41 GMT
+      Server:
+      - Werkzeug/1.0.1 Python/3.8.12
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.26.0
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/refseq:NC_000019.10?start=44908822&end=44908823
+  response:
+    body:
+      string: G
+    headers:
+      Content-Length:
+      - '1'
+      Content-Type:
+      - text/plain; charset=utf-8
+      Date:
+      - Fri, 24 Sep 2021 17:42:41 GMT
+      Server:
+      - Werkzeug/1.0.1 Python/3.8.12
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.26.0
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/refseq:NC_000019.10?start=44908821&end=44908821
+  response:
+    body:
+      string: ''
+    headers:
+      Content-Length:
+      - '0'
+      Content-Type:
+      - text/plain; charset=utf-8
+      Date:
+      - Fri, 24 Sep 2021 17:42:41 GMT
+      Server:
+      - Werkzeug/1.0.1 Python/3.8.12
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.26.0
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/refseq:NC_000019.10?start=44908822&end=44908822
+  response:
+    body:
+      string: ''
+    headers:
+      Content-Length:
+      - '0'
+      Content-Type:
+      - text/plain; charset=utf-8
+      Date:
+      - Fri, 24 Sep 2021 17:42:41 GMT
+      Server:
+      - Werkzeug/1.0.1 Python/3.8.12
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.26.0
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/metadata/refseq:NC_000019.10
+  response:
+    body:
+      string: "{\n  \"added\": \"2016-08-24T08:19:02Z\",\n  \"aliases\": [\n    \"Ensembl:19\",\n
+        \   \"ensembl:19\",\n    \"GRCh38:19\",\n    \"GRCh38:chr19\",\n    \"GRCh38.p1:19\",\n
+        \   \"GRCh38.p1:chr19\",\n    \"GRCh38.p10:19\",\n    \"GRCh38.p10:chr19\",\n
+        \   \"GRCh38.p11:19\",\n    \"GRCh38.p11:chr19\",\n    \"GRCh38.p12:19\",\n
+        \   \"GRCh38.p12:chr19\",\n    \"GRCh38.p2:19\",\n    \"GRCh38.p2:chr19\",\n
+        \   \"GRCh38.p3:19\",\n    \"GRCh38.p3:chr19\",\n    \"GRCh38.p4:19\",\n    \"GRCh38.p4:chr19\",\n
+        \   \"GRCh38.p5:19\",\n    \"GRCh38.p5:chr19\",\n    \"GRCh38.p6:19\",\n    \"GRCh38.p6:chr19\",\n
+        \   \"GRCh38.p7:19\",\n    \"GRCh38.p7:chr19\",\n    \"GRCh38.p8:19\",\n    \"GRCh38.p8:chr19\",\n
+        \   \"GRCh38.p9:19\",\n    \"GRCh38.p9:chr19\",\n    \"MD5:b0eba2c7bb5c953d1e06a508b5e487de\",\n
+        \   \"NCBI:NC_000019.10\",\n    \"refseq:NC_000019.10\",\n    \"SEGUID:AHxM5/L8jIX08UhBBkKXkiO5rhY\",\n
+        \   \"SHA1:007c4ce7f2fc8c85f4f148410642979223b9ae16\",\n    \"VMC:GS_IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl\",\n
+        \   \"sha512t24u:IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl\",\n    \"ga4gh:SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl\"\n
+        \ ],\n  \"alphabet\": \"ACGNT\",\n  \"length\": 58617616\n}\n"
+    headers:
+      Content-Length:
+      - '1035'
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 24 Sep 2021 17:42:41 GMT
+      Server:
+      - Werkzeug/1.0.1 Python/3.8.12
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.26.0
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/refseq:NC_000019.10?start=44908821&end=44908822
+  response:
+    body:
+      string: C
+    headers:
+      Content-Length:
+      - '1'
+      Content-Type:
+      - text/plain; charset=utf-8
+      Date:
+      - Fri, 24 Sep 2021 17:42:41 GMT
+      Server:
+      - Werkzeug/1.0.1 Python/3.8.12
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.26.0
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/metadata/refseq:NC_000019.10
+  response:
+    body:
+      string: "{\n  \"added\": \"2016-08-24T08:19:02Z\",\n  \"aliases\": [\n    \"Ensembl:19\",\n
+        \   \"ensembl:19\",\n    \"GRCh38:19\",\n    \"GRCh38:chr19\",\n    \"GRCh38.p1:19\",\n
+        \   \"GRCh38.p1:chr19\",\n    \"GRCh38.p10:19\",\n    \"GRCh38.p10:chr19\",\n
+        \   \"GRCh38.p11:19\",\n    \"GRCh38.p11:chr19\",\n    \"GRCh38.p12:19\",\n
+        \   \"GRCh38.p12:chr19\",\n    \"GRCh38.p2:19\",\n    \"GRCh38.p2:chr19\",\n
+        \   \"GRCh38.p3:19\",\n    \"GRCh38.p3:chr19\",\n    \"GRCh38.p4:19\",\n    \"GRCh38.p4:chr19\",\n
+        \   \"GRCh38.p5:19\",\n    \"GRCh38.p5:chr19\",\n    \"GRCh38.p6:19\",\n    \"GRCh38.p6:chr19\",\n
+        \   \"GRCh38.p7:19\",\n    \"GRCh38.p7:chr19\",\n    \"GRCh38.p8:19\",\n    \"GRCh38.p8:chr19\",\n
+        \   \"GRCh38.p9:19\",\n    \"GRCh38.p9:chr19\",\n    \"MD5:b0eba2c7bb5c953d1e06a508b5e487de\",\n
+        \   \"NCBI:NC_000019.10\",\n    \"refseq:NC_000019.10\",\n    \"SEGUID:AHxM5/L8jIX08UhBBkKXkiO5rhY\",\n
+        \   \"SHA1:007c4ce7f2fc8c85f4f148410642979223b9ae16\",\n    \"VMC:GS_IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl\",\n
+        \   \"sha512t24u:IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl\",\n    \"ga4gh:SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl\"\n
+        \ ],\n  \"alphabet\": \"ACGNT\",\n  \"length\": 58617616\n}\n"
+    headers:
+      Content-Length:
+      - '1035'
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 24 Sep 2021 17:42:41 GMT
+      Server:
+      - Werkzeug/1.0.1 Python/3.8.12
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.26.0
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/refseq:NC_000019.10?start=44908821&end=44908823
+  response:
+    body:
+      string: CG
+    headers:
+      Content-Length:
+      - '2'
+      Content-Type:
+      - text/plain; charset=utf-8
+      Date:
+      - Fri, 24 Sep 2021 17:42:41 GMT
+      Server:
+      - Werkzeug/1.0.1 Python/3.8.12
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.26.0
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/refseq:NC_000019.10?start=44908820&end=44908821
+  response:
+    body:
+      string: G
+    headers:
+      Content-Length:
+      - '1'
+      Content-Type:
+      - text/plain; charset=utf-8
+      Date:
+      - Fri, 24 Sep 2021 17:42:41 GMT
+      Server:
+      - Werkzeug/1.0.1 Python/3.8.12
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.26.0
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/refseq:NC_000019.10?start=44908819&end=44908820
+  response:
+    body:
+      string: A
+    headers:
+      Content-Length:
+      - '1'
+      Content-Type:
+      - text/plain; charset=utf-8
+      Date:
+      - Fri, 24 Sep 2021 17:42:41 GMT
+      Server:
+      - Werkzeug/1.0.1 Python/3.8.12
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.26.0
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/refseq:NC_000019.10?start=44908823&end=44908824
+  response:
+    body:
+      string: C
+    headers:
+      Content-Length:
+      - '1'
+      Content-Type:
+      - text/plain; charset=utf-8
+      Date:
+      - Fri, 24 Sep 2021 17:42:41 GMT
+      Server:
+      - Werkzeug/1.0.1 Python/3.8.12
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.26.0
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/refseq:NC_000019.10?start=44908824&end=44908825
+  response:
+    body:
+      string: C
+    headers:
+      Content-Length:
+      - '1'
+      Content-Type:
+      - text/plain; charset=utf-8
+      Date:
+      - Fri, 24 Sep 2021 17:42:41 GMT
+      Server:
+      - Werkzeug/1.0.1 Python/3.8.12
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.26.0
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/refseq:NC_000019.10?start=44908820&end=44908821
+  response:
+    body:
+      string: G
+    headers:
+      Content-Length:
+      - '1'
+      Content-Type:
+      - text/plain; charset=utf-8
+      Date:
+      - Fri, 24 Sep 2021 17:42:41 GMT
+      Server:
+      - Werkzeug/1.0.1 Python/3.8.12
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.26.0
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/refseq:NC_000019.10?start=44908823&end=44908824
+  response:
+    body:
+      string: C
+    headers:
+      Content-Length:
+      - '1'
+      Content-Type:
+      - text/plain; charset=utf-8
+      Date:
+      - Fri, 24 Sep 2021 17:42:41 GMT
+      Server:
+      - Werkzeug/1.0.1 Python/3.8.12
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.26.0
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/metadata/refseq:NC_000006.12
+  response:
+    body:
+      string: "{\n  \"added\": \"2016-08-27T21:22:36Z\",\n  \"aliases\": [\n    \"GRCh38:6\",\n
+        \   \"GRCh38:chr6\",\n    \"GRCh38.p1:6\",\n    \"GRCh38.p1:chr6\",\n    \"GRCh38.p10:6\",\n
+        \   \"GRCh38.p10:chr6\",\n    \"GRCh38.p11:6\",\n    \"GRCh38.p11:chr6\",\n
+        \   \"GRCh38.p12:6\",\n    \"GRCh38.p12:chr6\",\n    \"GRCh38.p2:6\",\n    \"GRCh38.p2:chr6\",\n
+        \   \"GRCh38.p3:6\",\n    \"GRCh38.p3:chr6\",\n    \"GRCh38.p4:6\",\n    \"GRCh38.p4:chr6\",\n
+        \   \"GRCh38.p5:6\",\n    \"GRCh38.p5:chr6\",\n    \"GRCh38.p6:6\",\n    \"GRCh38.p6:chr6\",\n
+        \   \"GRCh38.p7:6\",\n    \"GRCh38.p7:chr6\",\n    \"GRCh38.p8:6\",\n    \"GRCh38.p8:chr6\",\n
+        \   \"GRCh38.p9:6\",\n    \"GRCh38.p9:chr6\",\n    \"MD5:5691468a67c7e7a7b5f2a3a683792c29\",\n
+        \   \"NCBI:NC_000006.12\",\n    \"refseq:NC_000006.12\",\n    \"SEGUID:WZuaTlR1qIRxrJ5dpG2Z0ydeqX4\",\n
+        \   \"SHA1:599b9a4e5475a88471ac9e5da46d99d3275ea97e\",\n    \"VMC:GS_0iKlIQk2oZLoeOG9P1riRU6hvL5Ux8TV\",\n
+        \   \"sha512t24u:0iKlIQk2oZLoeOG9P1riRU6hvL5Ux8TV\",\n    \"ga4gh:SQ.0iKlIQk2oZLoeOG9P1riRU6hvL5Ux8TV\"\n
+        \ ],\n  \"alphabet\": \"ACGNTY\",\n  \"length\": 170805979\n}\n"
+    headers:
+      Content-Length:
+      - '975'
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 24 Sep 2021 17:42:41 GMT
+      Server:
+      - Werkzeug/1.0.1 Python/3.8.12
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.26.0
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/refseq:NC_000006.12?start=26090950&end=26090951
+  response:
+    body:
+      string: C
+    headers:
+      Content-Length:
+      - '1'
+      Content-Type:
+      - text/plain; charset=utf-8
+      Date:
+      - Fri, 24 Sep 2021 17:42:41 GMT
+      Server:
+      - Werkzeug/1.0.1 Python/3.8.12
+    status:
+      code: 200
+      message: OK
+version: 1
