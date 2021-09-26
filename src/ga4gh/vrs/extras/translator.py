@@ -205,7 +205,7 @@ class Translator:
         elif sv.posedit.edit.type in ("sub", "del", "delins", "identity"):
             interval = models.SimpleInterval(start=sv.posedit.pos.start.base - 1,
                                        end=sv.posedit.pos.end.base)
-            if sv.posedit.edit.type == 'identity':
+            if sv.posedit.edit.type == "identity":
                 state = self.data_proxy.get_sequence(sequence_id,
                                                      sv.posedit.pos.start.base - 1,
                                                      sv.posedit.pos.end.base)
