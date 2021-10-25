@@ -19,15 +19,12 @@ import logging
 import os
 import re
 
+from canonicaljson import encode_canonical_json
 import pkg_resources
 import yaml
 
 from .digests import sha512t24u
-from .exceptions import GA4GHError
 from .jsonschema import is_array, is_pjs_instance, is_curie_type, is_identifiable, is_literal
-
-
-from canonicaljson import encode_canonical_json
 
 
 __all__ = "ga4gh_digest ga4gh_identify ga4gh_serialize is_ga4gh_identifier parse_ga4gh_identifier".split()
@@ -68,21 +65,21 @@ def is_ga4gh_identifier(ir):
 def parse_ga4gh_identifier(ir):
     """
     Parses a GA4GH identifier, returning a dict with type and digest components
-    
+
     >>> parse_ga4gh_identifier("ga4gh:SQ.0123abcd")
     {'type': 'SQ', 'digest': '0123abcd'}
-    
+
     >>> parse_ga4gh_identifier("notga4gh:SQ.0123abcd")
     Traceback (most recent call last):
     ...
     ValueError: notga4gh:SQ.0123abcd
-    
+
     """
 
     try:
         return ga4gh_ir_regexp.match(str(ir)).groupdict()
-    except AttributeError:
-        raise ValueError(ir)
+    except AttributeError as e:
+        raise ValueError(ir) from e
 
 
 def ga4gh_identify(vro, type_prefix_map=None):
@@ -102,7 +99,7 @@ def ga4gh_identify(vro, type_prefix_map=None):
     try:
         pfx = type_prefix_map[vro.type]
     except KeyError:
-        _logger.debug(f"No identifier prefix is defined for {vro.type}; check ga4gh.yaml")
+        _logger.debug("No identifier prefix is defined for %s; check ga4gh.yaml", vro.type)
         return None
     digest = ga4gh_digest(vro)
     ir = f"{namespace}{curie_sep}{pfx}{ref_sep}{digest}"
@@ -122,7 +119,7 @@ def ga4gh_digest(vro):
 
     assert is_identifiable(vro), "ga4gh_digest called with non-identifiable object"
     return sha512t24u(ga4gh_serialize(vro))
-    
+
 
 def ga4gh_serialize(vro):
     """serialize object into a canonical format
@@ -135,7 +132,7 @@ def ga4gh_serialize(vro):
     * UTF-8 encoded
     * nested identifiable objects are replaced by their identifiers
     * arrays of identifiers are sorted lexographically
-    
+
     These requirements are a distillation of several proposals which
     have not yet been ratified.
 
@@ -143,7 +140,7 @@ def ga4gh_serialize(vro):
     >>> ival = ga4gh.vrs.models.SimpleInterval(start=44908821, end=44908822)
     >>> location = ga4gh.vrs.models.Location(sequence_id="ga4gh:SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl", interval=ival)
     >>> ga4gh_serialize(location)
-    b'{"interval":{"end":44908822,"start":44908821,"type":"SimpleInterval"},"sequence_id":"IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl","type":"SequenceLocation"}'
+    b'{"interval":{"end":44908822,...,"type":"SequenceLocation"}'
 
     """
 

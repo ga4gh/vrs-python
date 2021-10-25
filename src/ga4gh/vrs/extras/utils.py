@@ -1,13 +1,15 @@
+"""miscellaneous utility functions for vrs.extras
+
+"""
+
 from base64 import urlsafe_b64decode, urlsafe_b64encode
 from binascii import hexlify, unhexlify
-import datetime
 import math
-import sys
 
 
 def _format_time(timespan, precision=3):
     """Formats the timespan in a human readable form
-    
+
     >>> _format_time(0.35)
     '350 ms'
 
@@ -33,14 +35,14 @@ def _format_time(timespan, precision=3):
             value = int(leftover / length)
             if value > 0:
                 leftover = leftover % length
-                time.append(u'%s%s' % (str(value), suffix))
+                time.append(u"%s%s" % (str(value), suffix))
             if leftover < 1:
                 break
         return " ".join(time)
 
-    units = [u"s", u"ms", u"us", u"ns"]  # the save value   
+    units = [u"s", u"ms", u"us", u"ns"]  # the save value
     scaling = [1, 1e3, 1e6, 1e9]
-        
+
     if timespan > 0.0:
         order = min(-int(math.floor(math.log10(timespan)) // 3), 3)
     else:
@@ -49,8 +51,9 @@ def _format_time(timespan, precision=3):
 
 
 def hex_to_base64url(s):
+    """convert hex string to base64 string"""
     return urlsafe_b64encode(unhexlify(s)).decode("ascii")
 
 def base64url_to_hex(s):
+    """convert base64 string to hex string"""
     return hexlify(urlsafe_b64decode(s)).decode("ascii")
-

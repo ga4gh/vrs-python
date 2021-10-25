@@ -64,20 +64,25 @@ tools that provide these data.
 
     $ docker volume create --name=uta_vol
     $ docker volume create --name=seqrepo_vol
-    $ docker-compose -f misc/stack/docker-compose.yml up
+    $ docker-compose up
 
-This should start three containers:
+This should start three containers, one of which exits after loading (~5 minutes):
 
-  * [seqrepo](https://github.com/biocommons/seqrepo): a non-redundant archive of sequences
+  * [seqrepo](https://github.com/biocommons/seqrepo): downloads seqrepo into a docker volume and exits
   * [seqrepo-rest-service](https://github.com/biocommons/seqrepo-rest-service): a REST service on seqrepo (localhost:5000)
   * [uta](https://github.com/biocommons/uta): a database of transcripts and alignments (localhost:5432)
 
-The seqrepo container will exit as soon as the data are downloaded.
 
     $ docker ps
     CONTAINER ID        IMAGE                                    //  NAMES
-    86e872ab0c69        biocommons/seqrepo-rest-service:latest   //  stack_seqrepo-rest-service_1
-    a40576b8cf1f        biocommons/uta:uta_20180821              //  stack_uta_1
+    86e872ab0c69        biocommons/seqrepo-rest-service:latest   //  vrs-python_seqrepo-rest-service_1
+    a40576b8cf1f        biocommons/uta:uta_20180821              //  vrs-python_uta_1
+
+
+You can test UTA and seqrepo installations like so:
+
+    snafu$ psql -XAt postgres://anonymous@localhost/uta -c 'select count(*) from transcript'
+    249909
 
 
 # Running the Notebooks

@@ -99,6 +99,11 @@ reformat:
 	yapf -i -r "${PKGD}" tests
 	git commit -a -m "reformatted with yapf"
 
+#=> lint -- static analysis check
+.PHONY: lint
+lint:
+	pylint src/ga4gh/{core,vrs} | tee $@
+
 #=> docs -- make sphinx docs
 .PHONY: docs
 docs: develop
