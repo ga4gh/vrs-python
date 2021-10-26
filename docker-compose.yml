@@ -17,7 +17,6 @@ services:
       - uta_vol:/var/lib/postgresql/data
     network_mode: host
 
-  # vr-rest-interface:
 
 volumes:
   seqrepo_vol:
