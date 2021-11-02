@@ -9,7 +9,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.24.0
+      - python-requests/2.26.0
     method: GET
     uri: http://localhost:5000/seqrepo/1/metadata/NM_000551.3
   response:
@@ -25,9 +25,9 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Mon, 13 Jul 2020 05:05:29 GMT
+      - Mon, 27 Sep 2021 13:08:25 GMT
       Server:
-      - Werkzeug/1.0.1 Python/3.8.2
+      - Werkzeug/1.0.1 Python/3.8.12
     status:
       code: 200
       message: OK
@@ -41,7 +41,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.24.0
+      - python-requests/2.26.0
     method: GET
     uri: http://localhost:5000/seqrepo/1/metadata/NC_000013.11
   response:
@@ -65,9 +65,9 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Mon, 13 Jul 2020 05:05:29 GMT
+      - Mon, 27 Sep 2021 13:08:25 GMT
       Server:
-      - Werkzeug/1.0.1 Python/3.8.2
+      - Werkzeug/1.0.1 Python/3.8.12
     status:
       code: 200
       message: OK
@@ -81,7 +81,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.24.0
+      - python-requests/2.26.0
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.v_QTc1p-MUYdgrRv4LMT6ByXIOsdw3C_
   response:
@@ -93,9 +93,9 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Mon, 13 Jul 2020 05:05:29 GMT
+      - Mon, 27 Sep 2021 13:08:25 GMT
       Server:
-      - Werkzeug/1.0.1 Python/3.8.2
+      - Werkzeug/1.0.1 Python/3.8.12
     status:
       code: 200
       message: OK
@@ -109,7 +109,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.24.0
+      - python-requests/2.26.0
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.v_QTc1p-MUYdgrRv4LMT6ByXIOsdw3C_?start=0&end=50
   response:
@@ -121,9 +121,9 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Mon, 13 Jul 2020 05:05:29 GMT
+      - Mon, 27 Sep 2021 13:08:25 GMT
       Server:
-      - Werkzeug/1.0.1 Python/3.8.2
+      - Werkzeug/1.0.1 Python/3.8.12
     status:
       code: 200
       message: OK
