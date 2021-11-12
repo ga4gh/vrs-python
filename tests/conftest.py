@@ -3,18 +3,25 @@ import os
 import pytest
 
 from ga4gh.vrs.extras.translator import Translator
-from ga4gh.vrs.dataproxy import SeqRepoRESTDataProxy
+from biocommons.seqrepo import SeqRepo
+from ga4gh.vrs.dataproxy import SeqRepoRESTDataProxy, SeqRepoDataProxy
 
 
 @pytest.fixture(scope="session")
 def dataproxy():
+    sr = SeqRepo(root_dir=os.environ.get("SEQREPO_ROOT_DIR", "/usr/local/share/seqrepo/latest"))
+    return SeqRepoDataProxy(sr)
+
+
+@pytest.fixture(scope="session")
+def rest_dataproxy():
     return SeqRepoRESTDataProxy(base_url="http://localhost:5000/seqrepo")
 
 
 @pytest.fixture(scope="session")
-def tlr(dataproxy):
+def tlr(rest_dataproxy):
     return Translator(
-        data_proxy=dataproxy,
+        data_proxy=rest_dataproxy,
         default_assembly_name="GRCh38",
     # TODO: Set these to defaults and adjust relevant tests
         identify=False,
