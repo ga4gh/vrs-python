@@ -120,7 +120,7 @@ class SeqRepoDataProxy(_SeqRepoDataProxyBase):
 
     def _get_sequence(self, identifier, start=None, end=None):
         # fetch raises KeyError if not found
-        return self.sr.fetch_uri(identifier, start, end)
+        return self.sr.fetch_uri(coerce_namespace(identifier), start, end)
 
     def _get_metadata(self, identifier):
         ns, a = coerce_namespace(identifier).split(":", 2)
