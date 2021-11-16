@@ -1,0 +1,1 @@
+recursive-include submodules/vrs/schema/ vrs.yaml ga4gh.yaml
