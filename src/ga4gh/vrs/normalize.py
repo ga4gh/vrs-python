@@ -107,16 +107,16 @@ if __name__ == "__main__":      # pragma: no cover
     allele_dict = {
         "location": {
             "interval": {
-                "end": 44908822,
-                "start": 44908821,
-                "type": "SimpleInterval"
+                "end": {'value': 44908822, 'type': 'Number'},
+                "start": {'value': 44908821, 'type': 'Number'},
+                "type": "SequenceInterval"
             },
             "sequence_id": "refseq:NC_000019.10",
             "type": "SequenceLocation"
         },
         "state": {
             "sequence": "A",
-            "type": "SequenceState"
+            "type": "LiteralSequenceExpression"
         },
         "type": "Allele"
     }
@@ -128,6 +128,6 @@ if __name__ == "__main__":      # pragma: no cover
     allele.state.sequence = "C"
     allele3 = normalize(allele, dp)
 
-    allele.location.interval.end = 44908823
+    allele.location.interval.end.value = 44908823
     allele.state.sequence = ""
     allele4 = normalize(allele, dp)
