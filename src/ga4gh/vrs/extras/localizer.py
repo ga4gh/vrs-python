@@ -101,8 +101,10 @@ class Localizer:
             raise ValueError(f"No accssion for {loc.chr} in assembly {assembly_name}") from e
 
         return ga4gh.vrs.models.SequenceLocation(
-            sequence_id = coerce_namespace(ac),
-            interval = ga4gh.vrs.models.SimpleInterval(start=start, end=end)
+            sequence_id=coerce_namespace(ac),
+            interval=ga4gh.vrs.models.SequenceInterval(
+                start=ga4gh.vrs.models.Number(value=start),
+                end=ga4gh.vrs.models.Number(value=end))
             )
 
 

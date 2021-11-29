@@ -10,16 +10,16 @@ inputs = {
 output = {
     'location': {
         'interval': {
-            'end': 32936732,
-            'start': 32936731,
-            'type': 'SimpleInterval'
+            'end': {'value': 32936732, 'type': 'Number'},
+            'start': {'value': 32936731, 'type': 'Number'},
+            'type': 'SequenceInterval'
         },
         'sequence_id': 'ga4gh:SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT',
         'type': 'SequenceLocation'
     },
     'state': {
         'sequence': 'C',
-        'type': 'SequenceState'
+        'type': 'LiteralSequenceExpression'
     },
     'type': 'Allele'
 }
@@ -49,96 +49,96 @@ hgvs_tests = (
     ("NC_000013.11:g.32936732=", {
         'location': {
             'interval': {
-                'end': 32936732,
-                'start': 32936731,
-                'type': 'SimpleInterval'
+                'end': {'value': 32936732, 'type': 'Number'},
+                'start': {'value': 32936731, 'type': 'Number'},
+                'type': 'SequenceInterval'
             },
             'sequence_id': 'ga4gh:SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT',
             'type': 'SequenceLocation'
         },
         'state': {
             'sequence': 'C',
-            'type': 'SequenceState'
+            'type': 'LiteralSequenceExpression'
         },
         'type': 'Allele'
     }),
     ("NC_000007.14:g.55181320A>T", {
         'location': {
             'interval': {
-                'end': 55181320,
-                'start': 55181319,
-                'type': 'SimpleInterval'
+                'end': {'value': 55181320, 'type': 'Number'},
+                'start': {'value': 55181319, 'type': 'Number'},
+                'type': 'SequenceInterval'
             },
             'sequence_id': 'ga4gh:SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul',
             'type': 'SequenceLocation'
         },
         'state': {
             'sequence': 'T',
-            'type': 'SequenceState'
+            'type': 'LiteralSequenceExpression'
         },
         'type': 'Allele'
     }),
     ("NC_000007.14:g.55181220del", {
         'location': {
             'interval': {
-                'end': 55181220,
-                'start': 55181219,
-                'type': 'SimpleInterval'
+                'end': {'value': 55181220, 'type': 'Number'},
+                'start': {'value': 55181219, 'type': 'Number'},
+                'type': 'SequenceInterval'
             },
             'sequence_id': 'ga4gh:SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul',
             'type': 'SequenceLocation'
         },
         'state': {
             'sequence': '',
-            'type': 'SequenceState'
+            'type': 'LiteralSequenceExpression'
         },
         'type': 'Allele'
     }),
     ("NC_000007.14:g.55181230_55181231insGGCT", {
         'location': {
             'interval': {
-                'end': 55181230,
-                'start': 55181230,
-                'type': 'SimpleInterval'
+                'end': {'value': 55181230, 'type': 'Number'},
+                'start': {'value': 55181230, 'type': 'Number'},
+                'type': 'SequenceInterval'
             },
             'sequence_id': 'ga4gh:SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul',
             'type': 'SequenceLocation'
         },
         'state': {
             'sequence': 'GGCT',
-            'type': 'SequenceState'
+            'type': 'LiteralSequenceExpression'
         },
         'type': 'Allele'
     }),
     ("NC_000013.11:g.32331093_32331094dup", {
         'location': {
             'interval': {
-                'end': 32331094,
-                'start': 32331082,
-                'type': 'SimpleInterval'
+                'end': {'value': 32331094, 'type': 'Number'},
+                'start': {'value': 32331082, 'type': 'Number'},
+                'type': 'SequenceInterval'
             },
             'sequence_id': 'ga4gh:SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT',
             'type': 'SequenceLocation'
         },
         'state': {
             'sequence': 'TTTTTTTTTTTTTT',
-            'type': 'SequenceState'
+            'type': 'LiteralSequenceExpression'
         },
         'type': 'Allele'
     }),
     ("NC_000013.11:g.32316467dup", {
         'location': {
             'interval': {
-                'end': 32316467,
-                'start': 32316466,
-                'type': 'SimpleInterval'
+                'end': {'value': 32316467, 'type': 'Number'},
+                'start': {'value': 32316466, 'type': 'Number'},
+                'type': 'SequenceInterval'
             },
             'sequence_id': 'ga4gh:SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT',
             'type': 'SequenceLocation'
         },
         'state': {
             'sequence': 'AA',
-            'type': 'SequenceState'
+            'type': 'LiteralSequenceExpression'
         },
         'type': 'Allele'
     }),
