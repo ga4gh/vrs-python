@@ -499,8 +499,8 @@ if __name__ == "__main__":
         "NM_000551.3:21:1:T", {
             "location": {
                 "interval": {
-                    "end": 22,
-                    "start": 21,
+                    "end": {"value": 22, "type": "Number"},
+                    "start": {"value": 21, "type": "Number"},
                     "type": "SequenceInterval"
                 },
                 "sequence_id": "ga4gh:SQ.v_QTc1p-MUYdgrRv4LMT6ByXIOsdw3C_",
@@ -512,8 +512,8 @@ if __name__ == "__main__":
             },
             "type": "Allele"
         }, {
-            "end": 22,
-            "start": 21,
+           "end": {"value": 22, "type": "Number"},
+            "start": {"value": 21, "type": "Number"},
             "type": "SequenceInterval"
         }
     ]
