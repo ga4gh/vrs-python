@@ -1,0 +1,405 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.26.0
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/metadata/refseq:NM_001331029.1
+  response:
+    body:
+      string: "{\n  \"added\": \"2016-08-24T05:03:40Z\",\n  \"aliases\": [\n    \"MD5:a8d7243ffeea4ade1dbc33613887693b\",\n
+        \   \"NCBI:NM_001331029.1\",\n    \"refseq:NM_001331029.1\",\n    \"NCBI:XM_017001344.1\",\n
+        \   \"refseq:XM_017001344.1\",\n    \"SEGUID:qw9iIJ9BPdGZfypwQH7S3L2f9gI\",\n
+        \   \"SHA1:ab0f62209f413dd1997f2a70407ed2dcbd9ff602\",\n    \"VMC:GS_MBIgVnoHFw34aFqNUVGM0zgjC3d-v8dK\",\n
+        \   \"sha512t24u:MBIgVnoHFw34aFqNUVGM0zgjC3d-v8dK\",\n    \"ga4gh:SQ.MBIgVnoHFw34aFqNUVGM0zgjC3d-v8dK\"\n
+        \ ],\n  \"alphabet\": \"ACGT\",\n  \"length\": 11291\n}\n"
+    headers:
+      Content-Length:
+      - '496'
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 22 Dec 2021 22:16:49 GMT
+      Server:
+      - Werkzeug/1.0.1 Python/3.8.10
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.26.0
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/metadata/ga4gh:SQ.MBIgVnoHFw34aFqNUVGM0zgjC3d-v8dK
+  response:
+    body:
+      string: "{\n  \"added\": \"2016-08-24T05:03:40Z\",\n  \"aliases\": [\n    \"MD5:a8d7243ffeea4ade1dbc33613887693b\",\n
+        \   \"NCBI:NM_001331029.1\",\n    \"refseq:NM_001331029.1\",\n    \"NCBI:XM_017001344.1\",\n
+        \   \"refseq:XM_017001344.1\",\n    \"SEGUID:qw9iIJ9BPdGZfypwQH7S3L2f9gI\",\n
+        \   \"SHA1:ab0f62209f413dd1997f2a70407ed2dcbd9ff602\",\n    \"VMC:GS_MBIgVnoHFw34aFqNUVGM0zgjC3d-v8dK\",\n
+        \   \"sha512t24u:MBIgVnoHFw34aFqNUVGM0zgjC3d-v8dK\",\n    \"ga4gh:SQ.MBIgVnoHFw34aFqNUVGM0zgjC3d-v8dK\"\n
+        \ ],\n  \"alphabet\": \"ACGT\",\n  \"length\": 11291\n}\n"
+    headers:
+      Content-Length:
+      - '496'
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 22 Dec 2021 22:16:49 GMT
+      Server:
+      - Werkzeug/1.0.1 Python/3.8.10
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.26.0
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.MBIgVnoHFw34aFqNUVGM0zgjC3d-v8dK?start=871&end=872
+  response:
+    body:
+      string: A
+    headers:
+      Content-Length:
+      - '1'
+      Content-Type:
+      - text/plain; charset=utf-8
+      Date:
+      - Wed, 22 Dec 2021 22:16:49 GMT
+      Server:
+      - Werkzeug/1.0.1 Python/3.8.10
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.26.0
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.MBIgVnoHFw34aFqNUVGM0zgjC3d-v8dK?start=870&end=871
+  response:
+    body:
+      string: T
+    headers:
+      Content-Length:
+      - '1'
+      Content-Type:
+      - text/plain; charset=utf-8
+      Date:
+      - Wed, 22 Dec 2021 22:16:49 GMT
+      Server:
+      - Werkzeug/1.0.1 Python/3.8.10
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.26.0
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.MBIgVnoHFw34aFqNUVGM0zgjC3d-v8dK?start=872&end=873
+  response:
+    body:
+      string: T
+    headers:
+      Content-Length:
+      - '1'
+      Content-Type:
+      - text/plain; charset=utf-8
+      Date:
+      - Wed, 22 Dec 2021 22:16:49 GMT
+      Server:
+      - Werkzeug/1.0.1 Python/3.8.10
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.26.0
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.MBIgVnoHFw34aFqNUVGM0zgjC3d-v8dK?start=871&end=871
+  response:
+    body:
+      string: ''
+    headers:
+      Content-Length:
+      - '0'
+      Content-Type:
+      - text/plain; charset=utf-8
+      Date:
+      - Wed, 22 Dec 2021 22:16:49 GMT
+      Server:
+      - Werkzeug/1.0.1 Python/3.8.10
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.26.0
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.MBIgVnoHFw34aFqNUVGM0zgjC3d-v8dK?start=872&end=872
+  response:
+    body:
+      string: ''
+    headers:
+      Content-Length:
+      - '0'
+      Content-Type:
+      - text/plain; charset=utf-8
+      Date:
+      - Wed, 22 Dec 2021 22:16:49 GMT
+      Server:
+      - Werkzeug/1.0.1 Python/3.8.10
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.26.0
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/metadata/ga4gh:SQ.MBIgVnoHFw34aFqNUVGM0zgjC3d-v8dK
+  response:
+    body:
+      string: "{\n  \"added\": \"2016-08-24T05:03:40Z\",\n  \"aliases\": [\n    \"MD5:a8d7243ffeea4ade1dbc33613887693b\",\n
+        \   \"NCBI:NM_001331029.1\",\n    \"refseq:NM_001331029.1\",\n    \"NCBI:XM_017001344.1\",\n
+        \   \"refseq:XM_017001344.1\",\n    \"SEGUID:qw9iIJ9BPdGZfypwQH7S3L2f9gI\",\n
+        \   \"SHA1:ab0f62209f413dd1997f2a70407ed2dcbd9ff602\",\n    \"VMC:GS_MBIgVnoHFw34aFqNUVGM0zgjC3d-v8dK\",\n
+        \   \"sha512t24u:MBIgVnoHFw34aFqNUVGM0zgjC3d-v8dK\",\n    \"ga4gh:SQ.MBIgVnoHFw34aFqNUVGM0zgjC3d-v8dK\"\n
+        \ ],\n  \"alphabet\": \"ACGT\",\n  \"length\": 11291\n}\n"
+    headers:
+      Content-Length:
+      - '496'
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 22 Dec 2021 22:16:49 GMT
+      Server:
+      - Werkzeug/1.0.1 Python/3.8.10
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.26.0
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.MBIgVnoHFw34aFqNUVGM0zgjC3d-v8dK?start=871&end=872
+  response:
+    body:
+      string: A
+    headers:
+      Content-Length:
+      - '1'
+      Content-Type:
+      - text/plain; charset=utf-8
+      Date:
+      - Wed, 22 Dec 2021 22:16:49 GMT
+      Server:
+      - Werkzeug/1.0.1 Python/3.8.10
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.26.0
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nucleotide&id=NM_001331029.1&rettype=fasta&seq_start=872&seq_stop=872&tool=bioutils&email=biocommons-dev@googlegroups.com
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAAzGsQrCMBAG4D1P8Y8KVXLpYHUQ6uRiCX0BOSXYQJuE3FXw7e3wwXcdHk9rqW3J
+        uvORLt3JHTa45yVDuMSQBKVmDTGhTFnKxMoSQKjhs86suf4g62tNUUHuhp33nsZt+wZaOcm7xqL4
+        co2cFF2DZRx60xvzBwAA//8DADLRQFd8AAAA
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      Access-Control-Expose-Headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining
+      Cache-Control:
+      - private
+      Connection:
+      - Keep-Alive
+      Content-Disposition:
+      - attachment; filename="sequence.fasta"
+      Content-Security-Policy:
+      - upgrade-insecure-requests
+      Content-Type:
+      - text/plain
+      Date:
+      - Wed, 22 Dec 2021 22:16:50 GMT
+      Keep-Alive:
+      - timeout=4, max=40
+      NCBI-PHID:
+      - 322C3DB2A9CF21A500003533E7E2CFB1.1.1.m_5
+      NCBI-SID:
+      - 87D7943ED7B89389_A3FASID
+      Referrer-Policy:
+      - origin-when-cross-origin
+      Server:
+      - Finatra
+      Set-Cookie:
+      - ncbi_sid=87D7943ED7B89389_A3FASID; domain=.nih.gov; path=/; expires=Thu, 22
+        Dec 2022 22:16:50 GMT
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubDomains; preload
+      Transfer-Encoding:
+      - chunked
+      X-RateLimit-Limit:
+      - '3'
+      X-RateLimit-Remaining:
+      - '2'
+      X-Test-Test:
+      - test42
+      X-UA-Compatible:
+      - IE=Edge
+      X-XSS-Protection:
+      - 1; mode=block
+      content-encoding:
+      - gzip
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.26.0
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nucleotide&id=NM_001331029.1&rettype=fasta&seq_start=872&seq_stop=892&tool=bioutils&email=biocommons-dev@googlegroups.com
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAAzGsQrCMBQF0L1fcUeFKk062DoIsUNdLKFkl6cEG7BJSF4E/95O51ym+6NpRNuK
+        RvZHce5O8tD1ErewBmSKzvqMmAJb5xGXkONCTNlCINl3+RCH9EMuz+IdQ8grdlprMW/b1+BEPr+S
+        i4wvJUee0dVY50lVyoxKDWZQW8zGOCpjquoPAAD//wMAQOE1ipAAAAA=
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      Access-Control-Expose-Headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining
+      Cache-Control:
+      - private
+      Connection:
+      - Keep-Alive
+      Content-Disposition:
+      - attachment; filename="sequence.fasta"
+      Content-Security-Policy:
+      - upgrade-insecure-requests
+      Content-Type:
+      - text/plain
+      Date:
+      - Wed, 22 Dec 2021 22:16:52 GMT
+      Keep-Alive:
+      - timeout=4, max=40
+      NCBI-PHID:
+      - 322C3DB2A9CF21A500005033EA80096B.1.1.m_5
+      NCBI-SID:
+      - 1F81A9B38B71E289_3C39SID
+      Referrer-Policy:
+      - origin-when-cross-origin
+      Server:
+      - Finatra
+      Set-Cookie:
+      - ncbi_sid=1F81A9B38B71E289_3C39SID; domain=.nih.gov; path=/; expires=Thu, 22
+        Dec 2022 22:16:52 GMT
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubDomains; preload
+      Transfer-Encoding:
+      - chunked
+      X-RateLimit-Limit:
+      - '3'
+      X-RateLimit-Remaining:
+      - '2'
+      X-Test-Test:
+      - test42
+      X-UA-Compatible:
+      - IE=Edge
+      X-XSS-Protection:
+      - 1; mode=block
+      content-encoding:
+      - gzip
+    status:
+      code: 200
+      message: OK
+version: 1
