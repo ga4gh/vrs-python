@@ -151,6 +151,38 @@ hgvs_tests = (
         },
         'type': 'Allele'
     }),
+    ("NM_001331029.1:n.872A>G", {
+        'location': {
+            'interval': {
+                'end': {'value': 872, 'type': 'Number'},
+                'start': {'value': 871, 'type': 'Number'},
+                'type': 'SequenceInterval'
+            },
+            'sequence_id': 'ga4gh:SQ.MBIgVnoHFw34aFqNUVGM0zgjC3d-v8dK',
+            'type': 'SequenceLocation'
+        },
+        'state': {
+            'sequence': 'G',
+            'type': 'LiteralSequenceExpression'
+        },
+        'type': 'Allele'
+    }),
+    ("NM_181798.1:n.1263G>T", {
+        'location': {
+            'interval': {
+                'end': {'value': 1263, 'type': 'Number'},
+                'start': {'value': 1262, 'type': 'Number'},
+                'type': 'SequenceInterval'
+            },
+            'sequence_id': 'ga4gh:SQ.KN07u-RFqd1dTyOWOG98HnOq87Nq-ZIg',
+            'type': 'SequenceLocation'
+        },
+        'state': {
+            'sequence': 'T',
+            'type': 'LiteralSequenceExpression'
+        },
+        'type': 'Allele'
+    }),
 )
 
 

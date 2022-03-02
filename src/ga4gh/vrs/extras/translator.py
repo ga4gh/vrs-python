@@ -386,15 +386,22 @@ class Translator:
             # TODO: use default_assembly_name here
             if ns.startswith("GRC") and namespace is None:
                 continue
+
+            if not (any(a.startswith(pfx) for pfx in ("NM", "NP", "NC", "NG"))):
+                continue
+
             var.ac = a
 
-            if not namespace.startswith("GRC"):
-                # if the namespace is GRC, can't normalize, since hgvs can't deal with it
-                hgvs_tools = self._get_hgvs_tools()
-                parsed = hgvs_tools.parse(str(var))
-                var = hgvs_tools.normalize(parsed)
+            try:
+                if not namespace.startswith("GRC"):
+                    # if the namespace is GRC, can't normalize, since hgvs can't deal with it
+                    hgvs_tools = self._get_hgvs_tools()
+                    parsed = hgvs_tools.parse(str(var))
+                    var = hgvs_tools.normalize(parsed)
 
-            hgvs_exprs += [str(var)]
+                hgvs_exprs += [str(var)]
+            except hgvs.exceptions.HGVSDataNotAvailableError:
+                _logger.warning(f"No data found for accession {a}")
 
         return list(set(hgvs_exprs))
 
