@@ -45,6 +45,15 @@ def test_from_spdi(tlr):
     assert tlr._from_spdi(inputs["spdi"]).as_dict() == output
 
 
+@pytest.mark.vcr
+def test_to_spdi(tlr):
+    tlr.normalize = True
+    spdiexpr = inputs["spdi"]
+    allele = tlr.translate_from(spdiexpr, "spdi")
+    to_spdi = tlr.translate_to(allele, "spdi")
+    assert 1 == len(to_spdi)
+    assert spdiexpr == to_spdi[0]
+
 hgvs_tests = (
     ("NC_000013.11:g.32936732=", {
         'location': {

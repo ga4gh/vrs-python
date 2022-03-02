@@ -426,8 +426,8 @@ class Translator:
         aliases = self.data_proxy.translate_sequence_identifier(sequence_id, namespace)
         aliases = [a.split(":")[1] for a in aliases]
 
-        start = vo.location.interval.start
-        end = vo.location.interval.end
+        start = vo.location.interval.start.value
+        end = vo.location.interval.end.value
         spdi_tail = f":{start}:{end-start}:{vo.state.sequence}"
         spdis = [a + spdi_tail for a in aliases]
         return spdis
