@@ -2,7 +2,7 @@ name: Upload tagged commit to PyPI
 on:
   push:
     tags:
-    - '**'
+    - '*.*.**'
 jobs:
   get_branch:
     runs-on: ubuntu-latest
