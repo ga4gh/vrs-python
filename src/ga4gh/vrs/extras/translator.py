@@ -342,7 +342,7 @@ class Translator:
                 return "g"
             return None
 
-        if (vo.tyoe != "Allele"
+        if (vo.type != "Allele"
             or vo.location.type != "SequenceLocation"
             or vo.state.type != "LiteralSequenceExpression"):
             raise ValueError("_to_hgvs requires a VRS Allele with SequenceLocation and LiteralSequenceExpression")
