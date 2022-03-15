@@ -138,5 +138,9 @@ def test_normalize_allele(rest_dataproxy):
 
 
 def test_normalize_other(rest_dataproxy):
-    i = models.SimpleInterval(start=5, end=6)
+    i = models.SequenceInterval(
+            start=models.Number(value=5),
+            end=models.Number(value=6),
+            type="SequenceInterval"
+        )
     assert i == normalize(i, rest_dataproxy)

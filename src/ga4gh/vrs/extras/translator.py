@@ -121,11 +121,14 @@ class Translator:
         end = start + len(ref)
         ins_seq = alt
 
-        interval = models.SequenceInterval(start=models.Number(value=start),
-                                           end=models.Number(value=end))
-        location = models.Location(sequence_id=sequence_id, interval=interval)
-        sstate = models.LiteralSequenceExpression(sequence=ins_seq)
-        allele = models.Allele(location=location, state=sstate)
+        interval = models.SequenceInterval(start=models.Number(value=start, type="Number"),
+                                           end=models.Number(value=end, type="Number"),
+                                           type="SequenceInterval")
+        location = models.SequenceLocation(sequence_id=sequence_id,
+                                           interval=interval, type="SequenceLocation")
+        sstate = models.LiteralSequenceExpression(sequence=ins_seq,
+                                                  type="LiteralSequenceExpression")
+        allele = models.Allele(location=location, state=sstate, type="Allele")
         allele = self._post_process_imported_allele(allele)
         return allele
 
@@ -162,11 +165,12 @@ class Translator:
         end = start + len(ref)
         ins_seq = alt
 
-        interval = models.SequenceInterval(start=models.Number(value=start),
-                                           end=models.Number(value=end))
-        location = models.Location(sequence_id=sequence_id, interval=interval)
-        sstate = models.LiteralSequenceExpression(sequence=ins_seq)
-        allele = models.Allele(location=location, state=sstate)
+        interval = models.SequenceInterval(start=models.Number(value=start, type="Number"),
+                                           end=models.Number(value=end, type="Number"),
+                                           type="SequenceInterval")
+        location = models.SequenceLocation(sequence_id=sequence_id, interval=interval, type="SequenceLocation")
+        sstate = models.LiteralSequenceExpression(sequence=ins_seq, type="LiteralSequenceExpression")
+        allele = models.Allele(location=location, state=sstate, type="Allele")
         allele = self._post_process_imported_allele(allele)
         return allele
 
@@ -207,13 +211,15 @@ class Translator:
 
         if sv.posedit.edit.type == "ins":
             interval = models.SequenceInterval(
-                start=models.Number(value=sv.posedit.pos.start.base),
-                end=models.Number(value=sv.posedit.pos.start.base))
+                start=models.Number(value=sv.posedit.pos.start.base, type="Number"),
+                end=models.Number(value=sv.posedit.pos.start.base, type="Number"),
+                type="SequenceInterval")
             state = sv.posedit.edit.alt
         elif sv.posedit.edit.type in ("sub", "del", "delins", "identity"):
             interval = models.SequenceInterval(
-                start=models.Number(value=sv.posedit.pos.start.base - 1),
-                end=models.Number(value=sv.posedit.pos.end.base))
+                start=models.Number(value=sv.posedit.pos.start.base - 1, type="Number"),
+                end=models.Number(value=sv.posedit.pos.end.base, type="Number"),
+                type="SequenceInterval")
             if sv.posedit.edit.type == "identity":
                 state = self.data_proxy.get_sequence(sv.ac,
                                                      sv.posedit.pos.start.base - 1,
@@ -223,8 +229,9 @@ class Translator:
         elif sv.posedit.edit.type == "dup":
 
             interval = models.SequenceInterval(
-                start=models.Number(value=sv.posedit.pos.start.base - 1),
-                end=models.Number(value=sv.posedit.pos.end.base))
+                start=models.Number(value=sv.posedit.pos.start.base - 1, type="Number"),
+                end=models.Number(value=sv.posedit.pos.end.base, type="Number"),
+                type="SequenceInterval")
 
             ref = self.data_proxy.get_sequence(sv.ac,
                                                sv.posedit.pos.start.base - 1,
@@ -233,9 +240,9 @@ class Translator:
         else:
             raise ValueError(f"HGVS variant type {sv.posedit.edit.type} is unsupported")
 
-        location = models.Location(sequence_id=sequence_id, interval=interval)
-        sstate = models.LiteralSequenceExpression(sequence=state)
-        allele = models.Allele(location=location, state=sstate)
+        location = models.SequenceLocation(sequence_id=sequence_id, interval=interval, type="SequenceLocation")
+        sstate = models.LiteralSequenceExpression(sequence=state, type="LiteralSequenceExpression")
+        allele = models.Allele(location=location, state=sstate, type="Allele", )
         allele = self._post_process_imported_allele(allele)
         return allele
 
@@ -276,11 +283,12 @@ class Translator:
         end = start + del_len
         ins_seq = g["ins_seq"]
 
-        interval = models.SequenceInterval(start=models.Number(value=start),
-                                           end=models.Number(value=end))
-        location = models.Location(sequence_id=sequence_id, interval=interval)
-        sstate = models.LiteralSequenceExpression(sequence=ins_seq)
-        allele = models.Allele(location=location, state=sstate)
+        interval = models.SequenceInterval(start=models.Number(value=start, type="Number"),
+                                           end=models.Number(value=end, type="Number"),
+                                           type="SequenceInterval")
+        location = models.SequenceLocation(sequence_id=sequence_id, interval=interval, type="SequenceLocation")
+        sstate = models.LiteralSequenceExpression(sequence=ins_seq, type="LiteralSequenceExpression")
+        allele = models.Allele(location=location, state=sstate, type="Allele")
         allele = self._post_process_imported_allele(allele)
         return allele
 
@@ -334,10 +342,10 @@ class Translator:
                 return "g"
             return None
 
-        if (type(vo).__name__ != "Allele"
-            or type(vo.location).__name__ != "SequenceLocation"
-            or type(vo.state).__name__ != "LiteralSequenceExpression"):
-            raise ValueError(f"_to_hgvs requires a VRS Allele with SequenceLocation and LiteralSequenceExpression")
+        if (vo.type != "Allele"
+            or vo.location.type != "SequenceLocation"
+            or vo.state.type != "LiteralSequenceExpression"):
+            raise ValueError("_to_hgvs requires a VRS Allele with SequenceLocation and LiteralSequenceExpression")
 
         sequence_id = str(vo.location.sequence_id)
         aliases = self.data_proxy.translate_sequence_identifier(sequence_id, namespace)
@@ -423,11 +431,10 @@ class Translator:
         is expected to be normalized per VRS spec.
 
         """
-
-        if (type(vo).__name__ != "Allele"
-            or type(vo.location).__name__ != "SequenceLocation"
-            or type(vo.state).__name__ != "LiteralSequenceExpression"):
-            raise ValueError(f"_to_hgvs requires a VRS Allele with SequenceLocation and LiteralSequenceExpression")
+        if (vo.type != "Allele"
+            or vo.location.type != "SequenceLocation"
+            or vo.state.type != "LiteralSequenceExpression"):
+            raise ValueError("_to_hgvs requires a VRS Allele with SequenceLocation and LiteralSequenceExpression")
 
         sequence_id = str(vo.location.sequence_id)
         aliases = self.data_proxy.translate_sequence_identifier(sequence_id, namespace)

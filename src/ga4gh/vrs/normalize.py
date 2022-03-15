@@ -81,7 +81,6 @@ def normalize(vo, data_proxy=None):
     """normalize given vrs object, regardless of type"""
 
     assert is_pjs_instance(vo)
-
     vo_type = vo.type._value
 
     if vo_type in handlers:
