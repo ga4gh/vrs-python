@@ -1,27 +1,24 @@
 name: Upload tagged commit to PyPI
-on:
-  push:
-    tags:
-    - '*.*.**'
+on: [push]
 jobs:
-  get_branch:
-    runs-on: ubuntu-latest
-    outputs:
-      branch_name: ${{ steps.get_branch_name.outputs.name }}
-    steps:
-    - uses: actions/checkout@v2
-      with:
-        fetch-depth: 0
-    - name: Get branch name
-      id: get_branch_name
-      run: |
-        raw=$(git branch -r --contains ${{ github.ref }})
-        branch=${raw##*/}
-        echo "::set-output name=name::$branch"
+  # get_branch:
+  #   runs-on: ubuntu-latest
+  #   outputs:
+  #     branch_name: ${{ steps.get_branch_name.outputs.name }}
+  #   steps:
+  #   - uses: actions/checkout@v2
+  #     with:
+  #       fetch-depth: 0
+  #   - name: Get branch name
+  #     id: get_branch_name
+  #     run: |
+  #       raw=$(git branch -r --contains ${{ github.ref }})
+  #       branch=${raw##*/}
+  #       echo "::set-output name=name::$branch"
   release:
     runs-on: ubuntu-18.04
-    needs: get_branch
-    if: needs.get_branch.outputs.branch_name == 'main'
+    # needs: get_branch
+    # if: needs.get_branch.outputs.branch_name == 'main'
     steps:
     - uses: actions/checkout@v2
       with:
@@ -30,6 +27,8 @@ jobs:
       uses: actions/setup-python@v1
       with:
         python-version: 3.9
+    - name: Update submodules
+      run: git submodule update --init --recursive
     - name: Install dependencies
       run: |
         python3 -m pip install --upgrade pip
@@ -42,8 +41,8 @@ jobs:
         user: __token__
         password: ${{ secrets.TEST_PYPI_API_TOKEN }}
         repository_url: https://test.pypi.org/legacy/
-    - name: PyPI publish
-      uses: pypa/gh-action-pypi-publish@master
-      with:
-        user: __token__
-        password: ${{ secrets.PYPI_API_TOKEN }}
+    # - name: PyPI publish
+    #   uses: pypa/gh-action-pypi-publish@master
+    #   with:
+    #     user: __token__
+    #     password: ${{ secrets.PYPI_API_TOKEN }}
