@@ -38,6 +38,7 @@ may be summarized as:
 * **develop ~ develop**: The vrs-python develop branch tracks the vrs develop branch.
 * **0.6 ~ 1.1**: vrs-python 0.6 branch tracks the vrs 1.1 branch.
 * **0.7 ~ 1.2**: vrs-python 0.7 branch tracks the vrs 1.2 branch.
+* **0.8 ~ main**: vrs-python 0.8 branch tracks the vrs main (dev) branch.
 
 ⚠ **Developers: See the development section below for recommendations
 for using submodules gracefully (and without causing problems for others!).**
