@@ -35,7 +35,7 @@ export PKG_CONFIG_PATH="/opt/homebrew/opt/openssl@1.1/lib/pkgconfig:/opt/homebre
     ###Make sure that you update the @14 with your own version
 14. source ~/.zshrc
 #Optional?
-15. I also added this statement in my .zshrc but I am unsure if it was actually needed or not (Try without it first:
+15. I also added this statement in my .zshrc but I am unsure if it was actually needed or not (Try without it first, this wasnt required for intel chips, still need to confirm for m1):
     export LIBRARY_PATH=$LIBRARY_PATH:/opt/homebrew/opt/openssl/lib/
 
 
