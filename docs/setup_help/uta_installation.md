@@ -18,13 +18,15 @@
    1. `\q`
 9. Download the UTA database and place it in the uta database object that you created before (**This step takes around 5 hours**). 
    1. `export UTA_VERSION=uta_20210129.pgd.gz\ncurl -O http://dl.biocommons.org/uta/$UTA_VERSION\ngzip -cdq ${UTA_VERSION} | psql -h localhost -U uta_admin --echo-errors --single-transaction -v ON_ERROR_STOP=1 -d uta -p 5432`
+10. Set your UTA path
+    1. `export UTA_DB_URL=postgresql://uta_admin@localhost:5432/uta/uta_20210129`
 ###Optional installation step
-10. If you wanted to wait for the 5 hour update till later. Follow these steps instead:
-11. Download the UTA database and place it in the uta database object that you created before.
+11. If you wanted to wait for the 5 hour update till later please follow these steps instead:
+12. Download the UTA database and place it in the uta database object that you created before.
     1. `export UTA_VERSION=uta_20210129.pgd.gz
 curl -O http://dl.biocommons.org/uta/$UTA_VERSION
 gzip -cdq ${UTA_VERSION} | grep -v "^REFRESH MATERIALIZED VIEW" | psql -h localhost -U uta_admin --echo-errors --single-transaction -v ON_ERROR_STOP=1 -d uta -p 5432`
-12. Run the refresh materialized view commands
+13. Run the refresh materialized view commands
     1. `REFRESH MATERIALIZED VIEW uta_20210129.exon_set_exons_fp_mv;`
     2. `REFRESH MATERIALIZED VIEW uta_20210129.tx_exon_set_summary_mv;`
     3. `REFRESH MATERIALIZED VIEW uta_20210129.tx_def_summary_mv;`
