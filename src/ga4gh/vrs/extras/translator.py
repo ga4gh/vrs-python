@@ -342,9 +342,7 @@ class Translator:
                 return "g"
             return None
 
-        if (vo.type != "Allele"
-            or vo.location.type != "SequenceLocation"
-            or vo.state.type not in ("LiteralSequenceExpression", "SequenceState")):
+        if not self.is_valid_allele(vo):
             raise ValueError("_to_hgvs requires a VRS Allele with SequenceLocation and LiteralSequenceExpression|SequenceState")
 
         sequence_id = str(vo.location.sequence_id)
@@ -417,6 +415,11 @@ class Translator:
 
         return list(set(hgvs_exprs))
 
+    def is_valid_allele(self, vo):
+        return (vo.type == "Allele"
+                and vo.location.type == "SequenceLocation"
+                and vo.state.type in ("LiteralSequenceExpression", "SequenceState"))
+
     def _to_spdi(self, vo, namespace="refseq"):
         """generates a *list* of SPDI expressions for VRS Allele.
 
@@ -435,9 +438,7 @@ class Translator:
         is expected to be normalized per VRS spec.
 
         """
-        if (vo.type != "Allele"
-            or vo.location.type != "SequenceLocation"
-            or vo.state.type not in ("LiteralSequenceExpression", "SequenceState")):
+        if not self.is_valid_allele(vo):
             raise ValueError("_to_spdi requires a VRS Allele with SequenceLocation and LiteralSequenceExpression|SequenceState")
 
         sequence_id = str(vo.location.sequence_id)
