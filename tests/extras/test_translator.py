@@ -1,5 +1,7 @@
 import pytest
 
+from ga4gh.vrs import models
+
 inputs = {
     "hgvs": "NC_000013.11:g.32936732G>C",
     "beacon": "13 : 32936732 G > C",
@@ -197,6 +199,27 @@ def test_hgvs(tlr, hgvsexpr, expected):
     assert 1 == len(to_hgvs)
     assert hgvsexpr == to_hgvs[0]
 
+
+def test_deprecated_models(tlr):
+    allele_deprecated_dict = {
+        'location': {
+            'interval': {
+                'end': 55181320,
+                'start': 55181319,
+                'type': 'SimpleInterval'
+            },
+            'sequence_id': 'ga4gh:SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul',
+            'type': 'SequenceLocation'
+        },
+        'state': {
+            'sequence': 'T',
+            'type': 'SequenceState'
+        },
+        'type': 'Allele'
+    }
+    allele_deprecated = models.Allele(**allele_deprecated_dict)
+    assert tlr.is_valid_allele(allele_deprecated)
+    assert tlr.get_start_end(allele_deprecated) == (55181319, 55181320)
 
 # TODO: Readd these tests
 # @pytest.mark.vcr
