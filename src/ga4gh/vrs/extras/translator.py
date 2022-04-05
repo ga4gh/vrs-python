@@ -361,12 +361,7 @@ class Translator:
             # ival = hgvs.location.Interval(start=start, end=end)
             # edit = hgvs.edit.AARefAlt(ref=None, alt=vo.state.sequence)
         else:                   # pylint: disable=no-else-raise
-            if vo.location.interval.type == "SimpleInterval":
-                start = vo.location.interval.start
-                end = vo.location.interval.end
-            else:
-                start = vo.location.interval.start.value
-                end = vo.location.interval.end.value
+            start, end = self.get_start_end(vo)
             # ib: 0 1 2 3 4 5
             #  h:  1 2 3 4 5
             if start == end:    # insert: hgvs uses *exclusive coords*
@@ -444,17 +439,17 @@ class Translator:
         sequence_id = str(vo.location.sequence_id)
         aliases = self.data_proxy.translate_sequence_identifier(sequence_id, namespace)
         aliases = [a.split(":")[1] for a in aliases]
-
-        if vo.location.interval.type == "SimpleInterval":
-            start = vo.location.interval.start
-            end = vo.location.interval.end
-        else:
-            start = vo.location.interval.start.value
-            end = vo.location.interval.end.value
+        start, end = self.get_start_end(vo)
         spdi_tail = f":{start}:{end-start}:{vo.state.sequence}"
         spdis = [a + spdi_tail for a in aliases]
         return spdis
 
+
+    def get_start_end(self, vo):
+        if vo.location.interval.type == "SimpleInterval":
+            return vo.location.interval.start, vo.location.interval.end
+        else:
+            return vo.location.interval.start.value, vo.location.interval.end.value
 
     @lazy_property
     def _hgvs_parser(self):
