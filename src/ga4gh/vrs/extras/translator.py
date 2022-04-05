@@ -410,10 +410,6 @@ class Translator:
 
         return list(set(hgvs_exprs))
 
-    def is_valid_allele(self, vo):
-        return (vo.type == "Allele"
-                and vo.location.type == "SequenceLocation"
-                and vo.state.type in ("LiteralSequenceExpression", "SequenceState"))
 
     def _to_spdi(self, vo, namespace="refseq"):
         """generates a *list* of SPDI expressions for VRS Allele.
@@ -445,11 +441,17 @@ class Translator:
         return spdis
 
 
+    def is_valid_allele(self, vo):
+        return (vo.type == "Allele"
+                and vo.location.type == "SequenceLocation"
+                and vo.state.type in ("LiteralSequenceExpression", "SequenceState"))
+
+
     def get_start_end(self, vo):
-        if vo.location.interval.type == "SimpleInterval":
-            return vo.location.interval.start, vo.location.interval.end
-        else:
-            return vo.location.interval.start.value, vo.location.interval.end.value
+        return (vo.location.interval.start, vo.location.interval.end) \
+            if vo.location.interval.type == "SimpleInterval" \
+            else (vo.location.interval.start.value, vo.location.interval.end.value)
+
 
     @lazy_property
     def _hgvs_parser(self):
