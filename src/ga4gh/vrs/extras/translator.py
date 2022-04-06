@@ -83,10 +83,29 @@ class Translator:
     def translate_to(self, vo, fmt):
         """translate vrs object `vo` to named format `fmt`"""
         t = self.to_translators[fmt]
-        return t(self, vo)
+        return t(self, self.translate_from_deprecated_allele_models(vo))
+
+    def translate_from_deprecated_allele_models(self, allele):
+        """
+        Change deprecated models:
+        SequenceState -> LiteralSequenceExpression
+        SimpleInterval -> SequenceInterval
+        """
+        if allele.state.type == "SequenceState":
+            allele.state = models.LiteralSequenceExpression(
+                type="LiteralSequenceExpression",
+                sequence=allele.state.sequence,
+            )
+        if allele.location.interval.type == "SimpleInterval":
+            allele.location.interval = models.SequenceInterval(
+                type="SequenceInterval",
+                start=models.Number(value=allele.location.interval.start, type="Number"),
+                end=models.Number(value=allele.location.interval.end, type="Number"),
+            )
+        return allele
 
 
-    ############################################################################
+        ############################################################################
     ## INTERNAL
 
     def _from_beacon(self, beacon_expr, assembly_name=None):
@@ -126,9 +145,9 @@ class Translator:
                                            type="SequenceInterval")
         location = models.SequenceLocation(sequence_id=sequence_id,
                                            interval=interval, type="SequenceLocation")
-        sstate = models.LiteralSequenceExpression(sequence=ins_seq,
+        state = models.LiteralSequenceExpression(sequence=ins_seq,
                                                   type="LiteralSequenceExpression")
-        allele = models.Allele(location=location, state=sstate, type="Allele")
+        allele = models.Allele(location=location, state=state, type="Allele")
         allele = self._post_process_imported_allele(allele)
         return allele
 

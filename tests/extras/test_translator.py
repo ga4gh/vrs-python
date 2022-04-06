@@ -200,7 +200,7 @@ def test_hgvs(tlr, hgvsexpr, expected):
     assert hgvsexpr == to_hgvs[0]
 
 
-def test_deprecated_models(tlr):
+def test_translate_from_deprecated_allele_models(tlr):
     allele_deprecated_dict = {
         'location': {
             'interval': {
@@ -218,8 +218,18 @@ def test_deprecated_models(tlr):
         'type': 'Allele'
     }
     allele_deprecated = models.Allele(**allele_deprecated_dict)
-    assert tlr.is_valid_allele(allele_deprecated)
-    assert tlr.get_start_end(allele_deprecated) == (55181319, 55181320)
+    assert tlr.translate_from_deprecated_allele_models(allele_deprecated).as_dict() == {
+        'type': 'Allele',
+        'location': {
+            'type': 'SequenceLocation', 'sequence_id': 'ga4gh:SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul',
+            'interval': {
+                'type': 'SequenceInterval',
+                'start': {'type': 'Number', 'value': 55181319},
+                'end': {'type': 'Number', 'value': 55181320}
+            }
+        },
+        'state': {'type': 'LiteralSequenceExpression', 'sequence': 'T'}
+    }
 
 # TODO: Readd these tests
 # @pytest.mark.vcr
