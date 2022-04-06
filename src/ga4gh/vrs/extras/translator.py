@@ -362,7 +362,7 @@ class Translator:
             return None
 
         if not self.is_valid_allele(vo):
-            raise ValueError("_to_hgvs requires a VRS Allele with SequenceLocation and LiteralSequenceExpression|SequenceState")
+            raise ValueError("_to_hgvs requires a VRS Allele with SequenceLocation and LiteralSequenceExpression")
 
         sequence_id = str(vo.location.sequence_id)
         aliases = self.data_proxy.translate_sequence_identifier(sequence_id, namespace)
@@ -449,7 +449,7 @@ class Translator:
 
         """
         if not self.is_valid_allele(vo):
-            raise ValueError("_to_spdi requires a VRS Allele with SequenceLocation and LiteralSequenceExpression|SequenceState")
+            raise ValueError("_to_spdi requires a VRS Allele with SequenceLocation and LiteralSequenceExpression")
 
         sequence_id = str(vo.location.sequence_id)
         aliases = self.data_proxy.translate_sequence_identifier(sequence_id, namespace)
