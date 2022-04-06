@@ -380,7 +380,7 @@ class Translator:
             # ival = hgvs.location.Interval(start=start, end=end)
             # edit = hgvs.edit.AARefAlt(ref=None, alt=vo.state.sequence)
         else:                   # pylint: disable=no-else-raise
-            start, end = self.get_start_end(vo)
+            start, end = vo.location.interval.start.value, vo.location.interval.end.value
             # ib: 0 1 2 3 4 5
             #  h:  1 2 3 4 5
             if start == end:    # insert: hgvs uses *exclusive coords*
@@ -454,7 +454,7 @@ class Translator:
         sequence_id = str(vo.location.sequence_id)
         aliases = self.data_proxy.translate_sequence_identifier(sequence_id, namespace)
         aliases = [a.split(":")[1] for a in aliases]
-        start, end = self.get_start_end(vo)
+        start, end = vo.location.interval.start.value, vo.location.interval.end.value
         spdi_tail = f":{start}:{end-start}:{vo.state.sequence}"
         spdis = [a + spdi_tail for a in aliases]
         return spdis
@@ -463,13 +463,7 @@ class Translator:
     def is_valid_allele(self, vo):
         return (vo.type == "Allele"
                 and vo.location.type == "SequenceLocation"
-                and vo.state.type in ("LiteralSequenceExpression", "SequenceState"))
-
-
-    def get_start_end(self, vo):
-        return (vo.location.interval.start, vo.location.interval.end) \
-            if vo.location.interval.type == "SimpleInterval" \
-            else (vo.location.interval.start.value, vo.location.interval.end.value)
+                and vo.state.type == "LiteralSequenceExpression")
 
 
     @lazy_property
