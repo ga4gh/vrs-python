@@ -83,9 +83,9 @@ class Translator:
     def translate_to(self, vo, fmt):
         """translate vrs object `vo` to named format `fmt`"""
         t = self.to_translators[fmt]
-        return t(self, self.translate_from_deprecated_allele_models(vo))
+        return t(self, self.ensure_allele_is_latest_model(vo))
 
-    def translate_from_deprecated_allele_models(self, allele):
+    def ensure_allele_is_latest_model(self, allele):
         """
         Change deprecated models:
         SequenceState -> LiteralSequenceExpression

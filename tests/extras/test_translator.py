@@ -200,7 +200,7 @@ def test_hgvs(tlr, hgvsexpr, expected):
     assert hgvsexpr == to_hgvs[0]
 
 
-def test_translate_from_deprecated_allele_models(tlr):
+def test_ensure_allele_is_latest_model(tlr):
     allele_deprecated_dict = {
         'location': {
             'interval': {
@@ -218,7 +218,7 @@ def test_translate_from_deprecated_allele_models(tlr):
         'type': 'Allele'
     }
     allele_deprecated = models.Allele(**allele_deprecated_dict)
-    assert tlr.translate_from_deprecated_allele_models(allele_deprecated).as_dict() == {
+    assert tlr.ensure_allele_is_latest_model(allele_deprecated).as_dict() == {
         'type': 'Allele',
         'location': {
             'type': 'SequenceLocation', 'sequence_id': 'ga4gh:SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul',
