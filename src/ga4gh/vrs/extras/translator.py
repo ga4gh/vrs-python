@@ -83,7 +83,26 @@ class Translator:
     def translate_to(self, vo, fmt):
         """translate vrs object `vo` to named format `fmt`"""
         t = self.to_translators[fmt]
-        return t(self, vo)
+        return t(self, self.ensure_allele_is_latest_model(vo))
+
+    def ensure_allele_is_latest_model(self, allele):
+        """
+        Change deprecated models:
+        SequenceState -> LiteralSequenceExpression
+        SimpleInterval -> SequenceInterval
+        """
+        if allele.state.type == "SequenceState":
+            allele.state = models.LiteralSequenceExpression(
+                type="LiteralSequenceExpression",
+                sequence=allele.state.sequence,
+            )
+        if allele.location.interval.type == "SimpleInterval":
+            allele.location.interval = models.SequenceInterval(
+                type="SequenceInterval",
+                start=models.Number(value=allele.location.interval.start, type="Number"),
+                end=models.Number(value=allele.location.interval.end, type="Number"),
+            )
+        return allele
 
 
     ############################################################################
@@ -126,9 +145,9 @@ class Translator:
                                            type="SequenceInterval")
         location = models.SequenceLocation(sequence_id=sequence_id,
                                            interval=interval, type="SequenceLocation")
-        sstate = models.LiteralSequenceExpression(sequence=ins_seq,
+        state = models.LiteralSequenceExpression(sequence=ins_seq,
                                                   type="LiteralSequenceExpression")
-        allele = models.Allele(location=location, state=sstate, type="Allele")
+        allele = models.Allele(location=location, state=state, type="Allele")
         allele = self._post_process_imported_allele(allele)
         return allele
 
@@ -342,9 +361,7 @@ class Translator:
                 return "g"
             return None
 
-        if (vo.type != "Allele"
-            or vo.location.type != "SequenceLocation"
-            or vo.state.type != "LiteralSequenceExpression"):
+        if not self.is_valid_allele(vo):
             raise ValueError("_to_hgvs requires a VRS Allele with SequenceLocation and LiteralSequenceExpression")
 
         sequence_id = str(vo.location.sequence_id)
@@ -363,8 +380,7 @@ class Translator:
             # ival = hgvs.location.Interval(start=start, end=end)
             # edit = hgvs.edit.AARefAlt(ref=None, alt=vo.state.sequence)
         else:                   # pylint: disable=no-else-raise
-            start = vo.location.interval.start.value
-            end = vo.location.interval.end.value
+            start, end = vo.location.interval.start.value, vo.location.interval.end.value
             # ib: 0 1 2 3 4 5
             #  h:  1 2 3 4 5
             if start == end:    # insert: hgvs uses *exclusive coords*
@@ -413,6 +429,7 @@ class Translator:
 
         return list(set(hgvs_exprs))
 
+
     def _to_spdi(self, vo, namespace="refseq"):
         """generates a *list* of SPDI expressions for VRS Allele.
 
@@ -431,20 +448,22 @@ class Translator:
         is expected to be normalized per VRS spec.
 
         """
-        if (vo.type != "Allele"
-            or vo.location.type != "SequenceLocation"
-            or vo.state.type != "LiteralSequenceExpression"):
-            raise ValueError("_to_hgvs requires a VRS Allele with SequenceLocation and LiteralSequenceExpression")
+        if not self.is_valid_allele(vo):
+            raise ValueError("_to_spdi requires a VRS Allele with SequenceLocation and LiteralSequenceExpression")
 
         sequence_id = str(vo.location.sequence_id)
         aliases = self.data_proxy.translate_sequence_identifier(sequence_id, namespace)
         aliases = [a.split(":")[1] for a in aliases]
-
-        start = vo.location.interval.start.value
-        end = vo.location.interval.end.value
+        start, end = vo.location.interval.start.value, vo.location.interval.end.value
         spdi_tail = f":{start}:{end-start}:{vo.state.sequence}"
         spdis = [a + spdi_tail for a in aliases]
         return spdis
+
+
+    def is_valid_allele(self, vo):
+        return (vo.type == "Allele"
+                and vo.location.type == "SequenceLocation"
+                and vo.state.type == "LiteralSequenceExpression")
 
 
     @lazy_property
