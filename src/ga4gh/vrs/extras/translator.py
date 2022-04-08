@@ -83,8 +83,26 @@ class Translator:
     def translate_to(self, vo, fmt):
         """translate vrs object `vo` to named format `fmt`"""
         t = self.to_translators[fmt]
-        return t(self, vo)
+        return t(self, self.ensure_allele_is_latest_model(vo))
 
+    def ensure_allele_is_latest_model(self, allele):
+        """
+        Change deprecated models:
+        SequenceState -> LiteralSequenceExpression
+        SimpleInterval -> SequenceInterval
+        """
+        if allele.state.type == "SequenceState":
+            allele.state = models.LiteralSequenceExpression(
+                type="LiteralSequenceExpression",
+                sequence=allele.state.sequence,
+            )
+        if allele.location.interval.type == "SimpleInterval":
+            allele.location.interval = models.SequenceInterval(
+                type="SequenceInterval",
+                start=models.Number(value=allele.location.interval.start, type="Number"),
+                end=models.Number(value=allele.location.interval.end, type="Number"),
+            )
+        return allele
 
     ############################################################################
     ## INTERNAL
