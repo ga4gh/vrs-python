@@ -371,8 +371,7 @@ class Translator:
             # ival = hgvs.location.Interval(start=start, end=end)
             # edit = hgvs.edit.AARefAlt(ref=None, alt=vo.state.sequence)
         else:                   # pylint: disable=no-else-raise
-            start = vo.location.interval.start.value
-            end = vo.location.interval.end.value
+            start, end = vo.location.interval.start.value, vo.location.interval.end.value
             # ib: 0 1 2 3 4 5
             #  h:  1 2 3 4 5
             if start == end:    # insert: hgvs uses *exclusive coords*
@@ -447,8 +446,7 @@ class Translator:
         aliases = self.data_proxy.translate_sequence_identifier(sequence_id, namespace)
         aliases = [a.split(":")[1] for a in aliases]
 
-        start = vo.location.interval.start.value
-        end = vo.location.interval.end.value
+        start, end = vo.location.interval.start.value, vo.location.interval.end.value
         spdi_tail = f":{start}:{end-start}:{vo.state.sequence}"
         spdis = [a + spdi_tail for a in aliases]
         return spdis
