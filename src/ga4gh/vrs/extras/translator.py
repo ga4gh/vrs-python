@@ -142,8 +142,8 @@ class Translator:
         interval = models.SequenceInterval(start=models.Number(value=start),
                                            end=models.Number(value=end))
         location = models.Location(sequence_id=sequence_id, interval=interval)
-        sstate = models.LiteralSequenceExpression(sequence=ins_seq)
-        allele = models.Allele(location=location, state=sstate)
+        state = models.LiteralSequenceExpression(sequence=ins_seq)
+        allele = models.Allele(location=location, state=state)
         allele = self._post_process_imported_allele(allele)
         return allele
 
@@ -352,9 +352,7 @@ class Translator:
                 return "g"
             return None
 
-        if (type(vo).__name__ != "Allele"
-            or type(vo.location).__name__ != "SequenceLocation"
-            or type(vo.state).__name__ != "LiteralSequenceExpression"):
+        if self.is_valid_allele(vo):
             raise ValueError(f"_to_hgvs requires a VRS Allele with SequenceLocation and LiteralSequenceExpression")
 
         sequence_id = str(vo.location.sequence_id)
@@ -442,10 +440,8 @@ class Translator:
 
         """
 
-        if (type(vo).__name__ != "Allele"
-            or type(vo.location).__name__ != "SequenceLocation"
-            or type(vo.state).__name__ != "LiteralSequenceExpression"):
-            raise ValueError(f"_to_hgvs requires a VRS Allele with SequenceLocation and LiteralSequenceExpression")
+        if self.is_valid_allele(vo):
+            raise ValueError(f"_to_spdi requires a VRS Allele with SequenceLocation and LiteralSequenceExpression")
 
         sequence_id = str(vo.location.sequence_id)
         aliases = self.data_proxy.translate_sequence_identifier(sequence_id, namespace)
@@ -457,6 +453,10 @@ class Translator:
         spdis = [a + spdi_tail for a in aliases]
         return spdis
 
+    def is_valid_allele(self, vo):
+        return (type(vo).__name__ != "Allele"
+                or type(vo.location).__name__ != "SequenceLocation"
+                or type(vo.state).__name__ != "LiteralSequenceExpression")
 
     @lazy_property
     def _hgvs_parser(self):
