@@ -1,5 +1,7 @@
 import pytest
 
+from ga4gh.vrs import models
+
 inputs = {
     "hgvs": "NC_000013.11:g.32936732G>C",
     "beacon": "13 : 32936732 G > C",
@@ -197,6 +199,37 @@ def test_hgvs(tlr, hgvsexpr, expected):
     assert 1 == len(to_hgvs)
     assert hgvsexpr == to_hgvs[0]
 
+
+def test_ensure_allele_is_latest_model(tlr):
+    allele_deprecated_dict = {
+        'location': {
+            'interval': {
+                'end': 55181320,
+                'start': 55181319,
+                'type': 'SimpleInterval'
+            },
+            'sequence_id': 'ga4gh:SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul',
+            'type': 'SequenceLocation'
+        },
+        'state': {
+            'sequence': 'T',
+            'type': 'SequenceState'
+        },
+        'type': 'Allele'
+    }
+    allele_deprecated = models.Allele(**allele_deprecated_dict)
+    assert tlr.ensure_allele_is_latest_model(allele_deprecated).as_dict() == {
+        'type': 'Allele',
+        'location': {
+            'type': 'SequenceLocation', 'sequence_id': 'ga4gh:SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul',
+            'interval': {
+                'type': 'SequenceInterval',
+                'start': {'type': 'Number', 'value': 55181319},
+                'end': {'type': 'Number', 'value': 55181320}
+            }
+        },
+        'state': {'type': 'LiteralSequenceExpression', 'sequence': 'T'}
+    }
 
 # TODO: Readd these tests
 # @pytest.mark.vcr
