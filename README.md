@@ -3,9 +3,10 @@
 [![PyPI version](https://badge.fury.io/py/ga4gh.vrs.svg)](https://pypi.org/project/ga4gh.vrs)
 [![Travis](https://travis-ci.org/ga4gh/vrs-python.svg?branch=master)](https://travis-ci.org/ga4gh/vrs-python)
 
-[Installation](#installation)
-[Running the Notebooks](#running-the-notebooks)
-[Development + Setup](#development--setup)
+###[Installation](#installation)
+###[Running the Notebooks](#running-the-notebooks)
+
+###[Development + Setup](#development--setup)
 
 vrs-python provides Python language support for the [GA4GH Variation
 Representation Specification
@@ -103,15 +104,6 @@ The following jupyter extensions are recommended but not required
   
 
 # Development
-
-##seqrepo
-
-Make sure to set up seqrepo, [instructions found here](https://github.com/GenomicMedLab/lab-knowledgebase/blob/main/data_sources/seqrepo_setup.md). This should be done before the following steps.
-
-## Install UTA
-If you have an Apple M1 chip, [follow the installation instructions here.](https://github.com/ga4gh/vrs-python/blob/installation_directions/docs/setup_help/m1_mac_setup.md) (to find out what chip you have, click the apple and then About This Mac)
-
-If you do not have an Apple M1 chip, you can go [straight to the instructions here.](https://github.com/ga4gh/vrs-python/blob/installation_directions/docs/setup_help/uta_installation.md)
 
 ## Submodules!
 
