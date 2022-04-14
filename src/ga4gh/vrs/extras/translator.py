@@ -93,14 +93,12 @@ class Translator:
         """
         if allele.state.type == "SequenceState":
             allele.state = models.LiteralSequenceExpression(
-                type="LiteralSequenceExpression",
                 sequence=allele.state.sequence,
             )
         if allele.location.interval.type == "SimpleInterval":
             allele.location.interval = models.SequenceInterval(
-                type="SequenceInterval",
-                start=models.Number(value=allele.location.interval.start, type="Number"),
-                end=models.Number(value=allele.location.interval.end, type="Number"),
+                start=models.Number(value=allele.location.interval.start),
+                end=models.Number(value=allele.location.interval.end),
             )
         return allele
 
@@ -140,14 +138,12 @@ class Translator:
         end = start + len(ref)
         ins_seq = alt
 
-        interval = models.SequenceInterval(start=models.Number(value=start, type="Number"),
-                                           end=models.Number(value=end, type="Number"),
-                                           type="SequenceInterval")
+        interval = models.SequenceInterval(start=models.Number(value=start),
+                                           end=models.Number(value=end))
         location = models.SequenceLocation(sequence_id=sequence_id,
-                                           interval=interval, type="SequenceLocation")
-        state = models.LiteralSequenceExpression(sequence=ins_seq,
-                                                  type="LiteralSequenceExpression")
-        allele = models.Allele(location=location, state=state, type="Allele")
+                                           interval=interval)
+        state = models.LiteralSequenceExpression(sequence=ins_seq)
+        allele = models.Allele(location=location, state=state)
         allele = self._post_process_imported_allele(allele)
         return allele
 
@@ -184,12 +180,11 @@ class Translator:
         end = start + len(ref)
         ins_seq = alt
 
-        interval = models.SequenceInterval(start=models.Number(value=start, type="Number"),
-                                           end=models.Number(value=end, type="Number"),
-                                           type="SequenceInterval")
-        location = models.SequenceLocation(sequence_id=sequence_id, interval=interval, type="SequenceLocation")
-        sstate = models.LiteralSequenceExpression(sequence=ins_seq, type="LiteralSequenceExpression")
-        allele = models.Allele(location=location, state=sstate, type="Allele")
+        interval = models.SequenceInterval(start=models.Number(value=start),
+                                           end=models.Number(value=end))
+        location = models.SequenceLocation(sequence_id=sequence_id, interval=interval)
+        sstate = models.LiteralSequenceExpression(sequence=ins_seq)
+        allele = models.Allele(location=location, state=sstate)
         allele = self._post_process_imported_allele(allele)
         return allele
 
@@ -230,15 +225,13 @@ class Translator:
 
         if sv.posedit.edit.type == "ins":
             interval = models.SequenceInterval(
-                start=models.Number(value=sv.posedit.pos.start.base, type="Number"),
-                end=models.Number(value=sv.posedit.pos.start.base, type="Number"),
-                type="SequenceInterval")
+                start=models.Number(value=sv.posedit.pos.start.base),
+                end=models.Number(value=sv.posedit.pos.start.base))
             state = sv.posedit.edit.alt
         elif sv.posedit.edit.type in ("sub", "del", "delins", "identity"):
             interval = models.SequenceInterval(
-                start=models.Number(value=sv.posedit.pos.start.base - 1, type="Number"),
-                end=models.Number(value=sv.posedit.pos.end.base, type="Number"),
-                type="SequenceInterval")
+                start=models.Number(value=sv.posedit.pos.start.base - 1),
+                end=models.Number(value=sv.posedit.pos.end.base))
             if sv.posedit.edit.type == "identity":
                 state = self.data_proxy.get_sequence(sv.ac,
                                                      sv.posedit.pos.start.base - 1,
@@ -248,9 +241,8 @@ class Translator:
         elif sv.posedit.edit.type == "dup":
 
             interval = models.SequenceInterval(
-                start=models.Number(value=sv.posedit.pos.start.base - 1, type="Number"),
-                end=models.Number(value=sv.posedit.pos.end.base, type="Number"),
-                type="SequenceInterval")
+                start=models.Number(value=sv.posedit.pos.start.base - 1),
+                end=models.Number(value=sv.posedit.pos.end.base))
 
             ref = self.data_proxy.get_sequence(sv.ac,
                                                sv.posedit.pos.start.base - 1,
@@ -259,9 +251,9 @@ class Translator:
         else:
             raise ValueError(f"HGVS variant type {sv.posedit.edit.type} is unsupported")
 
-        location = models.SequenceLocation(sequence_id=sequence_id, interval=interval, type="SequenceLocation")
-        sstate = models.LiteralSequenceExpression(sequence=state, type="LiteralSequenceExpression")
-        allele = models.Allele(location=location, state=sstate, type="Allele", )
+        location = models.SequenceLocation(sequence_id=sequence_id, interval=interval)
+        sstate = models.LiteralSequenceExpression(sequence=state)
+        allele = models.Allele(location=location, state=sstate)
         allele = self._post_process_imported_allele(allele)
         return allele
 
@@ -302,12 +294,11 @@ class Translator:
         end = start + del_len
         ins_seq = g["ins_seq"]
 
-        interval = models.SequenceInterval(start=models.Number(value=start, type="Number"),
-                                           end=models.Number(value=end, type="Number"),
-                                           type="SequenceInterval")
-        location = models.SequenceLocation(sequence_id=sequence_id, interval=interval, type="SequenceLocation")
-        sstate = models.LiteralSequenceExpression(sequence=ins_seq, type="LiteralSequenceExpression")
-        allele = models.Allele(location=location, state=sstate, type="Allele")
+        interval = models.SequenceInterval(start=models.Number(value=start),
+                                           end=models.Number(value=end))
+        location = models.SequenceLocation(sequence_id=sequence_id, interval=interval)
+        sstate = models.LiteralSequenceExpression(sequence=ins_seq)
+        allele = models.Allele(location=location, state=sstate)
         allele = self._post_process_imported_allele(allele)
         return allele
 
