@@ -83,7 +83,6 @@ if __name__ == "__main__":
         record.info[INFO_FIELD_ID] = ",".join(ld)
         vcf_out.write(record)
 
-    #print(vrs_data)
     pickle.dump(vrs_data, vrs_out)
 
     vrs_out.close()
