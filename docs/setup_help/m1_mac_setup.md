@@ -1,4 +1,4 @@
-#Notes from Wes Goar on setup of vrs-python on a m1 mac
+# Notes from Wes Goar on setup of vrs-python on a m1 mac
 - @author Wes Goar
 - date: 20220328
 - macOS version: 12.3
