@@ -44,7 +44,6 @@ def record_digests(record):
     def digest(d):
         return hashlib.sha512(d.encode("ascii")).hexdigest()[:8]
 
-    #spdi_loc = f"{record.chrom}:{record.pos-1}:{len(record.ref)}"
     gnomad_loc = f"{record.chrom}-{record.pos}"
     alts = record.alts if record.alts else []
     data = f"{record.chrom}\t{record.pos}\t{record.id}\t{record.ref}\t{record.alts}"
