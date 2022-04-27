@@ -11,6 +11,7 @@ Function 2: Test addition of data to VCF file
 """
 import gzip
 import os
+import io
 
 import pytest
 
@@ -35,8 +36,8 @@ def test_annotate_vcf(vcf_annotator):
     output_vrs_pkl = "tests/extras/data/test_vcf_pkl.pkl"
     expected_vcf = "tests/extras/data/test_expected_output_vcf.vcf"
     vcf_annotator.annotate(input_vcf, output_vcf, output_vrs_pkl)
-    with gzip.open(output_vcf, "rb") as out_vcf:
-        #print(out_vcf.readlines())
+
+    with gzip.open(output_vcf, "rt") as out_vcf:
         out_vcf_lines = out_vcf.readlines()
     with open(expected_vcf, "r") as expected_output:
         expected_output_lines = expected_output.readlines()
@@ -44,5 +45,5 @@ def test_annotate_vcf(vcf_annotator):
 
     assert os.path.exists(output_vrs_pkl)
 
-    #os.remove(out_vcf)
+    os.remove(output_vcf)
     os.remove(output_vrs_pkl)

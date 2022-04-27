@@ -60,6 +60,7 @@ class VCFAnnotator:
 
         vrs_out.close()
         vcf_in.close()
+        vcf_out.close()
 
     def _record_digests(self, record, vrs_data):
         """
