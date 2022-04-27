@@ -8,7 +8,7 @@ The user should pass arguments for the VCF input, VCF output, &
 the vrs object file name.
 
 ex. python3 src/ga4gh/vrs/extras/vcf_annotation.py input.vcf.gz --out 
-output.vcf.gz --vrs-file vrs_objects.pkl
+./output.vcf.gz --vrs-file ./vrs_objects.pkl
 """
 
 import argparse
@@ -23,8 +23,7 @@ from ga4gh.vrs.extras.translator import Translator
 
 class VCFAnnotator:
     """
-    Annotates an input VCF file with VRS allele ids & creates a 
-    pickle file containing the vrs object information.
+    This class provides utility for annotating VCF's with VRS allele id's.
 
     VCF's are read using pysam and stored as pysam objects. 
     Alleles are translated into vrs allele id's using VRS-Python Translator.
@@ -32,9 +31,19 @@ class VCFAnnotator:
     """
 
     def __init__(self, tlr) -> None:
+        """
+        param: Translator tlr Valid translator object with a specified data proxy
+        """
         self.tlr = tlr
 
     def annotate(self, inputfile, outputfile, vrsfile):
+        """
+        Annotates an input VCF file with VRS allele ids & creates a 
+        pickle file containing the vrs object information.
+        param: str inputfile The path and filename for the input VCF file
+        param: str outputfile The path and filename for the output VCF file
+        param: str vrsfile The path and filename for the output VRS object file
+        """
         INFO_FIELD_ID = "VRS_Allele"
         vrs_data = {}
         vcf_in = pysam.VariantFile(filename=inputfile)
@@ -53,6 +62,12 @@ class VCFAnnotator:
         vcf_in.close()
 
     def _record_digests(self, record, vrs_data):
+        """
+        Mutate vrs_data with vrs object information and returning a list of vrs allele ids
+        param: pysam.VariantRecord record A row in the vcf file 
+        param: dict vrs_data Dictionary containing the VRS object information for the VCF
+        return: list vrs_allele List containing the vrs allele id information
+        """
         gnomad_loc = f"{record.chrom}-{record.pos}"
         alts = record.alts if record.alts else []
         data = f"{record.chrom}\t{record.pos}\t{record.id}\t{record.ref}\t{record.alts}"
@@ -74,6 +89,11 @@ class VCFAnnotator:
 
 
 def parse_args(argv):
+    """
+    Parses arguments passed in by the user
+    param: list[str] argv Arguments passed by the user to specify file locations and names
+    return: argparse.Namespace Returns the options passed by the user to be assigned to proper variables
+    """
     ap = argparse.ArgumentParser()
     ap.add_argument("VCF_IN")
     ap.add_argument("--out", "-o", default="-")
