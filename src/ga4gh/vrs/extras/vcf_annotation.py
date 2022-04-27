@@ -4,6 +4,11 @@ Annotate VCF files with VRS
 Input Format: VCF
 Output Format: VCF
 
+The user should pass arguments for the VCF input, VCF output, &
+the vrs object file name.
+
+ex. python3 src/ga4gh/vrs/extras/vcf_annotation.py input.vcf.gz --out 
+output.vcf.gz --vrs-file vrs_objects.pkl
 """
 
 import argparse
@@ -19,8 +24,11 @@ from ga4gh.vrs.extras.translator import Translator
 class VCFAnnotator:
     """
     Annotates an input VCF file with VRS allele ids & creates a 
-    pickle file containing the vrs object information
+    pickle file containing the vrs object information.
 
+    VCF's are read using pysam and stored as pysam objects. 
+    Alleles are translated into vrs allele id's using VRS-Python Translator.
+    
     """
 
     def __init__(self, tlr) -> None:
