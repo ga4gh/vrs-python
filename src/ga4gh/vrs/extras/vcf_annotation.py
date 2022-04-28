@@ -107,12 +107,12 @@ def parse_args(argv):
 if __name__ == "__main__":
     start_time = time.time()
 
-    opts = parse_args(sys.argv[1:])
-    print(f"These are the options that you have selected: {opts}\n")
+    options = parse_args(sys.argv[1:])
+    print(f"These are the options that you have selected: {options}\n")
     data_proxy = SeqRepoDataProxy(SeqRepo("/usr/local/share/seqrepo/latest"))
     tlr = Translator(data_proxy)
     vcf_annotator = VCFAnnotator(tlr)
-    vcf_annotator.annotate(opts.VCF_IN, opts.out, opts.vrs_file)
+    vcf_annotator.annotate(options.VCF_IN, options.out, options.vrs_file)
 
     end_time = time.time()
     total_time = (float(end_time) - float(start_time))
