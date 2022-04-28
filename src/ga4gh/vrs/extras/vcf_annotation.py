@@ -7,7 +7,7 @@ Output Format: VCF
 The user should pass arguments for the VCF input, VCF output, &
 the vrs object file name.
 
-ex. python3 src/ga4gh/vrs/extras/vcf_annotation.py input.vcf.gz --out 
+ex. python3 src/ga4gh/vrs/extras/vcf_annotation.py input.vcf.gz --out
 ./output.vcf.gz --vrs-file ./vrs_objects.pkl
 """
 
@@ -15,8 +15,10 @@ import argparse
 import sys
 import pickle
 import time
+
 from biocommons.seqrepo import SeqRepo
 import pysam
+
 from ga4gh.vrs.dataproxy import SeqRepoDataProxy
 from ga4gh.vrs.extras.translator import Translator
 
@@ -25,9 +27,9 @@ class VCFAnnotator:
     """
     This class provides utility for annotating VCF's with VRS allele id's.
 
-    VCF's are read using pysam and stored as pysam objects. 
+    VCF's are read using pysam and stored as pysam objects.
     Alleles are translated into vrs allele id's using VRS-Python Translator.
-    
+
     """
 
     def __init__(self, tlr) -> None:
@@ -38,7 +40,7 @@ class VCFAnnotator:
 
     def annotate(self, inputfile, outputfile, vrsfile):
         """
-        Annotates an input VCF file with VRS allele ids & creates a 
+        Annotates an input VCF file with VRS allele ids & creates a
         pickle file containing the vrs object information.
         param: str inputfile The path and filename for the input VCF file
         param: str outputfile The path and filename for the output VCF file
@@ -49,7 +51,7 @@ class VCFAnnotator:
         vcf_in = pysam.VariantFile(filename=inputfile)
         vcf_in.header.info.add(INFO_FIELD_ID, "1", "String", "vrs")
         vcf_out = pysam.VariantFile(outputfile, "w", header=vcf_in.header)
-        vrs_out = open(vrsfile, "wb")    #For sending VRS data to the pickle file
+        vrs_out = open(vrsfile, "wb")    # For sending VRS data to the pickle file
 
         for record in vcf_in:
             ld = self._record_digests(record, vrs_data)
@@ -65,9 +67,9 @@ class VCFAnnotator:
     def _record_digests(self, record, vrs_data):
         """
         Mutate vrs_data with vrs object information and returning a list of vrs allele ids
-        param: pysam.VariantRecord record A row in the vcf file 
+        param: pysam.VariantRecord record A row in the vcf file
         param: dict vrs_data Dictionary containing the VRS object information for the VCF
-        return: list vrs_allele List containing the vrs allele id information
+        return: list vrs_allele_ids List containing the vrs allele id information
         """
         gnomad_loc = f"{record.chrom}-{record.pos}"
         alts = record.alts if record.alts else []
@@ -75,18 +77,17 @@ class VCFAnnotator:
         # payloads like ['20:14369:1', '20:14369:1:G', '20:14369:1:A']
         reference_allele = f"{gnomad_loc}-{record.ref}-{record.ref}"
         vrs_ref_object = self.tlr.translate_from(reference_allele, "gnomad")
-        vrs_ref_object_id = vrs_ref_object._id._value
-        alleles = [f"{gnomad_loc}-{record.ref}-{a}" for a in [*alts]]    #using gnomad format
-        vrs_allele = [vrs_ref_object_id]
+        alleles = [f"{gnomad_loc}-{record.ref}-{a}" for a in [*alts]]    # using gnomad format
+        vrs_allele_ids = [vrs_ref_object._id._value]
         for allele in alleles:
             if "*" in allele:
-                vrs_allele.append("")
+                vrs_allele_ids.append("")
             else:
                 vrs_object = self.tlr.translate_from(allele, "gnomad")
-                vrs_allele.append(vrs_object._id._value)
+                vrs_allele_ids.append(vrs_object._id._value)
                 vrs_data[data] = str(vrs_object)
 
-        return vrs_allele
+        return vrs_allele_ids
 
 
 def parse_args(argv):
