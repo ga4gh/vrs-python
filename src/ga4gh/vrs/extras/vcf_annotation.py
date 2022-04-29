@@ -86,7 +86,7 @@ class VCFAnnotator:
             else:
                 vrs_object = self.tlr.translate_from(allele, "gnomad")
                 vrs_allele_ids.append(vrs_object._id._value)
-                vrs_data[data] = str(vrs_object)
+                vrs_data[data] = str(vrs_object.as_dict())
 
         return vrs_allele_ids
 
