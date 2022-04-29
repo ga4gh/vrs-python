@@ -77,7 +77,7 @@ class VCFAnnotator:
         # payloads like ['20:14369:1', '20:14369:1:G', '20:14369:1:A']
         reference_allele = f"{gnomad_loc}-{record.ref}-{record.ref}"
         vrs_ref_object = self.tlr.translate_from(reference_allele, "gnomad")
-        vrs_data[reference_allele] = str(vrs_ref_object)
+        vrs_data[reference_allele] = str(vrs_ref_object.as_dict())
         alleles = [f"{gnomad_loc}-{record.ref}-{a}" for a in [*alts]]    # using gnomad format
         vrs_allele_ids = [vrs_ref_object._id._value]
         for allele in alleles:
