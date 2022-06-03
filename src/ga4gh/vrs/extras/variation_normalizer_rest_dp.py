@@ -10,7 +10,7 @@ class VariationNormalizerRESTDataProxy:
         """
         self.api = "https://normalize.cancervariants.org/variation"
 
-    def to_hgvs(self, vo):
+    def to_hgvs(self, vo, namespace="refseq"):
         """
         tranlsate vrs allele object (vo) to hgvs format
         Use this method if you don't have UTA installed locally or are unable
@@ -19,10 +19,10 @@ class VariationNormalizerRESTDataProxy:
         vo = vo.as_dict()
         data = dict(
             variation = vo,
-            fmt = "hgvs"
+            namespace = namespace
         )
         r = requests.post(
-            url = f"{self.api}/translate_to",
+            url = f"{self.api}/vrs_allele_to_hgvs",
             json=data,
             headers={ "Content-Type": "application/json; charset=utf-8" }
         )
