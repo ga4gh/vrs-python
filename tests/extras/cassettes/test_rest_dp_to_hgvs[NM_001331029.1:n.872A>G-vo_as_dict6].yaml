@@ -1,0 +1,60 @@
+interactions:
+- request:
+    body: '{"variation": {"type": "Allele", "location": {"type": "SequenceLocation",
+      "sequence_id": "ga4gh:SQ.MBIgVnoHFw34aFqNUVGM0zgjC3d-v8dK", "interval": {"type":
+      "SequenceInterval", "start": {"type": "Number", "value": 871}, "end": {"type":
+      "Number", "value": 872}}}, "state": {"type": "LiteralSequenceExpression", "sequence":
+      "G"}}, "namespace": "refseq"}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '349'
+      Content-Type:
+      - application/json; charset=utf-8
+      User-Agent:
+      - python-requests/2.27.1
+    method: POST
+    uri: https://normalize.cancervariants.org/variation/vrs_allele_to_hgvs
+  response:
+    body:
+      string: '{"query":{"variation":{"type":"Allele","location":{"type":"SequenceLocation","sequence_id":"ga4gh:SQ.MBIgVnoHFw34aFqNUVGM0zgjC3d-v8dK","interval":{"type":"SequenceInterval","start":{"type":"Number","value":871},"end":{"type":"Number","value":872}}},"state":{"type":"LiteralSequenceExpression","sequence":"G"}},"namespace":"refseq"},"warnings":[],"service_meta_":{"version":"0.4.0a6","response_datetime":"2022-06-03T15:06:57.875333","name":"variation-normalizer","url":"https://github.com/cancervariants/variation-normalization"},"vrs_python_meta_":{"version":"0.8a0","name":"vrs-python","url":"https://github.com/ga4gh/vrs-python"},"variations":["NM_001331029.1:n.872A>G"]}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '673'
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 03 Jun 2022 15:06:57 GMT
+      Via:
+      - 1.1 38a66a6beb5518e3130d47aeef1684ba.cloudfront.net (CloudFront)
+      X-Amz-Cf-Id:
+      - LxgmF64F9VKei6eOaoWVHsISFCFTumVZr0li1m4y4RH1bLKN0d1VxQ==
+      X-Amz-Cf-Pop:
+      - ORD56-P4
+      X-Amzn-Trace-Id:
+      - Root=1-629a2391-7c4419703d832ef724f3d07a
+      X-Cache:
+      - Miss from cloudfront
+      x-amz-apigw-id:
+      - TJp-0HEfCYcFprg=
+      x-amzn-Remapped-Connection:
+      - keep-alive
+      x-amzn-Remapped-Content-Length:
+      - '673'
+      x-amzn-Remapped-Date:
+      - Fri, 03 Jun 2022 15:06:57 GMT
+      x-amzn-Remapped-Server:
+      - nginx/1.20.0
+      x-amzn-RequestId:
+      - 8de0bc8a-f48e-49b5-884f-3c1d86233dc9
+    status:
+      code: 200
+      message: OK
+version: 1

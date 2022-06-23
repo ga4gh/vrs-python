@@ -1,0 +1,6 @@
+#!/bin/bash
+set -e
+
+make devready
+source venv/3.9/bin/activate
+python -m ipykernel install --user --name=3.9 --display-name="VRS_kernel"
