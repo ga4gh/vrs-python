@@ -72,7 +72,8 @@ This should start three containers, one of which exits after loading (~5 minutes
   * [seqrepo](https://github.com/biocommons/seqrepo): downloads seqrepo into a docker volume and exits
   * [seqrepo-rest-service](https://github.com/biocommons/seqrepo-rest-service): a REST service on seqrepo (localhost:5000)
   * [uta](https://github.com/biocommons/uta): a database of transcripts and alignments (localhost:5432)
-
+  
+Check that the containers are running:
 
     $ docker ps
     CONTAINER ID        IMAGE                                    //  NAMES
