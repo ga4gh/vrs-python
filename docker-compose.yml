@@ -7,8 +7,8 @@ services:
       - seqrepo_vol:/usr/local/share/seqrepo
 
   seqrepo-rest-service:
-    # Test: curl http://localhost:2002/seqrepo/1/sequence/refseq:NM_000551.3
-    image: biocommons/seqrepo-rest-service:0.2.0.dev0
+    # Test: curl http://localhost:5000/seqrepo/1/sequence/refseq:NM_000551.3
+    image: biocommons/seqrepo-rest-service:0.2.0
     volumes:
       - seqrepo_vol:/usr/local/share/seqrepo
     network_mode: host
