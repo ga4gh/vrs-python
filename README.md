@@ -96,9 +96,6 @@ Here are some things to try.
       seqrepo-rest-service_1  | OSError: Unable to open SeqRepo directory /usr/local/share/seqrepo/2021-01-29
       vrs-python_seqrepo-rest-service_1 exited with code 1
 
-- 
-
-
 
 # Running the Notebooks
 
