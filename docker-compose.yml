@@ -11,11 +11,13 @@ services:
     image: biocommons/seqrepo-rest-service:0.2.0
     volumes:
       - seqrepo_vol:/usr/local/share/seqrepo
-    network_mode: host
     depends_on:
       - seqrepo
     command: seqrepo-rest-service -w /usr/local/share/seqrepo/2021-01-29
-
+    network_mode: bridge
+    ports:
+      - 5000:5000
+  
   uta:
     # Test:
     # psql -XAt postgres://anonymous@localhost/uta -c 'select count(*) from transcript'
@@ -23,7 +25,8 @@ services:
     image: biocommons/uta:uta_20180821
     volumes:
       - uta_vol:/var/lib/postgresql/data
-    network_mode: host
+    ports:
+      - 5432:5432
 
 volumes:
   seqrepo_vol:
