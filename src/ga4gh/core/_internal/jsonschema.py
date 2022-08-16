@@ -146,9 +146,9 @@ is_curie = is_curie_type
 def is_identifiable(o):
     """return True if object is identifiable
 
-    An object is considered identifiable if it contains an `_id`
+    An object is considered identifiable if it contains an `id`
     attribute
 
     """
 
-    return is_pjs_instance(o) and ("_id" in o)
+    return is_pjs_instance(o) and ("id" in o)

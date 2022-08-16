@@ -24,19 +24,18 @@ import pkg_resources
 
 from ga4gh.core import build_models, build_class_referable_attribute_map
 
-
 _logger = logging.getLogger(__name__)
 
-
-# specify VRS_SCHEMA_DIR to use a schema other than the one embedded
+# specify VRSATILE_SCHEMA_DIR to use a schema other than the one embedded
 # in vrs-python
-schema_dir = os.environ.get("VRS_SCHEMA_DIR", pkg_resources.resource_filename(__name__, "data/schema"))
-schema_path = schema_dir + "/vrs.json"
+schema_dir = os.environ.get("VRSATILE_SCHEMA_DIR", pkg_resources.resource_filename(__name__, "data/schemas/vrsatile"))
+schema_path = schema_dir + "/merged.json"
 
 models = None
 class_refatt_map = None
 
-def _load_vrs_models():
+
+def _load_models():
     """load/reload models from `schema_path`
 
     This function facilitates reloading changes to the schema during
@@ -50,4 +49,4 @@ def _load_vrs_models():
     return models
 
 
-_load_vrs_models()
+_load_models()

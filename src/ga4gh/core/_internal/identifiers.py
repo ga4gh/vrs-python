@@ -26,22 +26,24 @@ import yaml
 from .digests import sha512t24u
 from .jsonschema import is_array, is_pjs_instance, is_curie_type, is_identifiable, is_literal
 
-
 __all__ = "ga4gh_digest ga4gh_identify ga4gh_serialize is_ga4gh_identifier parse_ga4gh_identifier".split()
-
-
 
 _logger = logging.getLogger(__name__)
 
-
 # Assume that ga4gh.yaml and vrs.yaml files are in the same directory for now
-schema_dir = os.environ.get("VRS_SCHEMA_DIR", pkg_resources.resource_filename(__name__, "data/schema"))
-cfg = yaml.safe_load(open(schema_dir + "/ga4gh.yaml"))
-type_prefix_map_default = cfg["identifiers"]["type_prefix_map"]
-namespace = cfg["identifiers"]["namespace"]
-curie_sep = cfg["identifiers"]["curie_sep"]
-ref_sep = cfg["identifiers"]["ref_sep"]
-ga4gh_ir_regexp = re.compile(cfg["identifiers"]["regexp"])
+schema_dir = os.environ.get("VRSATILE_SCHEMA_DIR", pkg_resources.resource_filename(__name__, "data/schemas/vrsatile"))
+cfg = yaml.safe_load(open(schema_dir + "/merged.yaml"))
+defs = cfg["definitions"]
+
+type_prefix_map_default = dict()
+for k,v in defs.items():
+    if "ga4gh_prefix" in v:
+        type_prefix_map_default[k] = v["ga4gh_prefix"]
+
+namespace = "ga4gh"
+curie_sep = ":"
+ref_sep = "."
+ga4gh_ir_regexp = re.compile("^ga4gh:(?P<type>[^.]+)\.(?P<digest>.+)$")
 
 ns_w_sep = namespace + curie_sep
 
@@ -153,7 +155,7 @@ def ga4gh_serialize(vro):
 
         """
 
-        if vro is None:         # pragma: no cover
+        if vro is None:    # pragma: no cover
             return None
 
         if is_literal(vro):
@@ -173,9 +175,7 @@ def ga4gh_serialize(vro):
         if is_pjs_instance(vro):
             if is_identifiable(vro) and enref:
                 return ga4gh_digest(vro)
-            d = {k: dictify(vro[k], enref=True)
-                 for k in vro
-                 if not (k.startswith("_") or vro[k] is None)}
+            d = {k: dictify(vro[k], enref=True) for k in vro if not (k.startswith("_") or vro[k] is None)}
             return d
 
         if is_array(vro):
@@ -183,8 +183,7 @@ def ga4gh_serialize(vro):
                 return sorted(dictify(o) for o in vro.data)
             return [dictify(o) for o in vro.typed_elems]
 
-        raise ValueError(f"Don't know how to serialize {vro}")  # pragma: no cover
-
+        raise ValueError(f"Don't know how to serialize {vro}")    # pragma: no cover
 
     # The canonicaljson package does everything we want. Use that with
     # the hope that it will be upward compatible with a future

@@ -14,7 +14,7 @@ This repository contains several related components:
   standards in GA4GH.  Eventually, this package should be moved to a
   distinct repo.
 
-* **ga4gh.vrs package** Python language support for VRS. 
+* **ga4gh.vrs package** Python language support for VRS.
 
 * **ga4gh.vrs.extras package** Python language support for additional
   functionality, including translating from and to other variant
@@ -72,7 +72,7 @@ This should start three containers, one of which exits after loading (~5 minutes
   * [seqrepo](https://github.com/biocommons/seqrepo): downloads seqrepo into a docker volume and exits
   * [seqrepo-rest-service](https://github.com/biocommons/seqrepo-rest-service): a REST service on seqrepo (localhost:5000)
   * [uta](https://github.com/biocommons/uta): a database of transcripts and alignments (localhost:5432)
-  
+
 Check that the containers are running:
 
     $ docker ps
@@ -100,7 +100,7 @@ The following jupyter extensions are recommended but not required
     $ pip install jupyter_contrib_nbextensions
     $ jupyter contrib nbextension install --user
     $ jupyter nbextension enable toc2/main
-  
+
 
 # Development
 
@@ -111,7 +111,7 @@ and switching branches, it is important to make sure that the
 submodule tracks vrs-python correctly.  The recommended way to do this
 is `git config --global submodule.recurse true`.
 
-Alternatively, see `misc/githooks/`. 
+Alternatively, see `misc/githooks/`.
 
 
 ## Installing for development
@@ -137,7 +137,7 @@ ga4gh.vrs.  This package also implements the compliance tests from vrs
 
 If you want to develop the VRS schema in conjunction with vrs-python,
 the recommended approach for most users is to fork and clone the
-`ga4gh/vrs` repo, then set the `VRS_SCHEMA_DIR` environment variable
+`ga4gh/vrs` repo, then set the `VRSATILE_SCHEMA_DIR` environment variable
 to use an alternative schema location.
 
 
