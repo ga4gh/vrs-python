@@ -79,13 +79,13 @@ class VCFAnnotator:
         vrs_ref_object = self.tlr.translate_from(reference_allele, "gnomad")
         vrs_data[reference_allele] = str(vrs_ref_object.as_dict())
         alleles = [f"{gnomad_loc}-{record.ref}-{a}" for a in [*alts]]    # using gnomad format
-        vrs_allele_ids = [vrs_ref_object._id._value]
+        vrs_allele_ids = [vrs_ref_object.id._value]
         for allele in alleles:
             if "*" in allele:
                 vrs_allele_ids.append("")
             else:
                 vrs_object = self.tlr.translate_from(allele, "gnomad")
-                vrs_allele_ids.append(vrs_object._id._value)
+                vrs_allele_ids.append(vrs_object.id._value)
                 vrs_data[data] = str(vrs_object.as_dict())
 
         return vrs_allele_ids

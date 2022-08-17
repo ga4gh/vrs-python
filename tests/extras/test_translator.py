@@ -11,11 +11,8 @@ inputs = {
 
 output = {
     'location': {
-        'interval': {
-            'end': {'value': 32936732, 'type': 'Number'},
-            'start': {'value': 32936731, 'type': 'Number'},
-            'type': 'SequenceInterval'
-        },
+        'end': {'value': 32936732, 'type': 'Number'},
+        'start': {'value': 32936731, 'type': 'Number'},
         'sequence_id': 'ga4gh:SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT',
         'type': 'SequenceLocation'
     },
@@ -59,11 +56,8 @@ def test_to_spdi(tlr):
 hgvs_tests = (
     ("NC_000013.11:g.32936732=", {
         'location': {
-            'interval': {
-                'end': {'value': 32936732, 'type': 'Number'},
-                'start': {'value': 32936731, 'type': 'Number'},
-                'type': 'SequenceInterval'
-            },
+            'end': {'value': 32936732, 'type': 'Number'},
+            'start': {'value': 32936731, 'type': 'Number'},
             'sequence_id': 'ga4gh:SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT',
             'type': 'SequenceLocation'
         },
@@ -75,11 +69,8 @@ hgvs_tests = (
     }),
     ("NC_000007.14:g.55181320A>T", {
         'location': {
-            'interval': {
-                'end': {'value': 55181320, 'type': 'Number'},
-                'start': {'value': 55181319, 'type': 'Number'},
-                'type': 'SequenceInterval'
-            },
+            'end': {'value': 55181320, 'type': 'Number'},
+            'start': {'value': 55181319, 'type': 'Number'},
             'sequence_id': 'ga4gh:SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul',
             'type': 'SequenceLocation'
         },
@@ -91,11 +82,8 @@ hgvs_tests = (
     }),
     ("NC_000007.14:g.55181220del", {
         'location': {
-            'interval': {
-                'end': {'value': 55181220, 'type': 'Number'},
-                'start': {'value': 55181219, 'type': 'Number'},
-                'type': 'SequenceInterval'
-            },
+            'end': {'value': 55181220, 'type': 'Number'},
+            'start': {'value': 55181219, 'type': 'Number'},
             'sequence_id': 'ga4gh:SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul',
             'type': 'SequenceLocation'
         },
@@ -107,11 +95,8 @@ hgvs_tests = (
     }),
     ("NC_000007.14:g.55181230_55181231insGGCT", {
         'location': {
-            'interval': {
-                'end': {'value': 55181230, 'type': 'Number'},
-                'start': {'value': 55181230, 'type': 'Number'},
-                'type': 'SequenceInterval'
-            },
+            'end': {'value': 55181230, 'type': 'Number'},
+            'start': {'value': 55181230, 'type': 'Number'},
             'sequence_id': 'ga4gh:SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul',
             'type': 'SequenceLocation'
         },
@@ -123,11 +108,8 @@ hgvs_tests = (
     }),
     ("NC_000013.11:g.32331093_32331094dup", {
         'location': {
-            'interval': {
-                'end': {'value': 32331094, 'type': 'Number'},
-                'start': {'value': 32331082, 'type': 'Number'},
-                'type': 'SequenceInterval'
-            },
+            'end': {'value': 32331094, 'type': 'Number'},
+            'start': {'value': 32331082, 'type': 'Number'},
             'sequence_id': 'ga4gh:SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT',
             'type': 'SequenceLocation'
         },
@@ -139,11 +121,8 @@ hgvs_tests = (
     }),
     ("NC_000013.11:g.32316467dup", {
         'location': {
-            'interval': {
-                'end': {'value': 32316467, 'type': 'Number'},
-                'start': {'value': 32316466, 'type': 'Number'},
-                'type': 'SequenceInterval'
-            },
+            'end': {'value': 32316467, 'type': 'Number'},
+            'start': {'value': 32316466, 'type': 'Number'},
             'sequence_id': 'ga4gh:SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT',
             'type': 'SequenceLocation'
         },
@@ -155,11 +134,8 @@ hgvs_tests = (
     }),
     ("NM_001331029.1:n.872A>G", {
         'location': {
-            'interval': {
-                'end': {'value': 872, 'type': 'Number'},
-                'start': {'value': 871, 'type': 'Number'},
-                'type': 'SequenceInterval'
-            },
+            'end': {'value': 872, 'type': 'Number'},
+            'start': {'value': 871, 'type': 'Number'},
             'sequence_id': 'ga4gh:SQ.MBIgVnoHFw34aFqNUVGM0zgjC3d-v8dK',
             'type': 'SequenceLocation'
         },
@@ -171,11 +147,8 @@ hgvs_tests = (
     }),
     ("NM_181798.1:n.1263G>T", {
         'location': {
-            'interval': {
-                'end': {'value': 1263, 'type': 'Number'},
-                'start': {'value': 1262, 'type': 'Number'},
-                'type': 'SequenceInterval'
-            },
+            'end': {'value': 1263, 'type': 'Number'},
+            'start': {'value': 1262, 'type': 'Number'},
             'sequence_id': 'ga4gh:SQ.KN07u-RFqd1dTyOWOG98HnOq87Nq-ZIg',
             'type': 'SequenceLocation'
         },
@@ -199,37 +172,6 @@ def test_hgvs(tlr, hgvsexpr, expected):
     assert 1 == len(to_hgvs)
     assert hgvsexpr == to_hgvs[0]
 
-
-def test_ensure_allele_is_latest_model(tlr):
-    allele_deprecated_dict = {
-        'location': {
-            'interval': {
-                'end': 55181320,
-                'start': 55181319,
-                'type': 'SimpleInterval'
-            },
-            'sequence_id': 'ga4gh:SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul',
-            'type': 'SequenceLocation'
-        },
-        'state': {
-            'sequence': 'T',
-            'type': 'SequenceState'
-        },
-        'type': 'Allele'
-    }
-    allele_deprecated = models.Allele(**allele_deprecated_dict)
-    assert tlr.ensure_allele_is_latest_model(allele_deprecated).as_dict() == {
-        'type': 'Allele',
-        'location': {
-            'type': 'SequenceLocation', 'sequence_id': 'ga4gh:SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul',
-            'interval': {
-                'type': 'SequenceInterval',
-                'start': {'type': 'Number', 'value': 55181319},
-                'end': {'type': 'Number', 'value': 55181320}
-            }
-        },
-        'state': {'type': 'LiteralSequenceExpression', 'sequence': 'T'}
-    }
 
 # TODO: Readd these tests
 # @pytest.mark.vcr

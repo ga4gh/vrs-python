@@ -1,10 +1,9 @@
 interactions:
 - request:
     body: '{"variation": {"type": "Allele", "location": {"type": "SequenceLocation",
-      "sequence_id": "ga4gh:SQ.KN07u-RFqd1dTyOWOG98HnOq87Nq-ZIg", "interval": {"type":
-      "SequenceInterval", "start": {"type": "Number", "value": 1262}, "end": {"type":
-      "Number", "value": 1263}}}, "state": {"type": "LiteralSequenceExpression", "sequence":
-      "T"}}, "namespace": "refseq"}'
+      "sequence_id": "ga4gh:SQ.KN07u-RFqd1dTyOWOG98HnOq87Nq-ZIg", "start": {"type":
+      "Number", "value": 1262}, "end": {"type": "Number", "value": 1263}}, "state":
+      {"type": "LiteralSequenceExpression", "sequence": "T"}}, "namespace": "refseq"}'
     headers:
       Accept:
       - '*/*'
@@ -13,48 +12,59 @@ interactions:
       Connection:
       - keep-alive
       Content-Length:
-      - '351'
+      - '309'
       Content-Type:
       - application/json; charset=utf-8
       User-Agent:
-      - python-requests/2.27.1
+      - python-requests/2.28.1
     method: POST
     uri: https://normalize.cancervariants.org/variation/vrs_allele_to_hgvs
   response:
     body:
-      string: '{"query":{"variation":{"type":"Allele","location":{"type":"SequenceLocation","sequence_id":"ga4gh:SQ.KN07u-RFqd1dTyOWOG98HnOq87Nq-ZIg","interval":{"type":"SequenceInterval","start":{"type":"Number","value":1262},"end":{"type":"Number","value":1263}}},"state":{"type":"LiteralSequenceExpression","sequence":"T"}},"namespace":"refseq"},"warnings":[],"service_meta_":{"version":"0.4.0a6","response_datetime":"2022-06-03T15:06:58.082424","name":"variation-normalizer","url":"https://github.com/cancervariants/variation-normalization"},"vrs_python_meta_":{"version":"0.8a0","name":"vrs-python","url":"https://github.com/ga4gh/vrs-python"},"variations":["NM_181798.1:n.1263G>T"]}'
+      string: '{"detail":[{"loc":["body","variation","location","__root__"],"msg":"str
+        type expected","type":"type_error.str"},{"loc":["body","variation","location","__root__","type"],"msg":"unexpected
+        value; permitted: <VRSTypes.CHROMOSOME_LOCATION: ''ChromosomeLocation''>","type":"value_error.const","ctx":{"given":"SequenceLocation","permitted":["ChromosomeLocation"]}},{"loc":["body","variation","location","__root__","species_id"],"msg":"field
+        required","type":"value_error.missing"},{"loc":["body","variation","location","__root__","chr"],"msg":"field
+        required","type":"value_error.missing"},{"loc":["body","variation","location","__root__","interval"],"msg":"field
+        required","type":"value_error.missing"},{"loc":["body","variation","location","__root__","end"],"msg":"extra
+        fields not permitted","type":"value_error.extra"},{"loc":["body","variation","location","__root__","sequence_id"],"msg":"extra
+        fields not permitted","type":"value_error.extra"},{"loc":["body","variation","location","__root__","start"],"msg":"extra
+        fields not permitted","type":"value_error.extra"},{"loc":["body","variation","location","__root__","interval"],"msg":"field
+        required","type":"value_error.missing"},{"loc":["body","variation","location","__root__","end"],"msg":"extra
+        fields not permitted","type":"value_error.extra"},{"loc":["body","variation","location","__root__","start"],"msg":"extra
+        fields not permitted","type":"value_error.extra"}]}'
     headers:
       Connection:
       - keep-alive
       Content-Length:
-      - '673'
+      - '1418'
       Content-Type:
       - application/json
       Date:
-      - Fri, 03 Jun 2022 15:06:58 GMT
+      - Wed, 17 Aug 2022 15:31:38 GMT
       Via:
-      - 1.1 4e60b439a5bf4b49c5f596462b6ccd56.cloudfront.net (CloudFront)
+      - 1.1 317c338504f359af9d2b7dd464083ea2.cloudfront.net (CloudFront)
       X-Amz-Cf-Id:
-      - gBGAWjBgWflqZ1u9DRMx5EJez4n31ZZ1o0DG9-EHfXCXOaiv3m-CBw==
+      - 1ObAt4jg5UngK8s6cOSCA2wSwJxvcYz3jy4pf9iTkZ915OcKo8e0Jg==
       X-Amz-Cf-Pop:
-      - ORD56-P4
+      - ORD53-C1
       X-Amzn-Trace-Id:
-      - Root=1-629a2392-484c8f251990573a52914ebd
+      - Root=1-62fd09da-01fda2a056c714964d659482
       X-Cache:
-      - Miss from cloudfront
+      - Error from cloudfront
       x-amz-apigw-id:
-      - TJp-2GOrCYcFaqQ=
+      - XA56GHmXiYcF40w=
       x-amzn-Remapped-Connection:
       - keep-alive
       x-amzn-Remapped-Content-Length:
-      - '673'
+      - '1418'
       x-amzn-Remapped-Date:
-      - Fri, 03 Jun 2022 15:06:58 GMT
+      - Wed, 17 Aug 2022 15:31:38 GMT
       x-amzn-Remapped-Server:
       - nginx/1.20.0
       x-amzn-RequestId:
-      - e2f85e70-b953-422b-acae-f53dad45bba7
+      - 4a138af0-c172-4932-aa98-4b7304faee41
     status:
-      code: 200
-      message: OK
+      code: 422
+      message: ''
 version: 1

@@ -9,7 +9,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.26.0
+      - python-requests/2.28.1
     method: GET
     uri: http://localhost:5000/seqrepo/1/metadata/ga4gh:SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT
   response:
@@ -25,17 +25,19 @@ interactions:
         \   \"MD5:a5437debe2ef9c9ef8f3ea2874ae1d82\",\n    \"NCBI:NC_000013.11\",\n
         \   \"refseq:NC_000013.11\",\n    \"SEGUID:2oDBty0yKV9wHo7gg+Bt+fPgi5o\",\n
         \   \"SHA1:da80c1b72d32295f701e8ee083e06df9f3e08b9a\",\n    \"VMC:GS__0wi-qoDrvram155UmcSC-zA5ZK4fpLT\",\n
-        \   \"sha512t24u:_0wi-qoDrvram155UmcSC-zA5ZK4fpLT\",\n    \"ga4gh:GS._0wi-qoDrvram155UmcSC-zA5ZK4fpLT\"\n
+        \   \"sha512t24u:_0wi-qoDrvram155UmcSC-zA5ZK4fpLT\",\n    \"ga4gh:SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT\"\n
         \ ],\n  \"alphabet\": \"ACGKNTY\",\n  \"length\": 114364328\n}\n"
     headers:
+      Connection:
+      - close
       Content-Length:
       - '1002'
       Content-Type:
       - application/json
       Date:
-      - Wed, 02 Mar 2022 22:19:24 GMT
+      - Wed, 17 Aug 2022 15:31:01 GMT
       Server:
-      - Werkzeug/1.0.1 Python/3.8.2
+      - Werkzeug/2.2.0 Python/3.10.4
     status:
       code: 200
       message: OK
@@ -49,21 +51,23 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.26.0
+      - python-requests/2.28.1
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT?start=32936731&end=32936732
   response:
     body:
       string: C
     headers:
+      Connection:
+      - close
       Content-Length:
       - '1'
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Wed, 02 Mar 2022 22:19:25 GMT
+      - Wed, 17 Aug 2022 15:31:01 GMT
       Server:
-      - Werkzeug/1.0.1 Python/3.8.2
+      - Werkzeug/2.2.0 Python/3.10.4
     status:
       code: 200
       message: OK
@@ -77,7 +81,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.26.0
+      - python-requests/2.28.1
     method: GET
     uri: http://localhost:5000/seqrepo/1/metadata/ga4gh:SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT
   response:
@@ -93,17 +97,19 @@ interactions:
         \   \"MD5:a5437debe2ef9c9ef8f3ea2874ae1d82\",\n    \"NCBI:NC_000013.11\",\n
         \   \"refseq:NC_000013.11\",\n    \"SEGUID:2oDBty0yKV9wHo7gg+Bt+fPgi5o\",\n
         \   \"SHA1:da80c1b72d32295f701e8ee083e06df9f3e08b9a\",\n    \"VMC:GS__0wi-qoDrvram155UmcSC-zA5ZK4fpLT\",\n
-        \   \"sha512t24u:_0wi-qoDrvram155UmcSC-zA5ZK4fpLT\",\n    \"ga4gh:GS._0wi-qoDrvram155UmcSC-zA5ZK4fpLT\"\n
+        \   \"sha512t24u:_0wi-qoDrvram155UmcSC-zA5ZK4fpLT\",\n    \"ga4gh:SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT\"\n
         \ ],\n  \"alphabet\": \"ACGKNTY\",\n  \"length\": 114364328\n}\n"
     headers:
+      Connection:
+      - close
       Content-Length:
       - '1002'
       Content-Type:
       - application/json
       Date:
-      - Wed, 02 Mar 2022 22:19:25 GMT
+      - Wed, 17 Aug 2022 15:31:01 GMT
       Server:
-      - Werkzeug/1.0.1 Python/3.8.2
+      - Werkzeug/2.2.0 Python/3.10.4
     status:
       code: 200
       message: OK

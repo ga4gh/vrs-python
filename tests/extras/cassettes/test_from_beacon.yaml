@@ -9,7 +9,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.24.0
+      - python-requests/2.28.1
     method: GET
     uri: http://localhost:5000/seqrepo/1/metadata/GRCh38:13
   response:
@@ -28,14 +28,16 @@ interactions:
         \   \"sha512t24u:_0wi-qoDrvram155UmcSC-zA5ZK4fpLT\",\n    \"ga4gh:SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT\"\n
         \ ],\n  \"alphabet\": \"ACGKNTY\",\n  \"length\": 114364328\n}\n"
     headers:
+      Connection:
+      - close
       Content-Length:
       - '1002'
       Content-Type:
       - application/json
       Date:
-      - Mon, 13 Jul 2020 05:05:29 GMT
+      - Wed, 17 Aug 2022 15:30:58 GMT
       Server:
-      - Werkzeug/1.0.1 Python/3.8.2
+      - Werkzeug/2.2.0 Python/3.10.4
     status:
       code: 200
       message: OK

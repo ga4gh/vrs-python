@@ -21,11 +21,7 @@ _logger = logging.getLogger(__name__)
 def _normalize_allele(allele, data_proxy):
     sequence = SequenceProxy(data_proxy, allele.location.sequence_id._value)
 
-    _interval_type = allele.location.interval.type
-    if _interval_type == "SimpleInterval":
-        ival = (allele.location.interval.start._value, allele.location.interval.end._value)
-    elif _interval_type == "SequenceInterval":
-        ival = (allele.location.interval.start.value, allele.location.interval.end.value)
+    ival = (allele.location.start.value, allele.location.end.value)
 
     _allele_state = allele.state.type
     _states_with_sequence = ['SequenceState', 'LiteralSequenceExpression']
@@ -45,13 +41,8 @@ def _normalize_allele(allele, data_proxy):
                                            mode=NormalizationMode.EXPAND,
                                            anchor_length=0)
 
-        _new_allele_ival_type = new_allele.location.interval.type
-        if _new_allele_ival_type == "SimpleInterval":
-            new_allele.location.interval.start = new_ival[0]
-            new_allele.location.interval.end = new_ival[1]
-        elif _new_allele_ival_type == "SequenceInterval":
-            new_allele.location.interval.start.value = new_ival[0]
-            new_allele.location.interval.end.value = new_ival[1]
+        new_allele.location.start.value = new_ival[0]
+        new_allele.location.end.value = new_ival[1]
 
         if new_allele.state.type in _states_with_sequence:
             new_allele.state.sequence = new_alleles[1]
@@ -105,11 +96,8 @@ if __name__ == "__main__":      # pragma: no cover
     #
     allele_dict = {
         "location": {
-            "interval": {
-                "end": {'value': 44908822, 'type': 'Number'},
-                "start": {'value': 44908821, 'type': 'Number'},
-                "type": "SequenceInterval"
-            },
+            "end": {'value': 44908822, 'type': 'Number'},
+            "start": {'value': 44908821, 'type': 'Number'},
             "sequence_id": "refseq:NC_000019.10",
             "type": "SequenceLocation"
         },

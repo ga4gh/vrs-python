@@ -49,7 +49,7 @@ class Localizer:
         # copy input variant and replace location
         # N.B. deepcopy leads to recursion errors
         allele_sl = ga4gh.vrs.models.Variation(**allele.as_dict())
-        del allele_sl._id
+        del allele_sl.id
         allele_sl.location = self.localize(allele.location)
         return allele_sl
 

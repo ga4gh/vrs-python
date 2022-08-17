@@ -83,24 +83,7 @@ class Translator:
     def translate_to(self, vo, fmt):
         """translate vrs object `vo` to named format `fmt`"""
         t = self.to_translators[fmt]
-        return t(self, self.ensure_allele_is_latest_model(vo))
-
-    def ensure_allele_is_latest_model(self, allele):
-        """
-        Change deprecated models:
-        SequenceState -> LiteralSequenceExpression
-        SimpleInterval -> SequenceInterval
-        """
-        if allele.state.type == "SequenceState":
-            allele.state = models.LiteralSequenceExpression(
-                sequence=allele.state.sequence,
-            )
-        if allele.location.interval.type == "SimpleInterval":
-            allele.location.interval = models.SequenceInterval(
-                start=models.Number(value=allele.location.interval.start),
-                end=models.Number(value=allele.location.interval.end),
-            )
-        return allele
+        return t(self, vo)
 
 
     ############################################################################
@@ -111,10 +94,9 @@ class Translator:
 
         #>>> a = tlr.from_beacon("13 : 32936732 G > C")
         #>>> a.as_dict()
-        {'location': {'interval': {
-           'end': {'value': 32936732, 'type': Number},
-           'start': {'value': 32936731, 'type': Number},
-           'type': 'SequenceInterval'},
+        {'location': {
+          'end': {'value': 32936732, 'type': Number},
+          'start': {'value': 32936731, 'type': Number},
           'sequence_id': 'GRCh38:13 ',
           'type': 'SequenceLocation'},
          'state': {'sequence': 'C', 'type': 'LiteralSequenceExpression'},
@@ -138,10 +120,9 @@ class Translator:
         end = start + len(ref)
         ins_seq = alt
 
-        interval = models.SequenceInterval(start=models.Number(value=start),
-                                           end=models.Number(value=end))
         location = models.SequenceLocation(sequence_id=sequence_id,
-                                           interval=interval)
+                                           start=models.Number(value=start),
+                                           end=models.Number(value=end))
         state = models.LiteralSequenceExpression(sequence=ins_seq)
         allele = models.Allele(location=location, state=state)
         allele = self._post_process_imported_allele(allele)
@@ -153,10 +134,9 @@ class Translator:
 
         #>>> a = tlr.from_gnomad("1-55516888-G-GA")
         #>>> a.as_dict()
-        {'location': {'interval': {
-           'end': {'value': 55516888, 'type': Number},
-           'start': {'value': 55516887, 'type': Number},
-           'type': 'SequenceInterval'},
+        {'location': {
+          'end': {'value': 55516888, 'type': Number},
+          'start': {'value': 55516887, 'type': Number},
           'sequence_id': 'GRCh38:1',
           'type': 'SequenceLocation'},
          'state': {'sequence': 'GA', 'type': 'LiteralSequenceExpression'},
@@ -180,9 +160,9 @@ class Translator:
         end = start + len(ref)
         ins_seq = alt
 
-        interval = models.SequenceInterval(start=models.Number(value=start),
+        location = models.SequenceLocation(sequence_id=sequence_id,
+                                           start=models.Number(value=start),
                                            end=models.Number(value=end))
-        location = models.SequenceLocation(sequence_id=sequence_id, interval=interval)
         sstate = models.LiteralSequenceExpression(sequence=ins_seq)
         allele = models.Allele(location=location, state=sstate)
         allele = self._post_process_imported_allele(allele)
@@ -196,10 +176,8 @@ class Translator:
         #>>> a.as_dict()
         {
           'location': {
-            'interval': {
-               'end': {'value': 22, 'type': Number},
-               'start': {'value': 21, 'type': Number},
-               'type': 'SequenceInterval'},
+            'end': {'value': 22, 'type': Number},
+            'start': {'value': 21, 'type': Number},
             'sequence_id': 'refseq:NM_012345.6',
             'type': 'SequenceLocation'
           },
@@ -224,14 +202,12 @@ class Translator:
                 raise ValueError("Intronic HGVS variants are not supported ({sv.posedit})")
 
         if sv.posedit.edit.type == "ins":
-            interval = models.SequenceInterval(
-                start=models.Number(value=sv.posedit.pos.start.base),
-                end=models.Number(value=sv.posedit.pos.start.base))
+            start=models.Number(value=sv.posedit.pos.start.base)
+            end=models.Number(value=sv.posedit.pos.start.base)
             state = sv.posedit.edit.alt
         elif sv.posedit.edit.type in ("sub", "del", "delins", "identity"):
-            interval = models.SequenceInterval(
-                start=models.Number(value=sv.posedit.pos.start.base - 1),
-                end=models.Number(value=sv.posedit.pos.end.base))
+            start=models.Number(value=sv.posedit.pos.start.base - 1)
+            end=models.Number(value=sv.posedit.pos.end.base)
             if sv.posedit.edit.type == "identity":
                 state = self.data_proxy.get_sequence(sv.ac,
                                                      sv.posedit.pos.start.base - 1,
@@ -239,11 +215,8 @@ class Translator:
             else:
                 state = sv.posedit.edit.alt or ""
         elif sv.posedit.edit.type == "dup":
-
-            interval = models.SequenceInterval(
-                start=models.Number(value=sv.posedit.pos.start.base - 1),
-                end=models.Number(value=sv.posedit.pos.end.base))
-
+            start=models.Number(value=sv.posedit.pos.start.base - 1)
+            end=models.Number(value=sv.posedit.pos.end.base)
             ref = self.data_proxy.get_sequence(sv.ac,
                                                sv.posedit.pos.start.base - 1,
                                                sv.posedit.pos.end.base)
@@ -251,7 +224,9 @@ class Translator:
         else:
             raise ValueError(f"HGVS variant type {sv.posedit.edit.type} is unsupported")
 
-        location = models.SequenceLocation(sequence_id=sequence_id, interval=interval)
+        location = models.SequenceLocation(sequence_id=sequence_id,
+                                           start=start,
+                                           end=end)
         sstate = models.LiteralSequenceExpression(sequence=state)
         allele = models.Allele(location=location, state=sstate)
         allele = self._post_process_imported_allele(allele)
@@ -266,10 +241,8 @@ class Translator:
         #>>> a.as_dict()
         {
           'location': {
-            'interval': {
-               'end': {'value': 22, 'type': Number},
-               'start': {'value': 21, 'type': Number},
-               'type': 'SequenceInterval'},
+            'end': {'value': 22, 'type': Number},
+            'start': {'value': 21, 'type': Number},
             'sequence_id': 'refseq:NM_012345.6',
             'type': 'SequenceLocation'
           },
@@ -294,9 +267,9 @@ class Translator:
         end = start + del_len
         ins_seq = g["ins_seq"]
 
-        interval = models.SequenceInterval(start=models.Number(value=start),
+        location = models.SequenceLocation(sequence_id=sequence_id,
+                                           start=models.Number(value=start),
                                            end=models.Number(value=end))
-        location = models.SequenceLocation(sequence_id=sequence_id, interval=interval)
         sstate = models.LiteralSequenceExpression(sequence=ins_seq)
         allele = models.Allele(location=location, state=sstate)
         allele = self._post_process_imported_allele(allele)
@@ -371,7 +344,7 @@ class Translator:
             # ival = hgvs.location.Interval(start=start, end=end)
             # edit = hgvs.edit.AARefAlt(ref=None, alt=vo.state.sequence)
         else:                   # pylint: disable=no-else-raise
-            start, end = vo.location.interval.start.value, vo.location.interval.end.value
+            start, end = vo.location.start.value, vo.location.end.value
             # ib: 0 1 2 3 4 5
             #  h:  1 2 3 4 5
             if start == end:    # insert: hgvs uses *exclusive coords*
@@ -445,7 +418,7 @@ class Translator:
         sequence_id = str(vo.location.sequence_id)
         aliases = self.data_proxy.translate_sequence_identifier(sequence_id, namespace)
         aliases = [a.split(":")[1] for a in aliases]
-        start, end = vo.location.interval.start.value, vo.location.interval.end.value
+        start, end = vo.location.start.value, vo.location.end.value
         spdi_tail = f":{start}:{end-start}:{vo.state.sequence}"
         spdis = [a + spdi_tail for a in aliases]
         return spdis
@@ -477,7 +450,7 @@ class Translator:
             allele = normalize(allele, self.data_proxy)
 
         if self.identify:
-            allele._id = ga4gh_identify(allele)
+            allele.id = ga4gh_identify(allele)
 
         return allele
 
@@ -522,11 +495,8 @@ if __name__ == "__main__":
         "NC_000013.11:g.32936732G>C",
         "NM_000551.3:21:1:T", {
             "location": {
-                "interval": {
-                    "end": {"value": 22, "type": "Number"},
-                    "start": {"value": 21, "type": "Number"},
-                    "type": "SequenceInterval"
-                },
+                "end": {"value": 22, "type": "Number"},
+                "start": {"value": 21, "type": "Number"},
                 "sequence_id": "ga4gh:SQ.v_QTc1p-MUYdgrRv4LMT6ByXIOsdw3C_",
                 "type": "SequenceLocation"
             },
@@ -537,8 +507,7 @@ if __name__ == "__main__":
             "type": "Allele"
         }, {
            "end": {"value": 22, "type": "Number"},
-            "start": {"value": 21, "type": "Number"},
-            "type": "SequenceInterval"
+           "start": {"value": 21, "type": "Number"}
         }
     ]
     formats = ["hgvs", "gnomad", "beacon", "spdi", "vrs", None]
