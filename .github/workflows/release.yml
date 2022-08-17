@@ -4,24 +4,24 @@ on:
     tags:
     - '*.*.**'
 jobs:
-  get_branch:
-    runs-on: ubuntu-latest
-    outputs:
-      branch_name: ${{ steps.get_branch_name.outputs.name }}
-    steps:
-    - uses: actions/checkout@v2
-      with:
-        fetch-depth: 0
-    - name: Get branch name
-      id: get_branch_name
-      run: |
-        raw=$(git branch -r --contains ${{ github.ref }})
-        branch=${raw##*/}
-        echo "::set-output name=name::$branch"
+  # get_branch:
+  #   runs-on: ubuntu-latest
+  #   outputs:
+  #     branch_name: ${{ steps.get_branch_name.outputs.name }}
+  #   steps:
+  #   - uses: actions/checkout@v2
+  #     with:
+  #       fetch-depth: 0
+  #   - name: Get branch name
+  #     id: get_branch_name
+  #     run: |
+  #       raw=$(git branch -r --contains ${{ github.ref }})
+  #       branch=${raw##*/}
+  #       echo "::set-output name=name::$branch"
   release:
     runs-on: ubuntu-18.04
-    needs: get_branch
-    if: needs.get_branch.outputs.branch_name == 'main'
+    # needs: get_branch
+    # if: needs.get_branch.outputs.branch_name == 'main'
     steps:
     - uses: actions/checkout@v2
       with:
