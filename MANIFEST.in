@@ -1,1 +1,1 @@
-recursive-include submodules/vrs/schema/ vrs.yaml ga4gh.yaml
+recursive-include submodules/vrsatile/schema/ merged.json merged.yaml
