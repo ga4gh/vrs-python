@@ -43,7 +43,8 @@ for k,v in defs.items():
 namespace = "ga4gh"
 curie_sep = ":"
 ref_sep = "."
-ga4gh_ir_regexp = re.compile("^ga4gh:(?P<type>[^.]+)\.(?P<digest>.+)$")
+
+ga4gh_ir_regexp = re.compile(r"^ga4gh:(?P<type>[^.]+)\.(?P<digest>.+)$")
 
 ns_w_sep = namespace + curie_sep
 
@@ -181,7 +182,7 @@ def ga4gh_serialize(vro):
         if is_array(vro):
             if is_curie_type(vro[0]):
                 return sorted(dictify(o) for o in vro.data)
-            return [dictify(o) for o in vro.typed_elems]
+            return sorted([dictify(o) for o in vro.typed_elems])
 
         raise ValueError(f"Don't know how to serialize {vro}")    # pragma: no cover
 
