@@ -1,1 +1,1 @@
-recursive-include submodules/vrsatile/schema/ merged.json merged.yaml
+recursive-include submodules/vrsatile/schema/ merged*
