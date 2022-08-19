@@ -176,7 +176,7 @@ def ga4gh_serialize(vro):
         if is_pjs_instance(vro):
             if is_identifiable(vro) and enref:
                 return ga4gh_digest(vro)
-            d = {k: dictify(vro[k], enref=True) for k in vro if not (k.startswith("_") or vro[k] is None)}
+            d = {k: dictify(vro[k], enref=True) for k in vro if not (k.startswith(("_", "id")) or vro[k] is None)}
             return d
 
         if is_array(vro):
