@@ -28,14 +28,14 @@ def _normalize_allele(allele, data_proxy):
         ival = (allele.location.interval.start.value, allele.location.interval.end.value)
 
     _allele_state = allele.state.type
-    _states_with_sequence = ['SequenceState', 'LiteralSequenceExpression']
+    _states_with_sequence = ["SequenceState", "LiteralSequenceExpression"]
     if _allele_state in _states_with_sequence:
         alleles = (None, allele.state.sequence._value)
-    elif _allele_state == 'RepeatedSequenceExpression' and \
+    elif _allele_state == "RepeatedSequenceExpression" and \
             allele.state.seq_expr.type in _states_with_sequence:
         alleles = (None, allele.state.seq_expr.sequence._value)
     else:
-        alleles = (None, '')
+        alleles = (None, "")
 
     new_allele = pjs_copy(allele)
 
@@ -106,8 +106,8 @@ if __name__ == "__main__":      # pragma: no cover
     allele_dict = {
         "location": {
             "interval": {
-                "end": {'value': 44908822, 'type': 'Number'},
-                "start": {'value': 44908821, 'type': 'Number'},
+                "end": {"value": 44908822, "type": "Number"},
+                "start": {"value": 44908821, "type": "Number"},
                 "type": "SequenceInterval"
             },
             "sequence_id": "refseq:NC_000019.10",
