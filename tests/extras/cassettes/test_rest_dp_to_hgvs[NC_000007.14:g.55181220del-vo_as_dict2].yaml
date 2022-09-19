@@ -17,43 +17,43 @@ interactions:
       Content-Type:
       - application/json; charset=utf-8
       User-Agent:
-      - python-requests/2.27.1
+      - python-requests/2.28.1
     method: POST
     uri: https://normalize.cancervariants.org/variation/vrs_allele_to_hgvs
   response:
     body:
-      string: '{"query":{"variation":{"type":"Allele","location":{"type":"SequenceLocation","sequence_id":"ga4gh:SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul","interval":{"type":"SequenceInterval","start":{"type":"Number","value":55181219},"end":{"type":"Number","value":55181220}}},"state":{"type":"LiteralSequenceExpression","sequence":""}},"namespace":"refseq"},"warnings":[],"service_meta_":{"version":"0.4.0a6","response_datetime":"2022-06-03T15:06:57.001873","name":"variation-normalizer","url":"https://github.com/cancervariants/variation-normalization"},"vrs_python_meta_":{"version":"0.8a0","name":"vrs-python","url":"https://github.com/ga4gh/vrs-python"},"variations":["NC_000007.14:g.55181220del"]}'
+      string: '{"query":{"variation":{"_id":null,"type":"Allele","location":{"_id":null,"type":"SequenceLocation","sequence_id":"ga4gh:SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul","interval":{"type":"SequenceInterval","start":{"type":"Number","value":55181219},"end":{"type":"Number","value":55181220}}},"state":{"type":"LiteralSequenceExpression","sequence":""}},"namespace":"refseq"},"warnings":[],"service_meta_":{"version":"0.5.0a0","response_datetime":"2022-09-19T13:16:05.770720","name":"variation-normalizer","url":"https://github.com/cancervariants/variation-normalization"},"vrs_python_meta_":{"version":"0.8.1.dev0","name":"vrs-python","url":"https://github.com/ga4gh/vrs-python"},"variations":["NC_000007.14:g.55181220del"]}'
     headers:
       Connection:
       - keep-alive
       Content-Length:
-      - '685'
+      - '712'
       Content-Type:
       - application/json
       Date:
-      - Fri, 03 Jun 2022 15:06:57 GMT
+      - Mon, 19 Sep 2022 13:16:05 GMT
       Via:
-      - 1.1 791299e5e934e8ce6590f1212a1729de.cloudfront.net (CloudFront)
+      - 1.1 533a5d9af0ba89d040a59600c6a91ff4.cloudfront.net (CloudFront)
       X-Amz-Cf-Id:
-      - ZQko-AFHnKwj1da-xfTVYeHpXVczN45fP_74hLk-Ghx_Yw4EA_tfoA==
+      - yyC9MqU3SHB7k7WGqx2r4tapGDSdnZpytgy-SF0J-y-lsGUFe9HllQ==
       X-Amz-Cf-Pop:
-      - ORD56-P4
+      - ORD58-P5
       X-Amzn-Trace-Id:
-      - Root=1-629a2390-7c7f4981609c71070a159659
+      - Root=1-63286b94-427157093672edb20eca1a6b
       X-Cache:
       - Miss from cloudfront
       x-amz-apigw-id:
-      - TJp-rFjziYcFxKg=
+      - YtW_TEMSCYcFV4g=
       x-amzn-Remapped-Connection:
       - keep-alive
       x-amzn-Remapped-Content-Length:
-      - '685'
+      - '712'
       x-amzn-Remapped-Date:
-      - Fri, 03 Jun 2022 15:06:57 GMT
+      - Mon, 19 Sep 2022 13:16:05 GMT
       x-amzn-Remapped-Server:
       - nginx/1.20.0
       x-amzn-RequestId:
-      - f1fdd656-3a60-4cc6-b042-33fe2e06b2c9
+      - cd6c4a14-b429-4dc5-b720-48ac54273f48
     status:
       code: 200
       message: OK
