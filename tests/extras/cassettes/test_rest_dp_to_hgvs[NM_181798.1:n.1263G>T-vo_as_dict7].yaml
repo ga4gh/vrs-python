@@ -17,43 +17,43 @@ interactions:
       Content-Type:
       - application/json; charset=utf-8
       User-Agent:
-      - python-requests/2.27.1
+      - python-requests/2.28.1
     method: POST
     uri: https://normalize.cancervariants.org/variation/vrs_allele_to_hgvs
   response:
     body:
-      string: '{"query":{"variation":{"type":"Allele","location":{"type":"SequenceLocation","sequence_id":"ga4gh:SQ.KN07u-RFqd1dTyOWOG98HnOq87Nq-ZIg","interval":{"type":"SequenceInterval","start":{"type":"Number","value":1262},"end":{"type":"Number","value":1263}}},"state":{"type":"LiteralSequenceExpression","sequence":"T"}},"namespace":"refseq"},"warnings":[],"service_meta_":{"version":"0.4.0a6","response_datetime":"2022-06-03T15:06:58.082424","name":"variation-normalizer","url":"https://github.com/cancervariants/variation-normalization"},"vrs_python_meta_":{"version":"0.8a0","name":"vrs-python","url":"https://github.com/ga4gh/vrs-python"},"variations":["NM_181798.1:n.1263G>T"]}'
+      string: '{"query":{"variation":{"_id":null,"type":"Allele","location":{"_id":null,"type":"SequenceLocation","sequence_id":"ga4gh:SQ.KN07u-RFqd1dTyOWOG98HnOq87Nq-ZIg","interval":{"type":"SequenceInterval","start":{"type":"Number","value":1262},"end":{"type":"Number","value":1263}}},"state":{"type":"LiteralSequenceExpression","sequence":"T"}},"namespace":"refseq"},"warnings":[],"service_meta_":{"version":"0.5.0a0","response_datetime":"2022-09-19T13:16:13.747302","name":"variation-normalizer","url":"https://github.com/cancervariants/variation-normalization"},"vrs_python_meta_":{"version":"0.8.1.dev0","name":"vrs-python","url":"https://github.com/ga4gh/vrs-python"},"variations":["NM_181798.1:n.1263G>T"]}'
     headers:
       Connection:
       - keep-alive
       Content-Length:
-      - '673'
+      - '700'
       Content-Type:
       - application/json
       Date:
-      - Fri, 03 Jun 2022 15:06:58 GMT
+      - Mon, 19 Sep 2022 13:16:13 GMT
       Via:
-      - 1.1 4e60b439a5bf4b49c5f596462b6ccd56.cloudfront.net (CloudFront)
+      - 1.1 e28a59cb1d70a8631f80067d8aed6838.cloudfront.net (CloudFront)
       X-Amz-Cf-Id:
-      - gBGAWjBgWflqZ1u9DRMx5EJez4n31ZZ1o0DG9-EHfXCXOaiv3m-CBw==
+      - pDwmduSdW19tUEYqcSHp_a8E3ikpxHtdAG1oKlR3uMZ1HHoB4V_vtA==
       X-Amz-Cf-Pop:
-      - ORD56-P4
+      - ORD58-P5
       X-Amzn-Trace-Id:
-      - Root=1-629a2392-484c8f251990573a52914ebd
+      - Root=1-63286b9d-6e42f6c314effeed768c1cf0
       X-Cache:
       - Miss from cloudfront
       x-amz-apigw-id:
-      - TJp-2GOrCYcFaqQ=
+      - YtXAkEdECYcFopA=
       x-amzn-Remapped-Connection:
       - keep-alive
       x-amzn-Remapped-Content-Length:
-      - '673'
+      - '700'
       x-amzn-Remapped-Date:
-      - Fri, 03 Jun 2022 15:06:58 GMT
+      - Mon, 19 Sep 2022 13:16:13 GMT
       x-amzn-Remapped-Server:
       - nginx/1.20.0
       x-amzn-RequestId:
-      - e2f85e70-b953-422b-acae-f53dad45bba7
+      - d20d8014-ec6a-4133-8768-3a61d4e82f0e
     status:
       code: 200
       message: OK
