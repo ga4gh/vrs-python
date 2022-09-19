@@ -42,29 +42,29 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Wed, 17 Aug 2022 15:31:36 GMT
+      - Mon, 19 Sep 2022 15:07:51 GMT
       Via:
-      - 1.1 2d29f564936af5441c287d06411466fa.cloudfront.net (CloudFront)
+      - 1.1 fbaa163d825ae4c940f6fb8e6dd730bc.cloudfront.net (CloudFront)
       X-Amz-Cf-Id:
-      - t4YBtFdccCOroPxxsX-2b_1KUW1nAPpkjTgJllAc_30oa3UXcX5U7g==
+      - evnJ0ftb1y0__eo7t9gMb0b9TQooPgL5mQgsQVqui7VD0-xWro0P4g==
       X-Amz-Cf-Pop:
-      - ORD53-C1
+      - ORD58-P5
       X-Amzn-Trace-Id:
-      - Root=1-62fd09d8-7ca3dac60423458d16664f80
+      - Root=1-632885c7-7380f65a25023a5744751371
       X-Cache:
       - Error from cloudfront
       x-amz-apigw-id:
-      - XA55yHS_CYcFjXQ=
+      - YtnXJEUUiYcF7vg=
       x-amzn-Remapped-Connection:
       - keep-alive
       x-amzn-Remapped-Content-Length:
       - '1418'
       x-amzn-Remapped-Date:
-      - Wed, 17 Aug 2022 15:31:36 GMT
+      - Mon, 19 Sep 2022 15:07:51 GMT
       x-amzn-Remapped-Server:
       - nginx/1.20.0
       x-amzn-RequestId:
-      - c69231da-4375-47cb-8a82-3695882db6e9
+      - 33b65332-a6ba-4880-ad1e-a6a2909ed023
     status:
       code: 422
       message: ''

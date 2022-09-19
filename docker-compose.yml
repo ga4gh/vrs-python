@@ -1,13 +1,23 @@
 version: "3"
 
 services:
-  seqrepo-rest-service:    
-    # Test: curl http://localhost:2002/seqrepo/1/sequence/refseq:NM_000551.3
-    image: biocommons/seqrepo-rest-service:latest
+  seqrepo:
+    image: biocommons/seqrepo:2021-01-29
     volumes:
       - seqrepo_vol:/usr/local/share/seqrepo
-    network_mode: host
-    
+
+  seqrepo-rest-service:
+    # Test: curl http://localhost:5000/seqrepo/1/sequence/refseq:NM_000551.3
+    image: biocommons/seqrepo-rest-service:0.2.1
+    volumes:
+      - seqrepo_vol:/usr/local/share/seqrepo
+    depends_on:
+      - seqrepo
+    command: seqrepo-rest-service -w /usr/local/share/seqrepo/2021-01-29
+    network_mode: bridge
+    ports:
+      - 5000:5000
+  
   uta:
     # Test:
     # psql -XAt postgres://anonymous@localhost/uta -c 'select count(*) from transcript'
@@ -15,8 +25,8 @@ services:
     image: biocommons/uta:uta_20180821
     volumes:
       - uta_vol:/var/lib/postgresql/data
-    network_mode: host
-
+    ports:
+      - 5432:5432
 
 volumes:
   seqrepo_vol:

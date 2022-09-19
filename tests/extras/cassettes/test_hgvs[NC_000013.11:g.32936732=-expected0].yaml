@@ -23,9 +23,9 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Wed, 17 Aug 2022 15:31:01 GMT
+      - Mon, 19 Sep 2022 15:07:32 GMT
       Server:
-      - Werkzeug/2.2.0 Python/3.10.4
+      - Werkzeug/2.2.2 Python/3.10.4
     status:
       code: 200
       message: OK
@@ -65,9 +65,9 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Wed, 17 Aug 2022 15:31:01 GMT
+      - Mon, 19 Sep 2022 15:07:32 GMT
       Server:
-      - Werkzeug/2.2.0 Python/3.10.4
+      - Werkzeug/2.2.2 Python/3.10.4
     status:
       code: 200
       message: OK
@@ -95,9 +95,9 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Wed, 17 Aug 2022 15:31:01 GMT
+      - Mon, 19 Sep 2022 15:07:32 GMT
       Server:
-      - Werkzeug/2.2.0 Python/3.10.4
+      - Werkzeug/2.2.2 Python/3.10.4
     status:
       code: 200
       message: OK
@@ -125,9 +125,9 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Wed, 17 Aug 2022 15:31:01 GMT
+      - Mon, 19 Sep 2022 15:07:32 GMT
       Server:
-      - Werkzeug/2.2.0 Python/3.10.4
+      - Werkzeug/2.2.2 Python/3.10.4
     status:
       code: 200
       message: OK
@@ -165,20 +165,20 @@ interactions:
       Content-Type:
       - text/plain
       Date:
-      - Wed, 17 Aug 2022 15:31:05 GMT
+      - Mon, 19 Sep 2022 15:07:35 GMT
       Keep-Alive:
       - timeout=4, max=40
       NCBI-PHID:
-      - 322C9B017B5615450000416F186FEB79.1.1.m_5
+      - 939B60E632B07995000033A99595C676.1.1.m_5
       NCBI-SID:
-      - D58AA123F5610F19_25CCSID
+      - EF12D6B754467448_5D6DSID
       Referrer-Policy:
       - origin-when-cross-origin
       Server:
       - Finatra
       Set-Cookie:
-      - ncbi_sid=D58AA123F5610F19_25CCSID; domain=.nih.gov; path=/; expires=Thu, 17
-        Aug 2023 15:31:05 GMT
+      - ncbi_sid=EF12D6B754467448_5D6DSID; domain=.nih.gov; path=/; expires=Tue, 19
+        Sep 2023 15:07:36 GMT
       Strict-Transport-Security:
       - max-age=31536000; includeSubDomains; preload
       Transfer-Encoding:
