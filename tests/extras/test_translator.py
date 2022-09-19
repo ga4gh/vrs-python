@@ -27,7 +27,7 @@ snv_output = {
 }
 
 # https://www.ncbi.nlm.nih.gov/clinvar/variation/1373966/?new_evidence=true
-deletion_intputs = {
+deletion_inputs = {
     "hgvs": "NC_000013.11:g.20003097del",
     "spdi": ["NC_000013.11:20003096:C:", "NC_000013.11:20003096:1:"]
 }
@@ -109,7 +109,7 @@ def test_from_gnomad(tlr):
 @pytest.mark.vcr
 def test_from_hgvs(tlr):
     assert tlr._from_hgvs(snv_inputs["hgvs"]).as_dict() == snv_output
-    assert tlr._from_hgvs(deletion_intputs["hgvs"]).as_dict() == deletion_output
+    assert tlr._from_hgvs(deletion_inputs["hgvs"]).as_dict() == deletion_output
     assert tlr._from_hgvs(insertion_inputs["hgvs"]).as_dict() == insertion_output
     assert tlr._from_hgvs(duplication_inputs["hgvs"]).as_dict() == duplication_output
 
@@ -117,7 +117,7 @@ def test_from_hgvs(tlr):
 @pytest.mark.vcr
 def test_from_spdi(tlr):
     assert tlr._from_spdi(snv_inputs["spdi"]).as_dict() == snv_output
-    for spdi_del_expr in deletion_intputs["spdi"]:
+    for spdi_del_expr in deletion_inputs["spdi"]:
         assert tlr._from_spdi(spdi_del_expr).as_dict() == deletion_output, spdi_del_expr
     for spdi_ins_expr in insertion_inputs["spdi"]:
         assert tlr._from_spdi(spdi_ins_expr).as_dict() == insertion_output, spdi_ins_expr
