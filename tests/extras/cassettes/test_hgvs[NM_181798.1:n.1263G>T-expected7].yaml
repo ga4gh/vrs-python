@@ -9,7 +9,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.26.0
+      - python-requests/2.28.1
     method: GET
     uri: http://localhost:5000/seqrepo/1/metadata/refseq:NM_181798.1
   response:
@@ -21,14 +21,16 @@ interactions:
         \   \"sha512t24u:KN07u-RFqd1dTyOWOG98HnOq87Nq-ZIg\",\n    \"ga4gh:SQ.KN07u-RFqd1dTyOWOG98HnOq87Nq-ZIg\"\n
         \ ],\n  \"alphabet\": \"ACGT\",\n  \"length\": 3029\n}\n"
     headers:
+      Connection:
+      - close
       Content-Length:
       - '483'
       Content-Type:
       - application/json
       Date:
-      - Wed, 22 Dec 2021 22:16:53 GMT
+      - Mon, 19 Sep 2022 13:14:33 GMT
       Server:
-      - Werkzeug/1.0.1 Python/3.8.10
+      - Werkzeug/2.2.2 Python/3.10.4
     status:
       code: 200
       message: OK
@@ -42,7 +44,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.26.0
+      - python-requests/2.28.1
     method: GET
     uri: http://localhost:5000/seqrepo/1/metadata/ga4gh:SQ.KN07u-RFqd1dTyOWOG98HnOq87Nq-ZIg
   response:
@@ -54,14 +56,16 @@ interactions:
         \   \"sha512t24u:KN07u-RFqd1dTyOWOG98HnOq87Nq-ZIg\",\n    \"ga4gh:SQ.KN07u-RFqd1dTyOWOG98HnOq87Nq-ZIg\"\n
         \ ],\n  \"alphabet\": \"ACGT\",\n  \"length\": 3029\n}\n"
     headers:
+      Connection:
+      - close
       Content-Length:
       - '483'
       Content-Type:
       - application/json
       Date:
-      - Wed, 22 Dec 2021 22:16:53 GMT
+      - Mon, 19 Sep 2022 13:14:33 GMT
       Server:
-      - Werkzeug/1.0.1 Python/3.8.10
+      - Werkzeug/2.2.2 Python/3.10.4
     status:
       code: 200
       message: OK
@@ -75,21 +79,23 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.26.0
+      - python-requests/2.28.1
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.KN07u-RFqd1dTyOWOG98HnOq87Nq-ZIg?start=1262&end=1263
   response:
     body:
       string: G
     headers:
+      Connection:
+      - close
       Content-Length:
       - '1'
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Wed, 22 Dec 2021 22:16:53 GMT
+      - Mon, 19 Sep 2022 13:14:33 GMT
       Server:
-      - Werkzeug/1.0.1 Python/3.8.10
+      - Werkzeug/2.2.2 Python/3.10.4
     status:
       code: 200
       message: OK
@@ -103,21 +109,23 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.26.0
+      - python-requests/2.28.1
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.KN07u-RFqd1dTyOWOG98HnOq87Nq-ZIg?start=1261&end=1262
   response:
     body:
       string: A
     headers:
+      Connection:
+      - close
       Content-Length:
       - '1'
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Wed, 22 Dec 2021 22:16:53 GMT
+      - Mon, 19 Sep 2022 13:14:33 GMT
       Server:
-      - Werkzeug/1.0.1 Python/3.8.10
+      - Werkzeug/2.2.2 Python/3.10.4
     status:
       code: 200
       message: OK
@@ -131,21 +139,23 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.26.0
+      - python-requests/2.28.1
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.KN07u-RFqd1dTyOWOG98HnOq87Nq-ZIg?start=1263&end=1264
   response:
     body:
       string: T
     headers:
+      Connection:
+      - close
       Content-Length:
       - '1'
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Wed, 22 Dec 2021 22:16:53 GMT
+      - Mon, 19 Sep 2022 13:14:34 GMT
       Server:
-      - Werkzeug/1.0.1 Python/3.8.10
+      - Werkzeug/2.2.2 Python/3.10.4
     status:
       code: 200
       message: OK
@@ -159,21 +169,23 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.26.0
+      - python-requests/2.28.1
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.KN07u-RFqd1dTyOWOG98HnOq87Nq-ZIg?start=1262&end=1262
   response:
     body:
       string: ''
     headers:
+      Connection:
+      - close
       Content-Length:
       - '0'
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Wed, 22 Dec 2021 22:16:53 GMT
+      - Mon, 19 Sep 2022 13:14:34 GMT
       Server:
-      - Werkzeug/1.0.1 Python/3.8.10
+      - Werkzeug/2.2.2 Python/3.10.4
     status:
       code: 200
       message: OK
@@ -187,21 +199,23 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.26.0
+      - python-requests/2.28.1
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.KN07u-RFqd1dTyOWOG98HnOq87Nq-ZIg?start=1263&end=1263
   response:
     body:
       string: ''
     headers:
+      Connection:
+      - close
       Content-Length:
       - '0'
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Wed, 22 Dec 2021 22:16:53 GMT
+      - Mon, 19 Sep 2022 13:14:34 GMT
       Server:
-      - Werkzeug/1.0.1 Python/3.8.10
+      - Werkzeug/2.2.2 Python/3.10.4
     status:
       code: 200
       message: OK
@@ -215,7 +229,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.26.0
+      - python-requests/2.28.1
     method: GET
     uri: http://localhost:5000/seqrepo/1/metadata/ga4gh:SQ.KN07u-RFqd1dTyOWOG98HnOq87Nq-ZIg
   response:
@@ -227,14 +241,16 @@ interactions:
         \   \"sha512t24u:KN07u-RFqd1dTyOWOG98HnOq87Nq-ZIg\",\n    \"ga4gh:SQ.KN07u-RFqd1dTyOWOG98HnOq87Nq-ZIg\"\n
         \ ],\n  \"alphabet\": \"ACGT\",\n  \"length\": 3029\n}\n"
     headers:
+      Connection:
+      - close
       Content-Length:
       - '483'
       Content-Type:
       - application/json
       Date:
-      - Wed, 22 Dec 2021 22:16:53 GMT
+      - Mon, 19 Sep 2022 13:14:34 GMT
       Server:
-      - Werkzeug/1.0.1 Python/3.8.10
+      - Werkzeug/2.2.2 Python/3.10.4
     status:
       code: 200
       message: OK
@@ -248,21 +264,23 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.26.0
+      - python-requests/2.28.1
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.KN07u-RFqd1dTyOWOG98HnOq87Nq-ZIg?start=1262&end=1263
   response:
     body:
       string: G
     headers:
+      Connection:
+      - close
       Content-Length:
       - '1'
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Wed, 22 Dec 2021 22:16:53 GMT
+      - Mon, 19 Sep 2022 13:14:34 GMT
       Server:
-      - Werkzeug/1.0.1 Python/3.8.10
+      - Werkzeug/2.2.2 Python/3.10.4
     status:
       code: 200
       message: OK
@@ -276,7 +294,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.26.0
+      - python-requests/2.28.1
     method: GET
     uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nucleotide&id=NM_181798.1&rettype=fasta&seq_start=1263&seq_stop=1263&tool=bioutils&email=biocommons-dev@googlegroups.com
   response:
@@ -301,20 +319,20 @@ interactions:
       Content-Type:
       - text/plain
       Date:
-      - Wed, 22 Dec 2021 22:16:53 GMT
+      - Mon, 19 Sep 2022 13:14:34 GMT
       Keep-Alive:
       - timeout=4, max=40
       NCBI-PHID:
-      - 939B76B91F9E532500003A3ACD223549.1.1.m_5
+      - 322C565FBBD0434500004831B519AB93.1.1.m_5
       NCBI-SID:
-      - 56DA000F507D8337_3C5DSID
+      - 134C9C91968E2766_A90ESID
       Referrer-Policy:
       - origin-when-cross-origin
       Server:
       - Finatra
       Set-Cookie:
-      - ncbi_sid=56DA000F507D8337_3C5DSID; domain=.nih.gov; path=/; expires=Thu, 22
-        Dec 2022 22:16:54 GMT
+      - ncbi_sid=134C9C91968E2766_A90ESID; domain=.nih.gov; path=/; expires=Tue, 19
+        Sep 2023 13:14:34 GMT
       Strict-Transport-Security:
       - max-age=31536000; includeSubDomains; preload
       Transfer-Encoding:
@@ -322,7 +340,7 @@ interactions:
       X-RateLimit-Limit:
       - '3'
       X-RateLimit-Remaining:
-      - '2'
+      - '1'
       X-Test-Test:
       - test42
       X-UA-Compatible:
@@ -344,7 +362,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.26.0
+      - python-requests/2.28.1
     method: GET
     uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nucleotide&id=NM_181798.1&rettype=fasta&seq_start=1263&seq_stop=1268&tool=bioutils&email=biocommons-dev@googlegroups.com
   response:
@@ -369,20 +387,20 @@ interactions:
       Content-Type:
       - text/plain
       Date:
-      - Wed, 22 Dec 2021 22:16:56 GMT
+      - Mon, 19 Sep 2022 13:14:34 GMT
       Keep-Alive:
       - timeout=4, max=40
       NCBI-PHID:
-      - D0BD1E3CC26A8AF500002B30D983C632.1.1.m_5
+      - D0BD5131D558E5C500004247E88D7243.1.1.m_5
       NCBI-SID:
-      - 7F8C1779DE5DB365_5F89SID
+      - 260EB7372A275A6A_3BC5SID
       Referrer-Policy:
       - origin-when-cross-origin
       Server:
       - Finatra
       Set-Cookie:
-      - ncbi_sid=7F8C1779DE5DB365_5F89SID; domain=.nih.gov; path=/; expires=Thu, 22
-        Dec 2022 22:16:56 GMT
+      - ncbi_sid=260EB7372A275A6A_3BC5SID; domain=.nih.gov; path=/; expires=Tue, 19
+        Sep 2023 13:14:35 GMT
       Strict-Transport-Security:
       - max-age=31536000; includeSubDomains; preload
       Transfer-Encoding:
@@ -390,7 +408,7 @@ interactions:
       X-RateLimit-Limit:
       - '3'
       X-RateLimit-Remaining:
-      - '2'
+      - '1'
       X-Test-Test:
       - test42
       X-UA-Compatible:
