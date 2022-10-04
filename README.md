@@ -111,6 +111,13 @@ The following jupyter extensions are recommended but not required
     $ jupyter contrib nbextension install --user
     $ jupyter nbextension enable toc2/main
 
+## Running the Notebooks on the Terra platform
+
+[Terra](https://terra.bio) is a cloud platform for biomedical research developed by the Broad Institute, Microsoft and Verily. The platform includes preconfigured environments that provide user-friendly access to various applications commonly used in bioinformatics, including Jupyter Notebooks.
+
+We have created a public [`VRS-demo-notebooks`](https://app.terra.bio/#workspaces/terra-outreach/VRS-demo-notebooks) workspace in Terra that contains the demo notebooks along with instructions for running them with minimal setup. To get started, see either the [`VRS-demo-notebooks`](https://app.terra.bio/#workspaces/terra-outreach/VRS-demo-notebooks) workspace or the [`Terra.ipynb`](notebooks/Terra.ipynb) notebook in this repository.
+
+
 # Development
 
 ## Submodules!
