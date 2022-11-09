@@ -179,8 +179,19 @@ def ga4gh_serialize(vro):
             return d
 
         if is_array(vro):
-            if is_curie_type(vro[0]):
-                return sorted(dictify(o) for o in vro.data)
+            if not vro.ordered:
+                # if ordered == False, then the array elements MUST be sorted during serialization
+                if is_curie_type(vro[0]):
+                    return sorted(dictify(o) for o in vro.data)
+
+                arr = list()
+                for o in vro.typed_elems:
+                    d = dictify(o)
+                    if isinstance(d, dict):
+                        d = sha512t24u(encode_canonical_json(d))
+                    arr.append(d)
+                return sorted(arr)
+
             return [dictify(o) for o in vro.typed_elems]
 
         raise ValueError(f"Don't know how to serialize {vro}")  # pragma: no cover
