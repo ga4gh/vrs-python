@@ -1,4 +1,9 @@
-"""Module containing tools for annotating VCFs with VRS"""
+"""Module containing tools for annotating VCFs with VRS
+
+Example of how to run from root of vrs-python directory:
+python3 -m src.ga4gh.vrs.extras.vcf_annotation --vcf_in input.vcf.gz \
+    --vcf_out output.vcf.gz --vrs_file vrs_objects.pkl
+"""
 import pickle
 from enum import Enum
 from typing import Dict, List, Optional
@@ -44,24 +49,33 @@ class SeqRepoProxyType(str, Enum):
     default=SeqRepoProxyType.LOCAL,
     type=click.Choice([v.value for v in SeqRepoProxyType.__members__.values()],
                       case_sensitive=True),
-    help="The type of the SeqRepo Data Proxy to use"
+    help="The type of the SeqRepo Data Proxy to use",
+    show_default=True,
+    show_choices=True
 )
 @click.option(
     "--seqrepo_root_dir",
     required=False,
     default="/usr/local/share/seqrepo/latest",
-    help="The root directory for local SeqRepo instance"
+    help="The root directory for local SeqRepo instance",
+    show_default=True
 )
 @click.option(
     "--seqrepo_base_url",
     required=False,
     default="http://localhost:5000/seqrepo",
-    help="The base url for SeqRepo REST API"
+    help="The base url for SeqRepo REST API",
+    show_default=True
 )
 def annotate_click(vcf_in: str, vcf_out: str, vrs_file: str,
                    seqrepo_dp_type: SeqRepoProxyType, seqrepo_root_dir: str,
                    seqrepo_base_url: str) -> None:
-    """Annotate VCF file via click"""
+    """Annotate VCF file via click
+
+    Example arguments:
+
+    --vcf_in input.vcf.gz --vcf_out output.vcf.gz --vrs_file vrs_objects.pkl
+    """
     annotator = VCFAnnotator(seqrepo_dp_type, seqrepo_base_url, seqrepo_root_dir)
     start = timer()
     annotator.annotate(vcf_in, vcf_out, vrs_file)
@@ -164,5 +178,5 @@ class VCFAnnotator:
 
 if __name__ == "__main__":
     # python3 -m src.ga4gh.vrs.extras.vcf_annotation --vcf_in input.vcf.gz \
-    #    --vcf_out ./output.vcf.gz --vrs_file ./vrs_objects.pkl
+    #    --vcf_out output.vcf.gz --vrs_file vrs_objects.pkl
     annotate_click()  # pylint: disable=no-value-for-parameter
