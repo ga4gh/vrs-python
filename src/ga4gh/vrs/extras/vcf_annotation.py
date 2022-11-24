@@ -67,16 +67,25 @@ class SeqRepoProxyType(str, Enum):
     help="The base url for SeqRepo REST API",
     show_default=True
 )
+@click.option(
+    "--assembly",
+    required=False,
+    default="GRCh38",
+    show_default=True,
+    help="The assembly that the `vcf_in` data uses.",
+    type=str
+)
 def annotate_click(vcf_in: str, vcf_out: str, vrs_file: str,
                    seqrepo_dp_type: SeqRepoProxyType, seqrepo_root_dir: str,
-                   seqrepo_base_url: str) -> None:
+                   seqrepo_base_url: str, assembly: str) -> None:
     """Annotate VCF file via click
 
     Example arguments:
 
     --vcf_in input.vcf.gz --vcf_out output.vcf.gz --vrs_file vrs_objects.pkl
     """
-    annotator = VCFAnnotator(seqrepo_dp_type, seqrepo_base_url, seqrepo_root_dir)
+    annotator = VCFAnnotator(seqrepo_dp_type, seqrepo_base_url, seqrepo_root_dir,
+                             assembly)
     start = timer()
     annotator.annotate(vcf_in, vcf_out, vrs_file)
     end = timer()
@@ -90,18 +99,20 @@ class VCFAnnotator:
 
     def __init__(self, seqrepo_dp_type: SeqRepoProxyType = SeqRepoProxyType.LOCAL,
                  seqrepo_base_url: str = "http://localhost:5000/seqrepo",
-                 seqrepo_root_dir: str = "/usr/local/share/seqrepo/latest") -> None:
+                 seqrepo_root_dir: str = "/usr/local/share/seqrepo/latest",
+                 assembly: str = "GRCh38") -> None:
         """Initialize the VCFAnnotator class
 
         :param SeqRepoProxyType seqrepo_dp_type: The type of SeqRepo Data Proxy to use
         :param str seqrepo_base_url: The base url for SeqRepo REST API
         :param str seqrepo_root_dir: The root directory for the local SeqRepo instance
+        :param str assembly: The assembly to use for translation
         """
         if seqrepo_dp_type == SeqRepoProxyType.LOCAL:
             self.dp = SeqRepoDataProxy(SeqRepo(seqrepo_root_dir))
         else:
             self.dp = SeqRepoRESTDataProxy(seqrepo_base_url)
-        self.tlr = Translator(self.dp)
+        self.tlr = Translator(self.dp, default_assembly_name=assembly)
 
     def annotate(self, vcf_in: str, vcf_out: str, vrs_file: str) -> None:
         """Annotates an input VCF file with VRS Allele IDs & creates a pickle file
