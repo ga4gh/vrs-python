@@ -58,7 +58,7 @@ to install the biocommons tools that provide these data.
     docker volume create --name=seqrepo_vol
     docker-compose up
 
-This should start three containers:
+This should start four containers:
 
 - [seqrepo](https://github.com/biocommons/seqrepo): downloads seqrepo into a
   docker volume and exits
@@ -66,6 +66,7 @@ This should start three containers:
   REST service on seqrepo (localhost:5000)
 - [uta](https://github.com/biocommons/uta): a database of transcripts and
   alignments (localhost:5432)
+- vrs-python: docker image for vrs-python application
 
 Check that the containers are running:
 

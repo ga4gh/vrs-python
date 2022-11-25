@@ -17,7 +17,9 @@ services:
     network_mode: bridge
     ports:
       - 5000:5000
-  
+    networks:
+      - local
+
   uta:
     # Test:
     # psql -XAt postgres://anonymous@localhost/uta -c 'select count(*) from transcript'
@@ -28,8 +30,28 @@ services:
     ports:
       - 5432:5432
 
+  vrs-python:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    depends_on:
+      - seqrepo-rest-service
+    volumes:
+      - seqrepo_vol:/usr/local/share/seqrepo
+      - data:/data
+    tty:
+      true
+    networks:
+      - local
+
 volumes:
   seqrepo_vol:
     external: true
   uta_vol:
     external: true
+  data:
+    external: false
+
+networks:
+  local:
+    driver: bridge
