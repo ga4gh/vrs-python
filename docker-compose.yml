@@ -14,7 +14,6 @@ services:
     depends_on:
       - seqrepo
     command: seqrepo-rest-service -w /usr/local/share/seqrepo/2021-01-29
-    network_mode: bridge
     ports:
       - 5000:5000
     networks:
