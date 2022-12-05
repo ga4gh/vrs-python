@@ -10,14 +10,9 @@ from ga4gh.vrs.extras.translator import Translator
 
 
 @pytest.fixture(scope="module")
-def tlr_local(dataproxy):
-    return Translator(data_proxy=dataproxy)
-
-
-@pytest.fixture(scope="module")
-def vcf_annotator(tlr_local):
-    return VCFAnnotator(tlr_local)
-
+def vcf_annotator():
+    root_dir = os.environ.get("SEQREPO_ROOT_DIR", "/usr/local/share/seqrepo/latest")
+    return VCFAnnotator("local", seqrepo_root_dir=root_dir)
 
 @pytest.mark.vcr
 def test_annotate_vcf(vcf_annotator):
@@ -36,3 +31,5 @@ def test_annotate_vcf(vcf_annotator):
 
     assert out_vcf_lines == expected_output_lines
     assert os.path.exists(output_vrs_pkl)
+    os.remove(output_vcf)
+    os.remove(output_vrs_pkl)
