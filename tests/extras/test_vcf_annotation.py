@@ -11,8 +11,7 @@ from ga4gh.vrs.extras.translator import Translator
 
 @pytest.fixture(scope="module")
 def vcf_annotator():
-    root_dir = os.environ.get("SEQREPO_ROOT_DIR", "/usr/local/share/seqrepo/latest")
-    return VCFAnnotator("local", seqrepo_root_dir=root_dir)
+    return VCFAnnotator("rest")
 
 @pytest.mark.vcr
 def test_annotate_vcf(vcf_annotator):
