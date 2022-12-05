@@ -67,9 +67,17 @@ class SeqRepoProxyType(str, Enum):
     help="The base url for SeqRepo REST API",
     show_default=True
 )
+@click.option(
+    "--assembly",
+    required=False,
+    default="GRCh38",
+    show_default=True,
+    help="The assembly that the `vcf_in` data uses.",
+    type=str
+)
 def annotate_click(vcf_in: str, vcf_out: str, vrs_file: str,
                    seqrepo_dp_type: SeqRepoProxyType, seqrepo_root_dir: str,
-                   seqrepo_base_url: str) -> None:
+                   seqrepo_base_url: str, assembly: str) -> None:
     """Annotate VCF file via click
 
     Example arguments:
@@ -78,7 +86,7 @@ def annotate_click(vcf_in: str, vcf_out: str, vrs_file: str,
     """
     annotator = VCFAnnotator(seqrepo_dp_type, seqrepo_base_url, seqrepo_root_dir)
     start = timer()
-    annotator.annotate(vcf_in, vcf_out, vrs_file)
+    annotator.annotate(vcf_in, vcf_out, vrs_file, assembly)
     end = timer()
     click.echo(f"VCF Annotator finished in {(end - start):.5f} seconds")
 
@@ -103,13 +111,15 @@ class VCFAnnotator:
             self.dp = SeqRepoRESTDataProxy(seqrepo_base_url)
         self.tlr = Translator(self.dp)
 
-    def annotate(self, vcf_in: str, vcf_out: str, vrs_file: str) -> None:
+    def annotate(self, vcf_in: str, vcf_out: str, vrs_file: str,
+                 assembly: str = "GRCh38") -> None:
         """Annotates an input VCF file with VRS Allele IDs & creates a pickle file
         containing the vrs object information.
 
         :param str vcf_in: The path for the input VCF file to annotate
         :param str vcf_out: The path for the output VCF file
         :param str vrs_file: The path for the output VCF pickle file
+        :param str assembly: The assembly used in `vcf_in` data
         """
         INFO_FIELD_ID = "VRS_Allele"  # pylint: disable=invalid-name
         vrs_data = {}
@@ -119,7 +129,7 @@ class VCFAnnotator:
         vrs_pickle_out = open(vrs_file, "wb")
 
         for record in vcf_in:
-            vrs_allele_ids = self._record_digests(record, vrs_data)
+            vrs_allele_ids = self._record_digests(record, vrs_data, assembly)
             record.info[INFO_FIELD_ID] = ",".join(vrs_allele_ids)
             vcf_out.write(record)
         pickle.dump(vrs_data, vrs_pickle_out)
@@ -130,7 +140,7 @@ class VCFAnnotator:
         vcf_out.close()
 
     def _get_vrs_object(self, vcf_coords: str, vrs_data: Dict,
-                        vrs_allele_ids: List[str],
+                        vrs_allele_ids: List[str], assembly: str,
                         vrs_data_key: Optional[str] = None) -> None:
         """Get VRS Object given `vcf_coords`. `vrs_data` and `vrs_allele_ids` will
         be mutated.
@@ -139,21 +149,24 @@ class VCFAnnotator:
         :param Dict vrs_data: Dictionary containing the VRS object information for the
             VCF
         :param List[str] vrs_allele_ids: List containing the VRS Allele IDs
+        :param str assembly: The assembly used in `vcf_coords`
         :param Optional[str] vrs_data_key: The key to update in `vrs_data`. If not
             provided, will use `vcf_coords` as the key.
         """
-        vrs_obj = self.tlr.translate_from(vcf_coords, "gnomad")
+        vrs_obj = self.tlr._from_gnomad(vcf_coords, assembly_name=assembly)
         key = vrs_data_key if vrs_data_key else vcf_coords
         vrs_data[key] = str(vrs_obj.as_dict())
         vrs_allele_ids.append(vrs_obj._id._value)
 
-    def _record_digests(self, record: pysam.VariantRecord, vrs_data: Dict) -> List[str]:
+    def _record_digests(self, record: pysam.VariantRecord, vrs_data: Dict,
+                        assembly: str) -> List[str]:
         """Mutate `vrs_data` with VRS object information and returning a list of VRS
         Allele IDs
 
         :param pysam.VariantRecord record: A row in the VCF file
         :param Dict vrs_data: Dictionary containing the VRS object information for the
             VCF
+        :param str assembly: The assembly used in `record`
         :return List[str] vrs_allele_ids: List containing the VRS Allele IDs
         """
         vrs_allele_ids = []
@@ -161,7 +174,7 @@ class VCFAnnotator:
         # Get VRS data for reference allele
         gnomad_loc = f"{record.chrom}-{record.pos}"
         reference_allele = f"{gnomad_loc}-{record.ref}-{record.ref}"
-        self._get_vrs_object(reference_allele, vrs_data, vrs_allele_ids)
+        self._get_vrs_object(reference_allele, vrs_data, vrs_allele_ids, assembly)
 
         # Get VRS data for alts
         alts = record.alts or []
@@ -171,7 +184,7 @@ class VCFAnnotator:
             if "*" in allele:
                 vrs_allele_ids.append("")
             else:
-                self._get_vrs_object(allele, vrs_data, vrs_allele_ids,
+                self._get_vrs_object(allele, vrs_data, vrs_allele_ids, assembly,
                                      vrs_data_key=data)
         return vrs_allele_ids
 
