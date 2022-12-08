@@ -1,12 +1,10 @@
 """Ensure proper functionality of VCFAnnotator"""
 import gzip
 import os
-import tempfile
 
 import pytest
 
-from ga4gh.vrs.extras.vcf_annotation import VCFAnnotator
-from ga4gh.vrs.extras.translator import Translator
+from ga4gh.vrs.extras.vcf_annotation import VCFAnnotator, VCFAnnotatorException
 
 
 @pytest.fixture(scope="module")
@@ -18,8 +16,8 @@ def test_annotate_vcf(vcf_annotator):
     TEST_DATA_DIR = "tests/extras/data"
 
     input_vcf = f"{TEST_DATA_DIR}/test_vcf_input.vcf"
-    output_vcf = f"{tempfile.gettempdir()}/test_vcf_output.vcf.gz"
-    output_vrs_pkl = f"{tempfile.gettempdir()}/test_vcf_pkl.pkl"
+    output_vcf = f"{TEST_DATA_DIR}/test_vcf_output.vcf.gz"
+    output_vrs_pkl = f"{TEST_DATA_DIR}/test_vcf_pkl.pkl"
     expected_vcf = f"{TEST_DATA_DIR}/test_vcf_expected_output.vcf.gz"
 
     # Test GRCh38 assembly, which was used for input_vcf
@@ -41,3 +39,21 @@ def test_annotate_vcf(vcf_annotator):
     assert os.path.exists(output_vrs_pkl)
     os.remove(output_vcf)
     os.remove(output_vrs_pkl)
+
+    # Test only pickle output
+    vcf_annotator.annotate(input_vcf, vrs_pickle_out=output_vrs_pkl)
+    assert os.path.exists(output_vrs_pkl)
+    assert not os.path.exists(output_vcf)
+    os.remove(output_vrs_pkl)
+
+    # Test only VCF output
+    vcf_annotator.annotate(input_vcf, vcf_out=output_vcf)
+    with gzip.open(output_vcf, "rt") as out_vcf:
+        out_vcf_lines = out_vcf.readlines()
+    assert out_vcf_lines == expected_output_lines
+    os.remove(output_vcf)
+    assert not os.path.exists(output_vrs_pkl)
+
+    with pytest.raises(VCFAnnotatorException) as e:
+        vcf_annotator.annotate(input_vcf)
+    assert str(e.value) == "Must provide one of: `vcf_out` or `vrs_pickle_out`"
