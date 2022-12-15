@@ -239,7 +239,7 @@ class VCFAnnotator:
         # Get VRS data for alts
         alts = record.alts or []
         alleles = [f"{gnomad_loc}-{record.ref}-{a}" for a in [*alts]]
-        data = f"{record.chrom}\t{record.pos}\t{record.id}\t{record.ref}\t{record.alts}"
+        data = f"{record.chrom}\t{record.pos}\t{record.ref}\t{record.alts}"
         for allele in alleles:
             if "*" in allele:
                 vrs_allele_ids.append("")
