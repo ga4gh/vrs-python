@@ -4,21 +4,29 @@ Example of how to run from root of vrs-python directory:
 python3 -m src.ga4gh.vrs.extras.vcf_annotation --vcf_in input.vcf.gz \
     --vcf_out output.vcf.gz --vrs_pickle_out vrs_objects.pkl
 """
+import logging
 import pickle
 from enum import Enum
 from typing import Dict, List, Optional
 from timeit import default_timer as timer
 
 import click
-from biocommons.seqrepo import SeqRepo
 import pysam
+from biocommons.seqrepo import SeqRepo
+from python_jsonschema_objects import ValidationError
 
 from ga4gh.vrs.dataproxy import SeqRepoDataProxy, SeqRepoRESTDataProxy
 from ga4gh.vrs.extras.translator import Translator
 
 
+
+_logger = logging.getLogger(__name__)
+_logger.setLevel(logging.DEBUG)
+
+
 class VCFAnnotatorException(Exception):
     """Custom exceptions for VCF Annotator tool"""
+
     pass
 
 
@@ -181,14 +189,26 @@ class VCFAnnotator:
         :param bool output_vcf: `True` if annotated VCF file will be output.
             `False` otherwise.
         """
-        vrs_obj = self.tlr._from_gnomad(vcf_coords, assembly_name=assembly)
+        try:
+            vrs_obj = self.tlr._from_gnomad(vcf_coords, assembly_name=assembly)
+        except ValidationError as e:
+            _logger.error("ValidationError when translating %s from gnomad: %s", vcf_coords, str(e))
+        except KeyError as e:
+            _logger.error("KeyError when translating %s from gnomad: %s", vcf_coords, str(e))
+        except AssertionError as e:
+            _logger.error("AssertionError when translating %s from gnomad: %s", vcf_coords, str(e))
+        except Exception as e:
+            _logger.error("Unhandled Exception when translating %s from gnomad: %s", vcf_coords, str(e))
+        else:
+            if vrs_obj:
+                if output_pickle:
+                    key = vrs_data_key if vrs_data_key else vcf_coords
+                    vrs_data[key] = str(vrs_obj.as_dict())
 
-        if output_pickle:
-            key = vrs_data_key if vrs_data_key else vcf_coords
-            vrs_data[key] = str(vrs_obj.as_dict())
-
-        if output_vcf:
-            vrs_allele_ids.append(vrs_obj._id._value)
+                if output_vcf:
+                    vrs_allele_ids.append(vrs_obj._id._value)
+            else:
+                _logger.debug("None was returned when translating %s from gnomad", vcf_coords)
 
     def _record_digests(
         self, record: pysam.VariantRecord, vrs_data: Dict, assembly: str,
