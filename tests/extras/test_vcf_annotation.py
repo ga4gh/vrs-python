@@ -57,3 +57,22 @@ def test_annotate_vcf(vcf_annotator):
     with pytest.raises(VCFAnnotatorException) as e:
         vcf_annotator.annotate(input_vcf)
     assert str(e.value) == "Must provide one of: `vcf_out` or `vrs_pickle_out`"
+
+@pytest.mark.vcr
+def test_get_vrs_object_invalid_input(vcf_annotator, caplog):
+    """Test that _get_vrs_object method works as expected with invalid input"""
+    # No CHROM
+    vcf_annotator._get_vrs_object(".-140753336-A-T", {}, [], "GRCh38")
+    assert "KeyError when translating .-140753336-A-T from gnomad: 'GRCh38:.'" in caplog.text
+
+    # No POS
+    vcf_annotator._get_vrs_object("7-.-A-T", {}, [], "GRCh38")
+    assert "None was returned when translating 7-.-A-T from gnomad" in caplog.text
+
+    # No REF
+    vcf_annotator._get_vrs_object("7-140753336-.-T", {}, [], "GRCh38")
+    assert "None was returned when translating 7-140753336-.-T from gnomad" in caplog.text
+
+    # No ALT
+    vcf_annotator._get_vrs_object("7-140753336-A-.", {}, [], "GRCh38")
+    assert "None was returned when translating 7-140753336-A-. from gnomad" in caplog.text
