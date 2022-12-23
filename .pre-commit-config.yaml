@@ -1,0 +1,10 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+repos:
+  - repo: https://github.com/pycqa/pylint
+    rev: v2.15.9
+    hooks:
+      - id: pylint
+        args:
+          - --fail-under=10  # Makes it so that new changes must resolve all warnings
+          - --rcfile=.pylintrc
