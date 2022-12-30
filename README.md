@@ -33,6 +33,7 @@ correspondences between the packages may be summarized as:
 - **0.6 ~ 1.1**: vrs-python 0.6 branch tracks the vrs 1.1 branch.
 - **0.7 ~ 1.2**: vrs-python 0.7 branch tracks the vrs 1.2 branch.
 - **0.8 ~ main**: vrs-python 0.8 branch tracks the vrs main (dev) branch.
+- **metaschema-update ~ metaschema-update**: vrs-python metaschema-update branch tracks the vrs metaschema-update branch. 0.9.X vrs-python releases are for the metaschema-update branch.
 
 ⚠ **Developers: See the development section below for recommendations for using submodules
 gracefully (and without causing problems for others!).**
