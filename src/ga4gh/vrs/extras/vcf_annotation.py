@@ -103,9 +103,14 @@ def annotate_click(
     """
     annotator = VCFAnnotator(seqrepo_dp_type, seqrepo_base_url, seqrepo_root_dir)
     start = timer()
+    msg = f"Annotating {vcf_in} with the VCF Annotator..."
+    _logger.info(msg)
+    click.echo(msg)
     annotator.annotate(vcf_in, vcf_out, vrs_pickle_out, assembly)
     end = timer()
-    click.echo(f"VCF Annotator finished in {(end - start):.5f} seconds")
+    msg = f"VCF Annotator finished in {(end - start):.5f} seconds"
+    _logger.info(msg)
+    click.echo(msg)
 
 class VCFAnnotator:
     """Provides utility for annotating VCF's with VRS Allele IDs.
@@ -242,6 +247,7 @@ class VCFAnnotator:
         data = f"{record.chrom}\t{record.pos}\t{record.ref}\t{record.alts}"
         for allele in alleles:
             if "*" in allele:
+                _logger.debug("Star allele found: %s", allele)
                 vrs_allele_ids.append("")
             else:
                 self._get_vrs_object(allele, vrs_data, vrs_allele_ids, assembly,
