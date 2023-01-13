@@ -37,7 +37,7 @@ class Translator:
     """
 
     beacon_re = re.compile(r"(?P<chr>[^-]+)\s*:\s*(?P<pos>\d+)\s*(?P<ref>\w+)\s*>\s*(?P<alt>\w+)")
-    gnomad_re = re.compile(r"(?P<chr>[^-]+)-(?P<pos>\d+)-(?P<ref>\w+)-(?P<alt>\w+)")
+    gnomad_re = re.compile(r"(?P<chr>[^-]+)-(?P<pos>\d+)-(?P<ref>(?i)[ACGTN]+)-(?P<alt>(?i)[ACGTN]+|\*|\.)")
     hgvs_re = re.compile(r"[^:]+:[cgnpr]\.")
     spdi_re = re.compile(r"(?P<ac>[^:]+):(?P<pos>\d+):(?P<del_len_or_seq>\w*):(?P<ins_seq>\w*)")
 
@@ -163,7 +163,6 @@ class Translator:
          'type': 'Allele'}
 
         """
-
         if not isinstance(gnomad_expr, str):
             return None
         m = self.gnomad_re.match(gnomad_expr)
@@ -175,10 +174,13 @@ class Translator:
             assembly_name = self.default_assembly_name
         sequence_id = assembly_name + ":" + g["chr"]
         start = int(g["pos"]) - 1
-        ref = g["ref"]
-        alt = g["alt"]
+        ref = g["ref"].upper()
+        alt = g["alt"].upper()
         end = start + len(ref)
         ins_seq = alt
+
+        if not self._is_valid_ref_seq(sequence_id, start, end, ref):
+            return None
 
         interval = models.SequenceInterval(start=models.Number(value=start),
                                            end=models.Number(value=end))
@@ -449,6 +451,21 @@ class Translator:
         spdi_tail = f":{start}:{end-start}:{vo.state.sequence}"
         spdis = [a + spdi_tail for a in aliases]
         return spdis
+
+
+    def _is_valid_ref_seq(self, sequence_id: str, start_pos: int, end_pos: int, ref: str) -> bool:
+        """Return wether or not the expected reference sequence matches the actual reference sequence
+
+        :param str sequence_id: Sequence ID to use
+        :param int start_pos: Start pos (inter-residue) on the sequence_id
+        :param int end_pos: End pos (inter-residue) on the sequence_id
+        :param str ref: The expected reference sequence on the sequence_id given the
+            start_pos and end_pos
+        :return: `True` if the actual reference sequence matches the expected reference
+            sequence. `False` otherwise.
+        """
+        actual_ref = self.data_proxy.get_sequence(sequence_id, start_pos, end_pos)
+        return actual_ref == ref
 
 
     def is_valid_allele(self, vo):
