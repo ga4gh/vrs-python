@@ -16,7 +16,7 @@ from biocommons.seqrepo import SeqRepo
 from python_jsonschema_objects import ValidationError
 
 from ga4gh.vrs.dataproxy import SeqRepoDataProxy, SeqRepoRESTDataProxy
-from ga4gh.vrs.extras.translator import Translator
+from ga4gh.vrs.extras.translator import Translator, ValidationError as TranslatorValidationError
 
 
 
@@ -196,7 +196,7 @@ class VCFAnnotator:
         """
         try:
             vrs_obj = self.tlr._from_gnomad(vcf_coords, assembly_name=assembly)
-        except ValidationError as e:
+        except (ValidationError, TranslatorValidationError) as e:
             _logger.error("ValidationError when translating %s from gnomad: %s", vcf_coords, str(e))
         except KeyError as e:
             _logger.error("KeyError when translating %s from gnomad: %s", vcf_coords, str(e))
