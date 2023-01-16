@@ -109,15 +109,15 @@ class Translator:
     def _from_beacon(self, beacon_expr, assembly_name=None):
         """Parse beacon expression into VRS Allele
 
-        #>>> a = tlr.from_beacon("13 : 32936732 G > C")
+        #>>> a = tlr.from_beacon("19 : 44908822 C > T")
         #>>> a.as_dict()
         {'location': {'interval': {
-           'end': {'value': 32936732, 'type': Number},
-           'start': {'value': 32936731, 'type': Number},
+           'end': {'value': 44908822, 'type': Number},
+           'start': {'value': 44908821, 'type': Number},
            'type': 'SequenceInterval'},
-          'sequence_id': 'GRCh38:13 ',
+          'sequence_id': 'GRCh38:19',
           'type': 'SequenceLocation'},
-         'state': {'sequence': 'C', 'type': 'LiteralSequenceExpression'},
+         'state': {'sequence': 'T', 'type': 'LiteralSequenceExpression'},
          'type': 'Allele'}
 
         """
@@ -535,8 +535,8 @@ if __name__ == "__main__":
     expressions = [
         "bogus",
         "1-55516888-G-GA",
-        "13 : 32936732 G > C",
-        "NC_000013.11:g.32936732G>C",
+        "19 : 44908822 C > T",
+        "NC_000019.10:g.44908822C>T",
         "NM_000551.3:21:1:T", {
             "location": {
                 "interval": {
