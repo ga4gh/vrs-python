@@ -12,7 +12,7 @@ from ._internal.identifiers import (ga4gh_digest, ga4gh_identify, ga4gh_serializ
                                     parse_ga4gh_identifier)
 from ._internal.jsonschema import (build_models, build_class_referable_attribute_map, is_pjs_class, is_pjs_instance,
                                    is_curie, is_identifiable, is_literal, pjs_copy)
-
+# pylint: disable=duplicate-code
 try:
     __version__ = get_distribution(__name__).version
 except DistributionNotFound:    # pragma: nocover

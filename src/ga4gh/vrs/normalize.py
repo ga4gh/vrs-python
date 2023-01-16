@@ -16,21 +16,21 @@ _logger = logging.getLogger(__name__)
 
 
 def _normalize_allele(allele, data_proxy):
-    sequence = SequenceProxy(data_proxy, allele.location.sequence_id._value)
+    sequence = SequenceProxy(data_proxy, allele.location.sequence_id._value)  # pylint: disable=protected-access
 
     _interval_type = allele.location.interval.type
     if _interval_type == "SimpleInterval":
-        ival = (allele.location.interval.start._value, allele.location.interval.end._value)
+        ival = (allele.location.interval.start._value, allele.location.interval.end._value)  # pylint: disable=protected-access
     elif _interval_type == "SequenceInterval":
         ival = (allele.location.interval.start.value, allele.location.interval.end.value)
 
     _allele_state = allele.state.type
     _states_with_sequence = ["SequenceState", "LiteralSequenceExpression"]
     if _allele_state in _states_with_sequence:
-        alleles = (None, allele.state.sequence._value)
+        alleles = (None, allele.state.sequence._value)  # pylint: disable=protected-access
     elif _allele_state == "RepeatedSequenceExpression" and \
             allele.state.seq_expr.type in _states_with_sequence:
-        alleles = (None, allele.state.seq_expr.sequence._value)
+        alleles = (None, allele.state.seq_expr.sequence._value)  # pylint: disable=protected-access
     else:
         alleles = (None, "")
 
@@ -60,12 +60,12 @@ def _normalize_allele(allele, data_proxy):
     return new_allele
 
 
-def _normalize_haplotype(o, data_proxy=None):
+def _normalize_haplotype(o, data_proxy=None):  # pylint: disable=unused-argument
     o.members = sorted(o.members, key=ga4gh_digest)
     return o
 
 
-def _normalize_variationset(o, data_proxy=None):
+def _normalize_variationset(o, data_proxy=None):  # pylint: disable=unused-argument
     o.members = sorted(o.members, key=ga4gh_digest)
     return o
 
@@ -81,7 +81,7 @@ def normalize(vo, data_proxy=None):
     """normalize given vrs object, regardless of type"""
 
     assert is_pjs_instance(vo)
-    vo_type = vo.type._value
+    vo_type = vo.type._value  # pylint: disable=protected-access
 
     if vo_type in handlers:
         handler = handlers[vo_type]
@@ -123,13 +123,13 @@ if __name__ == "__main__":    # pragma: no cover
         },
         "type": "Allele"
     }
-    allele = models.Allele(**allele_dict)
+    allele1 = models.Allele(**allele_dict)
 
-    allele2 = normalize(allele, dp)
+    allele2 = normalize(allele1, dp)
 
-    allele.state.sequence = "C"
-    allele3 = normalize(allele, dp)
+    allele1.state.sequence = "C"
+    allele3 = normalize(allele1, dp)
 
-    allele.location.interval.end.value = 44908823
-    allele.state.sequence = ""
-    allele4 = normalize(allele, dp)
+    allele1.location.interval.end.value = 44908823
+    allele1.state.sequence = ""
+    allele4 = normalize(allele1, dp)

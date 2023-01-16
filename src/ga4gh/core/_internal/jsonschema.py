@@ -27,7 +27,7 @@ _logger = logging.getLogger(__name__)
 
 def build_models(path, standardize_names=False):
     """load models from json schema at path"""
-    with open(path, "r") as yaml_file:
+    with open(path, "r", encoding="utf-8") as yaml_file:
         y = yaml.load(yaml_file, yaml.SafeLoader)
     builder = pjs.ObjectBuilder(pjs_filter(y))
     models = builder.build_classes(standardize_names=standardize_names)

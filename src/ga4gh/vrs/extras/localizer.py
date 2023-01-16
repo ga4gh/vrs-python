@@ -2,9 +2,6 @@
 reference to external data
 
 """
-
-import copy
-
 from bioutils.accessions import coerce_namespace
 from bioutils.assemblies import make_name_ac_map
 from bioutils.cytobands import get_cytoband_maps
@@ -45,12 +42,15 @@ class Localizer:
         self._ana_maps = {k: make_name_ac_map(k) for k in assy_name_to_map_name}
 
 
-    def localize_allele(self, allele):
-        # copy input variant and replace location
-        # N.B. deepcopy leads to recursion errors
+    def localize_allele(self, allele, assembly_name = "GRCh38"):
+        """copy input variant and replace location
+        N.B. deepcopy leads to recursion errors
+        """
+        #
+        #
         allele_sl = ga4gh.vrs.models.Variation(**allele.as_dict())
         del allele_sl._id
-        allele_sl.location = self.localize(allele.location)
+        allele_sl.location = self.localize_named_feature(allele.location, assembly_name)
         return allele_sl
 
 
@@ -59,13 +59,13 @@ class Localizer:
 
         """
 
-        assert loc.type._value == "ChromosomeLocation", "Expected a ChromosomeLocation object"
+        assert loc.type._value == "ChromosomeLocation", "Expected a ChromosomeLocation object"  # pylint: disable=protected-access
 
         def _get_coords(m, cb):
             """return (start,end) of band `cb` in map `m`"""
             if cb is None:
                 return None
-            return chr_cb_map[cb][0:2]
+            return m[cb][0:2]
 
         try:
             map_name = assy_name_to_map_name[assembly_name]
@@ -106,9 +106,6 @@ class Localizer:
                 start=ga4gh.vrs.models.Number(value=start),
                 end=ga4gh.vrs.models.Number(value=end))
             )
-
-
-
 
 
 if __name__ == "__main__":

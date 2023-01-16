@@ -36,7 +36,8 @@ _logger = logging.getLogger(__name__)
 
 # Assume that ga4gh.yaml and vrs.yaml files are in the same directory for now
 schema_dir = os.environ.get("VRS_SCHEMA_DIR", pkg_resources.resource_filename(__name__, "data/schema"))
-cfg = yaml.safe_load(open(schema_dir + "/ga4gh.yaml"))
+with open(schema_dir + "/ga4gh.yaml", "r", encoding="utf-8") as f:
+    cfg = yaml.safe_load(f)
 type_prefix_map_default = cfg["identifiers"]["type_prefix_map"]
 namespace = cfg["identifiers"]["namespace"]
 curie_sep = cfg["identifiers"]["curie_sep"]
@@ -144,7 +145,7 @@ def ga4gh_serialize(vro):
 
     """
 
-    def dictify(vro, enref=True):
+    def dictify(vro, enref=True):  # pylint: disable=too-many-return-statements,too-many-branches
         """recursively converts (any) object to dictionary prior to
         serialization
 
@@ -157,7 +158,7 @@ def ga4gh_serialize(vro):
             return None
 
         if is_literal(vro):
-            v = vro._value
+            v = vro._value  # pylint: disable=protected-access
             if is_curie_type(vro):
                 if is_ga4gh_identifier(v):
                     # CURIEs are stripped to just the digest so that digests are independent of type prefixes
@@ -184,7 +185,7 @@ def ga4gh_serialize(vro):
                 if is_curie_type(vro[0]):
                     return sorted(dictify(o) for o in vro.data)
 
-                arr = list()
+                arr = []
                 for o in vro.typed_elems:
                     d = dictify(o)
                     if isinstance(d, dict):

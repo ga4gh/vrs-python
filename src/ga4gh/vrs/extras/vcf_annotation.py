@@ -27,7 +27,7 @@ _logger.setLevel(logging.DEBUG)
 class VCFAnnotatorException(Exception):
     """Custom exceptions for VCF Annotator tool"""
 
-    pass
+    pass  # pylint: disable=unnecessary-pass
 
 
 class SeqRepoProxyType(str, Enum):
@@ -90,7 +90,7 @@ class SeqRepoProxyType(str, Enum):
     help="The assembly that the `vcf_in` data uses.",
     type=str
 )
-def annotate_click(
+def annotate_click(  # pylint: disable=too-many-arguments
     vcf_in: str, vcf_out: Optional[str], vrs_pickle_out: Optional[str],
     seqrepo_dp_type: SeqRepoProxyType, seqrepo_root_dir: str, seqrepo_base_url: str,
     assembly: str
@@ -112,7 +112,7 @@ def annotate_click(
     _logger.info(msg)
     click.echo(msg)
 
-class VCFAnnotator:
+class VCFAnnotator:  # pylint: disable=too-few-public-methods
     """Provides utility for annotating VCF's with VRS Allele IDs.
     VCF's are read using pysam and stored as pysam objects.
     Alleles are translated into VRS Allele IDs using VRS-Python Translator.
@@ -174,7 +174,7 @@ class VCFAnnotator:
             with open(vrs_pickle_out, "wb") as wf:
                 pickle.dump(vrs_data, wf)
 
-    def _get_vrs_object(
+    def _get_vrs_object(  # pylint: disable=too-many-arguments
         self, vcf_coords: str, vrs_data: Dict, vrs_allele_ids: List[str], assembly: str,
         vrs_data_key: Optional[str] = None, output_pickle: bool = True,
         output_vcf: bool = False
@@ -195,14 +195,14 @@ class VCFAnnotator:
             `False` otherwise.
         """
         try:
-            vrs_obj = self.tlr._from_gnomad(vcf_coords, assembly_name=assembly)
+            vrs_obj = self.tlr._from_gnomad(vcf_coords, assembly_name=assembly)  # pylint: disable=protected-access
         except ValidationError as e:
             _logger.error("ValidationError when translating %s from gnomad: %s", vcf_coords, str(e))
         except KeyError as e:
             _logger.error("KeyError when translating %s from gnomad: %s", vcf_coords, str(e))
         except AssertionError as e:
             _logger.error("AssertionError when translating %s from gnomad: %s", vcf_coords, str(e))
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-except
             _logger.error("Unhandled Exception when translating %s from gnomad: %s", vcf_coords, str(e))
         else:
             if vrs_obj:
@@ -211,12 +211,12 @@ class VCFAnnotator:
                     vrs_data[key] = str(vrs_obj.as_dict())
 
                 if output_vcf:
-                    vrs_allele_ids.append(vrs_obj._id._value)
+                    vrs_allele_ids.append(vrs_obj._id._value)  # pylint: disable=protected-access
             else:
                 _logger.debug("None was returned when translating %s from gnomad", vcf_coords)
 
-    def _record_digests(
-        self, record: pysam.VariantRecord, vrs_data: Dict, assembly: str,
+    def _record_digests(  # pylint: disable=too-many-arguments
+        self, record: pysam.VariantRecord, vrs_data: Dict, assembly: str,  # pylint: disable=no-member
         output_pickle: bool = True, output_vcf: bool = True
     ) -> List[str]:
         """Get VRS data for record's reference and alt alleles.

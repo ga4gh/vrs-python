@@ -42,17 +42,17 @@ class Translator:
     spdi_re = re.compile(r"(?P<ac>[^:]+):(?P<pos>\d+):(?P<del_len_or_seq>\w*):(?P<ins_seq>\w*)")
 
 
-    def __init__(self,
+    def __init__(self,  # pylint: disable=too-many-arguments
                  data_proxy,
                  default_assembly_name="GRCh38",
                  translate_sequence_identifiers=True,
-                 normalize=True,
+                 do_normalize=True,
                  identify=True):
         self.default_assembly_name = default_assembly_name
         self.data_proxy = data_proxy
         self.translate_sequence_identifiers = translate_sequence_identifiers
         self.identify = identify
-        self.normalize = normalize
+        self.normalize = do_normalize
         self.hgvs_tools = None
 
 
@@ -72,7 +72,7 @@ class Translator:
                 raise ValueError(f"Unable to parse data as {fmt} variation")
             return o
 
-        for fmt, t in self.from_translators.items():
+        for _, t in self.from_translators.items():
             o = t(self, var)
             if o:
                 return o
@@ -216,7 +216,7 @@ class Translator:
         if not self.hgvs_re.match(hgvs_expr):
             return None
 
-        sv = self._hgvs_parser.parse_hgvs_variant(hgvs_expr)
+        sv = self._hgvs_parser.parse_hgvs_variant(hgvs_expr)  # pylint: disable=no-member
 
         # prefix accession with namespace
         sequence_id = coerce_namespace(sv.ac)
@@ -325,7 +325,7 @@ class Translator:
             self.hgvs_tools = HgvsTools(uta_conn)
         return self.hgvs_tools
 
-    def _to_hgvs(self, vo, namespace="refseq"):
+    def _to_hgvs(self, vo, namespace="refseq"):  # pylint: disable=too-many-locals
         """generates a *list* of HGVS expressions for VRS Allele.
 
         If `namespace` is not None, returns HGVS strings for the
@@ -368,11 +368,11 @@ class Translator:
         stype = stypes[0]
 
         # build interval and edit depending on sequence type
-        if stype == "p":
+        if stype == "p":  # pylint: disable=no-else-raise
             raise ValueError("Only nucleic acid variation is currently supported")
             # ival = hgvs.location.Interval(start=start, end=end)
             # edit = hgvs.edit.AARefAlt(ref=None, alt=vo.state.sequence)
-        else:                   # pylint: disable=no-else-raise
+        else:
             start, end = vo.location.interval.start.value, vo.location.interval.end.value
             # ib: 0 1 2 3 4 5
             #  h:  1 2 3 4 5
@@ -404,7 +404,7 @@ class Translator:
             if ns.startswith("GRC") and namespace is None:
                 continue
 
-            if not (any(a.startswith(pfx) for pfx in ("NM", "NP", "NC", "NG"))):
+            if not any(a.startswith(pfx) for pfx in ("NM", "NP", "NC", "NG")):
                 continue
 
             var.ac = a
@@ -418,7 +418,7 @@ class Translator:
 
                 hgvs_exprs += [str(var)]
             except hgvs.exceptions.HGVSDataNotAvailableError:
-                _logger.warning(f"No data found for accession {a}")
+                _logger.warning("No data found for accession %s", a)
 
         return list(set(hgvs_exprs))
 
@@ -469,6 +469,9 @@ class Translator:
 
 
     def is_valid_allele(self, vo):
+        """Ensure that `vo` is a valid VRS Allele with SequenceLocation and
+        LiteralSequenceExpression
+        """
         return (vo.type == "Allele"
                 and vo.location.type == "SequenceLocation"
                 and vo.state.type == "LiteralSequenceExpression")
@@ -487,14 +490,14 @@ class Translator:
         """
 
         if self.translate_sequence_identifiers:
-            seq_id = self.data_proxy.translate_sequence_identifier(allele.location.sequence_id._value, "ga4gh")[0]
+            seq_id = self.data_proxy.translate_sequence_identifier(allele.location.sequence_id._value, "ga4gh")[0]  # pylint: disable=protected-access
             allele.location.sequence_id = seq_id
 
         if self.normalize:
             allele = normalize(allele, self.data_proxy)
 
         if self.identify:
-            allele._id = ga4gh_identify(allele)
+            allele._id = ga4gh_identify(allele)  # pylint: disable=protected-access
 
         return allele
 
@@ -558,16 +561,16 @@ if __name__ == "__main__":
             "type": "SequenceInterval"
         }
     ]
-    formats = ["hgvs", "gnomad", "beacon", "spdi", "vrs", None]
+    from_formats = ["hgvs", "gnomad", "beacon", "spdi", "vrs", None]
 
     for e in expressions:
         print(f"* {e}")
-        for f in formats:
+        for f in from_formats:
             try:
-                o = tlr.translate_from(e, f)
-                r = o.type
+                vrs_obj = tlr.translate_from(e, f)
+                r = vrs_obj.type
             except ValueError:
                 r = "-"
-            except Exception as ex:
+            except Exception as ex:  # pylint: disable=broad-except
                 r = ex.__class__.__name__
             print(f"  {f}: {r}")
