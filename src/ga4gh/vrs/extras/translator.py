@@ -148,8 +148,13 @@ class Translator:
         return allele
 
 
-    def _from_gnomad(self, gnomad_expr, assembly_name=None):
+    def _from_gnomad(self, gnomad_expr, assembly_name=None, require_validation=True):
         """Parse gnomAD-style VCF expression into VRS Allele
+
+        :param str gnomad_expr: chr-pos-ref-alt
+        :param str assembly_name: `gnomad_expr`'s assembly
+        :param bool require_validation: `True` if validation checks must pass in order
+            for a VRS Allele to be returned. `False` otherwise.
 
         #>>> a = tlr.from_gnomad("1-55516888-G-GA")
         #>>> a.as_dict()
@@ -179,7 +184,7 @@ class Translator:
         end = start + len(ref)
         ins_seq = alt
 
-        if not self._is_valid_ref_seq(sequence_id, start, end, ref):
+        if require_validation and not self._is_valid_ref_seq(sequence_id, start, end, ref):
             return None
 
         interval = models.SequenceInterval(start=models.Number(value=start),
@@ -465,7 +470,11 @@ class Translator:
             sequence. `False` otherwise.
         """
         actual_ref = self.data_proxy.get_sequence(sequence_id, start_pos, end_pos)
-        return actual_ref == ref
+        is_valid = actual_ref == ref
+        if not is_valid:
+            _logger.warning("Expected reference sequence %s on %s at positions (%i, %i) "
+                            "but found %s", ref, sequence_id, start_pos, end_pos, actual_ref)
+        return is_valid
 
 
     def is_valid_allele(self, vo):

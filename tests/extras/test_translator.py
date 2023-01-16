@@ -111,6 +111,9 @@ def test_from_gnomad(tlr):
     # Ref != Actual ref
     assert not tlr._from_gnomad("13-32936732-G-C")
 
+    # require_validation set to False
+    assert tlr._from_gnomad("13-32936732-G-C", require_validation=False)
+
 @pytest.mark.vcr
 def test_from_hgvs(tlr):
     assert tlr._from_hgvs(snv_inputs["hgvs"]).as_dict() == snv_output
