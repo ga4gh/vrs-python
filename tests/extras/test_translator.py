@@ -1,6 +1,7 @@
 import pytest
 
 from ga4gh.vrs import models
+from ga4gh.vrs.extras.translator import ValidationError
 
 snv_inputs = {
     "hgvs": "NC_000019.10:g.44908822C>T",
@@ -109,7 +110,19 @@ def test_from_gnomad(tlr):
     assert not tlr._from_gnomad("13-32936732-helloworld-C")
 
     # Ref != Actual ref
-    assert not tlr._from_gnomad("13-32936732-G-C")
+    invalid_var = "13-32936732-G-C"
+    error_msg = "Expected reference sequence G on GRCh38:13 at positions (32936731, 32936732) but found C"
+
+    with pytest.raises(ValidationError) as e:
+        tlr._from_gnomad(invalid_var)
+    assert str(e.value) == error_msg
+
+    with pytest.raises(ValidationError) as e:
+        tlr.translate_from(invalid_var, fmt="gnomad")
+    assert str(e.value) == error_msg
+
+    # require_validation set to False
+    assert tlr._from_gnomad(invalid_var, require_validation=False)
 
 @pytest.mark.vcr
 def test_from_hgvs(tlr):
