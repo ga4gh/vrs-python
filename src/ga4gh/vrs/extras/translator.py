@@ -43,7 +43,7 @@ class Translator:
     """
 
     beacon_re = re.compile(r"(?P<chr>[^-]+)\s*:\s*(?P<pos>\d+)\s*(?P<ref>\w+)\s*>\s*(?P<alt>\w+)")
-    gnomad_re = re.compile(r"(?P<chr>[^-]+)-(?P<pos>\d+)-(?P<ref>(?i)[ACGTN]+)-(?P<alt>(?i)[ACGTN]+|\*|\.)")
+    gnomad_re = re.compile(r"(?P<chr>[^-]+)-(?P<pos>\d+)-(?P<ref>[ACGTN]+)-(?P<alt>[ACGTN]+|\*|\.)", re.IGNORECASE)
     hgvs_re = re.compile(r"[^:]+:[cgnpr]\.")
     spdi_re = re.compile(r"(?P<ac>[^:]+):(?P<pos>\d+):(?P<del_len_or_seq>\w*):(?P<ins_seq>\w*)")
 
@@ -196,7 +196,7 @@ class Translator:
 
         # validation checks
         valid_ref_seq, err_msg = self._is_valid_ref_seq(sequence_id, start, end, ref)
-        if not valid_ref_seq and require_validation:
+        if require_validation and not valid_ref_seq:
             raise ValidationError(err_msg)
 
         interval = models.SequenceInterval(start=models.Number(value=start),
