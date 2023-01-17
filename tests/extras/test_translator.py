@@ -1,26 +1,27 @@
 import pytest
 
 from ga4gh.vrs import models
+from ga4gh.vrs.extras.translator import ValidationError
 
 snv_inputs = {
-    "hgvs": "NC_000013.11:g.32936732G>C",
-    "beacon": "13 : 32936732 G > C",
-    "spdi": "NC_000013.11:32936731:1:C",
-    "gnomad": "13-32936732-G-C"
+    "hgvs": "NC_000019.10:g.44908822C>T",
+    "beacon": "19 : 44908822 C > T",
+    "spdi": "NC_000019.10:44908821:1:T",
+    "gnomad": "19-44908822-C-T"
 }
 
 snv_output = {
     "location": {
         "interval": {
-            "end": {"value": 32936732, "type": "Number"},
-            "start": {"value": 32936731, "type": "Number"},
+            "end": {"value": 44908822, "type": "Number"},
+            "start": {"value": 44908821, "type": "Number"},
             "type": "SequenceInterval"
         },
-        "sequence_id": "ga4gh:SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT",
+        "sequence_id": "ga4gh:SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl",
         "type": "SequenceLocation"
     },
     "state": {
-        "sequence": "C",
+        "sequence": "T",
         "type": "LiteralSequenceExpression"
     },
     "type": "Allele"
@@ -105,6 +106,23 @@ def test_from_beacon(tlr):
 def test_from_gnomad(tlr):
     assert tlr._from_gnomad(snv_inputs["gnomad"]).as_dict() == snv_output
 
+    # Invalid input. Ref does not match regex
+    assert not tlr._from_gnomad("13-32936732-helloworld-C")
+
+    # Ref != Actual ref
+    invalid_var = "13-32936732-G-C"
+    error_msg = "Expected reference sequence G on GRCh38:13 at positions (32936731, 32936732) but found C"
+
+    with pytest.raises(ValidationError) as e:
+        tlr._from_gnomad(invalid_var)
+    assert str(e.value) == error_msg
+
+    with pytest.raises(ValidationError) as e:
+        tlr.translate_from(invalid_var, fmt="gnomad")
+    assert str(e.value) == error_msg
+
+    # require_validation set to False
+    assert tlr._from_gnomad(invalid_var, require_validation=False)
 
 @pytest.mark.vcr
 def test_from_hgvs(tlr):

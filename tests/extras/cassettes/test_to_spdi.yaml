@@ -11,31 +11,31 @@ interactions:
       User-Agent:
       - python-requests/2.28.1
     method: GET
-    uri: http://localhost:5000/seqrepo/1/metadata/ga4gh:SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT
+    uri: http://localhost:5000/seqrepo/1/metadata/ga4gh:SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl
   response:
     body:
-      string: "{\n  \"added\": \"2016-08-27T23:50:14Z\",\n  \"aliases\": [\n    \"GRCh38:13\",\n
-        \   \"GRCh38:chr13\",\n    \"GRCh38.p1:13\",\n    \"GRCh38.p1:chr13\",\n    \"GRCh38.p10:13\",\n
-        \   \"GRCh38.p10:chr13\",\n    \"GRCh38.p11:13\",\n    \"GRCh38.p11:chr13\",\n
-        \   \"GRCh38.p12:13\",\n    \"GRCh38.p12:chr13\",\n    \"GRCh38.p2:13\",\n
-        \   \"GRCh38.p2:chr13\",\n    \"GRCh38.p3:13\",\n    \"GRCh38.p3:chr13\",\n
-        \   \"GRCh38.p4:13\",\n    \"GRCh38.p4:chr13\",\n    \"GRCh38.p5:13\",\n    \"GRCh38.p5:chr13\",\n
-        \   \"GRCh38.p6:13\",\n    \"GRCh38.p6:chr13\",\n    \"GRCh38.p7:13\",\n    \"GRCh38.p7:chr13\",\n
-        \   \"GRCh38.p8:13\",\n    \"GRCh38.p8:chr13\",\n    \"GRCh38.p9:13\",\n    \"GRCh38.p9:chr13\",\n
-        \   \"MD5:a5437debe2ef9c9ef8f3ea2874ae1d82\",\n    \"NCBI:NC_000013.11\",\n
-        \   \"refseq:NC_000013.11\",\n    \"SEGUID:2oDBty0yKV9wHo7gg+Bt+fPgi5o\",\n
-        \   \"SHA1:da80c1b72d32295f701e8ee083e06df9f3e08b9a\",\n    \"VMC:GS__0wi-qoDrvram155UmcSC-zA5ZK4fpLT\",\n
-        \   \"sha512t24u:_0wi-qoDrvram155UmcSC-zA5ZK4fpLT\",\n    \"ga4gh:SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT\"\n
-        \ ],\n  \"alphabet\": \"ACGKNTY\",\n  \"length\": 114364328\n}\n"
+      string: "{\n  \"added\": \"2016-08-24T08:19:02Z\",\n  \"aliases\": [\n    \"Ensembl:19\",\n
+        \   \"ensembl:19\",\n    \"GRCh38:19\",\n    \"GRCh38:chr19\",\n    \"GRCh38.p1:19\",\n
+        \   \"GRCh38.p1:chr19\",\n    \"GRCh38.p10:19\",\n    \"GRCh38.p10:chr19\",\n
+        \   \"GRCh38.p11:19\",\n    \"GRCh38.p11:chr19\",\n    \"GRCh38.p12:19\",\n
+        \   \"GRCh38.p12:chr19\",\n    \"GRCh38.p2:19\",\n    \"GRCh38.p2:chr19\",\n
+        \   \"GRCh38.p3:19\",\n    \"GRCh38.p3:chr19\",\n    \"GRCh38.p4:19\",\n    \"GRCh38.p4:chr19\",\n
+        \   \"GRCh38.p5:19\",\n    \"GRCh38.p5:chr19\",\n    \"GRCh38.p6:19\",\n    \"GRCh38.p6:chr19\",\n
+        \   \"GRCh38.p7:19\",\n    \"GRCh38.p7:chr19\",\n    \"GRCh38.p8:19\",\n    \"GRCh38.p8:chr19\",\n
+        \   \"GRCh38.p9:19\",\n    \"GRCh38.p9:chr19\",\n    \"MD5:b0eba2c7bb5c953d1e06a508b5e487de\",\n
+        \   \"NCBI:NC_000019.10\",\n    \"refseq:NC_000019.10\",\n    \"SEGUID:AHxM5/L8jIX08UhBBkKXkiO5rhY\",\n
+        \   \"SHA1:007c4ce7f2fc8c85f4f148410642979223b9ae16\",\n    \"VMC:GS_IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl\",\n
+        \   \"sha512t24u:IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl\",\n    \"ga4gh:SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl\"\n
+        \ ],\n  \"alphabet\": \"ACGNT\",\n  \"length\": 58617616\n}\n"
     headers:
       Connection:
       - close
       Content-Length:
-      - '1002'
+      - '1035'
       Content-Type:
       - application/json
       Date:
-      - Mon, 19 Sep 2022 13:14:14 GMT
+      - Fri, 13 Jan 2023 15:28:15 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -53,7 +53,7 @@ interactions:
       User-Agent:
       - python-requests/2.28.1
     method: GET
-    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT?start=32936731&end=32936732
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl?start=44908821&end=44908822
   response:
     body:
       string: C
@@ -65,7 +65,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Mon, 19 Sep 2022 13:14:14 GMT
+      - Fri, 13 Jan 2023 15:28:15 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -83,31 +83,151 @@ interactions:
       User-Agent:
       - python-requests/2.28.1
     method: GET
-    uri: http://localhost:5000/seqrepo/1/metadata/ga4gh:SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl?start=44908820&end=44908821
   response:
     body:
-      string: "{\n  \"added\": \"2016-08-27T23:50:14Z\",\n  \"aliases\": [\n    \"GRCh38:13\",\n
-        \   \"GRCh38:chr13\",\n    \"GRCh38.p1:13\",\n    \"GRCh38.p1:chr13\",\n    \"GRCh38.p10:13\",\n
-        \   \"GRCh38.p10:chr13\",\n    \"GRCh38.p11:13\",\n    \"GRCh38.p11:chr13\",\n
-        \   \"GRCh38.p12:13\",\n    \"GRCh38.p12:chr13\",\n    \"GRCh38.p2:13\",\n
-        \   \"GRCh38.p2:chr13\",\n    \"GRCh38.p3:13\",\n    \"GRCh38.p3:chr13\",\n
-        \   \"GRCh38.p4:13\",\n    \"GRCh38.p4:chr13\",\n    \"GRCh38.p5:13\",\n    \"GRCh38.p5:chr13\",\n
-        \   \"GRCh38.p6:13\",\n    \"GRCh38.p6:chr13\",\n    \"GRCh38.p7:13\",\n    \"GRCh38.p7:chr13\",\n
-        \   \"GRCh38.p8:13\",\n    \"GRCh38.p8:chr13\",\n    \"GRCh38.p9:13\",\n    \"GRCh38.p9:chr13\",\n
-        \   \"MD5:a5437debe2ef9c9ef8f3ea2874ae1d82\",\n    \"NCBI:NC_000013.11\",\n
-        \   \"refseq:NC_000013.11\",\n    \"SEGUID:2oDBty0yKV9wHo7gg+Bt+fPgi5o\",\n
-        \   \"SHA1:da80c1b72d32295f701e8ee083e06df9f3e08b9a\",\n    \"VMC:GS__0wi-qoDrvram155UmcSC-zA5ZK4fpLT\",\n
-        \   \"sha512t24u:_0wi-qoDrvram155UmcSC-zA5ZK4fpLT\",\n    \"ga4gh:SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT\"\n
-        \ ],\n  \"alphabet\": \"ACGKNTY\",\n  \"length\": 114364328\n}\n"
+      string: G
     headers:
       Connection:
       - close
       Content-Length:
-      - '1002'
+      - '1'
+      Content-Type:
+      - text/plain; charset=utf-8
+      Date:
+      - Fri, 13 Jan 2023 15:28:15 GMT
+      Server:
+      - Werkzeug/2.2.2 Python/3.10.4
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.28.1
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl?start=44908822&end=44908823
+  response:
+    body:
+      string: G
+    headers:
+      Connection:
+      - close
+      Content-Length:
+      - '1'
+      Content-Type:
+      - text/plain; charset=utf-8
+      Date:
+      - Fri, 13 Jan 2023 15:28:15 GMT
+      Server:
+      - Werkzeug/2.2.2 Python/3.10.4
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.28.1
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl?start=44908821&end=44908821
+  response:
+    body:
+      string: ''
+    headers:
+      Connection:
+      - close
+      Content-Length:
+      - '0'
+      Content-Type:
+      - text/plain; charset=utf-8
+      Date:
+      - Fri, 13 Jan 2023 15:28:15 GMT
+      Server:
+      - Werkzeug/2.2.2 Python/3.10.4
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.28.1
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl?start=44908822&end=44908822
+  response:
+    body:
+      string: ''
+    headers:
+      Connection:
+      - close
+      Content-Length:
+      - '0'
+      Content-Type:
+      - text/plain; charset=utf-8
+      Date:
+      - Fri, 13 Jan 2023 15:28:15 GMT
+      Server:
+      - Werkzeug/2.2.2 Python/3.10.4
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.28.1
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/metadata/ga4gh:SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl
+  response:
+    body:
+      string: "{\n  \"added\": \"2016-08-24T08:19:02Z\",\n  \"aliases\": [\n    \"Ensembl:19\",\n
+        \   \"ensembl:19\",\n    \"GRCh38:19\",\n    \"GRCh38:chr19\",\n    \"GRCh38.p1:19\",\n
+        \   \"GRCh38.p1:chr19\",\n    \"GRCh38.p10:19\",\n    \"GRCh38.p10:chr19\",\n
+        \   \"GRCh38.p11:19\",\n    \"GRCh38.p11:chr19\",\n    \"GRCh38.p12:19\",\n
+        \   \"GRCh38.p12:chr19\",\n    \"GRCh38.p2:19\",\n    \"GRCh38.p2:chr19\",\n
+        \   \"GRCh38.p3:19\",\n    \"GRCh38.p3:chr19\",\n    \"GRCh38.p4:19\",\n    \"GRCh38.p4:chr19\",\n
+        \   \"GRCh38.p5:19\",\n    \"GRCh38.p5:chr19\",\n    \"GRCh38.p6:19\",\n    \"GRCh38.p6:chr19\",\n
+        \   \"GRCh38.p7:19\",\n    \"GRCh38.p7:chr19\",\n    \"GRCh38.p8:19\",\n    \"GRCh38.p8:chr19\",\n
+        \   \"GRCh38.p9:19\",\n    \"GRCh38.p9:chr19\",\n    \"MD5:b0eba2c7bb5c953d1e06a508b5e487de\",\n
+        \   \"NCBI:NC_000019.10\",\n    \"refseq:NC_000019.10\",\n    \"SEGUID:AHxM5/L8jIX08UhBBkKXkiO5rhY\",\n
+        \   \"SHA1:007c4ce7f2fc8c85f4f148410642979223b9ae16\",\n    \"VMC:GS_IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl\",\n
+        \   \"sha512t24u:IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl\",\n    \"ga4gh:SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl\"\n
+        \ ],\n  \"alphabet\": \"ACGNT\",\n  \"length\": 58617616\n}\n"
+    headers:
+      Connection:
+      - close
+      Content-Length:
+      - '1035'
       Content-Type:
       - application/json
       Date:
-      - Mon, 19 Sep 2022 13:14:14 GMT
+      - Fri, 13 Jan 2023 15:28:15 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
