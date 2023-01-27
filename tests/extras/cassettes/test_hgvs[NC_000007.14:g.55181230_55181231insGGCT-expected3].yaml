@@ -34,7 +34,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Mon, 19 Sep 2022 13:14:24 GMT
+      - Fri, 27 Jan 2023 20:17:50 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -64,7 +64,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Mon, 19 Sep 2022 13:14:24 GMT
+      - Fri, 27 Jan 2023 20:17:50 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -94,7 +94,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Mon, 19 Sep 2022 13:14:24 GMT
+      - Fri, 27 Jan 2023 20:17:50 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -124,7 +124,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Mon, 19 Sep 2022 13:14:24 GMT
+      - Fri, 27 Jan 2023 20:17:50 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -154,7 +154,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Mon, 19 Sep 2022 13:14:25 GMT
+      - Fri, 27 Jan 2023 20:17:50 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -184,7 +184,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Mon, 19 Sep 2022 13:14:25 GMT
+      - Fri, 27 Jan 2023 20:17:50 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -224,20 +224,20 @@ interactions:
       Content-Type:
       - text/plain
       Date:
-      - Mon, 19 Sep 2022 13:14:25 GMT
+      - Fri, 27 Jan 2023 20:17:51 GMT
       Keep-Alive:
       - timeout=4, max=40
       NCBI-PHID:
-      - 939B60E632B07995000041566A48ADD4.1.1.m_5
+      - 322C43B94AD290850000530D5EA49989.1.1.m_5
       NCBI-SID:
-      - A1C3888EAF67C9C2_0B05SID
+      - 3E873C1C46BEA525_705ASID
       Referrer-Policy:
       - origin-when-cross-origin
       Server:
       - Finatra
       Set-Cookie:
-      - ncbi_sid=A1C3888EAF67C9C2_0B05SID; domain=.nih.gov; path=/; expires=Tue, 19
-        Sep 2023 13:14:25 GMT
+      - ncbi_sid=3E873C1C46BEA525_705ASID; domain=.nih.gov; path=/; expires=Sat, 27
+        Jan 2024 20:17:51 GMT
       Strict-Transport-Security:
       - max-age=31536000; includeSubDomains; preload
       Transfer-Encoding:
@@ -246,8 +246,6 @@ interactions:
       - '3'
       X-RateLimit-Remaining:
       - '2'
-      X-Test-Test:
-      - test42
       X-UA-Compatible:
       - IE=Edge
       X-XSS-Protection:
@@ -292,20 +290,20 @@ interactions:
       Content-Type:
       - text/plain
       Date:
-      - Mon, 19 Sep 2022 13:14:27 GMT
+      - Fri, 27 Jan 2023 20:17:51 GMT
       Keep-Alive:
       - timeout=4, max=40
       NCBI-PHID:
-      - 322C565FBBD0434500005831A0D62964.1.1.m_5
+      - 939B7F1D160A58A500005A26C44F24CA.1.1.m_5
       NCBI-SID:
-      - 12C1F4EEE127F856_F6E8SID
+      - 345B4E0216D2E430_3AE7SID
       Referrer-Policy:
       - origin-when-cross-origin
       Server:
       - Finatra
       Set-Cookie:
-      - ncbi_sid=12C1F4EEE127F856_F6E8SID; domain=.nih.gov; path=/; expires=Tue, 19
-        Sep 2023 13:14:27 GMT
+      - ncbi_sid=345B4E0216D2E430_3AE7SID; domain=.nih.gov; path=/; expires=Sat, 27
+        Jan 2024 20:17:51 GMT
       Strict-Transport-Security:
       - max-age=31536000; includeSubDomains; preload
       Transfer-Encoding:
@@ -313,9 +311,7 @@ interactions:
       X-RateLimit-Limit:
       - '3'
       X-RateLimit-Remaining:
-      - '2'
-      X-Test-Test:
-      - test42
+      - '1'
       X-UA-Compatible:
       - IE=Edge
       X-XSS-Protection:
@@ -359,20 +355,20 @@ interactions:
       Content-Type:
       - text/plain
       Date:
-      - Mon, 19 Sep 2022 13:14:27 GMT
+      - Fri, 27 Jan 2023 20:17:52 GMT
       Keep-Alive:
       - timeout=4, max=40
       NCBI-PHID:
-      - 939B60E632B0799500005B567572A370.1.1.m_5
+      - 939B7F1D160A58A500006226C6E68CFF.1.1.m_5
       NCBI-SID:
-      - 04EF70B4B49FA1A3_7D66SID
+      - BB49BE70D8DD80C0_433DSID
       Referrer-Policy:
       - origin-when-cross-origin
       Server:
       - Finatra
       Set-Cookie:
-      - ncbi_sid=04EF70B4B49FA1A3_7D66SID; domain=.nih.gov; path=/; expires=Tue, 19
-        Sep 2023 13:14:28 GMT
+      - ncbi_sid=BB49BE70D8DD80C0_433DSID; domain=.nih.gov; path=/; expires=Sat, 27
+        Jan 2024 20:17:52 GMT
       Strict-Transport-Security:
       - max-age=31536000; includeSubDomains; preload
       Transfer-Encoding:
@@ -381,8 +377,6 @@ interactions:
       - '3'
       X-RateLimit-Remaining:
       - '1'
-      X-Test-Test:
-      - test42
       X-UA-Compatible:
       - IE=Edge
       X-XSS-Protection:
