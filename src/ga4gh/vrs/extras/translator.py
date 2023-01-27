@@ -28,8 +28,6 @@ _logger = logging.getLogger(__name__)
 class ValidationError(Exception):
     """Class for validation errors during translation"""
 
-    pass  # pylint: disable=unnecessary-pass
-
 
 class Translator:
     """Translates various variation formats to and from GA4GH VRS models
@@ -514,14 +512,14 @@ class Translator:
         """
 
         if self.translate_sequence_identifiers:
-            seq_id = self.data_proxy.translate_sequence_identifier(allele.location.sequence_id._value, "ga4gh")[0]  # pylint: disable=protected-access
+            seq_id = self.data_proxy.translate_sequence_identifier(allele.location.sequence_id._value, "ga4gh")[0]
             allele.location.sequence_id = seq_id
 
         if self.normalize:
             allele = normalize(allele, self.data_proxy)
 
         if self.identify:
-            allele._id = ga4gh_identify(allele)  # pylint: disable=protected-access
+            allele._id = ga4gh_identify(allele)
 
         return allele
 

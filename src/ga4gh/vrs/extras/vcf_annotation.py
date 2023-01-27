@@ -27,8 +27,6 @@ _logger.setLevel(logging.DEBUG)
 class VCFAnnotatorException(Exception):
     """Custom exceptions for VCF Annotator tool"""
 
-    pass  # pylint: disable=unnecessary-pass
-
 
 class SeqRepoProxyType(str, Enum):
     """Define constraints for SeqRepo Data Proxy types"""
@@ -195,7 +193,7 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
             `False` otherwise.
         """
         try:
-            vrs_obj = self.tlr._from_gnomad(vcf_coords, assembly_name=assembly)  # pylint: disable=protected-access
+            vrs_obj = self.tlr._from_gnomad(vcf_coords, assembly_name=assembly)
         except (ValidationError, TranslatorValidationError) as e:
             _logger.error("ValidationError when translating %s from gnomad: %s", vcf_coords, str(e))
         except KeyError as e:
@@ -211,7 +209,7 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
                     vrs_data[key] = str(vrs_obj.as_dict())
 
                 if output_vcf:
-                    vrs_allele_ids.append(vrs_obj._id._value)  # pylint: disable=protected-access
+                    vrs_allele_ids.append(vrs_obj._id._value)
             else:
                 _logger.debug("None was returned when translating %s from gnomad", vcf_coords)
 

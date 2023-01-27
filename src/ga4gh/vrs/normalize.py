@@ -16,21 +16,21 @@ _logger = logging.getLogger(__name__)
 
 
 def _normalize_allele(allele, data_proxy):
-    sequence = SequenceProxy(data_proxy, allele.location.sequence_id._value)  # pylint: disable=protected-access
+    sequence = SequenceProxy(data_proxy, allele.location.sequence_id._value)
 
     _interval_type = allele.location.interval.type
     if _interval_type == "SimpleInterval":
-        ival = (allele.location.interval.start._value, allele.location.interval.end._value)  # pylint: disable=protected-access
+        ival = (allele.location.interval.start._value, allele.location.interval.end._value)
     elif _interval_type == "SequenceInterval":
         ival = (allele.location.interval.start.value, allele.location.interval.end.value)
 
     _allele_state = allele.state.type
     _states_with_sequence = ["SequenceState", "LiteralSequenceExpression"]
     if _allele_state in _states_with_sequence:
-        alleles = (None, allele.state.sequence._value)  # pylint: disable=protected-access
+        alleles = (None, allele.state.sequence._value)
     elif _allele_state == "RepeatedSequenceExpression" and \
             allele.state.seq_expr.type in _states_with_sequence:
-        alleles = (None, allele.state.seq_expr.sequence._value)  # pylint: disable=protected-access
+        alleles = (None, allele.state.seq_expr.sequence._value)
     else:
         alleles = (None, "")
 
@@ -81,7 +81,7 @@ def normalize(vo, data_proxy=None):
     """normalize given vrs object, regardless of type"""
 
     assert is_pjs_instance(vo)
-    vo_type = vo.type._value  # pylint: disable=protected-access
+    vo_type = vo.type._value
 
     if vo_type in handlers:
         handler = handlers[vo_type]

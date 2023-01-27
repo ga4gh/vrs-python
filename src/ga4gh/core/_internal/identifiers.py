@@ -158,7 +158,7 @@ def ga4gh_serialize(vro):
             return None
 
         if is_literal(vro):
-            v = vro._value  # pylint: disable=protected-access
+            v = vro._value
             if is_curie_type(vro):
                 if is_ga4gh_identifier(v):
                     # CURIEs are stripped to just the digest so that digests are independent of type prefixes
