@@ -18,7 +18,7 @@ import hgvs.sequencevariant
 import hgvs.dataproviders.uta
 
 from ga4gh.core import ga4gh_identify
-from ga4gh.vrs import models, normalize
+from ga4gh.vrs import models, normalize as do_normalize
 from ga4gh.vrs.extras.decorators import lazy_property  # this should be relocated
 from ga4gh.vrs.utils.hgvs_tools import HgvsTools
 
@@ -50,13 +50,13 @@ class Translator:
                  data_proxy,
                  default_assembly_name="GRCh38",
                  translate_sequence_identifiers=True,
-                 do_normalize=True,
+                 normalize=True,
                  identify=True):
         self.default_assembly_name = default_assembly_name
         self.data_proxy = data_proxy
         self.translate_sequence_identifiers = translate_sequence_identifiers
         self.identify = identify
-        self.normalize = do_normalize
+        self.normalize = normalize
         self.hgvs_tools = None
 
 
@@ -516,7 +516,7 @@ class Translator:
             allele.location.sequence_id = seq_id
 
         if self.normalize:
-            allele = normalize(allele, self.data_proxy)
+            allele = do_normalize(allele, self.data_proxy)
 
         if self.identify:
             allele._id = ga4gh_identify(allele)
