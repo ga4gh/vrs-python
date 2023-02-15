@@ -92,7 +92,7 @@ class Localizer:
         try:
             ac = self._ana_maps[assembly_name][loc.chr]
         except KeyError as e:
-            raise ValueError(f"No accssion for {loc.chr} in assembly {assembly_name}") from e
+            raise ValueError(f"No accession for {loc.chr} in assembly {assembly_name}") from e
 
         return ga4gh.vrs.models.SequenceLocation(
             sequence_id=coerce_namespace(ac),
