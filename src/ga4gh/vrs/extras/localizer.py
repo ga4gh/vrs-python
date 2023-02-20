@@ -44,7 +44,7 @@ class Localizer:
     def localize_allele(self, allele, assembly_name = "GRCh38"):
         """Converts VRS Allele's named features to sequence location"""
         # copy input variant and replace location
-        # N.B. deepcopy leads to recursion_errors
+        # N.B. deepcopy leads to recursion errors
         allele_sl = ga4gh.vrs.models.Variation(**allele.as_dict())
         del allele_sl._id
         allele_sl.location = self.localize_named_feature(allele.location, assembly_name)
