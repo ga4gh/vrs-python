@@ -7,7 +7,7 @@ implementation
 
 __all__ = """models normalize schema_path vrs_deref vrs_enref""".split()
 
-
+import logging
 from pkg_resources import get_distribution, DistributionNotFound
 
 from ._internal.enderef import vrs_deref, vrs_enref
@@ -20,3 +20,7 @@ except DistributionNotFound:    # pragma: nocover
     __version__ = "unknown"
 finally:
     del get_distribution, DistributionNotFound
+
+logging.basicConfig(
+    filename="vrs-python.log",
+    format="[%(asctime)s] - %(name)s - %(levelname)s : %(message)s")

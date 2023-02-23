@@ -1,0 +1,60 @@
+interactions:
+- request:
+    body: '{"variation": {"type": "Allele", "location": {"type": "SequenceLocation",
+      "sequence_id": "ga4gh:SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul", "interval": {"type":
+      "SequenceInterval", "start": {"type": "Number", "value": 55181230}, "end": {"type":
+      "Number", "value": 55181230}}}, "state": {"type": "LiteralSequenceExpression",
+      "sequence": "GGCT"}}, "namespace": "refseq"}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '362'
+      Content-Type:
+      - application/json; charset=utf-8
+      User-Agent:
+      - python-requests/2.28.1
+    method: POST
+    uri: https://normalize.cancervariants.org/variation/vrs_allele_to_hgvs
+  response:
+    body:
+      string: '{"query":{"variation":{"_id":null,"type":"Allele","location":{"_id":null,"type":"SequenceLocation","sequence_id":"ga4gh:SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul","interval":{"type":"SequenceInterval","start":{"type":"Number","value":55181230},"end":{"type":"Number","value":55181230}}},"state":{"type":"LiteralSequenceExpression","sequence":"GGCT"}},"namespace":"refseq"},"warnings":[],"service_meta_":{"version":"0.5.0a0","response_datetime":"2022-09-19T13:16:07.246981","name":"variation-normalizer","url":"https://github.com/cancervariants/variation-normalization"},"vrs_python_meta_":{"version":"0.8.1.dev0","name":"vrs-python","url":"https://github.com/ga4gh/vrs-python"},"variations":["NC_000007.14:g.55181230_55181231insGGCT"]}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '729'
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 19 Sep 2022 13:16:07 GMT
+      Via:
+      - 1.1 652a36cca524228b11a07aa4660a0022.cloudfront.net (CloudFront)
+      X-Amz-Cf-Id:
+      - K8kKB-Bj6pIBWRq8r3DVh7JIwIqXDYGmt8VhDq37rwZLt1K7iUzoSg==
+      X-Amz-Cf-Pop:
+      - ORD58-P5
+      X-Amzn-Trace-Id:
+      - Root=1-63286b95-2f57ce1a66ec4125324a4e58
+      X-Cache:
+      - Miss from cloudfront
+      x-amz-apigw-id:
+      - YtW_dFgyCYcFYww=
+      x-amzn-Remapped-Connection:
+      - keep-alive
+      x-amzn-Remapped-Content-Length:
+      - '729'
+      x-amzn-Remapped-Date:
+      - Mon, 19 Sep 2022 13:16:07 GMT
+      x-amzn-Remapped-Server:
+      - nginx/1.20.0
+      x-amzn-RequestId:
+      - a8984dc2-bb64-474f-a92d-9344ccaffbd5
+    status:
+      code: 200
+      message: OK
+version: 1

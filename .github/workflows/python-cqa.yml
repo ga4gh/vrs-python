@@ -46,4 +46,4 @@ jobs:
         pylint src/ga4gh/{core,vrs}
     - name: Test with pytest
       run: |
-        pytest
+        python -m pytest
