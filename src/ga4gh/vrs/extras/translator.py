@@ -439,7 +439,7 @@ class Translator:
             if ns.startswith("GRC") and namespace is None:
                 continue
 
-            if not (any(a.startswith(pfx) for pfx in ("NM", "NP", "NC", "NG"))):
+            if not any(a.startswith(pfx) for pfx in ("NM", "NP", "NC", "NG")):
                 continue
 
             var.ac = a
