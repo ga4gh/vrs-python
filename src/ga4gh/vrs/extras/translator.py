@@ -28,8 +28,6 @@ _logger = logging.getLogger(__name__)
 class ValidationError(Exception):
     """Class for validation errors during translation"""
 
-    pass
-
 
 class Translator:
     """Translates various variation formats to and from GA4GH VRS models
