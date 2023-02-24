@@ -4,7 +4,7 @@ Input formats: VRS (serialized), hgvs, spdi, gnomad (vcf), beacon
 Output formats: VRS (serialized), hgvs, spdi, gnomad (vcf)
 
 """
-
+from typing import Tuple
 from collections.abc import Mapping
 import logging
 import re
@@ -25,6 +25,10 @@ from ga4gh.vrs.utils.hgvs_tools import HgvsTools
 _logger = logging.getLogger(__name__)
 
 
+class ValidationError(Exception):
+    """Class for validation errors during translation"""
+
+
 class Translator:
     """Translates various variation formats to and from GA4GH VRS models
 
@@ -37,9 +41,9 @@ class Translator:
     """
 
     beacon_re = re.compile(r"(?P<chr>[^-]+)\s*:\s*(?P<pos>\d+)\s*(?P<ref>\w+)\s*>\s*(?P<alt>\w+)")
-    gnomad_re = re.compile(r"(?P<chr>[^-]+)-(?P<pos>\d+)-(?P<ref>\w+)-(?P<alt>\w+)")
+    gnomad_re = re.compile(r"(?P<chr>[^-]+)-(?P<pos>\d+)-(?P<ref>[ACGTN]+)-(?P<alt>[ACGTN]+|\*|\.)", re.IGNORECASE)
     hgvs_re = re.compile(r"[^:]+:[cgnpr]\.")
-    spdi_re = re.compile(r"(?P<ac>[^:]+):(?P<pos>\d+):(?P<del_len_or_seq>\w+):(?P<ins_seq>\w+)")
+    spdi_re = re.compile(r"(?P<ac>[^:]+):(?P<pos>\d+):(?P<del_len_or_seq>\w*):(?P<ins_seq>\w*)")
 
 
     def __init__(self,
@@ -56,24 +60,28 @@ class Translator:
         self.hgvs_tools = None
 
 
-    def translate_from(self, var, fmt=None):
+    def translate_from(self, var, fmt=None, require_validation=True):
         """Translate variation `var` to VRS object
 
         If `fmt` is None, guess the appropriate format and return the variant.
         If `fmt` is specified, try only that format.
+        If `require_validation` is `True` then validation checks must pass in order to
+            return a VRS object. A `ValidationError` will be raised if validation checks
+            fail. If `False` then VRS object will be returned even if validation checks
+            fail.
 
         See also notes about `from_` and `to_` methods.
         """
 
         if fmt:
             t = self.from_translators[fmt]
-            o = t(self, var)
+            o = t(self, var, require_validation=require_validation)
             if o is None:
                 raise ValueError(f"Unable to parse data as {fmt} variation")
             return o
 
         for fmt, t in self.from_translators.items():
-            o = t(self, var)
+            o = t(self, var, require_validation=require_validation)
             if o:
                 return o
 
@@ -84,6 +92,23 @@ class Translator:
         """translate vrs object `vo` to named format `fmt`"""
         t = self.to_translators[fmt]
         return t(self, self.ensure_allele_is_latest_model(vo))
+
+    def ensure_allele_is_latest_model(self, allele):
+        """
+        Change deprecated models:
+        SequenceState -> LiteralSequenceExpression
+        SimpleInterval -> SequenceInterval
+        """
+        if allele.state.type == "SequenceState":
+            allele.state = models.LiteralSequenceExpression(
+                sequence=allele.state.sequence,
+            )
+        if allele.location.interval.type == "SimpleInterval":
+            allele.location.interval = models.SequenceInterval(
+                start=models.Number(value=allele.location.interval.start),
+                end=models.Number(value=allele.location.interval.end),
+            )
+        return allele
 
     def ensure_allele_is_latest_model(self, allele):
         """
@@ -107,18 +132,18 @@ class Translator:
     ############################################################################
     ## INTERNAL
 
-    def _from_beacon(self, beacon_expr, assembly_name=None):
+    def _from_beacon(self, beacon_expr, assembly_name=None, require_validation=True):
         """Parse beacon expression into VRS Allele
 
-        #>>> a = tlr.from_beacon("13 : 32936732 G > C")
+        #>>> a = tlr.from_beacon("19 : 44908822 C > T")
         #>>> a.as_dict()
         {'location': {'interval': {
-           'end': {'value': 32936732, 'type': Number},
-           'start': {'value': 32936731, 'type': Number},
+           'end': {'value': 44908822, 'type': Number},
+           'start': {'value': 44908821, 'type': Number},
            'type': 'SequenceInterval'},
-          'sequence_id': 'GRCh38:13 ',
+          'sequence_id': 'GRCh38:19',
           'type': 'SequenceLocation'},
-         'state': {'sequence': 'C', 'type': 'LiteralSequenceExpression'},
+         'state': {'sequence': 'T', 'type': 'LiteralSequenceExpression'},
          'type': 'Allele'}
 
         """
@@ -141,15 +166,21 @@ class Translator:
 
         interval = models.SequenceInterval(start=models.Number(value=start),
                                            end=models.Number(value=end))
-        location = models.Location(sequence_id=sequence_id, interval=interval)
+        location = models.SequenceLocation(sequence_id=sequence_id,
+                                           interval=interval)
         state = models.LiteralSequenceExpression(sequence=ins_seq)
         allele = models.Allele(location=location, state=state)
         allele = self._post_process_imported_allele(allele)
         return allele
 
 
-    def _from_gnomad(self, gnomad_expr, assembly_name=None):
+    def _from_gnomad(self, gnomad_expr, assembly_name=None, require_validation=True):
         """Parse gnomAD-style VCF expression into VRS Allele
+
+        :param str gnomad_expr: chr-pos-ref-alt
+        :param str assembly_name: `gnomad_expr`'s assembly
+        :param bool require_validation: `True` if validation checks must pass in order
+            for a VRS Allele to be returned. `False` otherwise.
 
         #>>> a = tlr.from_gnomad("1-55516888-G-GA")
         #>>> a.as_dict()
@@ -163,7 +194,6 @@ class Translator:
          'type': 'Allele'}
 
         """
-
         if not isinstance(gnomad_expr, str):
             return None
         m = self.gnomad_re.match(gnomad_expr)
@@ -175,21 +205,26 @@ class Translator:
             assembly_name = self.default_assembly_name
         sequence_id = assembly_name + ":" + g["chr"]
         start = int(g["pos"]) - 1
-        ref = g["ref"]
-        alt = g["alt"]
+        ref = g["ref"].upper()
+        alt = g["alt"].upper()
         end = start + len(ref)
         ins_seq = alt
 
+        # validation checks
+        valid_ref_seq, err_msg = self._is_valid_ref_seq(sequence_id, start, end, ref)
+        if require_validation and not valid_ref_seq:
+            raise ValidationError(err_msg)
+
         interval = models.SequenceInterval(start=models.Number(value=start),
                                            end=models.Number(value=end))
-        location = models.Location(sequence_id=sequence_id, interval=interval)
+        location = models.SequenceLocation(sequence_id=sequence_id, interval=interval)
         sstate = models.LiteralSequenceExpression(sequence=ins_seq)
         allele = models.Allele(location=location, state=sstate)
         allele = self._post_process_imported_allele(allele)
         return allele
 
 
-    def _from_hgvs(self, hgvs_expr):
+    def _from_hgvs(self, hgvs_expr, require_validation=True):
         """parse hgvs into a VRS object (typically an Allele)
 
         #>>> a = tlr.from_hgvs("NM_012345.6:c.22A>T")
@@ -251,14 +286,14 @@ class Translator:
         else:
             raise ValueError(f"HGVS variant type {sv.posedit.edit.type} is unsupported")
 
-        location = models.Location(sequence_id=sequence_id, interval=interval)
+        location = models.SequenceLocation(sequence_id=sequence_id, interval=interval)
         sstate = models.LiteralSequenceExpression(sequence=state)
         allele = models.Allele(location=location, state=sstate)
         allele = self._post_process_imported_allele(allele)
         return allele
 
 
-    def _from_spdi(self, spdi_expr):
+    def _from_spdi(self, spdi_expr, require_validation=True):
 
         """Parse SPDI expression in to a GA4GH Allele
 
@@ -296,14 +331,14 @@ class Translator:
 
         interval = models.SequenceInterval(start=models.Number(value=start),
                                            end=models.Number(value=end))
-        location = models.Location(sequence_id=sequence_id, interval=interval)
+        location = models.SequenceLocation(sequence_id=sequence_id, interval=interval)
         sstate = models.LiteralSequenceExpression(sequence=ins_seq)
         allele = models.Allele(location=location, state=sstate)
         allele = self._post_process_imported_allele(allele)
         return allele
 
 
-    def _from_vrs(self, var):
+    def _from_vrs(self, var, require_validation=True):
         """convert from dict representation of VRS JSON to VRS object"""
         if not isinstance(var, Mapping):
             return None
@@ -352,8 +387,8 @@ class Translator:
                 return "g"
             return None
 
-        if self.is_valid_allele(vo):
-            raise ValueError(f"_to_hgvs requires a VRS Allele with SequenceLocation and LiteralSequenceExpression")
+        if not self.is_valid_allele(vo):
+            raise ValueError("_to_hgvs requires a VRS Allele with SequenceLocation and LiteralSequenceExpression")
 
         sequence_id = str(vo.location.sequence_id)
         aliases = self.data_proxy.translate_sequence_identifier(sequence_id, namespace)
@@ -402,7 +437,7 @@ class Translator:
             if ns.startswith("GRC") and namespace is None:
                 continue
 
-            if not (any(a.startswith(pfx) for pfx in ("NM", "NP", "NC", "NG"))):
+            if not any(a.startswith(pfx) for pfx in ("NM", "NP", "NC", "NG")):
                 continue
 
             var.ac = a
@@ -419,6 +454,7 @@ class Translator:
                 _logger.warning(f"No data found for accession {a}")
 
         return list(set(hgvs_exprs))
+
 
     def _to_spdi(self, vo, namespace="refseq"):
         """generates a *list* of SPDI expressions for VRS Allele.
@@ -438,14 +474,12 @@ class Translator:
         is expected to be normalized per VRS spec.
 
         """
-
-        if self.is_valid_allele(vo):
-            raise ValueError(f"_to_spdi requires a VRS Allele with SequenceLocation and LiteralSequenceExpression")
+        if not self.is_valid_allele(vo):
+            raise ValueError("_to_spdi requires a VRS Allele with SequenceLocation and LiteralSequenceExpression")
 
         sequence_id = str(vo.location.sequence_id)
         aliases = self.data_proxy.translate_sequence_identifier(sequence_id, namespace)
         aliases = [a.split(":")[1] for a in aliases]
-
         start, end = vo.location.interval.start.value, vo.location.interval.end.value
         spdi_tail = f":{start}:{end-start}:{vo.state.sequence}"
         spdis = [a + spdi_tail for a in aliases]
@@ -455,6 +489,34 @@ class Translator:
         return (type(vo).__name__ != "Allele"
                 or type(vo.location).__name__ != "SequenceLocation"
                 or type(vo.state).__name__ != "LiteralSequenceExpression")
+
+    def _is_valid_ref_seq(self, sequence_id: str, start_pos: int, end_pos: int,
+                          ref: str) -> Tuple[bool, str]:
+        """Return wether or not the expected reference sequence matches the actual reference sequence
+
+        :param str sequence_id: Sequence ID to use
+        :param int start_pos: Start pos (inter-residue) on the sequence_id
+        :param int end_pos: End pos (inter-residue) on the sequence_id
+        :param str ref: The expected reference sequence on the sequence_id given the
+            start_pos and end_pos
+        :return: Tuple containing whether or not actual reference sequence matches
+            the expected reference sequence and error message if mismatch
+        """
+        actual_ref = self.data_proxy.get_sequence(sequence_id, start_pos, end_pos)
+        is_valid = actual_ref == ref
+        err_msg = ""
+        if not is_valid:
+            err_msg = f"Expected reference sequence {ref} on {sequence_id} at positions "\
+                      f"({start_pos}, {end_pos}) but found {actual_ref}"
+            _logger.warning(err_msg)
+        return is_valid, err_msg
+
+
+    def is_valid_allele(self, vo):
+        return (vo.type == "Allele"
+                and vo.location.type == "SequenceLocation"
+                and vo.state.type == "LiteralSequenceExpression")
+
 
     @lazy_property
     def _hgvs_parser(self):
@@ -477,6 +539,7 @@ class Translator:
 
         if self.identify:
             allele._id = ga4gh_identify(allele)
+            allele.location._id = ga4gh_identify(allele.location)
 
         return allele
 
@@ -517,8 +580,8 @@ if __name__ == "__main__":
     expressions = [
         "bogus",
         "1-55516888-G-GA",
-        "13 : 32936732 G > C",
-        "NC_000013.11:g.32936732G>C",
+        "19 : 44908822 C > T",
+        "NC_000019.10:g.44908822C>T",
         "NM_000551.3:21:1:T", {
             "location": {
                 "interval": {

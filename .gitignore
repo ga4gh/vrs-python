@@ -19,3 +19,6 @@ notes
 venv
 .vscode/launch.json
 lint
+uta_*.pgd.gz
+.vscode
+*.log

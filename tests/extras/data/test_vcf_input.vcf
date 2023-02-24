@@ -1,0 +1,236 @@
+##fileformat=VCFv4.2
+##fileDate=20160824
+##CL=vcffilter -i - -o - --javascript "function record() {HG001.PS=\".\";}"
+##contig=<ID=chr1,length=248956422,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chr2,length=242193529,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chr3,length=198295559,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chr4,length=190214555,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chr5,length=181538259,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chr6,length=170805979,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chr7,length=159345973,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chr8,length=145138636,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chr9,length=138394717,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chr10,length=133797422,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chr11,length=135086622,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chr12,length=133275309,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chr13,length=114364328,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chr14,length=107043718,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chr15,length=101991189,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chr16,length=90338345,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chr17,length=83257441,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chr18,length=80373285,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chr19,length=58617616,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chr20,length=64444167,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chr21,length=46709983,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chr22,length=50818468,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrX,length=156040895,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrY,length=57227415,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrM,length=16569,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chr1_KI270706v1_random,length=175055,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chr1_KI270707v1_random,length=32032,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chr1_KI270708v1_random,length=127682,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chr1_KI270709v1_random,length=66860,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chr1_KI270710v1_random,length=40176,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chr1_KI270711v1_random,length=42210,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chr1_KI270712v1_random,length=176043,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chr1_KI270713v1_random,length=40745,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chr1_KI270714v1_random,length=41717,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chr2_KI270715v1_random,length=161471,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chr2_KI270716v1_random,length=153799,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chr3_GL000221v1_random,length=155397,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chr4_GL000008v2_random,length=209709,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chr5_GL000208v1_random,length=92689,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chr9_KI270717v1_random,length=40062,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chr9_KI270718v1_random,length=38054,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chr9_KI270719v1_random,length=176845,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chr9_KI270720v1_random,length=39050,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chr11_KI270721v1_random,length=100316,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chr14_GL000009v2_random,length=201709,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chr14_GL000225v1_random,length=211173,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chr14_KI270722v1_random,length=194050,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chr14_GL000194v1_random,length=191469,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chr14_KI270723v1_random,length=38115,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chr14_KI270724v1_random,length=39555,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chr14_KI270725v1_random,length=172810,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chr14_KI270726v1_random,length=43739,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chr15_KI270727v1_random,length=448248,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chr16_KI270728v1_random,length=1872759,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chr17_GL000205v2_random,length=185591,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chr17_KI270729v1_random,length=280839,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chr17_KI270730v1_random,length=112551,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chr22_KI270731v1_random,length=150754,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chr22_KI270732v1_random,length=41543,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chr22_KI270733v1_random,length=179772,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chr22_KI270734v1_random,length=165050,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chr22_KI270735v1_random,length=42811,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chr22_KI270736v1_random,length=181920,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chr22_KI270737v1_random,length=103838,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chr22_KI270738v1_random,length=99375,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chr22_KI270739v1_random,length=73985,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrY_KI270740v1_random,length=37240,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270302v1,length=2274,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270304v1,length=2165,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270303v1,length=1942,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270305v1,length=1472,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270322v1,length=21476,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270320v1,length=4416,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270310v1,length=1201,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270316v1,length=1444,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270315v1,length=2276,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270312v1,length=998,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270311v1,length=12399,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270317v1,length=37690,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270412v1,length=1179,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270411v1,length=2646,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270414v1,length=2489,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270419v1,length=1029,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270418v1,length=2145,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270420v1,length=2321,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270424v1,length=2140,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270417v1,length=2043,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270422v1,length=1445,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270423v1,length=981,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270425v1,length=1884,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270429v1,length=1361,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270442v1,length=392061,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270466v1,length=1233,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270465v1,length=1774,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270467v1,length=3920,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270435v1,length=92983,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270438v1,length=112505,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270468v1,length=4055,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270510v1,length=2415,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270509v1,length=2318,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270518v1,length=2186,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270508v1,length=1951,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270516v1,length=1300,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270512v1,length=22689,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270519v1,length=138126,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270522v1,length=5674,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270511v1,length=8127,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270515v1,length=6361,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270507v1,length=5353,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270517v1,length=3253,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270529v1,length=1899,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270528v1,length=2983,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270530v1,length=2168,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270539v1,length=993,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270538v1,length=91309,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270544v1,length=1202,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270548v1,length=1599,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270583v1,length=1400,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270587v1,length=2969,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270580v1,length=1553,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270581v1,length=7046,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270579v1,length=31033,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270589v1,length=44474,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270590v1,length=4685,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270584v1,length=4513,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270582v1,length=6504,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270588v1,length=6158,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270593v1,length=3041,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270591v1,length=5796,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270330v1,length=1652,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270329v1,length=1040,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270334v1,length=1368,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270333v1,length=2699,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270335v1,length=1048,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270338v1,length=1428,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270340v1,length=1428,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270336v1,length=1026,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270337v1,length=1121,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270363v1,length=1803,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270364v1,length=2855,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270362v1,length=3530,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270366v1,length=8320,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270378v1,length=1048,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270379v1,length=1045,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270389v1,length=1298,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270390v1,length=2387,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270387v1,length=1537,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270395v1,length=1143,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270396v1,length=1880,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270388v1,length=1216,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270394v1,length=970,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270386v1,length=1788,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270391v1,length=1484,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270383v1,length=1750,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270393v1,length=1308,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270384v1,length=1658,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270392v1,length=971,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270381v1,length=1930,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270385v1,length=990,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270382v1,length=4215,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270376v1,length=1136,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270374v1,length=2656,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270372v1,length=1650,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270373v1,length=1451,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270375v1,length=2378,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270371v1,length=2805,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270448v1,length=7992,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270521v1,length=7642,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_GL000195v1,length=182896,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_GL000219v1,length=179198,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_GL000220v1,length=161802,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_GL000224v1,length=179693,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270741v1,length=157432,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_GL000226v1,length=15008,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_GL000213v1,length=164239,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270743v1,length=210658,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270744v1,length=168472,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270745v1,length=41891,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270746v1,length=66486,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270747v1,length=198735,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270748v1,length=93321,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270749v1,length=158759,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270750v1,length=148850,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270751v1,length=150742,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270752v1,length=27745,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270753v1,length=62944,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270754v1,length=40191,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270755v1,length=36723,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270756v1,length=79590,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270757v1,length=71251,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_GL000214v1,length=137718,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_KI270742v1,length=186739,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_GL000216v2,length=176608,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrUn_GL000218v1,length=161147,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##contig=<ID=chrEBV,length=171823,assembly=human_GRCh38_no_alt_analysis_set.fasta>
+##FILTER=<ID=GQlessthan70,Description="Sum of GQ for datasets with this genotype less than 70">
+##FILTER=<ID=allfilteredanddisagree,Description="All callsets have this call filtered or outside the callable regions and they have discordant genotypes or variant calls">
+##FILTER=<ID=allfilteredbutagree,Description="All callsets have this call filtered or outside the callable regions but they have the same genotype">
+##FILTER=<ID=discordantunfiltered,Description="Callsets with unfiltered calls have discordant genotypes or variant calls">
+##FILTER=<ID=discordanthet,Description="Filtered calls where a passing call is het and a high GQ but filtered call is hom var, since often the het is wrong">
+##FILTER=<ID=questionableindel,Description="Filtered calls where some callsets have a filtered indel larger than 10bp and another dataset has an implied homozygous reference call">
+##FILTER=<ID=cgonly,Description="Filtered calls where only Complete Genomics had this call and it was completely missing from any other callset">
+##FILTER=<ID=alleleimbalance,Description="Filtered calls where the net allele balance for unfiltered datasets is <0.2 or >0.8">
+##FILTER=<ID=overlappingcall,Description="Filtered sites that are within 50bp of another passing call but none of the callsets that support the 2 calls match">
+##INFO=<ID=DPSum,Number=1,Type=Integer,Description="Total read depth summed across all datasets, excluding MQ0 reads">
+##INFO=<ID=platforms,Number=1,Type=Integer,Description="Number of different platforms for which at least one callset called this genotype, whether filtered or not">
+##INFO=<ID=platformnames,Number=.,Type=String,Description="Names of platforms for which at least one callset called this genotype, whether filtered or not">
+##INFO=<ID=platformbias,Number=.,Type=String,Description="Names of platforms that have reads containing a variant at this location, but the high-confidence call is homozygous reference, indicating that there is a potential bias.">
+##INFO=<ID=datasets,Number=1,Type=Integer,Description="Number of different datasets for which at least one callset called this genotype, whether filtered or not">
+##INFO=<ID=datasetnames,Number=.,Type=String,Description="Names of datasets for which at least one callset called this genotype, whether filtered or not">
+##INFO=<ID=datasetsmissingcall,Number=.,Type=String,Description="Names of datasets that are missing a call or have an incorrect call at this location, and the high-confidence call is a variant">
+##INFO=<ID=callsets,Number=1,Type=Integer,Description="Number of different callsets that called this genotype, whether filtered or not">
+##INFO=<ID=callsetnames,Number=.,Type=String,Description="Names of callsets that called this genotype, whether filtered or not">
+##INFO=<ID=varType,Number=1,Type=String,Description="Type of variant">
+##INFO=<ID=filt,Number=.,Type=String,Description="List of callsets that had this call filtered.">
+##INFO=<ID=callable,Number=.,Type=String,Description="List of callsets that had this call in a region with low coverage of high MQ reads.">
+##INFO=<ID=difficultregion,Number=.,Type=String,Description="List of difficult region bed files containing this call.">
+##INFO=<ID=arbitrated,Number=1,Type=String,Description="TRUE if callsets had discordant calls so that arbitration was needed.">
+##INFO=<ID=callsetwiththisuniqgenopassing,Number=.,Type=String,Description="Callset that uniquely calls the PASSing genotype in GT when 2+ PASSing callsets support a different genotype.">
+##INFO=<ID=callsetwithotheruniqgenopassing,Number=.,Type=String,Description="Callset that uniquely calls a PASSing genotype different from GT when 2+ PASSing callsets support the genotype in GT.">
+##FORMAT=<ID=DP,Number=1,Type=Integer,Description="Total read depth summed across all datasets, excluding MQ0 reads">
+##FORMAT=<ID=GQ,Number=1,Type=Integer,Description="Net Genotype quality across all datasets, calculated from GQ scores of callsets supporting the consensus GT, using only one callset from each dataset">
+##FORMAT=<ID=ADALL,Number=R,Type=Integer,Description="Net allele depths across all datasets">
+##FORMAT=<ID=AD,Number=R,Type=Integer,Description="Net allele depths across all unfiltered datasets with called genotype">
+##FORMAT=<ID=GT,Number=1,Type=String,Description="Consensus Genotype across all datasets with called genotype">
+##FORMAT=<ID=PS,Number=1,Type=Integer,Description="Phase set in which this variant falls">
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	HG001
+chr19	82664	.	C	T	50	PASS	platforms=2;platformnames=10X,PacBio;datasets=2;datasetnames=10XChromiumLR,CCS15kb_20kb;callsets=2;callsetnames=10XLRGATK,CCS15kb_20kbDV;datasetsmissingcall=HiSeqPE300x,CCS15kb_20kb,CGnormal,IonExome,SolidSE75bp;callable=CS_CCS15kb_20kbDV_callable,CS_10XLRGATK_callable,CS_CCS15kb_20kbGATK4_callable;filt=CS_CCS15kb_20kbDV_filt;arbitrated=TRUE;difficultregion=hg38.segdups_sorted_merged,lowmappabilityall	GT:PS:DP:ADALL:AD:GQ	0/1:.:154:0,0:0,0:120
+chr19	284350	.	CA	C	50	PASS	platforms=4;platformnames=Illumina,10X,PacBio,CG;datasets=4;datasetnames=HiSeqPE300x,10XChromiumLR,CCS15kb_20kb,CGnormal;callsets=5;callsetnames=HiSeqPE300xGATK,10XLRGATK,CCS15kb_20kbGATK4,CGnormal,HiSeqPE300xfreebayes;datasetsmissingcall=CCS15kb_20kb,IonExome,SolidSE75bp;callable=CS_HiSeqPE300xGATK_callable;filt=CS_CCS15kb_20kbDV_filt,CS_CCS15kb_20kbGATK4_filt;difficultregion=GRCh38_AllHomopolymers_gt6bp_imperfectgt10bp_slop5,GRCh38_SimpleRepeat_imperfecthomopolgt10_slop5	GT:PS:DP:ADALL:AD:GQ	0/1:.:422:117,101:81,75:356
+chr19	289464	.	T	TCACGCCTGTAATCC	50	PASS	platforms=4;platformnames=Illumina,PacBio,CG,10X;datasets=4;datasetnames=HiSeqPE300x,CCS15kb_20kb,CGnormal,10XChromiumLR;callsets=6;callsetnames=HiSeqPE300xGATK,CCS15kb_20kbGATK4,CGnormal,HiSeqPE300xfreebayes,CCS15kb_20kbDV,10XLRGATK;datasetsmissingcall=IonExome,SolidSE75bp;callable=CS_HiSeqPE300xGATK_callable,CS_10XLRGATK_callable,CS_CCS15kb_20kbGATK4_callable,CS_CGnormal_callable,CS_HiSeqPE300xfreebayes_callable;filt=CS_CCS15kb_20kbDV_filt,CS_CCS15kb_20kbGATK4_filt	GT:PS:DP:ADALL:AD:GQ	0/1:.:518:94,98:116,137:785
+chr19	28946400	.	T	C	50	PASS	platforms=5;platformnames=Illumina,PacBio,CG,10X,Solid;datasets=5;datasetnames=HiSeqPE300x,CCS15kb_20kb,CGnormal,10XChromiumLR,SolidSE75bp;callsets=7;callsetnames=HiSeqPE300xGATK,CCS15kb_20kbDV,CCS15kb_20kbGATK4,CGnormal,HiSeqPE300xfreebayes,10XLRGATK,SolidSE75GATKHC;datasetsmissingcall=IonExome;callable=CS_HiSeqPE300xGATK_callable,CS_CCS15kb_20kbDV_callable,CS_10XLRGATK_callable,CS_CCS15kb_20kbGATK4_callable,CS_CGnormal_callable,CS_HiSeqPE300xfreebayes_callable;filt=CS_CCS15kb_20kbDV_filt,CS_CCS15kb_20kbGATK4_filt	GT:PS:DP:ADALL:AD:GQ	1/1:.:874:0,275:115,378:502
+chr19	490414	.	ACT	A	50	PASS	platforms=5;platformnames=Illumina,PacBio,CG,10X,Solid;datasets=5;datasetnames=HiSeqPE300x,CCS15kb_20kb,CGnormal,10XChromiumLR,SolidSE75bp;callsets=7;callsetnames=HiSeqPE300xGATK,CCS15kb_20kbDV,CCS15kb_20kbGATK4,CGnormal,HiSeqPE300xfreebayes,10XLRGATK,SolidSE75GATKHC;datasetsmissingcall=IonExome;callable=CS_HiSeqPE300xGATK_callable,CS_CCS15kb_20kbDV_callable,CS_CCS15kb_20kbGATK4_callable,CS_CGnormal_callable,CS_HiSeqPE300xfreebayes_callable;filt=CS_10XLRGATK_filt	GT:PS:DP:ADALL:AD:GQ	0/1:.:821:163,158:239,220:1004
+chr19	54220024	.	G	*,A	50	PASS	platforms=1;platformnames=PacBio;datasets=1;datasetnames=CCS15kb_20kb;callsets=1;callsetnames=CCS15kb_20kbGATK4;datasetsmissingcall=HiSeqPE300x,CCS15kb_20kb,10XChromiumLR,CGnormal,IonExome,SolidSE75bp;callable=CS_CCS15kb_20kbGATK4_callable;filt=CS_CCS15kb_20kbDV_filt,CS_10XLRGATK_filt,CS_HiSeqPE300xfreebayes_filt;difficultregion=HG001.hg38.300x.bam.bilkentuniv.010920.dups,hg38.segdups_sorted_merged	GT:PS:DP:ADALL:AD:GQ	1/2:.:45:0,20,25:0,20,25:99

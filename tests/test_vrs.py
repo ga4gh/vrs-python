@@ -1,27 +1,137 @@
+from copy import deepcopy
+
+import pytest
+
 from ga4gh.core import sha512t24u, ga4gh_digest, ga4gh_serialize, ga4gh_identify, is_pjs_instance
 from ga4gh.vrs import models, vrs_deref, vrs_enref
 
-allele_dict = {
-    'location': {
-        'interval': {
-            'end': {'value': 55181320, 'type': 'Number'},
-            'start': {'value': 55181319, 'type': 'Number'},
-            'type': 'SequenceInterval'
+@pytest.fixture(scope="module")
+def allele_dict():
+    return {
+        "type": "Allele",
+        "location": {
+            "type": "SequenceLocation",
+            "interval": {
+                "type": "SequenceInterval",
+                "start": {
+                    "type": "Number",
+                    "value": 55181319
+                },
+                "end": {
+                    "type": "Number",
+                    "value": 55181320
+                }
+            },
+            "sequence_id": "ga4gh:SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul"
         },
-        'sequence_id': 'ga4gh:SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul',
-        'type': 'SequenceLocation'
-    },
-    'state': {
-        'sequence': 'T',
-        'type': 'LiteralSequenceExpression'
-    },
-    'type': 'Allele'
-}
+        "state": {
+            "type": "LiteralSequenceExpression",
+            "sequence": "T"
+        }
+    }
 
-a = models.Allele(**allele_dict)
+@pytest.fixture(scope="module")
+def allele1():
+    a1 = {
+        "type": "Allele",
+        "location": {
+            "type": "SequenceLocation",
+            "interval": {
+                "type": "SequenceInterval",
+                "start": {
+                    "type": "Number",
+                    "value": 94842865
+                },
+                "end": {
+                    "type": "Number",
+                    "value": 94842866
+                }
+            },
+            "sequence_id": "ga4gh:SQ.ss8r_wB0-b9r44TQTMmVTI92884QvBiB"
+        },
+        "state": {
+            "type": "LiteralSequenceExpression",
+            "sequence": "G"
+        }
+    }
+    return models.Allele(**a1)
 
 
-def test_vr():
+@pytest.fixture(scope="module")
+def allele2():
+    a2 = {
+        "type": "Allele",
+        "location": {
+            "type": "SequenceLocation",
+            "interval": {
+                "type": "SequenceInterval",
+                "start": {
+                    "type": "Number",
+                    "value": 94761899
+                },
+                "end": {
+                    "type": "Number",
+                    "value": 94761900
+                }
+            },
+            "sequence_id": "ga4gh:SQ.ss8r_wB0-b9r44TQTMmVTI92884QvBiB"
+        },
+        "state": {
+            "type": "LiteralSequenceExpression",
+            "sequence": "T"
+        }
+    }
+    return models.Allele(**a2)
+
+
+@pytest.fixture(scope="module")
+def incomplete_allele_dict():
+    return {
+        "type": "Allele",
+        "location": {
+            "type": "SequenceLocation",
+            "interval": {
+                "type": "SequenceInterval",
+                "start": {
+                    "type": "Number",
+                    "value": 44908821
+                },
+                "end": {
+                    "type": "Number",
+                    "value": 44908822
+                }
+            },
+            "sequence_id": "ga4gh:SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl"
+        }
+    }
+
+
+@pytest.fixture(scope="module")
+def literal_seq_expr_dict():
+    return {
+        "type": "LiteralSequenceExpression",
+        "sequence": "C"
+    }
+
+
+@pytest.fixture(scope="module")
+def repeated_seq_expr_dict():
+    return {
+        "type": "RepeatedSequenceExpression",
+        "count": {
+            "type": "IndefiniteRange",
+            "value": 6,
+            "comparator": ">="
+        },
+        "seq_expr": {
+            "type": "LiteralSequenceExpression",
+            "sequence": "A"
+        }
+    }
+
+
+def test_vr(allele_dict):
+    a = models.Allele(**allele_dict)
 
     assert a.as_dict() == allele_dict
 
@@ -32,32 +142,17 @@ def test_vr():
     assert ga4gh_serialize(
         a.location
     ) == b'{"interval":{"end":{"type":"Number","value":55181320},"start":{"type":"Number","value":55181319},"type":"SequenceInterval"},"sequence_id":"F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul","type":"SequenceLocation"}'
-    assert sha512t24u(ga4gh_serialize(a.location)) == '1tI-5In290Gtp1DOlMxO6z-K3u0OzlXl'
-    assert ga4gh_digest(a.location) == '1tI-5In290Gtp1DOlMxO6z-K3u0OzlXl'
-    assert ga4gh_identify(a.location) == 'ga4gh:VSL.1tI-5In290Gtp1DOlMxO6z-K3u0OzlXl'
+    assert sha512t24u(ga4gh_serialize(a.location)) == "1tI-5In290Gtp1DOlMxO6z-K3u0OzlXl"
+    assert ga4gh_digest(a.location) == "1tI-5In290Gtp1DOlMxO6z-K3u0OzlXl"
+    assert ga4gh_identify(a.location) == "ga4gh:VSL.1tI-5In290Gtp1DOlMxO6z-K3u0OzlXl"
 
     assert ga4gh_serialize(
         a
     ) == b'{"location":"1tI-5In290Gtp1DOlMxO6z-K3u0OzlXl","state":{"sequence":"T","type":"LiteralSequenceExpression"},"type":"Allele"}'
-    assert ga4gh_digest(a) == '5Z7gWQGUuGAPe4Pw2_kJvnkhS2Q5jRhY'
-    assert ga4gh_identify(a) == 'ga4gh:VA.5Z7gWQGUuGAPe4Pw2_kJvnkhS2Q5jRhY'
+    assert ga4gh_digest(a) == "5Z7gWQGUuGAPe4Pw2_kJvnkhS2Q5jRhY"
+    assert ga4gh_identify(a) == "ga4gh:VA.5Z7gWQGUuGAPe4Pw2_kJvnkhS2Q5jRhY"
 
-    assert a.as_dict() == {
-        'location': {
-            'interval': {
-                'end': {'value': 55181320, 'type': 'Number'},
-                'start': {'value': 55181319, 'type': 'Number'},
-                'type': 'SequenceInterval'
-            },
-            'sequence_id': 'ga4gh:SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul',
-            'type': 'SequenceLocation'
-        },
-        'state': {
-            'sequence': 'T',
-            'type': 'LiteralSequenceExpression'
-        },
-        'type': 'Allele'
-    }
+    assert a.as_dict() == allele_dict
 
     vros = {}
     a2 = vrs_enref(a, vros)
