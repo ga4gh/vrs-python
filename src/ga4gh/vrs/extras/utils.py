@@ -35,19 +35,19 @@ def _format_time(timespan, precision=3):
             value = int(leftover / length)
             if value > 0:
                 leftover = leftover % length
-                time.append(u"%s%s" % (str(value), suffix))
+                time.append(f"{value}{suffix}")
             if leftover < 1:
                 break
         return " ".join(time)
 
-    units = [u"s", u"ms", u"us", u"ns"]  # the save value
+    units = ["s", "ms", "us", "ns"]  # the save value
     scaling = [1, 1e3, 1e6, 1e9]
 
     if timespan > 0.0:
         order = min(-int(math.floor(math.log10(timespan)) // 3), 3)
     else:
         order = 3
-    return u"%.*g %s" % (precision, timespan * scaling[order], units[order])
+    return f"{timespan * scaling[order]:.{precision}g} {units[order]}"
 
 
 def hex_to_base64url(s):

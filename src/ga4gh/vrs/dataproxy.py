@@ -152,7 +152,7 @@ class SeqRepoRESTDataProxy(_SeqRepoDataProxyBase):
         url = self.base_url + f"sequence/{identifier}"
         _logger.info("Fetching %s", url)
         params = {"start": start, "end": end}
-        resp = requests.get(url, params=params)
+        resp = requests.get(url, params=params, timeout=5)
         if resp.status_code == 404:
             raise KeyError(identifier)
         resp.raise_for_status()
@@ -161,7 +161,7 @@ class SeqRepoRESTDataProxy(_SeqRepoDataProxyBase):
     def _get_metadata(self, identifier):
         url = self.base_url + f"metadata/{identifier}"
         _logger.info("Fetching %s", url)
-        resp = requests.get(url)
+        resp = requests.get(url, timeout=5)
         if resp.status_code == 404:
             raise KeyError(identifier)
         resp.raise_for_status()

@@ -1,10 +1,16 @@
 # See https://pre-commit.com for more information
 # See https://pre-commit.com/hooks.html for more hooks
 repos:
-  - repo: https://github.com/pycqa/pylint
-    rev: v2.15.9
+  - repo: local
     hooks:
       - id: pylint
+        name: pylint
+        entry: pylint
+        language: system
+        types: [python]
+        require_serial: true
+        exclude: ^tests/
         args:
           - src/ga4gh/core
           - src/ga4gh/vrs
+          - --fail-under=10
