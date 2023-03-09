@@ -1,6 +1,5 @@
-"""convert named locations into SequenceLocations ("localize") by
-reference to external data
-
+"""convert named locations into SequenceLocations ("localize") by reference to external
+data
 """
 from bioutils.accessions import coerce_namespace
 from bioutils.assemblies import make_name_ac_map
@@ -43,11 +42,9 @@ class Localizer:
 
 
     def localize_allele(self, allele, assembly_name = "GRCh38"):
-        """copy input variant and replace location
-        N.B. deepcopy leads to recursion errors
-        """
-        #
-        #
+        """Converts VRS Allele's named features to sequence location"""
+        # copy input variant and replace location
+        # N.B. deepcopy leads to recursion errors
         allele_sl = ga4gh.vrs.models.Variation(**allele.as_dict())
         del allele_sl._id
         allele_sl.location = self.localize_named_feature(allele.location, assembly_name)
@@ -55,9 +52,7 @@ class Localizer:
 
 
     def localize_named_feature(self, loc, assembly_name):
-        """converts named features to sequence locations
-
-        """
+        """converts named features to sequence locations"""
 
         assert loc.type._value == "ChromosomeLocation", "Expected a ChromosomeLocation object"  # pylint: disable=protected-access
 
@@ -98,7 +93,7 @@ class Localizer:
         try:
             ac = self._ana_maps[assembly_name][loc.chr]
         except KeyError as e:
-            raise ValueError(f"No accssion for {loc.chr} in assembly {assembly_name}") from e
+            raise ValueError(f"No accession for {loc.chr} in assembly {assembly_name}") from e
 
         return ga4gh.vrs.models.SequenceLocation(
             sequence_id=coerce_namespace(ac),
@@ -109,5 +104,25 @@ class Localizer:
 
 
 if __name__ == "__main__":
-    cbl = ga4gh.vrs.models.ChromosomeLocation(chr="11", start="q22.3", end="q23.1")
     lr = Localizer()
+
+    allele_dict = {
+        "location": {
+            "chr":"19",
+            "interval": {
+                "end": "q13.32",
+                "start": "q13.32",
+                "type": "CytobandInterval"
+            },
+            "species_id":"taxonomy:9606",
+            "type":"ChromosomeLocation"
+        },
+        "state": {
+            "sequence": "T",
+            "type": "LiteralSequenceExpression"
+        },
+        "type": "Allele"
+    }
+    allele_vo = ga4gh.vrs.models.Allele(**allele_dict)
+    allele_with_seq_loc = lr.localize_allele(allele_vo)
+    print("Allele with SequenceLocation:", allele_with_seq_loc.as_dict())

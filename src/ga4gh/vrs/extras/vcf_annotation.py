@@ -27,8 +27,6 @@ _logger.setLevel(logging.DEBUG)
 class VCFAnnotatorException(Exception):
     """Custom exceptions for VCF Annotator tool"""
 
-    pass  # pylint: disable=unnecessary-pass
-
 
 class SeqRepoProxyType(str, Enum):
     """Define constraints for SeqRepo Data Proxy types"""

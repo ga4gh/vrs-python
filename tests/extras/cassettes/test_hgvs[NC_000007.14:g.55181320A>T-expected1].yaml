@@ -34,7 +34,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Mon, 19 Sep 2022 13:14:18 GMT
+      - Fri, 27 Jan 2023 20:17:47 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -75,7 +75,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Mon, 19 Sep 2022 13:14:18 GMT
+      - Fri, 27 Jan 2023 20:17:47 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -105,7 +105,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Mon, 19 Sep 2022 13:14:18 GMT
+      - Fri, 27 Jan 2023 20:17:47 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -135,7 +135,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Mon, 19 Sep 2022 13:14:18 GMT
+      - Fri, 27 Jan 2023 20:17:47 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -165,7 +165,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Mon, 19 Sep 2022 13:14:18 GMT
+      - Fri, 27 Jan 2023 20:17:47 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -195,7 +195,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Mon, 19 Sep 2022 13:14:18 GMT
+      - Fri, 27 Jan 2023 20:17:47 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -225,7 +225,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Mon, 19 Sep 2022 13:14:18 GMT
+      - Fri, 27 Jan 2023 20:17:47 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -255,7 +255,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Mon, 19 Sep 2022 13:14:18 GMT
+      - Fri, 27 Jan 2023 20:17:47 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -296,7 +296,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Mon, 19 Sep 2022 13:14:18 GMT
+      - Fri, 27 Jan 2023 20:17:47 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -326,7 +326,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Mon, 19 Sep 2022 13:14:18 GMT
+      - Fri, 27 Jan 2023 20:17:47 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -366,20 +366,20 @@ interactions:
       Content-Type:
       - text/plain
       Date:
-      - Mon, 19 Sep 2022 13:14:18 GMT
+      - Fri, 27 Jan 2023 20:17:47 GMT
       Keep-Alive:
       - timeout=4, max=40
       NCBI-PHID:
-      - 939B60E632B07995000041564E63EE2A.1.1.m_5
+      - 322C43B94AD2908500005B0D54B2F161.1.1.m_5
       NCBI-SID:
-      - 54E597271D38A2C4_028CSID
+      - AE7DD92BFA690354_72BBSID
       Referrer-Policy:
       - origin-when-cross-origin
       Server:
       - Finatra
       Set-Cookie:
-      - ncbi_sid=54E597271D38A2C4_028CSID; domain=.nih.gov; path=/; expires=Tue, 19
-        Sep 2023 13:14:18 GMT
+      - ncbi_sid=AE7DD92BFA690354_72BBSID; domain=.nih.gov; path=/; expires=Sat, 27
+        Jan 2024 20:17:47 GMT
       Strict-Transport-Security:
       - max-age=31536000; includeSubDomains; preload
       Transfer-Encoding:
@@ -388,8 +388,6 @@ interactions:
       - '3'
       X-RateLimit-Remaining:
       - '1'
-      X-Test-Test:
-      - test42
       X-UA-Compatible:
       - IE=Edge
       X-XSS-Protection:
@@ -434,20 +432,20 @@ interactions:
       Content-Type:
       - text/plain
       Date:
-      - Mon, 19 Sep 2022 13:14:19 GMT
+      - Fri, 27 Jan 2023 20:17:48 GMT
       Keep-Alive:
       - timeout=4, max=40
       NCBI-PHID:
-      - 939B60E632B079950000525650E3F748.1.1.m_5
+      - 322C43B94AD2908500004D0D567250FE.1.1.m_5
       NCBI-SID:
-      - 1DA58CB102100F20_C782SID
+      - 75CD2A76871061CA_3D5ASID
       Referrer-Policy:
       - origin-when-cross-origin
       Server:
       - Finatra
       Set-Cookie:
-      - ncbi_sid=1DA58CB102100F20_C782SID; domain=.nih.gov; path=/; expires=Tue, 19
-        Sep 2023 13:14:19 GMT
+      - ncbi_sid=75CD2A76871061CA_3D5ASID; domain=.nih.gov; path=/; expires=Sat, 27
+        Jan 2024 20:17:48 GMT
       Strict-Transport-Security:
       - max-age=31536000; includeSubDomains; preload
       Transfer-Encoding:
@@ -456,8 +454,6 @@ interactions:
       - '3'
       X-RateLimit-Remaining:
       - '1'
-      X-Test-Test:
-      - test42
       X-UA-Compatible:
       - IE=Edge
       X-XSS-Protection:
