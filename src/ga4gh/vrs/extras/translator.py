@@ -521,7 +521,7 @@ class Translator:
         """
 
         if self.translate_sequence_identifiers:
-            seq_id = self.data_proxy.translate_sequence_identifier(allele.location.sequence_id._value, "ga4gh")[0]  # pylint: disable=protected-access
+            seq_id = self.data_proxy.translate_sequence_identifier(allele.location.sequence_id._value, "ga4gh")[0]
             allele.location.sequence_id = seq_id
 
         if self.normalize:

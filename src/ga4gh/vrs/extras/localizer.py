@@ -53,8 +53,7 @@ class Localizer:
 
     def localize_named_feature(self, loc, assembly_name):
         """converts named features to sequence locations"""
-
-        assert loc.type._value == "ChromosomeLocation", "Expected a ChromosomeLocation object"  # pylint: disable=protected-access
+        assert loc.type._value == "ChromosomeLocation", "Expected a ChromosomeLocation object"
 
         def _get_coords(m, cb):
             """return (start,end) of band `cb` in map `m`"""
