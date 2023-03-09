@@ -25,7 +25,7 @@ def tlr(rest_dataproxy):
         default_assembly_name="GRCh38",
     # TODO: Set these to defaults and adjust relevant tests
         identify=False,
-        do_normalize=False,
+        normalize=False,
         translate_sequence_identifiers=True,
     )
 
