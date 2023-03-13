@@ -34,7 +34,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Mon, 19 Sep 2022 13:14:19 GMT
+      - Fri, 27 Jan 2023 20:17:48 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -64,7 +64,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Mon, 19 Sep 2022 13:14:19 GMT
+      - Fri, 27 Jan 2023 20:17:48 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -94,7 +94,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Mon, 19 Sep 2022 13:14:19 GMT
+      - Fri, 27 Jan 2023 20:17:48 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -124,7 +124,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Mon, 19 Sep 2022 13:14:19 GMT
+      - Fri, 27 Jan 2023 20:17:48 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -154,7 +154,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Mon, 19 Sep 2022 13:14:19 GMT
+      - Fri, 27 Jan 2023 20:17:48 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -184,7 +184,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Mon, 19 Sep 2022 13:14:19 GMT
+      - Fri, 27 Jan 2023 20:17:48 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -214,7 +214,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Mon, 19 Sep 2022 13:14:19 GMT
+      - Fri, 27 Jan 2023 20:17:48 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -254,20 +254,20 @@ interactions:
       Content-Type:
       - text/plain
       Date:
-      - Mon, 19 Sep 2022 13:14:19 GMT
+      - Fri, 27 Jan 2023 20:17:49 GMT
       Keep-Alive:
       - timeout=4, max=40
       NCBI-PHID:
-      - D0BD5131D558E5C500005147B10DA78D.1.1.m_5
+      - 322C43B94AD2908500003E0D58746BF3.1.1.m_5
       NCBI-SID:
-      - 8DD77587A5CF483C_E36ESID
+      - E65E94A119F845B8_9336SID
       Referrer-Policy:
       - origin-when-cross-origin
       Server:
       - Finatra
       Set-Cookie:
-      - ncbi_sid=8DD77587A5CF483C_E36ESID; domain=.nih.gov; path=/; expires=Tue, 19
-        Sep 2023 13:14:20 GMT
+      - ncbi_sid=E65E94A119F845B8_9336SID; domain=.nih.gov; path=/; expires=Sat, 27
+        Jan 2024 20:17:49 GMT
       Strict-Transport-Security:
       - max-age=31536000; includeSubDomains; preload
       Transfer-Encoding:
@@ -276,8 +276,6 @@ interactions:
       - '3'
       X-RateLimit-Remaining:
       - '1'
-      X-Test-Test:
-      - test42
       X-UA-Compatible:
       - IE=Edge
       X-XSS-Protection:
@@ -322,20 +320,20 @@ interactions:
       Content-Type:
       - text/plain
       Date:
-      - Mon, 19 Sep 2022 13:14:24 GMT
+      - Fri, 27 Jan 2023 20:17:49 GMT
       Keep-Alive:
       - timeout=4, max=40
       NCBI-PHID:
-      - 939B60E632B07995000026566545DAC3.1.1.m_5
+      - 939B7F1D160A58A500001626BF6544C3.1.1.m_5
       NCBI-SID:
-      - 4687F454FCD02239_B383SID
+      - 1D6A42F9571FB834_9031SID
       Referrer-Policy:
       - origin-when-cross-origin
       Server:
       - Finatra
       Set-Cookie:
-      - ncbi_sid=4687F454FCD02239_B383SID; domain=.nih.gov; path=/; expires=Tue, 19
-        Sep 2023 13:14:24 GMT
+      - ncbi_sid=1D6A42F9571FB834_9031SID; domain=.nih.gov; path=/; expires=Sat, 27
+        Jan 2024 20:17:49 GMT
       Strict-Transport-Security:
       - max-age=31536000; includeSubDomains; preload
       Transfer-Encoding:
@@ -343,9 +341,7 @@ interactions:
       X-RateLimit-Limit:
       - '3'
       X-RateLimit-Remaining:
-      - '2'
-      X-Test-Test:
-      - test42
+      - '1'
       X-UA-Compatible:
       - IE=Edge
       X-XSS-Protection:

@@ -28,7 +28,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Mon, 19 Sep 2022 13:14:32 GMT
+      - Fri, 27 Jan 2023 20:17:57 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -63,7 +63,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Mon, 19 Sep 2022 13:14:32 GMT
+      - Fri, 27 Jan 2023 20:17:57 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -93,7 +93,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Mon, 19 Sep 2022 13:14:32 GMT
+      - Fri, 27 Jan 2023 20:17:57 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -123,7 +123,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Mon, 19 Sep 2022 13:14:32 GMT
+      - Fri, 27 Jan 2023 20:17:57 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -153,7 +153,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Mon, 19 Sep 2022 13:14:32 GMT
+      - Fri, 27 Jan 2023 20:17:57 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -183,7 +183,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Mon, 19 Sep 2022 13:14:32 GMT
+      - Fri, 27 Jan 2023 20:17:57 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -213,7 +213,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Mon, 19 Sep 2022 13:14:32 GMT
+      - Fri, 27 Jan 2023 20:17:57 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -248,7 +248,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Mon, 19 Sep 2022 13:14:32 GMT
+      - Fri, 27 Jan 2023 20:17:57 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -278,7 +278,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Mon, 19 Sep 2022 13:14:32 GMT
+      - Fri, 27 Jan 2023 20:17:58 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -319,20 +319,20 @@ interactions:
       Content-Type:
       - text/plain
       Date:
-      - Mon, 19 Sep 2022 13:14:32 GMT
+      - Fri, 27 Jan 2023 20:17:58 GMT
       Keep-Alive:
       - timeout=4, max=40
       NCBI-PHID:
-      - 322C565FBBD0434500005D31B0F6B84F.1.1.m_5
+      - 939B7F1D160A58A500002B26D50B7330.1.1.m_5
       NCBI-SID:
-      - E66F89645A1014D8_95D8SID
+      - 87708FF28D3D78F3_8518SID
       Referrer-Policy:
       - origin-when-cross-origin
       Server:
       - Finatra
       Set-Cookie:
-      - ncbi_sid=E66F89645A1014D8_95D8SID; domain=.nih.gov; path=/; expires=Tue, 19
-        Sep 2023 13:14:32 GMT
+      - ncbi_sid=87708FF28D3D78F3_8518SID; domain=.nih.gov; path=/; expires=Sat, 27
+        Jan 2024 20:17:58 GMT
       Strict-Transport-Security:
       - max-age=31536000; includeSubDomains; preload
       Transfer-Encoding:
@@ -341,8 +341,6 @@ interactions:
       - '3'
       X-RateLimit-Remaining:
       - '1'
-      X-Test-Test:
-      - test42
       X-UA-Compatible:
       - IE=Edge
       X-XSS-Protection:
@@ -387,20 +385,20 @@ interactions:
       Content-Type:
       - text/plain
       Date:
-      - Mon, 19 Sep 2022 13:14:33 GMT
+      - Fri, 27 Jan 2023 20:17:58 GMT
       Keep-Alive:
       - timeout=4, max=40
       NCBI-PHID:
-      - 939B60E632B07995000029568297B74B.1.1.m_5
+      - D0BD789DE981BB550000452E4706AE09.1.1.m_5
       NCBI-SID:
-      - E6BA647428F006F5_0419SID
+      - 349D584D8AC514C2_A139SID
       Referrer-Policy:
       - origin-when-cross-origin
       Server:
       - Finatra
       Set-Cookie:
-      - ncbi_sid=E6BA647428F006F5_0419SID; domain=.nih.gov; path=/; expires=Tue, 19
-        Sep 2023 13:14:33 GMT
+      - ncbi_sid=349D584D8AC514C2_A139SID; domain=.nih.gov; path=/; expires=Sat, 27
+        Jan 2024 20:17:59 GMT
       Strict-Transport-Security:
       - max-age=31536000; includeSubDomains; preload
       Transfer-Encoding:
@@ -409,8 +407,6 @@ interactions:
       - '3'
       X-RateLimit-Remaining:
       - '1'
-      X-Test-Test:
-      - test42
       X-UA-Compatible:
       - IE=Edge
       X-XSS-Protection:

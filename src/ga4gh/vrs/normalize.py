@@ -60,12 +60,12 @@ def _normalize_allele(allele, data_proxy):
     return new_allele
 
 
-def _normalize_haplotype(o, data_proxy=None):
+def _normalize_haplotype(o, data_proxy=None):  # pylint: disable=unused-argument
     o.members = sorted(o.members, key=ga4gh_digest)
     return o
 
 
-def _normalize_variationset(o, data_proxy=None):
+def _normalize_variationset(o, data_proxy=None):  # pylint: disable=unused-argument
     o.members = sorted(o.members, key=ga4gh_digest)
     return o
 
@@ -123,13 +123,13 @@ if __name__ == "__main__":    # pragma: no cover
         },
         "type": "Allele"
     }
-    allele = models.Allele(**allele_dict)
+    allele1 = models.Allele(**allele_dict)
 
-    allele2 = normalize(allele, dp)
+    allele2 = normalize(allele1, dp)
 
-    allele.state.sequence = "C"
-    allele3 = normalize(allele, dp)
+    allele1.state.sequence = "C"
+    allele3 = normalize(allele1, dp)
 
-    allele.location.interval.end.value = 44908823
-    allele.state.sequence = ""
-    allele4 = normalize(allele, dp)
+    allele1.location.interval.end.value = 44908823
+    allele1.state.sequence = ""
+    allele4 = normalize(allele1, dp)

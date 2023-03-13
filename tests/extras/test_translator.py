@@ -153,7 +153,9 @@ def test_to_spdi(tlr):
 
 hgvs_tests = (
     ("NC_000013.11:g.32936732=", {
+        "_id": "ga4gh:VA.DkZLLMnwoH6zIncSRh2c05nzCNLdTqHl",
         "location": {
+            "_id": "ga4gh:VSL.iSZclbNW8T95cXDuNvLMvm6xJd2g4pTn",
             "interval": {
                 "end": {"value": 32936732, "type": "Number"},
                 "start": {"value": 32936731, "type": "Number"},
@@ -169,7 +171,9 @@ hgvs_tests = (
         "type": "Allele"
     }),
     ("NC_000007.14:g.55181320A>T", {
+        "_id": "ga4gh:VA.5Z7gWQGUuGAPe4Pw2_kJvnkhS2Q5jRhY",
         "location": {
+            "_id": "ga4gh:VSL.1tI-5In290Gtp1DOlMxO6z-K3u0OzlXl",
             "interval": {
                 "end": {"value": 55181320, "type": "Number"},
                 "start": {"value": 55181319, "type": "Number"},
@@ -185,7 +189,9 @@ hgvs_tests = (
         "type": "Allele"
     }),
     ("NC_000007.14:g.55181220del", {
+        "_id": "ga4gh:VA.h6WuolTwZJYZh86qP2a8YVA1WXpHuY_X",
         "location": {
+            "_id": "ga4gh:VSL.kB_ok6Eka0225QwwbOKtvcYZBz7Z0mSR",
             "interval": {
                 "end": {"value": 55181220, "type": "Number"},
                 "start": {"value": 55181219, "type": "Number"},
@@ -201,7 +207,9 @@ hgvs_tests = (
         "type": "Allele"
     }),
     ("NC_000007.14:g.55181230_55181231insGGCT", {
+        "_id": "ga4gh:VA.JKGCs07cFu2wlDydCAe2ea06jMFXyK56",
         "location": {
+            "_id": "ga4gh:VSL.SdvAZCNKh5kf6ClsiOOmw_88fbkFPTqG",
             "interval": {
                 "end": {"value": 55181230, "type": "Number"},
                 "start": {"value": 55181230, "type": "Number"},
@@ -217,7 +225,9 @@ hgvs_tests = (
         "type": "Allele"
     }),
     ("NC_000013.11:g.32331093_32331094dup", {
+        "_id": "ga4gh:VA.F_klTjHIJsoaGqW8In2d9IZLZ18zJin-",
         "location": {
+            "_id": "ga4gh:VSL.GLwUp2TfD4QezsoEAt3te21HJ_yv3xYd",
             "interval": {
                 "end": {"value": 32331094, "type": "Number"},
                 "start": {"value": 32331082, "type": "Number"},
@@ -233,7 +243,9 @@ hgvs_tests = (
         "type": "Allele"
     }),
     ("NC_000013.11:g.32316467dup", {
+        "_id": "ga4gh:VA.fuUpdNBFVKfeMyq1tKtFtFWZhJI3xlnO",
         "location": {
+            "_id": "ga4gh:VSL.bw5IO4jfJqBQIR4FRykXXOBO9LM73AcA",
             "interval": {
                 "end": {"value": 32316467, "type": "Number"},
                 "start": {"value": 32316466, "type": "Number"},
@@ -249,7 +261,9 @@ hgvs_tests = (
         "type": "Allele"
     }),
     ("NM_001331029.1:n.872A>G", {
+        "_id": "ga4gh:VA.G8yEOhw9SHleOTYsYIEdoN58EJj9_uQ5",
         "location": {
+            "_id": "ga4gh:VSL.4pQCu7wrdzayflPWRWZ6KWWto26ZSt8h",
             "interval": {
                 "end": {"value": 872, "type": "Number"},
                 "start": {"value": 871, "type": "Number"},
@@ -265,7 +279,9 @@ hgvs_tests = (
         "type": "Allele"
     }),
     ("NM_181798.1:n.1263G>T", {
+        "_id": "ga4gh:VA.2U3VttSZjpAOkf5BDKuSvaSbjnY9wUqg",
         "location": {
+            "_id": "ga4gh:VSL.1nuRIkFWraP9ob21j9n-IC4RRlnrbQzk",
             "interval": {
                 "end": {"value": 1263, "type": "Number"},
                 "start": {"value": 1262, "type": "Number"},
@@ -287,6 +303,7 @@ hgvs_tests = (
 @pytest.mark.vcr
 def test_hgvs(tlr, hgvsexpr, expected):
     tlr.normalize = True
+    tlr.identify = True
     allele = tlr.translate_from(hgvsexpr, "hgvs")
     assert expected == allele.as_dict()
 
