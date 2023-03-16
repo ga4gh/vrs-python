@@ -60,28 +60,33 @@ class Translator:
         self.hgvs_tools = None
 
 
-    def translate_from(self, var, fmt=None, require_validation=True):
+    def translate_from(self, var, fmt=None, **kwargs):
         """Translate variation `var` to VRS object
+
 
         If `fmt` is None, guess the appropriate format and return the variant.
         If `fmt` is specified, try only that format.
-        If `require_validation` is `True` then validation checks must pass in order to
-            return a VRS object. A `ValidationError` will be raised if validation checks
-            fail. If `False` then VRS object will be returned even if validation checks
-            fail.
+
+        kwargs:
+            assembly_name (str): Assembly used for `var`. Defaults to the
+                `default_assembly_name`. Only used for beacon and gnomad.
+            require_validation (bool): If `True` then validation checks must pass in
+                order to return a VRS object. A `ValidationError` will be raised if
+                validation checks fail. If `False` then VRS object will be returned even
+                if validation checks fail. Defaults to `True`.
 
         See also notes about `from_` and `to_` methods.
         """
 
         if fmt:
             t = self.from_translators[fmt]
-            o = t(self, var, require_validation=require_validation)
+            o = t(self, var, **kwargs)
             if o is None:
                 raise ValueError(f"Unable to parse data as {fmt} variation")
             return o
 
         for _, t in self.from_translators.items():
-            o = t(self, var, require_validation=require_validation)
+            o = t(self, var, **kwargs)  # pylint: disable=too-many-function-args
             if o:
                 return o
 
@@ -114,8 +119,11 @@ class Translator:
     ############################################################################
     ## INTERNAL
 
-    def _from_beacon(self, beacon_expr, assembly_name=None, require_validation=True):  # pylint: disable=too-many-locals, unused-argument
+    def _from_beacon(self, beacon_expr, **kwargs):  # pylint: disable=too-many-locals
         """Parse beacon expression into VRS Allele
+
+        kwargs:
+            assembly_name (str): Assembly used for `beacon_expr`.
 
         #>>> a = tlr.from_beacon("19 : 44908822 C > T")
         #>>> a.as_dict()
@@ -137,8 +145,7 @@ class Translator:
             return None
 
         g = m.groupdict()
-        if assembly_name is None:
-            assembly_name = self.default_assembly_name
+        assembly_name = kwargs.get("assembly_name", self.default_assembly_name)
         sequence_id = assembly_name + ":" + g["chr"]
         start = int(g["pos"]) - 1
         ref = g["ref"]
@@ -156,13 +163,17 @@ class Translator:
         return allele
 
 
-    def _from_gnomad(self, gnomad_expr, assembly_name=None, require_validation=True):  # pylint: disable=unused-argument, too-many-locals
+    def _from_gnomad(self, gnomad_expr, **kwargs):  # pylint: disable=too-many-locals
         """Parse gnomAD-style VCF expression into VRS Allele
 
         :param str gnomad_expr: chr-pos-ref-alt
-        :param str assembly_name: `gnomad_expr`'s assembly
-        :param bool require_validation: `True` if validation checks must pass in order
-            for a VRS Allele to be returned. `False` otherwise.
+
+        kwargs:
+            assembly_name (str): Assembly used for `gnomad_expr`.
+            require_validation (bool): If `True` then validation checks must pass in
+                order to return a VRS object. A `ValidationError` will be raised if
+                validation checks fail. If `False` then VRS object will be returned even
+                if validation checks fail. Defaults to `True`.
 
         #>>> a = tlr.from_gnomad("1-55516888-G-GA")
         #>>> a.as_dict()
@@ -183,8 +194,7 @@ class Translator:
             return None
 
         g = m.groupdict()
-        if assembly_name is None:
-            assembly_name = self.default_assembly_name
+        assembly_name = kwargs.get("assembly_name", self.default_assembly_name)
         sequence_id = assembly_name + ":" + g["chr"]
         start = int(g["pos"]) - 1
         ref = g["ref"].upper()
@@ -194,7 +204,7 @@ class Translator:
 
         # validation checks
         valid_ref_seq, err_msg = self._is_valid_ref_seq(sequence_id, start, end, ref)
-        if require_validation and not valid_ref_seq:
+        if kwargs.get("require_validation", True) and not valid_ref_seq:
             raise ValidationError(err_msg)
 
         interval = models.SequenceInterval(start=models.Number(value=start),
@@ -206,7 +216,7 @@ class Translator:
         return allele
 
 
-    def _from_hgvs(self, hgvs_expr, require_validation=True):  # pylint: disable=unused-argument
+    def _from_hgvs(self, hgvs_expr, **kwargs):  # pylint: disable=unused-argument
         """parse hgvs into a VRS object (typically an Allele)
 
         #>>> a = tlr.from_hgvs("NM_012345.6:c.22A>T")
@@ -275,8 +285,7 @@ class Translator:
         return allele
 
 
-    def _from_spdi(self, spdi_expr, require_validation=True):  # pylint: disable=unused-argument
-
+    def _from_spdi(self, spdi_expr, **kwargs):  # pylint: disable=unused-argument
         """Parse SPDI expression in to a GA4GH Allele
 
         #>>> a = tlr.from_spdi("NM_012345.6:21:1:T")
@@ -320,7 +329,7 @@ class Translator:
         return allele
 
 
-    def _from_vrs(self, var, require_validation=True):  # pylint: disable=unused-argument
+    def _from_vrs(self, var, **kwargs):  # pylint: disable=unused-argument
         """convert from dict representation of VRS JSON to VRS object"""
         if not isinstance(var, Mapping):
             return None
