@@ -35,7 +35,6 @@ correspondences between the packages may be summarized as:
 | [0.7](https://github.com/ga4gh/vrs-python/tree/0.7) | [1.2](https://github.com/ga4gh/vrs/tree/1.2) |
 | [0.8](https://github.com/ga4gh/vrs-python/tree/0.8) | [1.3](https://github.com/ga4gh/vrs/tree/1.3) |
 | [0.9](https://github.com/ga4gh/vrs-python/tree/0.9) | [metaschema-update](https://github.com/ga4gh/vrs/tree/metaschema-update) |
-| [0.10](https://github.com/ga4gh/vrs-python/tree/0.10) | [main](https://github.com/ga4gh/vrs/tree/main) |
 
 ⚠ **Developers: See the development section below for recommendations for using submodules
 gracefully (and without causing problems for others!).**
