@@ -2,9 +2,9 @@ name: Python CQA
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, "0.8" ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, "0.8" ]
 
 
 # TODO: separate lint and test jobs; lint first, test "needs" lint
