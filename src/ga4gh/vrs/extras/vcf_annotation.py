@@ -194,7 +194,7 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
         output_pickle = bool(vrs_pickle_out)
 
         for record in vcf_in:
-            vrs_field_data = self._record_digests(
+            vrs_field_data = self._get_vrs_data(
                 record, vrs_data, assembly, additional_info_fields, vrs_attributes,
                 output_pickle, output_vcf
             )
@@ -272,7 +272,7 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
                 vrs_field_data[self.VRS_END_FIELD].append(end)
                 vrs_field_data[self.VRS_ALT_FIELD].append(alt)
 
-    def _record_digests(  # pylint: disable=too-many-arguments,too-many-locals
+    def _get_vrs_data(  # pylint: disable=too-many-arguments,too-many-locals
         self, record: pysam.VariantRecord, vrs_data: Dict, assembly: str,  # pylint: disable=no-member
         additional_info_fields: List[str], vrs_attributes: bool = False,
         output_pickle: bool = True, output_vcf: bool = True
