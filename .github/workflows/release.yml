@@ -21,7 +21,7 @@ jobs:
   release:
     runs-on: ubuntu-18.04
     needs: get_branch
-    if: needs.get_branch.outputs.branch_name == 'main'
+    if: needs.get_branch.outputs.branch_name == '0.8'
     steps:
     - uses: actions/checkout@v2
       with:
