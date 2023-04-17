@@ -20,10 +20,10 @@ class VariationNormalizerRESTDataProxy:  # pylint: disable=too-few-public-method
         to reach the public UTA database due to port issues.
         """
         vo = vo.as_dict()
-        data = dict(
-            variation = vo,
-            namespace = namespace
-        )
+        data = {
+            "variation": vo,
+            "namespace": namespace
+        }
         r = requests.post(
             url = f"{self.api}/vrs_allele_to_hgvs",
             json=data,
