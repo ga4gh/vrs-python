@@ -19,7 +19,7 @@ jobs:
         branch=${raw##*/}
         echo "::set-output name=name::$branch"
   release:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     needs: get_branch
     if: needs.get_branch.outputs.branch_name == '0.8'
     steps:
