@@ -28,11 +28,13 @@ The ga4gh/vrs-python repo embeds the ga4gh/vrs repo as a git submodule, and
 therefore each ga4gh.vrs package on PyPi embeds a particular version of VRS. The
 correspondences between the packages may be summarized as:
 
-- **main ~ main**: The vrs-python main branch tracks the vrs main branch.
-- **develop ~ develop**: The vrs-python develop branch tracks the vrs develop branch.
-- **0.6 ~ 1.1**: vrs-python 0.6 branch tracks the vrs 1.1 branch.
-- **0.7 ~ 1.2**: vrs-python 0.7 branch tracks the vrs 1.2 branch.
-- **0.8 ~ main**: vrs-python 0.8 branch tracks the vrs main (dev) branch.
+| vrs-python branch | vrs branch |
+| --- | --- |
+| [main](https://github.com/ga4gh/vrs-python/tree/main) | [main](https://github.com/ga4gh/vrs/tree/main) |
+| [0.6](https://github.com/ga4gh/vrs-python/tree/0.6) | [1.1](https://github.com/ga4gh/vrs/tree/1.1) |
+| [0.7](https://github.com/ga4gh/vrs-python/tree/0.7) | [1.2](https://github.com/ga4gh/vrs/tree/1.2) |
+| [0.8](https://github.com/ga4gh/vrs-python/tree/0.8) | [1.3](https://github.com/ga4gh/vrs/tree/1.3) |
+| [0.9](https://github.com/ga4gh/vrs-python/tree/0.9) | [metaschema-update](https://github.com/ga4gh/vrs/tree/metaschema-update) |
 
 ⚠ **Developers: See the development section below for recommendations for using submodules
 gracefully (and without causing problems for others!).**
