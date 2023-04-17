@@ -1,10 +1,6 @@
 name: Python CQA
 
-on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+on: [push, pull_request]
 
 
 # TODO: separate lint and test jobs; lint first, test "needs" lint
@@ -22,7 +18,7 @@ jobs:
       SEQREPO_ROOT_DIR: ./tests/data/seqrepo/latest
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       with:
         submodules: recursive
     - uses: actions/cache@v2
