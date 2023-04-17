@@ -9,7 +9,7 @@ jobs:
     outputs:
       branch_name: ${{ steps.get_branch_name.outputs.name }}
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       with:
         fetch-depth: 0
     - name: Get branch name
@@ -19,15 +19,15 @@ jobs:
         branch=${raw##*/}
         echo "::set-output name=name::$branch"
   release:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     needs: get_branch
     if: needs.get_branch.outputs.branch_name == '0.8'
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       with:
         fetch-depth: 0
     - name: Set up Python 3.9
-      uses: actions/setup-python@v1
+      uses: actions/setup-python@v4
       with:
         python-version: 3.9
     - name: Update submodules
