@@ -169,7 +169,7 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
         vcf_in.header.info.add(
             self.VRS_ALLELE_IDS_FIELD, 1, "String",
             ("The computed identifiers for the GA4GH VRS Alleles corresponding to the "
-             "values in the alleles column")
+             "GT indexes of the REF and ALT alleles")
         )
 
         additional_info_fields = [self.VRS_ALLELE_IDS_FIELD]
@@ -177,17 +177,17 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
             vcf_in.header.info.add(
                 self.VRS_STARTS_FIELD, 1, "String",
                 ("Interresidue coordinates used as the location starts for the GA4GH "
-                 "VRS Alleles corresponding to the values in the alleles column")
+                 "VRS Alleles corresponding to the GT indexes of the REF and ALT alleles")
             )
             vcf_in.header.info.add(
                 self.VRS_ENDS_FIELD, 1, "String",
                 ("Interresidue coordinates used as the location ends for the GA4GH VRS "
-                 "Alleles corresponding to the values in the alleles column")
+                 "Alleles corresponding to the GT indexes of the REF and ALT alleles")
             )
             vcf_in.header.info.add(
                 self.VRS_STATES_FIELD, 1, "String",
                 ("The literal sequence states used for the GA4GH VRS Alleles "
-                 "corresponding to the values in the alleles column")
+                 "corresponding to the GT indexes of the REF and ALT alleles")
             )
             additional_info_fields += [self.VRS_STARTS_FIELD, self.VRS_ENDS_FIELD, self.VRS_STATES_FIELD]
 
