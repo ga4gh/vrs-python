@@ -124,10 +124,10 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
     """
 
     # Field names for VCF
-    VRS_ALLELE_ID_FIELD = "VRS_Allele_Id"
-    VRS_START_FIELD = "VRS_Start"
-    VRS_END_FIELD = "VRS_End"
-    VRS_STATE_FIELD = "VRS_State"
+    VRS_ALLELE_IDS_FIELD = "VRS_Allele_Ids"
+    VRS_STARTS_FIELD = "VRS_Starts"
+    VRS_ENDS_FIELD = "VRS_Ends"
+    VRS_STATES_FIELD = "VRS_States"
 
     def __init__(self, seqrepo_dp_type: SeqRepoProxyType = SeqRepoProxyType.LOCAL,
                  seqrepo_base_url: str = "http://localhost:5000/seqrepo",
@@ -167,29 +167,29 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
         vrs_data = {}
         vcf_in = pysam.VariantFile(filename=vcf_in)  # pylint: disable=no-member
         vcf_in.header.info.add(
-            self.VRS_ALLELE_ID_FIELD, 1, "String",
-            ("The computed identifier for the GA4GH VRS Allele, separated by commas, "
-             "associated to REF and ALT fields.")
+            self.VRS_ALLELE_IDS_FIELD, 1, "String",
+            ("The computed identifiers for the GA4GH VRS Alleles corresponding to the "
+             "values in the alleles column")
         )
 
-        additional_info_fields = [self.VRS_ALLELE_ID_FIELD]
+        additional_info_fields = [self.VRS_ALLELE_IDS_FIELD]
         if vrs_attributes:
             vcf_in.header.info.add(
-                self.VRS_START_FIELD, 1, "String",
-                ("An interresidue coordinate used as the location start for the GA4GH "
-                 "VRS Allele, separated by commas, associated to REF and ALT fields.")
+                self.VRS_STARTS_FIELD, 1, "String",
+                ("Interresidue coordinates used as the location starts for the GA4GH "
+                 "VRS Alleles corresponding to the values in the alleles column")
             )
             vcf_in.header.info.add(
-                self.VRS_END_FIELD, 1, "String",
-                ("An interresidue coordinate used as the location end for the GA4GH "
-                 "VRS Allele, separated by commas, associated to REF and ALT fields.")
+                self.VRS_ENDS_FIELD, 1, "String",
+                ("Interresidue coordinates used as the location ends for the GA4GH VRS "
+                 "Alleles corresponding to the values in the alleles column")
             )
             vcf_in.header.info.add(
-                self.VRS_STATE_FIELD, 1, "String",
-                ("The literal sequence state used for the GA4GH VRS Allele, separated "
-                 "by commas, associated to REF and ALT fields.")
+                self.VRS_STATES_FIELD, 1, "String",
+                ("The literal sequence states used for the GA4GH VRS Alleles "
+                 "corresponding to the values in the alleles column")
             )
-            additional_info_fields += [self.VRS_START_FIELD, self.VRS_END_FIELD, self.VRS_STATE_FIELD]
+            additional_info_fields += [self.VRS_STARTS_FIELD, self.VRS_ENDS_FIELD, self.VRS_STATES_FIELD]
 
         if vcf_out:
             vcf_out = pysam.VariantFile(vcf_out, "w", header=vcf_in.header)  # pylint: disable=no-member
@@ -265,16 +265,16 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
 
         if output_vcf:
             allele_id = vrs_obj._id._value if vrs_obj else ""
-            vrs_field_data[self.VRS_ALLELE_ID_FIELD].append(allele_id)
+            vrs_field_data[self.VRS_ALLELE_IDS_FIELD].append(allele_id)
 
             if vrs_attributes:
                 start = str(vrs_obj.location.interval.start.value) if vrs_obj else ""
                 end = str(vrs_obj.location.interval.end.value) if vrs_obj else ""
                 alt = str(vrs_obj.state.sequence) if vrs_obj else ""
 
-                vrs_field_data[self.VRS_START_FIELD].append(start)
-                vrs_field_data[self.VRS_END_FIELD].append(end)
-                vrs_field_data[self.VRS_STATE_FIELD].append(alt)
+                vrs_field_data[self.VRS_STARTS_FIELD].append(start)
+                vrs_field_data[self.VRS_ENDS_FIELD].append(end)
+                vrs_field_data[self.VRS_STATES_FIELD].append(alt)
 
     def _get_vrs_data(  # pylint: disable=too-many-arguments,too-many-locals
         self, record: pysam.VariantRecord, vrs_data: Dict, assembly: str,  # pylint: disable=no-member
