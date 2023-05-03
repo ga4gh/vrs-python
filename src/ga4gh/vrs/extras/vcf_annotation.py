@@ -60,7 +60,7 @@ class SeqRepoProxyType(str, Enum):
     "--vrs_attributes",
     is_flag=True,
     default=False,
-    help="Will include VRS_Start, VRS_End, VRS_Alt fields in the INFO field.",
+    help="Will include VRS_Start, VRS_End, VRS_State fields in the INFO field.",
     show_default=True
 )
 @click.option(
@@ -124,10 +124,10 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
     """
 
     # Field names for VCF
-    VRS_ALLELE_FIELD = "VRS_Allele"
+    VRS_ALLELE_ID_FIELD = "VRS_Allele_Id"
     VRS_START_FIELD = "VRS_Start"
     VRS_END_FIELD = "VRS_End"
-    VRS_ALT_FIELD = "VRS_Alt"
+    VRS_STATE_FIELD = "VRS_State"
 
     def __init__(self, seqrepo_dp_type: SeqRepoProxyType = SeqRepoProxyType.LOCAL,
                  seqrepo_base_url: str = "http://localhost:5000/seqrepo",
@@ -156,7 +156,7 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
         :param Optional[str] vcf_out: The path for the output VCF file
         :param Optional[str] vrs_pickle_out: The path for the output VCF pickle file
         :param bool vrs_attributes: If `True` will include VRS_Start, VRS_End,
-            VRS_Alt fields in the INFO field. If `False` will not include these fields.
+            VRS_State fields in the INFO field. If `False` will not include these fields.
             Only used if `vcf_out` is provided.
         :param str assembly: The assembly used in `vcf_in` data
         """
@@ -167,25 +167,29 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
         vrs_data = {}
         vcf_in = pysam.VariantFile(filename=vcf_in)  # pylint: disable=no-member
         vcf_in.header.info.add(
-            self.VRS_ALLELE_FIELD, 1, "String",
-            "VRS Allele IDs, separated by commas, associated to REF and ALT fields."
+            self.VRS_ALLELE_ID_FIELD, 1, "String",
+            ("The computed identifier for the GA4GH VRS Allele, separated by commas, "
+             "associated to REF and ALT fields.")
         )
 
-        additional_info_fields = [self.VRS_ALLELE_FIELD]
+        additional_info_fields = [self.VRS_ALLELE_ID_FIELD]
         if vrs_attributes:
             vcf_in.header.info.add(
                 self.VRS_START_FIELD, 1, "String",
-                "VRS Allele start positions (inter-residue) associated to REF and ALT fields."
+                ("An interresidue coordinate used as the location start for the GA4GH "
+                 "VRS Allele, separated by commas, associated to REF and ALT fields.")
             )
             vcf_in.header.info.add(
                 self.VRS_END_FIELD, 1, "String",
-                "VRS Allele end positions (inter-residue) associated to REF and ALT fields."
+                ("An interresidue coordinate used as the location end for the GA4GH "
+                 "VRS Allele, separated by commas, associated to REF and ALT fields.")
             )
             vcf_in.header.info.add(
-                self.VRS_ALT_FIELD, 1, "String",
-                "VRS Allele alt sequences associated to REF and ALT fields."
+                self.VRS_STATE_FIELD, 1, "String",
+                ("The literal sequence state used for the GA4GH VRS Allele, separated "
+                 "by commas, associated to REF and ALT fields.")
             )
-            additional_info_fields += [self.VRS_START_FIELD, self.VRS_END_FIELD, self.VRS_ALT_FIELD]
+            additional_info_fields += [self.VRS_START_FIELD, self.VRS_END_FIELD, self.VRS_STATE_FIELD]
 
         if vcf_out:
             vcf_out = pysam.VariantFile(vcf_out, "w", header=vcf_in.header)  # pylint: disable=no-member
@@ -234,7 +238,7 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
         :param bool output_vcf: `True` if annotated VCF file will be output.
             `False` otherwise.
         :param bool vrs_attributes: If `True` will include VRS_Start, VRS_End,
-            VRS_Alt fields in the INFO field. If `False` will not include these fields.
+            VRS_State fields in the INFO field. If `False` will not include these fields.
             Only used if `output_vcf` set to `True`.
         """
         try:
@@ -261,7 +265,7 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
 
         if output_vcf:
             allele_id = vrs_obj._id._value if vrs_obj else ""
-            vrs_field_data[self.VRS_ALLELE_FIELD].append(allele_id)
+            vrs_field_data[self.VRS_ALLELE_ID_FIELD].append(allele_id)
 
             if vrs_attributes:
                 start = str(vrs_obj.location.interval.start.value) if vrs_obj else ""
@@ -270,7 +274,7 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
 
                 vrs_field_data[self.VRS_START_FIELD].append(start)
                 vrs_field_data[self.VRS_END_FIELD].append(end)
-                vrs_field_data[self.VRS_ALT_FIELD].append(alt)
+                vrs_field_data[self.VRS_STATE_FIELD].append(alt)
 
     def _get_vrs_data(  # pylint: disable=too-many-arguments,too-many-locals
         self, record: pysam.VariantRecord, vrs_data: Dict, assembly: str,  # pylint: disable=no-member
@@ -286,7 +290,7 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
         :param List[str] additional_info_fields: Additional VRS fields to add in INFO
             field
         :param bool vrs_attributes: If `True` will include VRS_Start, VRS_End,
-            VRS_Alt fields in the INFO field. If `False` will not include these fields.
+            VRS_State fields in the INFO field. If `False` will not include these fields.
             Only used if `output_vcf` set to `True`.
         :param bool output_pickle: `True` if VRS pickle file will be output.
             `False` otherwise.
