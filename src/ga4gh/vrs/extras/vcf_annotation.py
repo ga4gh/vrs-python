@@ -124,7 +124,7 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
     """
 
     # Field names for VCF
-    VRS_ALLELE_IDS_FIELD = "VRS_Allele_Ids"
+    VRS_ALLELE_IDS_FIELD = "VRS_Allele_IDs"
     VRS_STARTS_FIELD = "VRS_Starts"
     VRS_ENDS_FIELD = "VRS_Ends"
     VRS_STATES_FIELD = "VRS_States"
