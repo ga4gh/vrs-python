@@ -22,4 +22,4 @@ lint
 uta_*.pgd.gz
 .vscode
 *.log
-.idea
+.idea/
