@@ -48,6 +48,36 @@ gracefully (and without causing problems for others!).**
 The `[extras]` argument tells pip to install packages to fullfill the dependencies of the
 `ga4gh.vrs.extras` package.
 
+## Getting started with Docker
+
+Docker is an open-source platform that enables you to automate the deployment and management of applications using containers. Containers are lightweight, isolated environments that package all the necessary software and dependencies for an application to run consistently across different systems
+
+If you're new to Docker, follow these steps to get started:
+
+### Step 1: Install Docker
+To begin, you need to install Docker on your machine. Follow the official Docker installation guide for your specific operating system:
+
+[Docker Installation Guide](https://docs.docker.com/get-docker/)
+
+### Step 2: Verify Docker Installation
+Once Docker is installed, you can verify the installation by running the following command in your terminal:
+
+
+``` docker version ```
+
+This command displays the Docker client and server versions, indicating that Docker is successfully installed on your machine.
+
+### Step 3: Run a Docker Container
+To test Docker, let's run a simple container. In your terminal, execute the following command:
+
+``` docker run hello-world ```
+
+This command pulls the hello-world Docker image (if not already present) and runs it in a container. You should see a message confirming that Docker is working correctly.
+
+[Docker Documentation](https://docs.docker.com/)
+
+
+
 ## Installing dependencies for ga4gh.vrs.extras
 
 The `ga4gh.vrs.extras` modules are not part of the VR spec per se. They are
