@@ -123,7 +123,9 @@ def test_to_spdi(tlr):
 
 hgvs_tests = (
     ("NC_000013.11:g.32936732=", {
+        "id": "ga4gh:VA.zkZpkDHX0xaOHUPxa5kFt3TUiWbr53xm",
         "location": {
+            "id": "ga4gh:SL.2Q2SMLzdWQbJvYbXwwgegrjJbOxiLIJP",
             "end": {"value": 32936732, "type": "Number"},
             "start": {"value": 32936731, "type": "Number"},
             "sequence_id": "ga4gh:SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT",
@@ -136,7 +138,9 @@ hgvs_tests = (
         "type": "Allele"
     }),
     ("NC_000007.14:g.55181320A>T", {
+        "id": "ga4gh:VA.RzhTjgnkCmLnaw3IBWnAubZs7eJHhho_",
         "location": {
+            "id": "ga4gh:SL.Npx4j5beiNN9GSFTm8Ml6YxrNj_Ghkac",
             "end": {"value": 55181320, "type": "Number"},
             "start": {"value": 55181319, "type": "Number"},
             "sequence_id": "ga4gh:SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul",
@@ -149,7 +153,9 @@ hgvs_tests = (
         "type": "Allele"
     }),
     ("NC_000007.14:g.55181220del", {
+        "id": "ga4gh:VA.YdX-N1MsXLxVnfCPYBdkdhzaEJVcPVDA",
         "location": {
+            "id": "ga4gh:SL.80HjxOYxb6OtmSUToUehMqU78JJFEaC1",
             "end": {"value": 55181220, "type": "Number"},
             "start": {"value": 55181219, "type": "Number"},
             "sequence_id": "ga4gh:SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul",
@@ -162,7 +168,9 @@ hgvs_tests = (
         "type": "Allele"
     }),
     ("NC_000007.14:g.55181230_55181231insGGCT", {
+        "id": "ga4gh:VA.osbbI5Me3Paj5mFN3wsD1RpuHhd0dJsv",
         "location": {
+            "id": "ga4gh:SL.b30aH2-4AX1oG2LYmMqpBRRyjcpARlgP",
             "end": {"value": 55181230, "type": "Number"},
             "start": {"value": 55181230, "type": "Number"},
             "sequence_id": "ga4gh:SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul",
@@ -175,7 +183,9 @@ hgvs_tests = (
         "type": "Allele"
     }),
     ("NC_000013.11:g.32331093_32331094dup", {
+        "id": "ga4gh:VA.0wERl6sqiSnHXe44bfbd4c6zvqAZVjqp",
         "location": {
+            "id": "ga4gh:SL.OKUia3LZI-04cFnY1uSO0gEicgTz3suN",
             "end": {"value": 32331094, "type": "Number"},
             "start": {"value": 32331082, "type": "Number"},
             "sequence_id": "ga4gh:SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT",
@@ -188,7 +198,9 @@ hgvs_tests = (
         "type": "Allele"
     }),
     ("NC_000013.11:g.32316467dup", {
+        "id": "ga4gh:VA.iuDk-UaV63YXoYUJHehin3vFfzfYnz0j",
         "location": {
+            "id": "ga4gh:SL.yy5lb3KqJGmLbo5kJ7aGf4aW5Ih5-dI3",
             "end": {"value": 32316467, "type": "Number"},
             "start": {"value": 32316466, "type": "Number"},
             "sequence_id": "ga4gh:SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT",
@@ -201,7 +213,9 @@ hgvs_tests = (
         "type": "Allele"
     }),
     ("NM_001331029.1:n.872A>G", {
+        "id": "ga4gh:VA.j-Lnf0txP05DFsLJNhH6Fau4lIBok-DI",
         "location": {
+            "id": "ga4gh:SL.VFlsGPHaAJB_LsYzQd8t6vTWSGKWiEeB",
             "end": {"value": 872, "type": "Number"},
             "start": {"value": 871, "type": "Number"},
             "sequence_id": "ga4gh:SQ.MBIgVnoHFw34aFqNUVGM0zgjC3d-v8dK",
@@ -214,7 +228,9 @@ hgvs_tests = (
         "type": "Allele"
     }),
     ("NM_181798.1:n.1263G>T", {
+        "id": "ga4gh:VA.iLlJQVkxftWXweu4Ad-2NMShYdxUR1DH",
         "location": {
+            "id": "ga4gh:SL.rxnYlIIPfVZCxSGhxdvs_nAWlxQd3nen",
             "end": {"value": 1263, "type": "Number"},
             "start": {"value": 1262, "type": "Number"},
             "sequence_id": "ga4gh:SQ.KN07u-RFqd1dTyOWOG98HnOq87Nq-ZIg",
@@ -233,6 +249,7 @@ hgvs_tests = (
 @pytest.mark.vcr
 def test_hgvs(tlr, hgvsexpr, expected):
     tlr.normalize = True
+    tlr.identify = True
     allele = tlr.translate_from(hgvsexpr, "hgvs")
     assert expected == allele.as_dict()
 
