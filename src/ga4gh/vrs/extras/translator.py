@@ -451,6 +451,7 @@ class Translator:
 
         if self.identify:
             allele.id = ga4gh_identify(allele)
+            allele.location.id = ga4gh_identify(allele.location)
 
         return allele
 
