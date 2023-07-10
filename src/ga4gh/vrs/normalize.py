@@ -7,7 +7,7 @@ See https://vrs.ga4gh.org/en/stable/impl-guide/normalization.html
 import logging
 
 from bioutils.normalize import normalize as _normalize, NormalizationMode
-from ga4gh.core import is_pjs_instance, pjs_copy, ga4gh_digest
+from ga4gh.core import is_pydantic_instance, pjs_copy, ga4gh_digest
 
 from ._internal import models
 from .dataproxy import SequenceProxy
@@ -71,7 +71,7 @@ handlers = {
 def normalize(vo, data_proxy=None):
     """normalize given vrs object, regardless of type"""
 
-    assert is_pjs_instance(vo)
+    assert is_pydantic_instance(vo)
     vo_type = vo.type._value
 
     if vo_type in handlers:

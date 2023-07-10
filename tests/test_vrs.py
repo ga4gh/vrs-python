@@ -1,4 +1,4 @@
-from ga4gh.core import sha512t24u, ga4gh_digest, ga4gh_serialize, ga4gh_identify, is_pjs_instance
+from ga4gh.core import sha512t24u, ga4gh_digest, ga4gh_serialize, ga4gh_identify, is_pydantic_instance
 from ga4gh.vrs import models, vrs_deref, vrs_enref
 
 allele_dict = {
@@ -22,7 +22,7 @@ def test_vr():
 
     assert a.as_dict() == allele_dict
 
-    assert is_pjs_instance(a.location)
+    assert is_pydantic_instance(a.location)
 
     assert ga4gh_serialize(
         a.location

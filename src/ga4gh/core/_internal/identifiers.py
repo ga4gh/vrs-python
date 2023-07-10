@@ -14,31 +14,14 @@ For example, here is a call path for ga4gh_identify called on an Allele:
 For that reason, they are implemented here in one file.
 
 """
-
-import logging
-import os
 import re
 
 from canonicaljson import encode_canonical_json
-import pkg_resources
-import yaml
 
 from .digests import sha512t24u
-from .jsonschema import is_array, is_pjs_instance, is_curie_type, is_identifiable, is_literal
+from .pydantic import is_list, is_pydantic_instance, is_curie_type, is_identifiable, is_literal
 
 __all__ = "ga4gh_digest ga4gh_identify ga4gh_serialize is_ga4gh_identifier parse_ga4gh_identifier".split()
-
-_logger = logging.getLogger(__name__)
-
-# Assume that ga4gh.yaml and vrs.yaml files are in the same directory for now
-schema_dir = os.environ.get("VRSATILE_SCHEMA_DIR", pkg_resources.resource_filename(__name__, "data/schemas/vrsatile"))
-cfg = yaml.safe_load(open(schema_dir + "/merged.yaml"))
-defs = cfg["definitions"]
-
-type_prefix_map_default = dict()
-for k,v in defs.items():
-    if "ga4gh_prefix" in v:
-        type_prefix_map_default[k] = v["ga4gh_prefix"]
 
 namespace = "ga4gh"
 curie_sep = ":"
@@ -96,15 +79,8 @@ def ga4gh_identify(vro, type_prefix_map=None):
     'ga4gh:VSL.u5fspwVbQ79QkX6GHLF8tXPCAXFJqRPx'
 
     """
-
-    if type_prefix_map is None:
-        type_prefix_map = type_prefix_map_default
-    try:
-        pfx = type_prefix_map[vro.type]
-    except KeyError:
-        _logger.debug("No identifier prefix is defined for %s; check ga4gh.yaml", vro.type)
-        return None
     digest = ga4gh_digest(vro)
+    pfx = vro.prefix
     ir = f"{namespace}{curie_sep}{pfx}{ref_sep}{digest}"
     return ir
 
@@ -173,17 +149,16 @@ def ga4gh_serialize(vro):
                 v = v.split(ref_sep, 1)[1]
             return v
 
-        if is_pjs_instance(vro):
+        if is_pydantic_instance(vro):
             if is_identifiable(vro) and enref:
                 return ga4gh_digest(vro)
+
             d = {k: dictify(vro[k], enref=True)
                  for k in vro
-                 if not (k.startswith("_") or
-                         (k == "id" and vro.type in type_prefix_map_default) or
-                         vro[k] is None)}
+                 if k in vro.ga4gh_digest_keys}
             return d
 
-        if is_array(vro):
+        if is_list(vro):
             if is_curie_type(vro[0]):
                 return sorted(dictify(o) for o in vro.data)
             return sorted([dictify(o) for o in vro.typed_elems])
