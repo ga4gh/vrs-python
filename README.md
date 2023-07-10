@@ -43,16 +43,16 @@ gracefully (and without causing problems for others!).**
 
 ## Installing with pip
 
-    pip install ga4gh.vrs[extras]
+    pip install 'ga4gh.vrs[extras]'
 
-The `[extras]` argument tells pip to install packages to fullfill the dependencies of the
+The `[extras]` argument tells pip to install packages to fulfill the dependencies of the
 `ga4gh.vrs.extras` package.
 
 ## Installing dependencies for ga4gh.vrs.extras
 
 The `ga4gh.vrs.extras` modules are not part of the VR spec per se. They are
 bundled with ga4gh.vrs for development and installation convenience. These
-modules depend directly and indrectly on external data sources of sequences,
+modules depend directly and indirectly on external data sources of sequences,
 transcripts, and genome-transcript alignments. This section recommends one way
 to install the biocommons tools that provide these data.
 
@@ -127,7 +127,7 @@ We have created a public [`VRS-demo-notebooks`](https://app.terra.bio/#workspace
 vrs-python embeds vrs as a submodule. When checking out vrs-python and switching
 branches, it is important to make sure that the submodule tracks vrs-python
 correctly. The recommended way to do this is `git config --global submodule.recurse true`. **If you don't set submodule.recurse, developers and
-reviewers must be extremely careful to not accidentially upgrade or downgrade
+reviewers must be extremely careful to not accidentally upgrade or downgrade
 schemas with respect to vrs-python.**
 
 Alternatively, see `misc/githooks/`.
