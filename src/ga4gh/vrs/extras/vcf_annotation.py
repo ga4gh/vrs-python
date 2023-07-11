@@ -23,7 +23,7 @@ from ga4gh.vrs.dataproxy import SeqRepoDataProxy
 from ga4gh.vrs.extras.translator import Translator
 
 
-class VCFAnnotator:
+class VCFAnnotator:  # pylint: disable=too-few-public-methods
     """
     This class provides utility for annotating VCF's with VRS allele id's.
 
@@ -46,12 +46,14 @@ class VCFAnnotator:
         param: str outputfile The path and filename for the output VCF file
         param: str vrsfile The path and filename for the output VRS object file
         """
-        INFO_FIELD_ID = "VRS_Allele"
+        INFO_FIELD_ID = "VRS_Allele"  # pylint: disable=invalid-name
         vrs_data = {}
-        vcf_in = pysam.VariantFile(filename=inputfile)
+        vcf_in = pysam.VariantFile(filename=inputfile)  # pylint: disable=no-member
         vcf_in.header.info.add(INFO_FIELD_ID, "1", "String", "vrs")
-        vcf_out = pysam.VariantFile(outputfile, "w", header=vcf_in.header)
-        vrs_out = open(vrsfile, "wb")    # For sending VRS data to the pickle file
+        vcf_out = pysam.VariantFile(outputfile, "w", header=vcf_in.header)  # pylint: disable=no-member
+
+        # For sending VRS data to the pickle file
+        vrs_out = open(vrsfile, "wb")  # pylint: disable=consider-using-with
 
         for record in vcf_in:
             ld = self._record_digests(record, vrs_data)
@@ -111,12 +113,12 @@ if __name__ == "__main__":
     options = parse_args(sys.argv[1:])
     print(f"These are the options that you have selected: {options}\n")
     data_proxy = SeqRepoDataProxy(SeqRepo("/usr/local/share/seqrepo/latest"))
-    tlr = Translator(data_proxy)
-    vcf_annotator = VCFAnnotator(tlr)
+    translator = Translator(data_proxy)
+    vcf_annotator = VCFAnnotator(translator)
     vcf_annotator.annotate(options.VCF_IN, options.out, options.vrs_file)
 
     end_time = time.time()
     total_time = (float(end_time) - float(start_time))
-    total_time_minutes = (total_time / 60)
+    total_time_minutes = total_time / 60
     print(f"This program took {total_time} seconds to run.")
     print(f"This program took {total_time_minutes} minutes to run.")
