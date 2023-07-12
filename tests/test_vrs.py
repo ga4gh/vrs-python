@@ -3,9 +3,13 @@ from ga4gh.vrs import models, vrs_deref, vrs_enref
 
 allele_dict = {
     'location': {
-        'end': {'value': 55181320, 'type': 'Number'},
-        'start': {'value': 55181319, 'type': 'Number'},
-        'sequence_id': 'ga4gh:SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul',
+        'end': 55181320,
+        'start': 55181319,
+        'sequence': {
+            'type': 'SequenceReference',
+            'refgetAccession': 'SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul'
+        },
+        # 'sequence_id': 'ga4gh:SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul',
         'type': 'SequenceLocation'
     },
     'state': {
@@ -15,7 +19,8 @@ allele_dict = {
     'type': 'Allele'
 }
 
-a = models.Allele(**allele_dict)
+# TODO need to update these to use VRS 2.0 model and pydantic classes
+# a = models.Allele(**allele_dict)
 
 
 def test_vr():
