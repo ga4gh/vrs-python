@@ -3,7 +3,7 @@ so that users do not have to manually install and setup UTA.
 """
 import requests
 
-class VariationNormalizerRESTDataProxy:  # pylint: disable=too-few-public-methods
+class VariationNormalizerRESTDataProxy:
     """Rest data proxy for Variation Normalizer API"""
     def __init__(self) -> None:
         """

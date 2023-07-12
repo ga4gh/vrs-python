@@ -23,7 +23,7 @@ from ga4gh.vrs.dataproxy import SeqRepoDataProxy
 from ga4gh.vrs.extras.translator import Translator
 
 
-class VCFAnnotator:  # pylint: disable=too-few-public-methods
+class VCFAnnotator:
     """
     This class provides utility for annotating VCF's with VRS allele id's.
 
