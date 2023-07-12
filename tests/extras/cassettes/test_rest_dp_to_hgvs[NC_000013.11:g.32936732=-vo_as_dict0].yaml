@@ -1,71 +1,42 @@
 interactions:
-- request:
-    body: '{"variation": {"type": "Allele", "location": {"type": "SequenceLocation",
-      "sequence_id": "ga4gh:SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT", "start": {"type":
-      "Number", "value": 32936731}, "end": {"type": "Number", "value": 32936732}},
-      "state": {"type": "LiteralSequenceExpression", "sequence": "C"}}, "namespace":
-      "refseq"}'
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      Content-Length:
-      - '317'
-      Content-Type:
-      - application/json; charset=utf-8
-      User-Agent:
-      - python-requests/2.28.1
-    method: POST
-    uri: https://normalize.cancervariants.org/variation/vrs_allele_to_hgvs
-  response:
-    body:
-      string: '{"detail":[{"loc":["body","variation","location","__root__"],"msg":"str
-        type expected","type":"type_error.str"},{"loc":["body","variation","location","__root__","type"],"msg":"unexpected
-        value; permitted: <VRSTypes.CHROMOSOME_LOCATION: ''ChromosomeLocation''>","type":"value_error.const","ctx":{"given":"SequenceLocation","permitted":["ChromosomeLocation"]}},{"loc":["body","variation","location","__root__","species_id"],"msg":"field
-        required","type":"value_error.missing"},{"loc":["body","variation","location","__root__","chr"],"msg":"field
-        required","type":"value_error.missing"},{"loc":["body","variation","location","__root__","interval"],"msg":"field
-        required","type":"value_error.missing"},{"loc":["body","variation","location","__root__","end"],"msg":"extra
-        fields not permitted","type":"value_error.extra"},{"loc":["body","variation","location","__root__","sequence_id"],"msg":"extra
-        fields not permitted","type":"value_error.extra"},{"loc":["body","variation","location","__root__","start"],"msg":"extra
-        fields not permitted","type":"value_error.extra"},{"loc":["body","variation","location","__root__","interval"],"msg":"field
-        required","type":"value_error.missing"},{"loc":["body","variation","location","__root__","end"],"msg":"extra
-        fields not permitted","type":"value_error.extra"},{"loc":["body","variation","location","__root__","start"],"msg":"extra
-        fields not permitted","type":"value_error.extra"}]}'
-    headers:
-      Connection:
-      - keep-alive
-      Content-Length:
-      - '1418'
-      Content-Type:
-      - application/json
-      Date:
-      - Mon, 19 Sep 2022 15:07:51 GMT
-      Via:
-      - 1.1 fbaa163d825ae4c940f6fb8e6dd730bc.cloudfront.net (CloudFront)
-      X-Amz-Cf-Id:
-      - evnJ0ftb1y0__eo7t9gMb0b9TQooPgL5mQgsQVqui7VD0-xWro0P4g==
-      X-Amz-Cf-Pop:
-      - ORD58-P5
-      X-Amzn-Trace-Id:
-      - Root=1-632885c7-7380f65a25023a5744751371
-      X-Cache:
-      - Error from cloudfront
-      x-amz-apigw-id:
-      - YtnXJEUUiYcF7vg=
-      x-amzn-Remapped-Connection:
-      - keep-alive
-      x-amzn-Remapped-Content-Length:
-      - '1418'
-      x-amzn-Remapped-Date:
-      - Mon, 19 Sep 2022 15:07:51 GMT
-      x-amzn-Remapped-Server:
-      - nginx/1.20.0
-      x-amzn-RequestId:
-      - 33b65332-a6ba-4880-ad1e-a6a2909ed023
-    status:
-      code: 422
-      message: ''
+  - request:
+      body:
+        '{"variation": {"id": "ga4gh:VA.zkZpkDHX0xaOHUPxa5kFt3TUiWbr53xm", "type":
+        "Allele", "location": {"id": "ga4gh:SL.2Q2SMLzdWQbJvYbXwwgegrjJbOxiLIJP", "type":
+        "SequenceLocation", "sequence_id": "ga4gh:SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT",
+        "start": {"type": "Number", "value": 32936731}, "end": {"type": "Number", "value":
+        32936732}}, "state": {"type": "LiteralSequenceExpression", "sequence": "C"}},
+        "namespace": "refseq"}'
+      headers:
+        Accept:
+          - "*/*"
+        Accept-Encoding:
+          - gzip, deflate
+        Connection:
+          - keep-alive
+        Content-Length:
+          - "419"
+        Content-Type:
+          - application/json; charset=utf-8
+        User-Agent:
+          - python-requests/2.29.0
+      method: POST
+      uri: https://normalize.cancervariants.org/variation/vrs_allele_to_hgvs
+    response:
+      body:
+        string: '{"query":{"variation":{"id":"ga4gh:VA.zkZpkDHX0xaOHUPxa5kFt3TUiWbr53xm","type":"Allele","location":{"id":"ga4gh:SL.2Q2SMLzdWQbJvYbXwwgegrjJbOxiLIJP","type":"SequenceLocation","sequence_id":"ga4gh:SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT","start":{"type":"Number","value":32936731},"end":{"type":"Number","value":32936732}},"state":{"type":"LiteralSequenceExpression","sequence":"C"}},"namespace":"refseq"},"warnings":[],"service_meta_":{"version":"0.7.0-dev8","response_datetime":"2023-07-12T12:27:03.622371","name":"variation-normalizer","url":"https://github.com/cancervariants/variation-normalization"},"vrs_python_meta_":{"version":"0.9.0a1","name":"vrs-python","url":"https://github.com/ga4gh/vrs-python"},"variations":["NC_000013.11:g.32936732="]}'
+      headers:
+        Connection:
+          - keep-alive
+        Content-Length:
+          - "748"
+        Content-Type:
+          - application/json
+        Date:
+          - Wed, 12 Jul 2023 12:27:03 GMT
+        Server:
+          - nginx
+      status:
+        code: 200
+        message: OK
 version: 1
