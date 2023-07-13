@@ -32,13 +32,14 @@ _logger = logging.getLogger(__name__)
 
 # Assume that ga4gh.yaml and vrs.yaml files are in the same directory for now
 schema_dir = os.environ.get("VRSATILE_SCHEMA_DIR", pkg_resources.resource_filename(__name__, "data/schemas/vrsatile"))
-cfg = yaml.safe_load(open(schema_dir + "/merged.yaml"))
-defs = cfg["definitions"]
+with open(schema_dir + "/merged.yaml", "r", encoding="utf-8") as f:
+    cfg = yaml.safe_load(f)
 
-type_prefix_map_default = dict()
-for k,v in defs.items():
-    if "ga4gh_prefix" in v:
-        type_prefix_map_default[k] = v["ga4gh_prefix"]
+defs = cfg["definitions"]
+type_prefix_map_default = {}
+for key, val in defs.items():
+    if "ga4gh_prefix" in val:
+        type_prefix_map_default[key] = val["ga4gh_prefix"]
 
 namespace = "ga4gh"
 curie_sep = ":"
@@ -147,7 +148,7 @@ def ga4gh_serialize(vro):
 
     """
 
-    def dictify(vro, enref=True):
+    def dictify(vro, enref=True):  # pylint: disable=too-many-return-statements
         """recursively converts (any) object to dictionary prior to
         serialization
 

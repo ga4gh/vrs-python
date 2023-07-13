@@ -1,10 +1,6 @@
 """convert named locations into SequenceLocations ("localize") by
 reference to external data
-
 """
-
-import copy
-
 from bioutils.accessions import coerce_namespace
 from bioutils.assemblies import make_name_ac_map
 from bioutils.cytobands import get_cytoband_maps
@@ -45,27 +41,25 @@ class Localizer:
         self._ana_maps = {k: make_name_ac_map(k) for k in assy_name_to_map_name}
 
 
-    def localize_allele(self, allele):
+    def localize_allele(self, allele, assembly_name = "GRCh38"):
+        """Converts VRS Allele's named features to sequence location"""
         # copy input variant and replace location
         # N.B. deepcopy leads to recursion errors
         allele_sl = ga4gh.vrs.models.Variation(**allele.as_dict())
         del allele_sl.id
-        allele_sl.location = self.localize(allele.location)
+        allele_sl.location = self.localize_named_feature(allele.location, assembly_name)
         return allele_sl
 
 
     def localize_named_feature(self, loc, assembly_name):
-        """converts named features to sequence locations
-
-        """
-
+        """converts named features to sequence locations"""
         assert loc.type._value == "ChromosomeLocation", "Expected a ChromosomeLocation object"
 
         def _get_coords(m, cb):
             """return (start,end) of band `cb` in map `m`"""
             if cb is None:
                 return None
-            return chr_cb_map[cb][0:2]
+            return m[cb][0:2]
 
         try:
             map_name = assy_name_to_map_name[assembly_name]
@@ -82,14 +76,14 @@ class Localizer:
 
         coords = []
         try:
-            coords += _get_coords(chr_cb_map, loc.interval.start)
+            coords += _get_coords(chr_cb_map, loc.start)
         except (KeyError, ValueError) as e:
-            raise ValueError(f"{loc.interval.start}: ChromosomeLocation not in"
+            raise ValueError(f"{loc.start}: ChromosomeLocation not in"
                              " map for {assembly_name}, chr {loc.chr}") from e
         try:
-            coords += _get_coords(chr_cb_map, loc.interval.end)
+            coords += _get_coords(chr_cb_map, loc.end)
         except (KeyError, ValueError) as e:
-            raise ValueError(f"{loc.interval.end}: ChromosomeLocation not in"
+            raise ValueError(f"{loc.end}: ChromosomeLocation not in"
                              " map for {assembly_name}, chr {loc.chr}") from e
 
         # the following works regardless of orientation of bands and number of bands
@@ -98,19 +92,31 @@ class Localizer:
         try:
             ac = self._ana_maps[assembly_name][loc.chr]
         except KeyError as e:
-            raise ValueError(f"No accssion for {loc.chr} in assembly {assembly_name}") from e
+            raise ValueError(f"No accession for {loc.chr} in assembly {assembly_name}") from e
 
         return ga4gh.vrs.models.SequenceLocation(
             sequence_id=coerce_namespace(ac),
-            interval=ga4gh.vrs.models.SequenceInterval(
-                start=ga4gh.vrs.models.Number(value=start),
-                end=ga4gh.vrs.models.Number(value=end))
-            )
-
-
-
+            start=ga4gh.vrs.models.Number(value=start),
+            end=ga4gh.vrs.models.Number(value=end)
+        )
 
 
 if __name__ == "__main__":
-    cbl = ga4gh.vrs.models.ChromosomeLocation(chr="11", start="q22.3", end="q23.1")
     lr = Localizer()
+    allele_dict = {
+        "location": {
+            "chr":"19",
+            "end": "q13.32",
+            "start": "q13.32",
+            "species_id":"taxonomy:9606",
+            "type":"ChromosomeLocation"
+        },
+        "state": {
+            "sequence": "T",
+            "type": "LiteralSequenceExpression"
+        },
+        "type": "Allele"
+    }
+    allele_vo = ga4gh.vrs.models.Allele(**allele_dict)
+    allele_with_seq_loc = lr.localize_allele(allele_vo)
+    print("Allele with SequenceLocation:", allele_with_seq_loc.as_dict())

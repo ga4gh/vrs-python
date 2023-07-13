@@ -133,6 +133,14 @@ Fork the repo at https://github.com/ga4gh/vrs-python/ .
     $ cd vrs-python
     $ make devready
 
+## Pre-commit
+
+We use [pre-commit](https://pre-commit.com/) to check code style.
+
+Before first commit, run:
+
+    $ pre-commit install
+
 ## Testing
 
 This package implements typical unit tests for ga4gh.core and ga4gh.vrs. This
