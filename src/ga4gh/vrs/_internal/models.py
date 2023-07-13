@@ -131,27 +131,6 @@ def pydantic_class_refatt_map():
     return reffable_fields
 
 
-def get_models():
-    this_module = sys.modules[__name__]
-    global_map = globals()
-    model_classes = list(filter(
-        lambda c: (inspect.isclass(c)
-                   and issubclass(c, BaseModel)
-                   and inspect.getmodule(c) == this_module),
-        [kv[1] for kv in global_map.items()]
-    ))
-    return model_classes
-
-
-def get_model_struct():
-    class ModelStruct:
-        pass
-    m = ModelStruct()
-    for model in get_models():
-        setattr(m, model.__name__, model)
-    return m
-
-
 class Extension(BaseModel):
     class Config:
         extra = Extra.forbid
@@ -590,4 +569,3 @@ class SystemicVariation(BaseModel):
 
 # At end so classes exist
 class_refatt_map = pydantic_class_refatt_map()
-models = get_model_struct()

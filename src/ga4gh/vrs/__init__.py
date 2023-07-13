@@ -4,15 +4,14 @@ implementation
 
 """
 
-
-__all__ = """models normalize schema_path vrs_deref vrs_enref""".split()
-
-
 from pkg_resources import get_distribution, DistributionNotFound
 
-from ._internal.enderef import vrs_deref, vrs_enref
-from ._internal.models import models, schema_path
 from .normalize import normalize
+from ._internal.enderef import vrs_deref, vrs_enref
+from ._internal import models
+schema_path = models.schema_path
+
+__all__ = """models normalize schema_path vrs_deref vrs_enref""".split()
 
 try:
     __version__ = get_distribution(__name__).version

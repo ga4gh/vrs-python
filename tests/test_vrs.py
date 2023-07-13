@@ -19,8 +19,7 @@ allele_dict = {
     'type': 'Allele'
 }
 
-# TODO need to update these to use VRS 2.0 model and pydantic classes
-# a = models.Allele(**allele_dict)
+a = models.Allele(**allele_dict)
 
 
 def test_vr():
