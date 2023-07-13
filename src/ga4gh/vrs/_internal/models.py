@@ -17,20 +17,25 @@ models are always in sync with the spec.
 
 """
 
-
-from pydantic import BaseModel, Extra, Field, constr
 from typing import Any, Dict, List, Optional, Union, Literal
 from enum import Enum
 import inspect
 import logging
-import os
 import sys
+import os
 import typing
 import pkg_resources
 
+from pydantic import BaseModel, Extra, Field, constr
 from ga4gh.core import build_models, build_class_referable_attribute_map
 
 _logger = logging.getLogger(__name__)
+
+
+# specify VRSATILE_SCHEMA_DIR to use a schema other than the one embedded
+# in vrs-python
+schema_dir = os.environ.get("VRSATILE_SCHEMA_DIR", pkg_resources.resource_filename(__name__, "data/schemas/vrsatile"))
+schema_path = schema_dir + "/merged.json"
 
 
 def flatten(vals):
@@ -54,15 +59,15 @@ def flatten(vals):
 
 def flatten_type(t):
     """
-    Flattens a complex type into a list of constituent types
+    Flattens a complex type into a list of constituent types.
     """
-    if ('__origin__' in t.__dict__
-        and t.__origin__ != typing.Literal
-        and (t.__origin__ == typing.Union
-             or issubclass(t.__origin__,  typing.List))):
-        return list(flatten([flatten_type(sub_t) for sub_t in t.__args__]))
-    else:
-        return [t]
+    if ('__origin__' in t.__dict__):
+        if t.__origin__ == typing.Literal:
+            return list(t.__args__)
+        elif (t.__origin__ == typing.Union
+              or issubclass(t.__origin__,  typing.List)):
+            return list(flatten([flatten_type(sub_t) for sub_t in t.__args__]))
+    return [t]
 
 
 def overlaps(a: list, b: list):
@@ -114,11 +119,9 @@ def pydantic_class_refatt_map():
             if fieldname == '__root__':
                 continue
             field_type = field.type_  # a typing or normal annotation like str
-            # options
-            # raw class type annotation (int, str, dict, etc)
+            # types can be raw class type annotation (int, str, dict, etc)
             # typing.Literal, typing.Union, typing.Optional
-            # thankfully, issubclass actually handles these
-            # print(f'{model_class=} {fieldname=} {field_type=}')
+            # Use flatten_type to simplify these
             if any([rc in flatten_type(field_type)
                     for rc in (reffable_classes
                                + union_reffable_classes)]):
