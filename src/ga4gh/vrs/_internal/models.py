@@ -143,8 +143,13 @@ def get_models():
     return model_classes
 
 
-class_refatt_map = pydantic_class_refatt_map()
-models = get_models()
+def get_model_struct():
+    class ModelStruct:
+        pass
+    m = ModelStruct()
+    for model in get_models():
+        setattr(m, model.__name__, model)
+    return m
 
 
 class Extension(BaseModel):
@@ -581,3 +586,8 @@ class SystemicVariation(BaseModel):
         description='A Variation of multiple molecules in the context of a system, e.g. a genome, sample, or homologous chromosomes.',
         discriminator='type',
     )
+
+
+# At end so classes exist
+class_refatt_map = pydantic_class_refatt_map()
+models = get_model_struct()
