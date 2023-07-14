@@ -74,8 +74,7 @@ def overlaps(a: list, b: list):
     """
     Returns true if there are any elements in common between a and b
     """
-    intersection = set(a).intersection(set(b))
-    return len(intersection) > 0
+    return len(set(a).intersection(set(b))) > 0
 
 
 def pydantic_class_refatt_map():
