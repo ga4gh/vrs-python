@@ -5,7 +5,7 @@ def is_identifiable(o: any) -> bool:
     :param o: Object
     :return: `True` if `o` has `ga4gh_digest_keys` attribute. `False` otherwise.
     """
-    return hasattr(o, "ga4gh_digest_keys")
+    return hasattr(o, "Ga4ghDigest")
 
 
 def is_literal(o: any) -> bool:
@@ -19,6 +19,7 @@ def is_list(o: any) -> bool:
 def is_curie_type(o: any) -> bool:
     # return isinstance(o, CURIE)
     pass
+
 
 def is_pydantic_instance(o: any) -> bool:
     # return isinstance(o, BaseModel)

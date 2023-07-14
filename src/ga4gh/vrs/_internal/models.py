@@ -17,6 +17,18 @@ models are always in sync with the spec.
 
 """
 
+"""
+New pydantic-based version
+
+Pydantic classes bootstrapped with:
+sed -i.bkp 's/$defs/definitions/g' merged.json
+datamodel-codegen --input submodules/vrs/schema/merged.json --input-file-type jsonschema --output models_merged2.py
+
+"""
+
+
+
+
 from typing import Any, Dict, List, Optional, Union, Literal
 from enum import Enum
 import inspect
@@ -25,10 +37,7 @@ import sys
 import os
 import typing
 import pkg_resources
-
 from pydantic import BaseModel, Extra, Field, constr
-from ga4gh.core import build_models, build_class_referable_attribute_map
-
 _logger = logging.getLogger(__name__)
 
 
@@ -82,6 +91,8 @@ def pydantic_class_refatt_map():
     Builds a map of class names to their field names that are referable types.
     As in, types with an identifier that can be referred to elsewhere,
     collapsed to that identifier and dereferenced.
+    Returns a map like:
+    {"Allele": ["location"], ...}
     """
     # Things defined here that are classes that inherit from BaseModel
     this_module = sys.modules[__name__]
@@ -90,7 +101,7 @@ def pydantic_class_refatt_map():
         lambda c: (inspect.isclass(c)
                    and issubclass(c, BaseModel)
                    and inspect.getmodule(c) == this_module),
-        [kv[1] for kv in global_map.items()]
+        [gl_name_value[1] for gl_name_value in global_map.items()]
     ))
     # Types directly reffable
     reffable_classes = list(filter(
