@@ -1,6 +1,0 @@
-{
-    "python.formatting.provider": "yapf",
-    "editor.formatOnSave": true,
-    "python.venvPath": "${workspaceFolder}/venv/",
-    "python.linting.pylintEnabled": true,
-}

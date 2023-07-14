@@ -13,7 +13,7 @@ from ._internal.identifiers import (
     parse_ga4gh_identifier
 )
 from ._internal.pydantic import (
-    is_pydantic_instance, is_curie, is_identifiable, is_literal, pjs_copy
+    is_pydantic_instance, is_curie_type, is_identifiable, is_literal, pydantic_copy
 )
 
 try:

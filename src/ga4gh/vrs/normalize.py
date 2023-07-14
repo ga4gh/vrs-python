@@ -7,7 +7,7 @@ See https://vrs.ga4gh.org/en/stable/impl-guide/normalization.html
 import logging
 
 from bioutils.normalize import normalize as _normalize, NormalizationMode
-from ga4gh.core import is_pydantic_instance, pjs_copy, ga4gh_digest
+from ga4gh.core import is_pydantic_instance, ga4gh_digest, pydantic_copy
 
 from ._internal import models
 from .dataproxy import SequenceProxy
@@ -30,7 +30,7 @@ def _normalize_allele(allele, data_proxy):
     else:
         alleles = (None, "")
 
-    new_allele = pjs_copy(allele)
+    new_allele = pydantic_copy(allele)
 
     try:
         new_ival, new_alleles = _normalize(sequence,

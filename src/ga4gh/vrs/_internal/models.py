@@ -1,5 +1,4 @@
-"""Generate VRS models at runtime from the json schema
-
+"""
 **This module should not be imported directly.**
 
 Instead, users should use one of the following:
@@ -10,14 +9,6 @@ Instead, users should use one of the following:
   * `import ga4gh.vrs`, and refer to models using the fully-qualified
     module name, e.g., `ga4gh.vrs.models.Allele`
 
-
-This module reads the spec and generates classes at runtime.  The
-advantage of this approach over models defined in code is that the
-models are always in sync with the spec.
-
-"""
-
-"""
 New pydantic-based version
 
 Pydantic classes bootstrapped with:
@@ -25,10 +16,6 @@ sed -i.bkp 's/$defs/definitions/g' merged.json
 datamodel-codegen --input submodules/vrs/schema/merged.json --input-file-type jsonschema --output models_merged2.py
 
 """
-
-
-
-
 from typing import Any, Dict, List, Optional, Union, Literal
 from enum import Enum
 import inspect
@@ -106,7 +93,7 @@ def pydantic_class_refatt_map():
     # Types directly reffable
     reffable_classes = list(filter(
         lambda c: ('id' in c.__fields__
-                   and hasattr(c, 'Ga4ghDigest')),
+                   and hasattr(c, 'ga4gh_digest')),
         model_classes
     ))
     # Types reffable because they are a union of reffable types
@@ -214,7 +201,7 @@ class SequenceReference(BaseModel):
     )
     residueAlphabet: Optional[ResidueAlphabet] = None
 
-    class Ga4ghDigest:
+    class ga4gh_digest:
         prefix = 'SQR'
         keys = [
             'refgetAccession',
@@ -297,7 +284,7 @@ class SequenceLocation(BaseModel):
         description='The end coordinate or range of the SequenceLocation. The minimum value of this coordinate or range is 0. MUST represent a coordinate or range greater than the value of `start`.',
     )
 
-    class Ga4ghDigest:
+    class ga4gh_digest:
         prefix = 'SL',
         keys = [
             'count',
@@ -373,7 +360,7 @@ class Allele(BaseModel):
         ..., description='An expression of the sequence state'
     )
 
-    class Ga4ghDigest:
+    class ga4gh_digest:
         prefix = 'VA'
         keys = [
             'location',
@@ -404,7 +391,7 @@ class Haplotype(BaseModel):
         unique_items=True,
     )
 
-    class Ga4ghDigest:
+    class ga4gh_digest:
         prefix = 'HT'
         keys = [
             'members',
@@ -438,7 +425,7 @@ class CopyNumberCount(BaseModel):
         ..., description='The integral number of copies of the subject in a system'
     )
 
-    class Ga4ghDigest:
+    class ga4gh_digest:
         prefix = 'CN'
         keys = [
             'copies',
@@ -473,7 +460,7 @@ class CopyNumberChange(BaseModel):
         description='MUST be one of "efo:0030069" (complete genomic loss), "efo:0020073" (high-level loss), "efo:0030068" (low-level loss), "efo:0030067" (loss), "efo:0030064" (regional base ploidy), "efo:0030070" (gain), "efo:0030071" (low-level gain), "efo:0030072" (high-level gain).',
     )
 
-    class Ga4ghDigest:
+    class ga4gh_digest:
         prefix = 'CX',
         keys = [
             'copy_change',
@@ -549,7 +536,7 @@ class Genotype(BaseModel):
         description='The total number of copies of all MolecularVariation at this locus, MUST be greater than or equal to the sum of GenotypeMember copy counts. If greater than the total counts, this implies additional MolecularVariation that are expected to exist but are not explicitly indicated.',
     )
 
-    class Ga4ghDigest:
+    class ga4gh_digest:
         prefix = 'GT',
         keys = [
             'count',
