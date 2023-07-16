@@ -1,4 +1,6 @@
 from pydantic import BaseModel
+import re
+from ga4gh.vrs.models import IRI
 
 
 def is_identifiable(o: any) -> bool:
@@ -21,8 +23,9 @@ def is_list(o: any) -> bool:
 
 
 def is_curie_type(o: any) -> bool:
-    # return isinstance(o, CURIE)
-    pass
+    # if isinstance(o, pydantic.BaseModel):
+    # return isinstance(o, IRI) or re.match(r'[a-zA-Z0-9.]+:\S+')
+    raise RuntimeError("Not implemented: is_curie_type")
 
 
 def is_pydantic_instance(o: any) -> bool:

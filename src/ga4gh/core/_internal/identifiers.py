@@ -14,12 +14,14 @@ For example, here is a call path for ga4gh_identify called on an Allele:
 For that reason, they are implemented here in one file.
 
 """
+
 import re
 
 from canonicaljson import encode_canonical_json
 
 from .digests import sha512t24u
 from .pydantic import is_list, is_pydantic_instance, is_curie_type, is_identifiable, is_literal
+# from .models import class_refatt_map
 
 __all__ = "ga4gh_digest ga4gh_identify ga4gh_serialize is_ga4gh_identifier parse_ga4gh_identifier".split()
 
@@ -100,8 +102,37 @@ def ga4gh_digest(vro):
     return sha512t24u(ga4gh_serialize(vro))
 
 
+def ga4gh_serialize2(vro: dict) -> str:
+    """
+    Provide a pure dict-based implementation of ga4gh_serialize using ga4gh_roll_up_refs
+    """
+    pass
+
+
+
+def ga4gh_roll_up_refs(obj: dict, class_refatt_map={}):
+    """
+    Digestible key map is a map of unqualified class names to keys that can be rolled up.
+    e.g. {"SequenceLocation": ["sequence"]}
+    """
+    obj_type = obj["type"]
+    reffable_fields = class_refatt_map.get(obj_type, [])
+    out = {}
+    for k, v in obj.items():
+        if k in reffable_fields:
+            print(f"{k=}:{v=}")
+            # three cases:
+            # value is a ga4gh: CURIE, which can have digest extracted
+            # value is a dict, which needs to itself be digested
+            # value is something else
+            if is_curie_type(v):
+                pass
+
+
+
 def ga4gh_serialize(vro):
-    """serialize object into a canonical format
+    """
+    Serialize object into a canonical format
 
     Briefly:
     * format is json
@@ -124,12 +155,12 @@ def ga4gh_serialize(vro):
     """
 
     def dictify(vro, enref=True):
-        """recursively converts (any) object to dictionary prior to
+        """
+        Recursively converts (any) object to dictionary prior to
         serialization
 
         enref: if True, replace nested identifiable objects with
         digests ("enref" is opposite of "de-ref")
-
         """
 
         if vro is None:    # pragma: no cover
@@ -155,7 +186,7 @@ def ga4gh_serialize(vro):
 
             d = {k: dictify(vro[k], enref=True)
                  for k in vro
-                 if k in vro.ga4gh_digest_keys}
+                 if k in vro.ga4gh_digest.keys}
             return d
 
         if is_list(vro):
