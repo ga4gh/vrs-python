@@ -73,6 +73,24 @@ def overlaps(a: list, b: list):
     return len(set(a).intersection(set(b))) > 0
 
 
+def getattr_in(obj, names) -> Any:
+    """
+    Calls getattr on obj and the successive returns from getattr
+    using names as attribute names in order. If any return is None,
+    terminate early, and return None.
+    Like clojure (get-in obj names) or (some-> obj .name1 .name2 ...)
+    """
+    names_i = 0
+    v = None
+    while names_i < len(names):
+        v = getattr(obj, names[names_i], None)
+        if v is None:
+            break
+        names_i += 1
+        obj = v
+    return v
+
+
 def pydantic_class_refatt_map():
     """
     Builds a map of class names to their field names that are referable types.
@@ -91,9 +109,14 @@ def pydantic_class_refatt_map():
         [gl_name_value[1] for gl_name_value in global_map.items()]
     ))
     # Types directly reffable
+    # reffable_classes = list(filter(
+    #     lambda c: ('id' in c.__fields__
+    #                and hasattr(c, 'ga4gh_digest')),
+    #     model_classes
+    # ))
     reffable_classes = list(filter(
         lambda c: ('id' in c.__fields__
-                   and hasattr(c, 'ga4gh_digest')),
+                   and getattr_in(c, ['ga4gh', 'identifiable']) is True),
         model_classes
     ))
     # Types reffable because they are a union of reffable types
@@ -125,7 +148,7 @@ def pydantic_class_refatt_map():
                 class_reffable_fields.append(fieldname)
         if len(class_reffable_fields) > 0:
             reffable_fields[model_class.__name__] = class_reffable_fields
-    return reffable_fields
+    return (reffable_classes, union_reffable_classes, reffable_fields)
 
 
 class Extension(BaseModel):
@@ -201,7 +224,8 @@ class SequenceReference(BaseModel):
     )
     residueAlphabet: Optional[ResidueAlphabet] = None
 
-    class ga4gh_digest:
+    class ga4gh:
+        identifiable = True
         prefix = 'SQR'
         keys = [
             'refgetAccession',
@@ -284,14 +308,14 @@ class SequenceLocation(BaseModel):
         description='The end coordinate or range of the SequenceLocation. The minimum value of this coordinate or range is 0. MUST represent a coordinate or range greater than the value of `start`.',
     )
 
-    class ga4gh_digest:
+    class ga4gh:
+        identifiable = True
         prefix = 'SL',
         keys = [
             'count',
             'members',
             'type'
         ]
-
 
 
 class ReferenceLengthExpression(BaseModel):
@@ -360,7 +384,8 @@ class Allele(BaseModel):
         ..., description='An expression of the sequence state'
     )
 
-    class ga4gh_digest:
+    class ga4gh:
+        identifiable = True
         prefix = 'VA'
         keys = [
             'location',
@@ -391,13 +416,13 @@ class Haplotype(BaseModel):
         unique_items=True,
     )
 
-    class ga4gh_digest:
+    class ga4gh:
+        identifiable = True
         prefix = 'HT'
         keys = [
             'members',
             'type'
         ]
-
 
 
 class CopyNumberCount(BaseModel):
@@ -425,7 +450,8 @@ class CopyNumberCount(BaseModel):
         ..., description='The integral number of copies of the subject in a system'
     )
 
-    class ga4gh_digest:
+    class ga4gh:
+        identifiable = True
         prefix = 'CN'
         keys = [
             'copies',
@@ -460,14 +486,14 @@ class CopyNumberChange(BaseModel):
         description='MUST be one of "efo:0030069" (complete genomic loss), "efo:0020073" (high-level loss), "efo:0030068" (low-level loss), "efo:0030067" (loss), "efo:0030064" (regional base ploidy), "efo:0030070" (gain), "efo:0030071" (low-level gain), "efo:0030072" (high-level gain).',
     )
 
-    class ga4gh_digest:
+    class ga4gh:
+        identifiable = True
         prefix = 'CX',
         keys = [
             'copy_change',
             'subject',
             'type'
         ]
-
 
 
 class Location(BaseModel):
@@ -503,6 +529,13 @@ class GenotypeMember(BaseModel):
         ..., description='A MolecularVariation at a Genotype locus.'
     )
 
+    class ga4gh:
+        keys = [
+            'type',
+            'count',
+            'variation'
+        ]
+
 
 class MolecularVariation(BaseModel):
     __root__: Union[Allele, Haplotype] = Field(
@@ -536,8 +569,9 @@ class Genotype(BaseModel):
         description='The total number of copies of all MolecularVariation at this locus, MUST be greater than or equal to the sum of GenotypeMember copy counts. If greater than the total counts, this implies additional MolecularVariation that are expected to exist but are not explicitly indicated.',
     )
 
-    class ga4gh_digest:
-        prefix = 'GT',
+    class ga4gh:
+        identifiable = True
+        prefix = 'GT'
         keys = [
             'count',
             'members',
@@ -565,4 +599,4 @@ class SystemicVariation(BaseModel):
 
 
 # At end so classes exist
-class_refatt_map = pydantic_class_refatt_map()
+reffable_classes, union_reffable_classes, class_refatt_map = pydantic_class_refatt_map()
