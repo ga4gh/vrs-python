@@ -13,10 +13,10 @@ New pydantic-based version
 
 Pydantic classes bootstrapped with:
 sed -i.bkp 's/$defs/definitions/g' merged.json
-datamodel-codegen --input submodules/vrs/schema/merged.json --input-file-type jsonschema --output models_merged2.py
-
+V1 pydantic: datamodel-codegen --input submodules/vrs/schema/merged.json --input-file-type jsonschema --output models_merged2.py
+V2 pydantic: datamodel-codegen --input submodules/vrs/schema/merged.json --input-file-type jsonschema --output models.py --output-model-type pydantic_v2.BaseModel --allow-extra-fields
 """
-from typing import Any, Dict, List, Optional, Union, Literal
+from typing import Any, Dict, List, Literal, Optional, Set, Union
 from enum import Enum
 import inspect
 import logging
@@ -24,7 +24,7 @@ import sys
 import os
 import typing
 import pkg_resources
-from pydantic import BaseModel, Extra, Field, constr
+from pydantic import BaseModel, ConfigDict, Field, RootModel, constr
 _logger = logging.getLogger(__name__)
 
 
@@ -57,7 +57,7 @@ def flatten_type(t):
     """
     Flattens a complex type into a list of constituent types.
     """
-    if ('__origin__' in t.__dict__):
+    if hasattr(t, '__dict__') and '__origin__' in t.__dict__:
         if t.__origin__ == typing.Literal:
             return list(t.__args__)
         elif (t.__origin__ == typing.Union
@@ -71,95 +71,6 @@ def overlaps(a: list, b: list):
     Returns true if there are any elements in common between a and b
     """
     return len(set(a).intersection(set(b))) > 0
-
-
-def pydantic_class_refatt_map():
-    """
-    Builds a map of class names to their field names that are referable types.
-    As in, types with an identifier that can be referred to elsewhere,
-    collapsed to that identifier and dereferenced.
-    Returns a map like:
-    {"Allele": ["location"], ...}
-    """
-    # Things defined here that are classes that inherit from BaseModel
-    this_module = sys.modules[__name__]
-    global_map = globals()
-    model_classes = list(filter(
-        lambda c: (inspect.isclass(c)
-                   and issubclass(c, BaseModel)
-                   and inspect.getmodule(c) == this_module),
-        [gl_name_value[1] for gl_name_value in global_map.items()]
-    ))
-    # Types directly reffable
-    reffable_classes = list(filter(
-        lambda c: ('id' in c.__fields__
-                   and hasattr(c, 'ga4gh_digest')),
-        model_classes
-    ))
-    # Types reffable because they are a union of reffable types
-    union_reffable_classes = list(filter(
-        lambda c: ('__root__' in c.__fields__
-                   and overlaps(reffable_classes,
-                                flatten_type(c.__fields__['__root__'].type_))),
-        model_classes
-    ))
-    reffable_fields = {}
-    # Find any field whose type is a subclass of a reffable type,
-    # or which is a typing.List that includes a reffable type.
-    # Interestingly, ModelField.type_ is the member type for List types, not type List itself.
-    for model_class in model_classes:
-        # if model_class in union_reffable_classes:
-        #     continue  # These don't have fields other than __root__
-        fields = model_class.__fields__
-        class_reffable_fields = []
-        for fieldname, field in fields.items():
-            if fieldname == '__root__':
-                continue
-            field_type = field.type_  # a typing or normal annotation like str
-            # types can be raw class type annotation (int, str, dict, etc)
-            # typing.Literal, typing.Union, typing.Optional
-            # Use flatten_type to simplify these
-            if any([rc in flatten_type(field_type)
-                    for rc in (reffable_classes
-                               + union_reffable_classes)]):
-                class_reffable_fields.append(fieldname)
-        if len(class_reffable_fields) > 0:
-            reffable_fields[model_class.__name__] = class_reffable_fields
-    return reffable_fields
-
-
-class Extension(BaseModel):
-    class Config:
-        extra = Extra.forbid
-
-    type: str = Field('Extension', const=True, description='MUST be "Extension".')
-    name: str = Field(..., description='A name for the Extension')
-    value: Optional[Union[float, str, bool, Dict[str, Any], List[Any]]] = Field(
-        None, description='Any primitive or structured object'
-    )
-
-
-class MappingClass(Enum):
-    closeMatch = 'closeMatch'
-    exactMatch = 'exactMatch'
-    broadMatch = 'broadMatch'
-    narrowMatch = 'narrowMatch'
-    relatedMatch = 'relatedMatch'
-
-
-class Code(BaseModel):
-    __root__: constr(regex=r'\S+( \S+)*') = Field(
-        ...,
-        description='Indicates that the value is taken from a set of controlled strings defined elsewhere. Technically, a code is restricted to a string which has at least one character and no leading or  trailing whitespace, and where there is no whitespace other than single spaces in the contents.',
-        example='ENSG00000139618',
-    )
-
-
-class IRI(BaseModel):
-    __root__: str = Field(
-        ...,
-        description='An IRI Reference (either an IRI or a relative-reference), according to `RFC3986 section 4.1  <https://datatracker.ietf.org/doc/html/rfc3986#section-4.1>` and `RFC3987 section 2.1 <https://datatracker.ietf.org/doc/html/rfc3987#section-2.1>`. MAY be a JSON Pointer as an IRI fragment, as  described by `RFC6901 section 6 <https://datatracker.ietf.org/doc/html/rfc6901#section-6>`.',
-    )
 
 
 class CopyChange(Enum):
@@ -178,24 +89,94 @@ class ResidueAlphabet(Enum):
     nucleic_acid = 'nucleic acid'
 
 
-class SequenceReference(BaseModel):
-    class Config:
-        extra = Extra.forbid
+class Range(RootModel):
+    model_config = ConfigDict(
+        extra='allow',
+    )
+    root: List[Optional[int]] = Field(
+        ...,
+        description='An inclusive range of values bounded by one or more integers.',
+        max_length=2,
+        min_length=2,
+    )
 
+
+class Residue(RootModel):
+    model_config = ConfigDict(
+        extra='allow',
+    )
+    root: constr(pattern=r'[A-Z*\-]') = Field(
+        ...,
+        description='A character representing a specific residue (i.e., molecular species) or groupings of these ("ambiguity codes"), using [one-letter IUPAC abbreviations](https://en.wikipedia.org/wiki/International_Union_of_Pure_and_Applied_Chemistry#Amino_acid_and_nucleotide_base_codes) for nucleic acids and amino acids.',
+    )
+
+
+class SequenceString(RootModel):
+    model_config = ConfigDict(
+        extra='allow',
+    )
+    root: constr(pattern=r'^[A-Z*\-]*$') = Field(
+        ...,
+        description='A character string of Residues that represents a biological sequence using the conventional sequence order (5’-to-3’ for nucleic acid sequences, and amino-to-carboxyl for amino acid sequences). IUPAC ambiguity codes are permitted in Sequence Strings.',
+    )
+
+
+class MappingClass(Enum):
+    closeMatch = 'closeMatch'
+    exactMatch = 'exactMatch'
+    broadMatch = 'broadMatch'
+    narrowMatch = 'narrowMatch'
+    relatedMatch = 'relatedMatch'
+
+
+class Extension(BaseModel):
+    model_config = ConfigDict(
+        extra='allow',
+    )
+    type: str = Field('Extension', description='MUST be "Extension".')
+    name: str = Field(..., description='A name for the Extension')
+    value: Optional[Union[float, str, bool, Dict[str, Any], List[Any]]] = Field(
+        None, description='Any primitive or structured object'
+    )
+
+
+class Code(RootModel):
+    model_config = ConfigDict(
+        extra='allow',
+    )
+    root: constr(pattern=r'\S+( \S+)*') = Field(
+        ...,
+        description='Indicates that the value is taken from a set of controlled strings defined elsewhere. Technically, a code is restricted to a string which has at least one character and no leading or  trailing whitespace, and where there is no whitespace other than single spaces in the contents.',
+        example='ENSG00000139618',
+    )
+
+
+class IRI(RootModel):
+    model_config = ConfigDict(
+        extra='allow',
+    )
+    root: str = Field(
+        ...,
+        description='An IRI Reference (either an IRI or a relative-reference), according to `RFC3986 section 4.1  <https://datatracker.ietf.org/doc/html/rfc3986#section-4.1>` and `RFC3987 section 2.1 <https://datatracker.ietf.org/doc/html/rfc3987#section-2.1>`. MAY be a JSON Pointer as an IRI fragment, as  described by `RFC6901 section 6 <https://datatracker.ietf.org/doc/html/rfc6901#section-6>`.',
+    )
+
+
+class SequenceReference(BaseModel):
+    model_config = ConfigDict(
+        extra='allow',
+    )
     id: Optional[str] = Field(
         None,
         description="The 'logical' identifier of the entity in the system of record, e.g. a UUID. This 'id' is  unique within a given system. The identified entity may have a different 'id' in a different  system, or may refer to an 'id' for the shared concept in another system (e.g. a CURIE).",
     )
     label: Optional[str] = None
     extensions: Optional[List[Extension]] = None
-    type: str = Field(
-        'SequenceReference', const=True, description='MUST be "SequenceReference"'
-    )
-    digest: Optional[constr(regex=r'[0-9A-Za-z_\-]{32}')] = Field(
+    type: str = Field('SequenceReference', description='MUST be "SequenceReference"')
+    digest: Optional[constr(pattern=r'[0-9A-Za-z_\-]{32}')] = Field(
         None,
         description='A sha512t24u digest created using the VRS Computed Identifier algorithm.',
     )
-    refgetAccession: constr(regex=r'SQ.[0-9A-Za-z_\-]{32}') = Field(
+    refgetAccession: constr(pattern=r'SQ.[0-9A-Za-z_\-]{32}') = Field(
         ...,
         description='A `GA4GH RefGet <http://samtools.github.io/hts-specs/refget.html>` identifier for the referenced sequence, using the sha512t24u digest.',
     )
@@ -209,33 +190,50 @@ class SequenceReference(BaseModel):
         ]
 
 
-class Range(BaseModel):
-    __root__: List[Optional[int]] = Field(
-        ...,
-        description='An inclusive range of values bounded by one or more integers.',
-        max_items=2,
-        min_items=2,
+class ReferenceLengthExpression(BaseModel):
+    model_config = ConfigDict(
+        extra='allow',
+    )
+    id: Optional[str] = Field(
+        None,
+        description="The 'logical' identifier of the entity in the system of record, e.g. a UUID. This 'id' is  unique within a given system. The identified entity may have a different 'id' in a different  system, or may refer to an 'id' for the shared concept in another system (e.g. a CURIE).",
+    )
+    label: Optional[str] = None
+    extensions: Optional[List[Extension]] = None
+    type: Literal['ReferenceLengthExpression'] = Field(
+        'ReferenceLengthExpression', description='MUST be "ReferenceLengthExpression"'
+    )
+    length: Union[Range, int] = Field(
+        ..., description='The number of residues in the expressed sequence.'
+    )
+    sequence: Optional[SequenceString] = Field(
+        None, description='the Sequence encoded by the Reference Length Expression.'
+    )
+    repeatSubunitLength: Optional[int] = Field(
+        None, description='The number of residues in the repeat subunit.'
     )
 
 
-class Residue(BaseModel):
-    __root__: constr(regex=r'[A-Z*\-]') = Field(
-        ...,
-        description='A character representing a specific residue (i.e., molecular species) or groupings of these ("ambiguity codes"), using [one-letter IUPAC abbreviations](https://en.wikipedia.org/wiki/International_Union_of_Pure_and_Applied_Chemistry#Amino_acid_and_nucleotide_base_codes) for nucleic acids and amino acids.',
+class LiteralSequenceExpression(BaseModel):
+    model_config = ConfigDict(
+        extra='allow',
     )
-
-
-class SequenceString(BaseModel):
-    __root__: constr(regex=r'^[A-Z*\-]*$') = Field(
-        ...,
-        description='A character string of Residues that represents a biological sequence using the conventional sequence order (5’-to-3’ for nucleic acid sequences, and amino-to-carboxyl for amino acid sequences). IUPAC ambiguity codes are permitted in Sequence Strings.',
+    id: Optional[str] = Field(
+        None,
+        description="The 'logical' identifier of the entity in the system of record, e.g. a UUID. This 'id' is  unique within a given system. The identified entity may have a different 'id' in a different  system, or may refer to an 'id' for the shared concept in another system (e.g. a CURIE).",
     )
+    label: Optional[str] = None
+    extensions: Optional[List[Extension]] = None
+    type: Literal['LiteralSequenceExpression'] = Field(
+        'LiteralSequenceExpression', description='MUST be "LiteralSequenceExpression"'
+    )
+    sequence: SequenceString = Field(..., description='the literal sequence')
 
 
 class Mapping(BaseModel):
-    class Config:
-        extra = Extra.forbid
-
+    model_config = ConfigDict(
+        extra='allow',
+    )
     id: Optional[str] = Field(
         None,
         description="The 'logical' identifier of the entity in the system of record, e.g. a UUID. This 'id' is  unique within a given system. The identified entity may have a different 'id' in a different  system, or may refer to an 'id' for the shared concept in another system (e.g. a CURIE).",
@@ -256,23 +254,21 @@ class Mapping(BaseModel):
 
 
 class SequenceLocation(BaseModel):
-    class Config:
-        extra = Extra.forbid
-
+    model_config = ConfigDict(
+        extra='allow',
+    )
     id: Optional[str] = Field(
         None,
         description="The 'logical' identifier of the entity in the system of record, e.g. a UUID. This 'id' is  unique within a given system. The identified entity may have a different 'id' in a different  system, or may refer to an 'id' for the shared concept in another system (e.g. a CURIE).",
     )
     label: Optional[str] = None
     extensions: Optional[List[Extension]] = None
-    type: str = Field(
-        'SequenceLocation', const=True, description='MUST be "SequenceLocation"'
-    )
-    digest: Optional[constr(regex=r'[0-9A-Za-z_\-]{32}')] = Field(
+    type: Literal['SequenceLocation'] = Field('SequenceLocation', description='MUST be "SequenceLocation"')
+    digest: Optional[constr(pattern=r'[0-9A-Za-z_\-]{32}')] = Field(
         None,
         description='A sha512t24u digest created using the VRS Computed Identifier algorithm.',
     )
-    sequence: Optional[Union[SequenceReference, IRI]] = Field(
+    sequence: Optional[Union[IRI, SequenceReference]] = Field(
         None, description='A SequenceReference.'
     )
     start: Union[Range, int] = Field(
@@ -285,75 +281,38 @@ class SequenceLocation(BaseModel):
     )
 
     class ga4gh_digest:
-        prefix = 'SL',
+        prefix = 'SL'
         keys = [
-            'count',
-            'members',
+            'sequence',   # TODO not sure if these keys are correct
             'type'
         ]
 
 
-
-class ReferenceLengthExpression(BaseModel):
-    class Config:
-        extra = Extra.forbid
-
-    id: Optional[str] = Field(
-        None,
-        description="The 'logical' identifier of the entity in the system of record, e.g. a UUID. This 'id' is  unique within a given system. The identified entity may have a different 'id' in a different  system, or may refer to an 'id' for the shared concept in another system (e.g. a CURIE).",
+class SequenceExpression(RootModel):
+    model_config = ConfigDict(
+        extra='allow',
     )
-    label: Optional[str] = None
-    extensions: Optional[List[Extension]] = None
-    type: Literal['ReferenceLengthExpression'] = Field(
-        'ReferenceLengthExpression',
-        const=True,
-        description='MUST be "ReferenceLengthExpression"',
+    root: Union[LiteralSequenceExpression, ReferenceLengthExpression] = Field(
+        ..., description='An expression describing a Sequence.', discriminator='type'
     )
-    length: Union[Range, int] = Field(
-        ..., description='The number of residues in the expressed sequence.'
-    )
-    sequence: Optional[SequenceString] = Field(
-        None, description='the Sequence encoded by the Reference Length Expression.'
-    )
-    repeatSubunitLength: Optional[int] = Field(
-        None, description='The number of residues in the repeat subunit.'
-    )
-
-
-class LiteralSequenceExpression(BaseModel):
-    class Config:
-        extra = Extra.forbid
-
-    id: Optional[str] = Field(
-        None,
-        description="The 'logical' identifier of the entity in the system of record, e.g. a UUID. This 'id' is  unique within a given system. The identified entity may have a different 'id' in a different  system, or may refer to an 'id' for the shared concept in another system (e.g. a CURIE).",
-    )
-    label: Optional[str] = None
-    extensions: Optional[List[Extension]] = None
-    type: Literal['LiteralSequenceExpression'] = Field(
-        'LiteralSequenceExpression',
-        const=True,
-        description='MUST be "LiteralSequenceExpression"',
-    )
-    sequence: SequenceString = Field(..., description='the literal sequence')
 
 
 class Allele(BaseModel):
-    class Config:
-        extra = Extra.forbid
-
+    model_config = ConfigDict(
+        extra='allow',
+    )
     id: Optional[str] = Field(
         None,
         description="The 'logical' identifier of the entity in the system of record, e.g. a UUID. This 'id' is  unique within a given system. The identified entity may have a different 'id' in a different  system, or may refer to an 'id' for the shared concept in another system (e.g. a CURIE).",
     )
     label: Optional[str] = None
     extensions: Optional[List[Extension]] = None
-    type: Literal['Allele'] = Field('Allele', const=True, description='MUST be "Allele"')
-    digest: Optional[constr(regex=r'[0-9A-Za-z_\-]{32}')] = Field(
+    type: Literal['Allele'] = Field('Allele', description='MUST be "Allele"')
+    digest: Optional[constr(pattern=r'[0-9A-Za-z_\-]{32}')] = Field(
         None,
         description='A sha512t24u digest created using the VRS Computed Identifier algorithm.',
     )
-    location: Union[SequenceLocation, IRI] = Field(
+    location: Union[IRI, SequenceLocation] = Field(
         ..., description='The location of the Allele'
     )
     state: Union[LiteralSequenceExpression, ReferenceLengthExpression] = Field(
@@ -370,25 +329,24 @@ class Allele(BaseModel):
 
 
 class Haplotype(BaseModel):
-    class Config:
-        extra = Extra.forbid
-
+    model_config = ConfigDict(
+        extra='allow',
+    )
     id: Optional[str] = Field(
         None,
         description="The 'logical' identifier of the entity in the system of record, e.g. a UUID. This 'id' is  unique within a given system. The identified entity may have a different 'id' in a different  system, or may refer to an 'id' for the shared concept in another system (e.g. a CURIE).",
     )
     label: Optional[str] = None
     extensions: Optional[List[Extension]] = None
-    type: Literal['Haplotype'] = Field('Haplotype', const=True, description='MUST be "Haplotype"')
-    digest: Optional[constr(regex=r'[0-9A-Za-z_\-]{32}')] = Field(
+    type: Literal['Haplotype'] = Field('Haplotype', description='MUST be "Haplotype"')
+    digest: Optional[constr(pattern=r'[0-9A-Za-z_\-]{32}')] = Field(
         None,
         description='A sha512t24u digest created using the VRS Computed Identifier algorithm.',
     )
-    members: List[Union[Allele, IRI]] = Field(
+    members: Set[Union[Allele, IRI]] = Field(
         ...,
         description='List of Alleles, or references to Alleles, that comprise this Haplotype.',
-        min_items=2,
-        unique_items=True,
+        min_length=2,
     )
 
     class ga4gh_digest:
@@ -399,25 +357,22 @@ class Haplotype(BaseModel):
         ]
 
 
-
 class CopyNumberCount(BaseModel):
-    class Config:
-        extra = Extra.forbid
-
+    model_config = ConfigDict(
+        extra='allow',
+    )
     id: Optional[str] = Field(
         None,
         description="The 'logical' identifier of the entity in the system of record, e.g. a UUID. This 'id' is  unique within a given system. The identified entity may have a different 'id' in a different  system, or may refer to an 'id' for the shared concept in another system (e.g. a CURIE).",
     )
     label: Optional[str] = None
     extensions: Optional[List[Extension]] = None
-    type: Literal['CopyNumberCount'] = Field(
-        'CopyNumberCount', const=True, description='MUST be "CopyNumberCount"'
-    )
-    digest: Optional[constr(regex=r'[0-9A-Za-z_\-]{32}')] = Field(
+    type: Literal['CopyNumberCount'] = Field('CopyNumberCount', description='MUST be "CopyNumberCount"')
+    digest: Optional[constr(pattern=r'[0-9A-Za-z_\-]{32}')] = Field(
         None,
         description='A sha512t24u digest created using the VRS Computed Identifier algorithm.',
     )
-    subject: Union[SequenceLocation, IRI] = Field(
+    subject: Union[IRI, SequenceLocation] = Field(
         ...,
         description='A location for which the number of systemic copies is described.',
     )
@@ -435,23 +390,21 @@ class CopyNumberCount(BaseModel):
 
 
 class CopyNumberChange(BaseModel):
-    class Config:
-        extra = Extra.forbid
-
+    model_config = ConfigDict(
+        extra='allow',
+    )
     id: Optional[str] = Field(
         None,
         description="The 'logical' identifier of the entity in the system of record, e.g. a UUID. This 'id' is  unique within a given system. The identified entity may have a different 'id' in a different  system, or may refer to an 'id' for the shared concept in another system (e.g. a CURIE).",
     )
     label: Optional[str] = None
     extensions: Optional[List[Extension]] = None
-    type: Literal['CopyNumberChange'] = Field(
-        'CopyNumberChange', const=True, description='MUST be "CopyNumberChange"'
-    )
-    digest: Optional[constr(regex=r'[0-9A-Za-z_\-]{32}')] = Field(
+    type: Literal['CopyNumberChange'] = Field('CopyNumberChange', description='MUST be "CopyNumberChange"')
+    digest: Optional[constr(pattern=r'[0-9A-Za-z_\-]{32}')] = Field(
         None,
         description='A sha512t24u digest created using the VRS Computed Identifier algorithm.',
     )
-    subject: Union[SequenceLocation, IRI] = Field(
+    subject: Union[IRI, SequenceLocation] = Field(
         ...,
         description='A location for which the number of systemic copies is described.',
     )
@@ -469,33 +422,28 @@ class CopyNumberChange(BaseModel):
         ]
 
 
-
-class Location(BaseModel):
-    __root__: SequenceLocation = Field(
-        ...,
-        description='A contiguous segment of a biological sequence.'
+class Location(RootModel):
+    model_config = ConfigDict(
+        extra='allow',
     )
-
-
-class SequenceExpression(BaseModel):
-    __root__: Union[LiteralSequenceExpression, ReferenceLengthExpression] = Field(
-        ..., description='An expression describing a Sequence.', discriminator='type'
+    root: SequenceLocation = Field(
+        ...,
+        description='A contiguous segment of a biological sequence.',
+        discriminator='type',
     )
 
 
 class GenotypeMember(BaseModel):
-    class Config:
-        extra = Extra.forbid
-
+    model_config = ConfigDict(
+        extra='allow',
+    )
     id: Optional[str] = Field(
         None,
         description="The 'logical' identifier of the entity in the system of record, e.g. a UUID. This 'id' is  unique within a given system. The identified entity may have a different 'id' in a different  system, or may refer to an 'id' for the shared concept in another system (e.g. a CURIE).",
     )
     label: Optional[str] = None
     extensions: Optional[List[Extension]] = None
-    type: Literal['GenotypeMember'] = Field(
-        'GenotypeMember', const=True, description='MUST be "GenotypeMember".'
-    )
+    type: str = Field('GenotypeMember', description='MUST be "GenotypeMember".')
     count: Union[Range, int] = Field(
         ..., description='The number of copies of the `variation` at a Genotype locus.'
     )
@@ -504,32 +452,34 @@ class GenotypeMember(BaseModel):
     )
 
 
-class MolecularVariation(BaseModel):
-    __root__: Union[Allele, Haplotype] = Field(
+class MolecularVariation(RootModel):
+    model_config = ConfigDict(
+        extra='allow',
+    )
+    root: Union[Allele, Haplotype] = Field(
         ..., description='A variation on a contiguous molecule.', discriminator='type'
     )
 
 
 class Genotype(BaseModel):
-    class Config:
-        extra = Extra.forbid
-
+    model_config = ConfigDict(
+        extra='allow',
+    )
     id: Optional[str] = Field(
         None,
         description="The 'logical' identifier of the entity in the system of record, e.g. a UUID. This 'id' is  unique within a given system. The identified entity may have a different 'id' in a different  system, or may refer to an 'id' for the shared concept in another system (e.g. a CURIE).",
     )
     label: Optional[str] = None
     extensions: Optional[List[Extension]] = None
-    type: Literal['Genotype'] = Field('Genotype', const=True, description='MUST be "Genotype"')
-    digest: Optional[constr(regex=r'[0-9A-Za-z_\-]{32}')] = Field(
+    type: Literal['Genotype'] = Field('Genotype', description='MUST be "Genotype"')
+    digest: Optional[constr(pattern=r'[0-9A-Za-z_\-]{32}')] = Field(
         None,
         description='A sha512t24u digest created using the VRS Computed Identifier algorithm.',
     )
-    members: List[GenotypeMember] = Field(
+    members: Set[GenotypeMember] = Field(
         ...,
         description='Each GenotypeMember in `members` describes a MolecularVariation and the count of that variation at the locus.',
-        min_items=1,
-        unique_items=True,
+        min_length=1,
     )
     count: Union[Range, int] = Field(
         ...,
@@ -545,24 +495,27 @@ class Genotype(BaseModel):
         ]
 
 
-
-class Variation(BaseModel):
-    __root__: Union[
-        Allele, CopyNumberChange, CopyNumberCount, Genotype, Haplotype
-    ] = Field(
+class Variation(RootModel):
+    model_config = ConfigDict(
+        extra='allow',
+    )
+    root: Union[Allele, CopyNumberChange, CopyNumberCount, Genotype, Haplotype] = Field(
         ...,
         description='A representation of the state of one or more biomolecules.',
         discriminator='type',
     )
 
 
-class SystemicVariation(BaseModel):
-    __root__: Union[CopyNumberChange, CopyNumberCount, Genotype] = Field(
+class SystemicVariation(RootModel):
+    model_config = ConfigDict(
+        extra='allow',
+    )
+    root: Union[CopyNumberChange, CopyNumberCount, Genotype] = Field(
         ...,
         description='A Variation of multiple molecules in the context of a system, e.g. a genome, sample, or homologous chromosomes.',
         discriminator='type',
     )
 
 
-# At end so classes exist
-class_refatt_map = pydantic_class_refatt_map()
+# TODO Remove when sure its not referenced
+class_refatt_map = {}
