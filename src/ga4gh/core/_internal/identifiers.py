@@ -16,12 +16,18 @@ For that reason, they are implemented here in one file.
 """
 
 import re
-
+from typing import Union
+from pydantic import BaseModel
 from canonicaljson import encode_canonical_json
 
 from .digests import sha512t24u
-from .pydantic import is_list, is_pydantic_instance, is_curie_type, is_identifiable, is_literal
-# from .models import class_refatt_map
+from .pydantic import (
+    is_list,
+    is_pydantic_instance,
+    is_curie_type,
+    is_identifiable,
+    is_literal,
+    getattr_in)
 
 __all__ = "ga4gh_digest ga4gh_identify ga4gh_serialize is_ga4gh_identifier parse_ga4gh_identifier".split()
 
@@ -102,32 +108,96 @@ def ga4gh_digest(vro):
     return sha512t24u(ga4gh_serialize(vro))
 
 
-def ga4gh_serialize2(vro: dict) -> str:
+def ga4gh_digest2(vro, do_compact=True):
     """
-    Provide a pure dict-based implementation of ga4gh_serialize using ga4gh_roll_up_refs
+    Return the GA4GH digest for the object
+
+    >>> import ga4gh.vrs
+    >>> ival = ga4gh.vrs.models.SimpleInterval(start=44908821, end=44908822)
+    >>> location = ga4gh.vrs.models.Location(sequence_id="ga4gh:SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl", interval=ival)
+    >>> ga4gh_digest(location)
+    'u5fspwVbQ79QkX6GHLF8tXPCAXFJqRPx'
+
     """
-    pass
+
+    # assert is_identifiable(vro), "ga4gh_digest called with non-identifiable object"
+    s = ga4gh_serialize2(vro, do_compact=do_compact)
+    return sha512t24u(s)
 
 
+def export_pydantic_model(obj):
+    # Export Pydantic model to raw Python object. Right now supporting
+    # dict, or a custom root type that is a str
+    if isinstance(obj, BaseModel):
+        # try custom root type first, if not, assume it's a normal class
+        obj2 = get_root_str(obj)
+        if obj2 != obj:
+            obj = obj2
+        else:
+            obj = obj.dict()
+    return obj
 
-def ga4gh_roll_up_refs(obj: dict, class_refatt_map={}):
-    """
-    Digestible key map is a map of unqualified class names to keys that can be rolled up.
-    e.g. {"SequenceLocation": ["sequence"]}
-    """
-    obj_type = obj["type"]
-    reffable_fields = class_refatt_map.get(obj_type, [])
-    out = {}
-    for k, v in obj.items():
-        if k in reffable_fields:
-            print(f"{k=}:{v=}")
-            # three cases:
-            # value is a ga4gh: CURIE, which can have digest extracted
-            # value is a dict, which needs to itself be digested
-            # value is something else
-            if is_curie_type(v):
-                pass
 
+def get_root_str(obj: Union[str, BaseModel]) -> str:
+    """
+    If o is a Pydantic custom root type that is a string, return that string
+    """
+    if (isinstance(obj, BaseModel)
+            and hasattr(obj, "__root__")
+            and isinstance(obj.__root__, str)):
+        return obj.__root__
+    return obj
+
+
+def is_pydantic_custom_str_type(obj: BaseModel):
+    return hasattr(obj, "__root__") and isinstance(obj.__root__, str)
+
+
+def _serialize_compact(
+    input_obj: Union[BaseModel, dict, str]
+) -> Union[str, dict]:
+    """
+    Compacts a Pydantic model prior to serialization as canonicaljson.
+    Rolls up nested identifiable objeccts and shortens
+    ga4gh identifier custom types to their digest segments.
+    """
+    if input_obj is None:
+        return None
+    print(input_obj)
+    output_obj = input_obj
+    # obj = export_pydantic_model(input_obj)
+    if is_pydantic_custom_str_type(input_obj):
+        val = export_pydantic_model(input_obj)
+        if is_curie_type(val) and is_ga4gh_identifier(val):
+            val = val[len("ga4gh:"):]
+            if "." in val:
+                val = val[val.index(".") + 1:]
+        output_obj = val
+    elif is_pydantic_instance(input_obj):
+        exported_obj = export_pydantic_model(input_obj)
+        include_keys = getattr_in(input_obj, ["ga4gh", "keys"])
+        if include_keys is None or len(include_keys) == 0:
+            include_keys = exported_obj.keys()
+        output_obj = {
+            k: _serialize_compact(exported_obj[k])
+            for k in include_keys
+            if exported_obj[k] is not None
+        }
+        if is_identifiable(input_obj):
+            # Collapse the obj into its digest, not re-running compaction
+            output_obj = ga4gh_digest2(output_obj, do_compact=False)
+            # output_obj = sha512t24u(encode_canonical_json(output_obj))
+    else:
+        exported_obj = export_pydantic_model(input_obj)
+        if type(exported_obj) in [list, set]:
+            output_obj = [_serialize_compact(elem) for elem in exported_obj]
+    return output_obj
+
+
+def ga4gh_serialize2(obj, do_compact=True):
+    if do_compact:
+        obj = _serialize_compact(obj)
+    return encode_canonical_json(obj)
 
 
 def ga4gh_serialize(vro):
