@@ -16,6 +16,7 @@ sed -i.bkp 's/$defs/definitions/g' merged.json
 datamodel-codegen --input submodules/vrs/schema/merged.json --input-file-type jsonschema --output models_merged2.py
 
 """
+
 from typing import Any, Dict, List, Optional, Union, Literal
 from enum import Enum
 import inspect
@@ -25,6 +26,12 @@ import os
 import typing
 import pkg_resources
 from pydantic import BaseModel, Extra, Field, constr
+
+from ga4gh.core._internal.pydantic import (
+    is_identifiable,
+    getattr_in
+)
+
 _logger = logging.getLogger(__name__)
 
 
@@ -73,24 +80,6 @@ def overlaps(a: list, b: list):
     return len(set(a).intersection(set(b))) > 0
 
 
-def getattr_in(obj, names) -> Any:
-    """
-    Calls getattr on obj and the successive returns from getattr
-    using names as attribute names in order. If any return is None,
-    terminate early, and return None.
-    Like clojure (get-in obj names) or (some-> obj .name1 .name2 ...)
-    """
-    names_i = 0
-    v = None
-    while names_i < len(names):
-        v = getattr(obj, names[names_i], None)
-        if v is None:
-            break
-        names_i += 1
-        obj = v
-    return v
-
-
 def pydantic_class_refatt_map():
     """
     Builds a map of class names to their field names that are referable types.
@@ -116,7 +105,7 @@ def pydantic_class_refatt_map():
     # ))
     reffable_classes = list(filter(
         lambda c: ('id' in c.__fields__
-                   and getattr_in(c, ['ga4gh', 'identifiable']) is True),
+                   and is_identifiable(c)),
         model_classes
     ))
     # Types reffable because they are a union of reffable types
@@ -148,7 +137,15 @@ def pydantic_class_refatt_map():
                 class_reffable_fields.append(fieldname)
         if len(class_reffable_fields) > 0:
             reffable_fields[model_class.__name__] = class_reffable_fields
-    return (reffable_classes, union_reffable_classes, reffable_fields)
+    class_keys = {}
+    for model_class in model_classes:
+        keys = getattr_in(model_class, ['ga4gh', 'keys'])
+        if keys and len(keys) > 0:
+            class_keys[model_class.__name__] = keys
+    return (reffable_classes,
+            union_reffable_classes,
+            reffable_fields,
+            class_keys)
 
 
 class Extension(BaseModel):
@@ -312,9 +309,10 @@ class SequenceLocation(BaseModel):
         identifiable = True
         prefix = 'SL',
         keys = [
-            'count',
-            'members',
-            'type'
+            'type',
+            'start',
+            'end',
+            'sequence'
         ]
 
 
@@ -599,4 +597,9 @@ class SystemicVariation(BaseModel):
 
 
 # At end so classes exist
-reffable_classes, union_reffable_classes, class_refatt_map = pydantic_class_refatt_map()
+(
+    reffable_classes,
+    union_reffable_classes,
+    class_refatt_map,
+    class_keys
+) = pydantic_class_refatt_map()

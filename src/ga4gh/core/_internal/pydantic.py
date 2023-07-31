@@ -3,6 +3,24 @@ from typing import Any
 from pydantic import BaseModel
 
 
+def getattr_in(obj, names) -> Any:
+    """
+    Calls getattr on obj and the successive returns from getattr
+    using names as attribute names in order. If any return is None,
+    terminate early, and return None.
+    Like clojure (get-in obj names) or (some-> obj .name1 .name2 ...)
+    """
+    names_i = 0
+    v = None
+    while names_i < len(names):
+        v = getattr(obj, names[names_i], None)
+        if v is None:
+            break
+        names_i += 1
+        obj = v
+    return v
+
+
 def is_identifiable(o: Any) -> bool:
     """
     Determine if object is identifiable. An object is considered identifiable if
@@ -11,7 +29,7 @@ def is_identifiable(o: Any) -> bool:
     :param o: Object
     :return: `True` if `o` has `ga4gh_digest` attribute. `False` otherwise.
     """
-    return hasattr(o, "ga4gh_digest")
+    return getattr_in(o, ['ga4gh', 'identifiable'])
 
 
 def is_literal(o: Any) -> bool:
@@ -31,8 +49,6 @@ def is_curie_type(o: Any) -> bool:
     if isinstance(o, BaseModel) and hasattr(o, "__root__"):
         o = o.__root__
     return re.match(r'[a-zA-Z0-9.]+:\S+', o)
-
-
 
 
 def is_pydantic_instance(o: Any) -> bool:

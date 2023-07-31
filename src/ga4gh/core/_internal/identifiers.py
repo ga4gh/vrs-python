@@ -93,8 +93,13 @@ def ga4gh_identify(vro, type_prefix_map=None):
     return ir
 
 
-def ga4gh_digest(vro):
-    """return the GA4GH digest for the object
+def ga4gh_digest(vro, do_compact=True):
+    """
+    Return the GA4GH digest for the object.
+
+    do_compact: bool - true if object compaction should be performed during serialization
+
+    TODO update example
 
     >>> import ga4gh.vrs
     >>> ival = ga4gh.vrs.models.SimpleInterval(start=44908821, end=44908822)
@@ -103,38 +108,22 @@ def ga4gh_digest(vro):
     'u5fspwVbQ79QkX6GHLF8tXPCAXFJqRPx'
 
     """
-
-    assert is_identifiable(vro), "ga4gh_digest called with non-identifiable object"
-    return sha512t24u(ga4gh_serialize(vro))
-
-
-def ga4gh_digest2(vro, do_compact=True):
-    """
-    Return the GA4GH digest for the object
-
-    >>> import ga4gh.vrs
-    >>> ival = ga4gh.vrs.models.SimpleInterval(start=44908821, end=44908822)
-    >>> location = ga4gh.vrs.models.Location(sequence_id="ga4gh:SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl", interval=ival)
-    >>> ga4gh_digest(location)
-    'u5fspwVbQ79QkX6GHLF8tXPCAXFJqRPx'
-
-    """
-
-    # assert is_identifiable(vro), "ga4gh_digest called with non-identifiable object"
-    s = ga4gh_serialize2(vro, do_compact=do_compact)
+    s = ga4gh_serialize(vro, do_compact=do_compact)
     return sha512t24u(s)
 
 
-def export_pydantic_model(obj):
+def export_pydantic_model(obj, exclude_none=True):
     # Export Pydantic model to raw Python object. Right now supporting
     # dict, or a custom root type that is a str
+    # TODO maybe just call export_pydantic_model on the .__root__ instead of
+    # get_root_str, taking whatever it is. Recursion should terminate fine.
     if isinstance(obj, BaseModel):
         # try custom root type first, if not, assume it's a normal class
         obj2 = get_root_str(obj)
         if obj2 != obj:
             obj = obj2
         else:
-            obj = obj.dict()
+            obj = obj.dict(exclude_none=exclude_none)
     return obj
 
 
@@ -153,8 +142,15 @@ def is_pydantic_custom_str_type(obj: BaseModel):
     return hasattr(obj, "__root__") and isinstance(obj.__root__, str)
 
 
+"""
+TODO: discussed making all objects digestible. If no digest keys defined,
+include all fields. We first need to define keys for all model objects.
+"""
+
+
 def _serialize_compact(
-    input_obj: Union[BaseModel, dict, str]
+    input_obj: Union[BaseModel, dict, str],
+    enref=True
 ) -> Union[str, dict]:
     """
     Compacts a Pydantic model prior to serialization as canonicaljson.
@@ -163,9 +159,7 @@ def _serialize_compact(
     """
     if input_obj is None:
         return None
-    print(input_obj)
     output_obj = input_obj
-    # obj = export_pydantic_model(input_obj)
     if is_pydantic_custom_str_type(input_obj):
         val = export_pydantic_model(input_obj)
         if is_curie_type(val) and is_ga4gh_identifier(val):
@@ -174,19 +168,23 @@ def _serialize_compact(
                 val = val[val.index(".") + 1:]
         output_obj = val
     elif is_pydantic_instance(input_obj):
-        exported_obj = export_pydantic_model(input_obj)
+        # Take static key set from the object, or use all fields
         include_keys = getattr_in(input_obj, ["ga4gh", "keys"])
         if include_keys is None or len(include_keys) == 0:
-            include_keys = exported_obj.keys()
+            exported = export_pydantic_model(input_obj)
+            include_keys = exported.keys()
+        # Serialize each field value
         output_obj = {
-            k: _serialize_compact(exported_obj[k])
+            k: _serialize_compact(getattr(input_obj, k), enref=True)
             for k in include_keys
-            if exported_obj[k] is not None
+            if hasattr(input_obj, k)  # check if None?
         }
-        if is_identifiable(input_obj):
+        # Collapse identifiable object into digest
+        # TODO store the object itself as well, with the digest,
+        # so caller has this information and doesn't need to recompute.
+        if is_identifiable(input_obj) and enref:
             # Collapse the obj into its digest, not re-running compaction
-            output_obj = ga4gh_digest2(output_obj, do_compact=False)
-            # output_obj = sha512t24u(encode_canonical_json(output_obj))
+            output_obj = ga4gh_digest(output_obj, do_compact=False)
     else:
         exported_obj = export_pydantic_model(input_obj)
         if type(exported_obj) in [list, set]:
@@ -194,92 +192,28 @@ def _serialize_compact(
     return output_obj
 
 
-def ga4gh_serialize2(obj, do_compact=True):
+def ga4gh_serialize(obj, do_compact=True):
     if do_compact:
-        obj = _serialize_compact(obj)
+        obj = _serialize_compact(obj, enref=False)
     return encode_canonical_json(obj)
 
 
-def ga4gh_serialize(vro):
+def scrape_model_metadata(obj, meta={}) -> dict:
     """
-    Serialize object into a canonical format
-
-    Briefly:
-    * format is json
-    * keys sorted in unicode order (=ascii order for our use)
-    * no "insignificant" whitespace, as defined in rfc7159§2
-    * MUST use two-char escapes when available, as defined in rfc7159§7
-    * UTF-8 encoded
-    * nested identifiable objects are replaced by their identifiers
-    * arrays of identifiers are sorted lexographically
-
-    These requirements are a distillation of several proposals which
-    have not yet been ratified.
-
-    >>> import ga4gh.vrs
-    >>> ival = ga4gh.vrs.models.SimpleInterval(start=44908821, end=44908822)
-    >>> location = ga4gh.vrs.models.Location(sequence_id="ga4gh:SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl", interval=ival)
-    >>> ga4gh_serialize(location)
-    b'{"interval":{"end":44908822,...,"type":"SequenceLocation"}'
-
     """
-
-    def dictify(vro, enref=True):
-        """
-        Recursively converts (any) object to dictionary prior to
-        serialization
-
-        enref: if True, replace nested identifiable objects with
-        digests ("enref" is opposite of "de-ref")
-        """
-
-        if vro is None:    # pragma: no cover
-            return None
-
-        if is_literal(vro):
-            v = vro._value
-            if is_curie_type(vro):
-                if is_ga4gh_identifier(v):
-                    # CURIEs are stripped to just the digest so that digests are independent of type prefixes
-                    v = v.split(ref_sep, 1)[1]
-            return v
-
-        if isinstance(vro, str):
-            v = vro
-            if is_ga4gh_identifier(v):
-                v = v.split(ref_sep, 1)[1]
-            return v
-
-        if is_pydantic_instance(vro):
-            if is_identifiable(vro) and enref:
-                return ga4gh_digest(vro)
-
-            d = {k: dictify(vro[k], enref=True)
-                 for k in vro
-                 if k in vro.ga4gh_digest.keys}
-            return d
-
-        if is_list(vro):
-            if is_curie_type(vro[0]):
-                return sorted(dictify(o) for o in vro.data)
-            return sorted([dictify(o) for o in vro.typed_elems])
-
-        raise ValueError(f"Don't know how to serialize {vro}")    # pragma: no cover
-
-    # The canonicaljson package does everything we want. Use that with
-    # the hope that it will be upward compatible with a future
-    # ratified proposal for json canonicalization.
-    #
-    # The following alternative does the same thing for our use case.
-    # It's included here as an outline for anyone implementing in
-    # another language.  (canonicaljson escapes unicode characters, as
-    # required by VRS, but this doesn't apply to any known uses so
-    # these are equivalent.)
-
-    # >> import json
-    # >> def cjdump(a):
-    # >>     return json.dumps(a, sort_keys=True, separators=(',',':'),
-    #                          indent=None).encode("utf-8")
-
-    vro_dict = dictify(vro, enref=False)
-    return encode_canonical_json(vro_dict)
+    assert isinstance(obj, BaseModel)
+    # map of class names to 'identifiable' and 'keys'
+    meta = {}
+    name = type(obj).__name__
+    if is_pydantic_custom_str_type(obj):
+        meta[name] = {"identifiable": False, "keys": None}
+    else:
+        meta[name] = {}
+        identifiable = getattr_in(obj, ["ga4gh", "identifiable"])
+        if identifiable:
+            meta[name]["identifiable"] = identifiable
+        keys = getattr_in(obj, ["ga4gh", "keys"])
+        if keys and len(keys) > 0:
+            meta[name]["keys"] = keys
+        # RE
+    return meta
