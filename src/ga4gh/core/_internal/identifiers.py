@@ -182,6 +182,15 @@ def _serialize_compact(
     return output_obj
 
 
+def replace_with_digest(val):
+    """
+    If val has a digest computed, return it, else return val
+    """
+    if isinstance(val, dict) and val.get("digest", None) is not None:
+        return val["digest"]
+    return val
+
+
 def identify_all(
     input_obj: Union[BaseModel, dict, str]
 ) -> Union[str, dict]:
@@ -193,31 +202,41 @@ def identify_all(
     if input_obj is None:
         return None
     output_obj = input_obj
-    print("input_obj: " + str(input_obj))
     if is_pydantic_custom_str_type(input_obj):
         val = export_pydantic_model(input_obj)
         if is_curie_type(val) and is_ga4gh_identifier(val):
             val = parse_ga4gh_identifier(val)["digest"]
         output_obj = val
     elif is_pydantic_instance(input_obj):
-        # Take static key set from the object, or use all fields
-        include_keys = getattr_in(input_obj, ["ga4gh", "keys"])
-        # TODO Add keys to each Model class
-        if include_keys is None or len(include_keys) == 0:
-            include_keys = export_pydantic_model(input_obj).keys()
-        # Serialize each field value
-        output_obj = {
-            k: identify_all(getattr(input_obj, k))
-            for k in include_keys
-            if hasattr(input_obj, k)  # check if None?
-        }
-        print("output_obj: " + str(output_obj))
-        # Collapse identifiable object into digest
-        # TODO store the object itself as well, with the digest,
-        # so caller has this information and doesn't need to recompute.
-        if is_identifiable(input_obj):
-            # Compute digest for updated object, not re-running compaction
-            output_obj["digest"] = ga4gh_digest(output_obj, do_compact=False)
+        exported_obj = export_pydantic_model(input_obj)
+        if "digest" in exported_obj and exported_obj["digest"] is not None:
+            output_obj = exported_obj
+        else:
+            # Take static key set from the object, or use all fields
+            include_keys = getattr_in(input_obj, ["ga4gh", "keys"])
+            # TODO Add keys to each Model class
+            if include_keys is None or len(include_keys) == 0:
+                include_keys = exported_obj.keys()
+            if "digest" in include_keys:
+                include_keys.remove("digest")
+            # Serialize each field value
+            output_obj = {
+                k: identify_all(getattr(input_obj, k))
+                for k in include_keys
+                if hasattr(input_obj, k)  # check if None?
+            }
+            # Create collapsed output object, output_obj with identifiable
+            # values replaced with their digest. Assumes any obj with 'digest'
+            # should be collapsed.
+            collapsed_output_obj = {
+                k: replace_with_digest(output_obj[k])
+                for k in output_obj.keys()
+            }
+            print("collapsed_output_obj: " + str(collapsed_output_obj))
+            # Add a digest to the output if it is identifiable
+            if is_identifiable(input_obj):
+                # Compute digest for updated object, not re-running compaction
+                output_obj["digest"] = ga4gh_digest(collapsed_output_obj, do_compact=False)
     else:
         exported_obj = export_pydantic_model(input_obj)
         if type(exported_obj) in [list, set]:
