@@ -15,6 +15,7 @@ For that reason, they are implemented here in one file.
 
 """
 
+import logging
 import re
 from typing import Union
 from pydantic import BaseModel
@@ -30,6 +31,8 @@ from .pydantic import (
     getattr_in)
 
 __all__ = "ga4gh_digest ga4gh_identify ga4gh_serialize is_ga4gh_identifier parse_ga4gh_identifier".split()
+
+_logger = logging.getLogger(__name__)
 
 namespace = "ga4gh"
 curie_sep = ":"
@@ -185,6 +188,46 @@ def _serialize_compact(
         if is_identifiable(input_obj) and enref:
             # Collapse the obj into its digest, not re-running compaction
             output_obj = ga4gh_digest(output_obj, do_compact=False)
+    else:
+        exported_obj = export_pydantic_model(input_obj)
+        if type(exported_obj) in [list, set]:
+            output_obj = [_serialize_compact(elem) for elem in exported_obj]
+    return output_obj
+
+
+def identify_all(
+    input_obj: Union[BaseModel, dict, str]
+) -> Union[str, dict]:
+    """
+    Compacts a Pydantic model prior to serialization as canonicaljson.
+    Rolls up nested identifiable objeccts and shortens
+    ga4gh identifier custom types to their digest segments.
+    """
+    if input_obj is None:
+        return None
+    output_obj = input_obj
+    print(input_obj)
+    if is_pydantic_custom_str_type(input_obj):
+        val = export_pydantic_model(input_obj)
+        if is_curie_type(val) and is_ga4gh_identifier(val):
+            val = parse_ga4gh_identifier(val)["digest"]
+        output_obj = val
+    elif is_pydantic_instance(input_obj):
+        # Take static key set from the object, or use all fields
+        include_keys = getattr_in(input_obj, ["ga4gh", "keys"])
+        # Serialize each field value
+        output_obj = {
+            k: identify_all(getattr(input_obj, k))
+            for k in include_keys
+            if hasattr(input_obj, k)  # check if None?
+        }
+        print("output_obj: " + str(output_obj))
+        # Collapse identifiable object into digest
+        # TODO store the object itself as well, with the digest,
+        # so caller has this information and doesn't need to recompute.
+        if is_identifiable(input_obj):
+            # Compute digest for updated object, not re-running compaction
+            output_obj["digest"] = ga4gh_digest(output_obj, do_compact=False)
     else:
         exported_obj = export_pydantic_model(input_obj)
         if type(exported_obj) in [list, set]:
