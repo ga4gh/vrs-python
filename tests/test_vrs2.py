@@ -6,7 +6,7 @@ from ga4gh.core import (
     is_pydantic_instance,
     is_curie_type,
     pydantic_copy)
-from ga4gh.vrs import models, vrs_deref, vrs_enref
+from ga4gh.vrs import models
 
 allele_dict = {
     'location': {
@@ -68,10 +68,6 @@ def test_vr():
 
     # a3 = vrs_deref(a2, vros)
     # assert a == a3
-
-
-def test_vr2_0():
-    assert a.dict() == allele_dict
 
 
 def test_iri():

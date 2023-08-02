@@ -101,7 +101,7 @@ def ga4gh_identify(vro):
     return None
 
 
-def ga4gh_digest(vro, do_compact=True):
+def ga4gh_digest(vro: BaseModel, do_compact=True):
     """
     Return the GA4GH digest for the object.
 
@@ -116,9 +116,40 @@ def ga4gh_digest(vro, do_compact=True):
     'u5fspwVbQ79QkX6GHLF8tXPCAXFJqRPx'
 
     """
-    print("ga4gh_digest: vro: " + str(vro))
-    s = ga4gh_serialize(vro, do_compact=do_compact)
+    s = ga4gh_serialize(vro)
     return sha512t24u(s)
+
+
+def replace_with_digest(val: dict) -> Union[str, dict]:
+    """
+    If val has a digest computed, return it, else return val
+    """
+    if isinstance(val, dict) and val.get("digest", None) is not None:
+        return val["digest"]
+    return val
+
+
+def collapse_identifiable_values(obj: dict) -> dict:
+    """
+    Replaces dict values with their digests if they are defined
+    """
+    output_obj = {
+        k: replace_with_digest(obj[k])
+        for k in obj.keys()
+    }
+    return output_obj
+
+
+def ga4gh_serialize(obj: BaseModel) -> bytes:
+    identified = identify_all(obj)
+    if isinstance(identified, dict):
+        # Replace identifiable subobjects with their digests
+        collapsed = collapse_identifiable_values(identified)
+        if "digest" in collapsed:
+            del collapsed["digest"]
+        return encode_canonical_json(collapsed)
+    else:
+        return identified.encode("utf-8")
 
 
 def export_pydantic_model(obj, exclude_none=True):
@@ -142,59 +173,6 @@ include all fields. We first need to define keys for all model objects.
 """
 
 
-def _serialize_compact(
-    input_obj: Union[BaseModel, dict, str],
-    enref=True
-) -> Union[str, dict]:
-    """
-    Compacts a Pydantic model prior to serialization as canonicaljson.
-    Rolls up nested identifiable objeccts and shortens
-    ga4gh identifier custom types to their digest segments.
-    """
-    if input_obj is None:
-        return None
-    output_obj = input_obj
-    if is_pydantic_custom_str_type(input_obj):
-        val = export_pydantic_model(input_obj)
-        if is_curie_type(val) and is_ga4gh_identifier(val):
-            val = val[len("ga4gh:"):]
-            if "." in val:
-                val = val[val.index(".") + 1:]
-        output_obj = val
-    elif is_pydantic_instance(input_obj):
-        # Take static key set from the object, or use all fields
-        include_keys = getattr_in(input_obj, ["ga4gh", "keys"])
-        if include_keys is None or len(include_keys) == 0:
-            exported = export_pydantic_model(input_obj)
-            include_keys = exported.keys()
-        # Serialize each field value
-        output_obj = {
-            k: _serialize_compact(getattr(input_obj, k), enref=True)
-            for k in include_keys
-            if hasattr(input_obj, k)  # check if None?
-        }
-        # Collapse identifiable object into digest
-        # TODO store the object itself as well, with the digest,
-        # so caller has this information and doesn't need to recompute.
-        if is_identifiable(input_obj) and enref:
-            # Collapse the obj into its digest, not re-running compaction
-            output_obj = ga4gh_digest(output_obj, do_compact=False)
-    else:
-        exported_obj = export_pydantic_model(input_obj)
-        if type(exported_obj) in [list, set]:
-            output_obj = [_serialize_compact(elem) for elem in exported_obj]
-    return output_obj
-
-
-def replace_with_digest(val):
-    """
-    If val has a digest computed, return it, else return val
-    """
-    if isinstance(val, dict) and val.get("digest", None) is not None:
-        return val["digest"]
-    return val
-
-
 def identify_all(
     input_obj: Union[BaseModel, dict, str]
 ) -> Union[str, dict]:
@@ -202,6 +180,10 @@ def identify_all(
     Compacts a Pydantic model prior to serialization as canonicaljson.
     Rolls up nested identifiable objeccts and shortens
     ga4gh identifier custom types to their digest segments.
+
+    TODO It would be nice eto have a pydantic-agnostic version of this that just takes
+    a dict for input_object, and another dict that has the identifiable+keys metadata.
+    Something like scrape_model_metadata can be used to generate that metadata.
     """
     if input_obj is None:
         return None
@@ -229,14 +211,8 @@ def identify_all(
                 for k in include_keys
                 if hasattr(input_obj, k)  # check if None?
             }
-            # Create collapsed output object, output_obj with identifiable
-            # values replaced with their digest. Assumes any obj with 'digest'
-            # should be collapsed.
-            collapsed_output_obj = {
-                k: replace_with_digest(output_obj[k])
-                for k in output_obj.keys()
-            }
-            print("collapsed_output_obj: " + str(collapsed_output_obj))
+            # Assumes any obj with 'digest' should be collapsed.
+            collapsed_output_obj = collapse_identifiable_values(output_obj)
             # Add a digest to the output if it is identifiable
             if is_identifiable(input_obj):
                 # Compute digest for updated object, not re-running compaction
@@ -244,25 +220,16 @@ def identify_all(
     else:
         exported_obj = export_pydantic_model(input_obj)
         if type(exported_obj) in [list, set]:
-            output_obj = [_serialize_compact(elem) for elem in exported_obj]
+            output_obj = [identify_all(elem) for elem in exported_obj]
     return output_obj
-
-
-def ga4gh_serialize(obj, do_compact=True):
-    if do_compact:
-        obj = _serialize_compact(obj, enref=False)
-    if isinstance(obj, dict):
-        return encode_canonical_json(obj)
-    else:
-        return obj.encode("utf-8")
 
 
 def scrape_model_metadata(obj, meta={}) -> dict:
     """
+    For a Pydantic object obj, pull out .ga4gh.identifiable
+    and .ga4gh.keys and put them in meta keyed by the class name of obj
     """
     assert isinstance(obj, BaseModel)
-    # map of class names to 'identifiable' and 'keys'
-    meta = {}
     name = type(obj).__name__
     if is_pydantic_custom_str_type(obj):
         meta[name] = {"identifiable": False, "keys": None}
@@ -274,5 +241,5 @@ def scrape_model_metadata(obj, meta={}) -> dict:
         keys = getattr_in(obj, ["ga4gh", "keys"])
         if keys and len(keys) > 0:
             meta[name]["keys"] = keys
-        # RE
+        # TODO recurse into fields
     return meta
