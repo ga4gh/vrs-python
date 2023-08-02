@@ -16,7 +16,6 @@ allele_dict = {
             'type': 'SequenceReference',
             'refgetAccession': 'SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul'
         },
-        # 'sequence_id': 'ga4gh:SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul',
         'type': 'SequenceLocation'
     },
     'state': {
@@ -30,46 +29,45 @@ a = models.Allele(**allele_dict)
 
 
 def test_vr():
-    assert a.dict(exclude_none=True) == allele_dict
+    assert a.model_dump(exclude_none=True) == allele_dict
+    assert is_pydantic_instance(a)
     assert is_pydantic_instance(a.location)
+    assert is_pydantic_instance(a.location.sequence)
 
-    assert ga4gh_serialize(
-        a.location
-    ) == b'{"end":55181320,"sequence":"OFEyBMeo55q3QRrxAY5FiDqnkdyf0GTV","start":55181319,"type":"SequenceLocation"}'
-    # b'{"end":{"type":"Number","value":55181320},"sequence_id":"F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul","start":{"type":"Number","value":55181319},"type":"SequenceLocation"}'
-    assert sha512t24u(ga4gh_serialize(a.location)) == 'X0qrF7RfZxGIVIOddTYooZ_23D9mw6p6'
-    assert ga4gh_digest(a.location) == 'X0qrF7RfZxGIVIOddTYooZ_23D9mw6p6'
-    assert ga4gh_identify(a.location) == 'ga4gh:SL.X0qrF7RfZxGIVIOddTYooZ_23D9mw6p6'
+    # Sequence Reference
+    seqref = a.location.sequence
+    seqref_serialized = ga4gh_serialize(seqref)
+    assert seqref_serialized == b'{"refgetAccession":"SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul","type":"SequenceReference"}'
+    assert sha512t24u(seqref_serialized) == 'OFEyBMeo55q3QRrxAY5FiDqnkdyf0GTV'
+    assert ga4gh_digest(seqref) == 'OFEyBMeo55q3QRrxAY5FiDqnkdyf0GTV'
+    assert ga4gh_identify(seqref) == 'ga4gh:SQR.OFEyBMeo55q3QRrxAY5FiDqnkdyf0GTV'
 
-    assert ga4gh_serialize(
-        a
-    ) == b'{"location":"Npx4j5beiNN9GSFTm8Ml6YxrNj_Ghkac","state":{"sequence":"T","type":"LiteralSequenceExpression"},"type":"Allele"}'
-    assert ga4gh_digest(a) == 'RzhTjgnkCmLnaw3IBWnAubZs7eJHhho_'
-    assert ga4gh_identify(a) == 'ga4gh:VA.RzhTjgnkCmLnaw3IBWnAubZs7eJHhho_'
+    # Location
+    loc = a.location
+    loc_serialized = ga4gh_serialize(loc)
+    assert loc_serialized == b'{"end":55181320,"sequence":"OFEyBMeo55q3QRrxAY5FiDqnkdyf0GTV","start":55181319,"type":"SequenceLocation"}'
+    assert sha512t24u(loc_serialized) == 'X0qrF7RfZxGIVIOddTYooZ_23D9mw6p6'
+    assert ga4gh_digest(loc) == 'X0qrF7RfZxGIVIOddTYooZ_23D9mw6p6'
+    assert ga4gh_identify(loc) == 'ga4gh:SL.X0qrF7RfZxGIVIOddTYooZ_23D9mw6p6'
 
-    assert a.as_dict() == {
-        'location': {
-            'end': {'value': 55181320, 'type': 'Number'},
-            'start': {'value': 55181319, 'type': 'Number'},
-            'sequence_id': 'ga4gh:SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul',
-            'type': 'SequenceLocation'
-        },
-        'state': {
-            'sequence': 'T',
-            'type': 'LiteralSequenceExpression'
-        },
-        'type': 'Allele'
-    }
+    # Allele
+    allele_serialized = ga4gh_serialize(a)
+    assert allele_serialized == b'{"location":"X0qrF7RfZxGIVIOddTYooZ_23D9mw6p6","state":{"sequence":"T","type":"LiteralSequenceExpression"},"type":"Allele"}'
+    assert sha512t24u(allele_serialized) == 'oFiLzDh37SoecjP7dceRaUfVlh32NnCg'
+    assert ga4gh_digest(a) == 'oFiLzDh37SoecjP7dceRaUfVlh32NnCg'
+    assert ga4gh_identify(a) == 'ga4gh:VA.oFiLzDh37SoecjP7dceRaUfVlh32NnCg'
 
-    vros = {}
-    a2 = vrs_enref(a, vros)
-    assert ga4gh_identify(a) == ga4gh_identify(a2)
-    assert a2.location == "ga4gh:SL.Npx4j5beiNN9GSFTm8Ml6YxrNj_Ghkac"
-    assert a2.location in vros
-    assert ga4gh_identify(a) in vros
+    # Commenting out enref/deref tests.
+    # We are deciding whether this will continue to be included in this library.
+    # vros = {}
+    # a2 = vrs_enref(a, vros)
+    # assert ga4gh_identify(a) == ga4gh_identify(a2)
+    # assert a2.location == "ga4gh:SL.Npx4j5beiNN9GSFTm8Ml6YxrNj_Ghkac"
+    # assert a2.location in vros
+    # assert ga4gh_identify(a) in vros
 
-    a3 = vrs_deref(a2, vros)
-    assert a == a3
+    # a3 = vrs_deref(a2, vros)
+    # assert a == a3
 
 
 def test_vr2_0():

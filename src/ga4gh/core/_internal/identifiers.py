@@ -80,10 +80,12 @@ def parse_ga4gh_identifier(ir):
         raise ValueError(ir) from e
 
 
-def ga4gh_identify(vro, type_prefix_map=None):
-    """return the GA4GH digest-based id for the object, as a CURIE
+def ga4gh_identify(vro):
+    """
+    Return the GA4GH digest-based id for the object, as a CURIE
     (string).  Returns None if object is not identifiable.
 
+    TODO update example for VRS 2.0
     >>> import ga4gh.vrs
     >>> ival = ga4gh.vrs.models.SimpleInterval(start=44908821, end=44908822)
     >>> location = ga4gh.vrs.models.Location(sequence_id="ga4gh:SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl", interval=ival)
@@ -91,10 +93,12 @@ def ga4gh_identify(vro, type_prefix_map=None):
     'ga4gh:VSL.u5fspwVbQ79QkX6GHLF8tXPCAXFJqRPx'
 
     """
-    digest = ga4gh_digest(vro)
-    pfx = vro.prefix
-    ir = f"{namespace}{curie_sep}{pfx}{ref_sep}{digest}"
-    return ir
+    if is_identifiable(vro):
+        digest = ga4gh_digest(vro)
+        pfx = vro.ga4gh.prefix
+        ir = f"{namespace}{curie_sep}{pfx}{ref_sep}{digest}"
+        return ir
+    return None
 
 
 def ga4gh_digest(vro, do_compact=True):

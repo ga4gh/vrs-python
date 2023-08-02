@@ -364,7 +364,7 @@ class SequenceLocation(BaseModel):
 
     class ga4gh:
         identifiable = True
-        prefix = 'SL',
+        prefix = 'SL'
         keys = [
             'type',
             'start',
@@ -503,7 +503,7 @@ class CopyNumberChange(BaseModel):
 
     class ga4gh:
         identifiable = True
-        prefix = 'CX',
+        prefix = 'CX'
         keys = [
             'copy_change',
             'subject',
