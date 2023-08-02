@@ -1,6 +1,6 @@
 import re
 from typing import Any
-from pydantic import BaseModel
+from pydantic import BaseModel, RootModel
 
 
 def getattr_in(obj, names) -> Any:
@@ -46,8 +46,8 @@ def is_curie_type(o: Any) -> bool:
     If object is a Pydantic custom root type, extracts the value first,
     which enables (for example) a GA4GH IRI pydantic model object to be passed.
     """
-    if isinstance(o, BaseModel) and hasattr(o, "__root__"):
-        o = o.__root__
+    if isinstance(o, RootModel):
+        o = o.root
     return re.match(r'[a-zA-Z0-9.]+:\S+', o)
 
 
@@ -59,4 +59,9 @@ def pydantic_copy(obj: BaseModel) -> BaseModel:
     pydantic_class = type(obj)
     if not issubclass(pydantic_class, BaseModel):
         raise RuntimeError("Argument was not a pydantic model: " + str(pydantic_class))
-    return pydantic_class(**obj.dict())
+
+    # Treat RootModel differently, it's a thin wrapper of another object, has no fields
+    if issubclass(pydantic_class, RootModel):
+        return pydantic_class.model_construct(obj.model_dump())
+    else:
+        return pydantic_class.model_construct(**obj.model_dump())

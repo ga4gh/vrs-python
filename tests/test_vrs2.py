@@ -3,7 +3,9 @@ from ga4gh.core import (
     ga4gh_digest,
     ga4gh_serialize,
     ga4gh_identify,
-    is_pydantic_instance)
+    is_pydantic_instance,
+    is_curie_type,
+    pydantic_copy)
 from ga4gh.vrs import models, vrs_deref, vrs_enref
 
 allele_dict = {
@@ -72,3 +74,9 @@ def test_vr():
 
 def test_vr2_0():
     assert a.dict() == allele_dict
+
+
+def test_iri():
+    iri = models.IRI.model_construct("ga4gh:VA.asdf")
+    assert is_curie_type(iri)
+    assert iri.root == pydantic_copy(iri).root
