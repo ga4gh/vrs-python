@@ -23,12 +23,13 @@ from canonicaljson import encode_canonical_json
 
 from .digests import sha512t24u
 from .pydantic import (
-    is_list,
     is_pydantic_instance,
     is_curie_type,
     is_identifiable,
-    is_literal,
-    getattr_in)
+    getattr_in,
+    get_pydantic_root,
+    is_pydantic_custom_str_type
+)
 
 __all__ = "ga4gh_digest ga4gh_identify ga4gh_serialize is_ga4gh_identifier parse_ga4gh_identifier".split()
 
@@ -116,33 +117,18 @@ def ga4gh_digest(vro, do_compact=True):
 
 
 def export_pydantic_model(obj, exclude_none=True):
-    # Export Pydantic model to raw Python object. Right now supporting
-    # dict, or a custom root type that is a str
+    # Export Pydantic model to raw Python object. If a custom root object,
+    # return that. If a Model with fields, exports to a dict.
     # TODO maybe just call export_pydantic_model on the .__root__ instead of
-    # get_root_str, taking whatever it is. Recursion should terminate fine.
+    # get_pydantic_root, taking whatever it is. Recursion should terminate fine.
     if isinstance(obj, BaseModel):
         # try custom root type first, if not, assume it's a normal class
-        obj2 = get_root_str(obj)
+        obj2 = get_pydantic_root(obj)
         if obj2 != obj:
             obj = obj2
         else:
-            obj = obj.dict(exclude_none=exclude_none)
+            obj = obj.model_dump(exclude_none=exclude_none)
     return obj
-
-
-def get_root_str(obj: Union[str, BaseModel]) -> str:
-    """
-    If o is a Pydantic custom root type that is a string, return that string
-    """
-    if (isinstance(obj, BaseModel)
-            and hasattr(obj, "__root__")
-            and isinstance(obj.__root__, str)):
-        return obj.__root__
-    return obj
-
-
-def is_pydantic_custom_str_type(obj: BaseModel):
-    return hasattr(obj, "__root__") and isinstance(obj.__root__, str)
 
 
 """
@@ -238,7 +224,10 @@ def identify_all(
 def ga4gh_serialize(obj, do_compact=True):
     if do_compact:
         obj = _serialize_compact(obj, enref=False)
-    return encode_canonical_json(obj)
+    if isinstance(obj, dict):
+        return encode_canonical_json(obj)
+    else:
+        return obj.encode("utf-8")
 
 
 def scrape_model_metadata(obj, meta={}) -> dict:

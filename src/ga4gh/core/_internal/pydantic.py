@@ -1,5 +1,5 @@
 import re
-from typing import Any
+from typing import Any, Union
 from pydantic import BaseModel, RootModel
 
 
@@ -53,6 +53,19 @@ def is_curie_type(o: Any) -> bool:
 
 def is_pydantic_instance(o: Any) -> bool:
     return isinstance(o, BaseModel)
+
+
+def get_pydantic_root(obj: Union[Any, RootModel]) -> Any:
+    """
+    If o is a Pydantic custom root type, return the root object, else return the input obj
+    """
+    if isinstance(obj, RootModel):
+        return obj.root
+    return obj
+
+
+def is_pydantic_custom_str_type(obj: RootModel) -> bool:
+    return isinstance(obj, RootModel) and isinstance(obj.root, str)
 
 
 def pydantic_copy(obj: BaseModel) -> BaseModel:

@@ -80,3 +80,4 @@ def test_iri():
     iri = models.IRI.model_construct("ga4gh:VA.asdf")
     assert is_curie_type(iri)
     assert iri.root == pydantic_copy(iri).root
+    assert ga4gh_serialize(iri) == b'asdf'
