@@ -112,6 +112,7 @@ def ga4gh_digest(vro, do_compact=True):
     'u5fspwVbQ79QkX6GHLF8tXPCAXFJqRPx'
 
     """
+    print("ga4gh_digest: vro: " + str(vro))
     s = ga4gh_serialize(vro, do_compact=do_compact)
     return sha512t24u(s)
 
@@ -192,7 +193,7 @@ def identify_all(
     if input_obj is None:
         return None
     output_obj = input_obj
-    print(input_obj)
+    print("input_obj: " + str(input_obj))
     if is_pydantic_custom_str_type(input_obj):
         val = export_pydantic_model(input_obj)
         if is_curie_type(val) and is_ga4gh_identifier(val):
@@ -201,6 +202,9 @@ def identify_all(
     elif is_pydantic_instance(input_obj):
         # Take static key set from the object, or use all fields
         include_keys = getattr_in(input_obj, ["ga4gh", "keys"])
+        # TODO Add keys to each Model class
+        if include_keys is None or len(include_keys) == 0:
+            include_keys = export_pydantic_model(input_obj).keys()
         # Serialize each field value
         output_obj = {
             k: identify_all(getattr(input_obj, k))
