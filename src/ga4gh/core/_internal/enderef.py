@@ -10,6 +10,7 @@ build_class_referable_attribute_map() in .models.py.
 """
 
 from .identifiers import ga4gh_identify, is_ga4gh_identifier
+from .pydantic import is_pydantic_instance, is_list, is_curie_type, is_identifiable, pydantic_copy
 
 
 def ga4gh_enref(o, cra_map, object_store=None):
@@ -39,7 +40,7 @@ def ga4gh_enref(o, cra_map, object_store=None):
                 o[ran] = [_enref(o2) for o2 in v]
             elif isinstance(v, str):
                 pass
-            elif is_curie(v):    # already a reference
+            elif is_curie_type(v):    # already a reference
                 assert is_ga4gh_identifier(v), "Identifiable attribute CURIE is contains an invalid identifier"
             elif v is not None:
                 _id = _id_and_store(v)
@@ -54,7 +55,7 @@ def ga4gh_enref(o, cra_map, object_store=None):
         raise ValueError("Called ga4gh_enref() with non-identifiable object")
 
     # in-place replacement on object copy
-    o = pjs_copy(o)
+    o = pydantic_copy(o)
     _enref(o)
     return o
 
@@ -92,6 +93,6 @@ def ga4gh_deref(o, cra_map, object_store):
         raise ValueError("Called ga4gh_deref() with non-identifiable object")
 
     # in-place replacement on object copy
-    o = pjs_copy(o)
+    o = pydantic_copy(o)
     _deref(o)
     return o

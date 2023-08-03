@@ -93,11 +93,11 @@ class Translator:
         """Parse beacon expression into VRS Allele
 
         #>>> a = tlr.from_beacon("13 : 32936732 G > C")
-        #>>> a.as_dict()
+        #>>> a.model_dump()
         {'location': {
-          'end': {'value': 32936732, 'type': Number},
-          'start': {'value': 32936731, 'type': Number},
-          'sequence_id': 'GRCh38:13 ',
+          'end': 32936732,
+          'start': 32936731,,
+          'sequence: 'GRCh38:13 ',
           'type': 'SequenceLocation'},
          'state': {'sequence': 'C', 'type': 'LiteralSequenceExpression'},
          'type': 'Allele'}
@@ -113,16 +113,14 @@ class Translator:
         g = m.groupdict()
         if assembly_name is None:
             assembly_name = self.default_assembly_name
-        sequence_id = assembly_name + ":" + g["chr"]
+        sequence = assembly_name + ":" + g["chr"]
         start = int(g["pos"]) - 1
         ref = g["ref"]
         alt = g["alt"]
         end = start + len(ref)
         ins_seq = alt
 
-        location = models.SequenceLocation(sequence_id=sequence_id,
-                                           start=models.Number(value=start),
-                                           end=models.Number(value=end))
+        location = models.SequenceLocation(sequence=sequence, start=start, end=end)
         state = models.LiteralSequenceExpression(sequence=ins_seq)
         allele = models.Allele(location=location, state=state)
         allele = self._post_process_imported_allele(allele)
@@ -133,14 +131,14 @@ class Translator:
         """Parse gnomAD-style VCF expression into VRS Allele
 
         #>>> a = tlr.from_gnomad("1-55516888-G-GA")
-        #>>> a.as_dict()
+        #>>> a.model_dump()
         {'location': {
-          'end': {'value': 55516888, 'type': Number},
-          'start': {'value': 55516887, 'type': Number},
-          'sequence_id': 'GRCh38:1',
+          'end': 55516888,
+          'start': 55516887,
+          'sequence': 'GRCh38:1',
           'type': 'SequenceLocation'},
-         'state': {'sequence': 'GA', 'type': 'LiteralSequenceExpression'},
-         'type': 'Allele'}
+          'state': {'sequence': 'GA', 'type': 'LiteralSequenceExpression'},
+          'type': 'Allele'}
 
         """
 
@@ -153,16 +151,14 @@ class Translator:
         g = m.groupdict()
         if assembly_name is None:
             assembly_name = self.default_assembly_name
-        sequence_id = assembly_name + ":" + g["chr"]
+        sequence = assembly_name + ":" + g["chr"]
         start = int(g["pos"]) - 1
         ref = g["ref"]
         alt = g["alt"]
         end = start + len(ref)
         ins_seq = alt
 
-        location = models.SequenceLocation(sequence_id=sequence_id,
-                                           start=models.Number(value=start),
-                                           end=models.Number(value=end))
+        location = models.SequenceLocation(sequence=sequence, start=start, end=end)
         sstate = models.LiteralSequenceExpression(sequence=ins_seq)
         allele = models.Allele(location=location, state=sstate)
         allele = self._post_process_imported_allele(allele)
@@ -173,12 +169,12 @@ class Translator:
         """parse hgvs into a VRS object (typically an Allele)
 
         #>>> a = tlr.from_hgvs("NM_012345.6:c.22A>T")
-        #>>> a.as_dict()
+        #>>> a.model_dump()
         {
           'location': {
-            'end': {'value': 22, 'type': Number},
-            'start': {'value': 21, 'type': Number},
-            'sequence_id': 'refseq:NM_012345.6',
+            'end': 22,
+            'start': 21,
+            'sequence': 'refseq:NM_012345.6',
             'type': 'SequenceLocation'
           },
           'state': {'sequence': 'T', 'type': 'LiteralSequenceExpression'},
@@ -195,19 +191,19 @@ class Translator:
         sv = self._hgvs_parser.parse_hgvs_variant(hgvs_expr)
 
         # prefix accession with namespace
-        sequence_id = coerce_namespace(sv.ac)
+        sequence = coerce_namespace(sv.ac)
 
         if isinstance(sv.posedit.pos, hgvs.location.BaseOffsetInterval):
             if sv.posedit.pos.start.is_intronic or sv.posedit.pos.end.is_intronic:
                 raise ValueError("Intronic HGVS variants are not supported ({sv.posedit})")
 
         if sv.posedit.edit.type == "ins":
-            start=models.Number(value=sv.posedit.pos.start.base)
-            end=models.Number(value=sv.posedit.pos.start.base)
+            start = sv.posedit.pos.start.base
+            end = sv.posedit.pos.start.base
             state = sv.posedit.edit.alt
         elif sv.posedit.edit.type in ("sub", "del", "delins", "identity"):
-            start=models.Number(value=sv.posedit.pos.start.base - 1)
-            end=models.Number(value=sv.posedit.pos.end.base)
+            start = sv.posedit.pos.start.base - 1
+            end = sv.posedit.pos.end.base
             if sv.posedit.edit.type == "identity":
                 state = self.data_proxy.get_sequence(sv.ac,
                                                      sv.posedit.pos.start.base - 1,
@@ -215,8 +211,8 @@ class Translator:
             else:
                 state = sv.posedit.edit.alt or ""
         elif sv.posedit.edit.type == "dup":
-            start=models.Number(value=sv.posedit.pos.start.base - 1)
-            end=models.Number(value=sv.posedit.pos.end.base)
+            start = sv.posedit.pos.start.base - 1
+            end = sv.posedit.pos.end.base
             ref = self.data_proxy.get_sequence(sv.ac,
                                                sv.posedit.pos.start.base - 1,
                                                sv.posedit.pos.end.base)
@@ -224,7 +220,7 @@ class Translator:
         else:
             raise ValueError(f"HGVS variant type {sv.posedit.edit.type} is unsupported")
 
-        location = models.SequenceLocation(sequence_id=sequence_id,
+        location = models.SequenceLocation(sequence=sequence,
                                            start=start,
                                            end=end)
         sstate = models.LiteralSequenceExpression(sequence=state)
@@ -238,12 +234,12 @@ class Translator:
         """Parse SPDI expression in to a GA4GH Allele
 
         #>>> a = tlr.from_spdi("NM_012345.6:21:1:T")
-        #>>> a.as_dict()
+        #>>> a.model_dump()
         {
           'location': {
-            'end': {'value': 22, 'type': Number},
-            'start': {'value': 21, 'type': Number},
-            'sequence_id': 'refseq:NM_012345.6',
+            'end': 22,
+            'start': 21,
+            'sequence': 'refseq:NM_012345.6',
             'type': 'SequenceLocation'
           },
           'state': {'sequence': 'T', 'type': 'LiteralSequenceExpression'},
@@ -258,7 +254,7 @@ class Translator:
             return None
 
         g = m.groupdict()
-        sequence_id = coerce_namespace(g["ac"])
+        sequence = coerce_namespace(g["ac"])
         start = int(g["pos"])
         try:
             del_len = int(g["del_len_or_seq"])
@@ -267,9 +263,9 @@ class Translator:
         end = start + del_len
         ins_seq = g["ins_seq"]
 
-        location = models.SequenceLocation(sequence_id=sequence_id,
-                                           start=models.Number(value=start),
-                                           end=models.Number(value=end))
+        location = models.SequenceLocation(sequence=sequence,
+                                           start=start,
+                                           end=end)
         sstate = models.LiteralSequenceExpression(sequence=ins_seq)
         allele = models.Allele(location=location, state=sstate)
         allele = self._post_process_imported_allele(allele)
@@ -328,14 +324,14 @@ class Translator:
         if not self.is_valid_allele(vo):
             raise ValueError("_to_hgvs requires a VRS Allele with SequenceLocation and LiteralSequenceExpression")
 
-        sequence_id = str(vo.location.sequence_id)
-        aliases = self.data_proxy.translate_sequence_identifier(sequence_id, namespace)
+        sequence = str(vo.location.sequence)
+        aliases = self.data_proxy.translate_sequence_identifier(sequence, namespace)
 
         # infer type of sequence based on accession
         # TODO: move to bioutils
         stypes = list(set(t for t in (ir_stype(a) for a in aliases) if t))
         if len(stypes) != 1:
-            raise ValueError(f"Couldn't infer sequence type for {sequence_id} ({stypes})")
+            raise ValueError(f"Couldn't infer sequence type for {sequence} ({stypes})")
         stype = stypes[0]
 
         # build interval and edit depending on sequence type
@@ -344,18 +340,18 @@ class Translator:
             # ival = hgvs.location.Interval(start=start, end=end)
             # edit = hgvs.edit.AARefAlt(ref=None, alt=vo.state.sequence)
         else:                   # pylint: disable=no-else-raise
-            start, end = vo.location.start.value, vo.location.end.value
+            start, end = vo.location.start, vo.location.end
             # ib: 0 1 2 3 4 5
             #  h:  1 2 3 4 5
             if start == end:    # insert: hgvs uses *exclusive coords*
                 ref = None
                 end += 1
             else:               # else: hgvs uses *inclusive coords*
-                ref = self.data_proxy.get_sequence(sequence_id, start, end)
+                ref = self.data_proxy.get_sequence(sequence, start, end)
                 start += 1
             ival = hgvs.location.Interval(
-                start=hgvs.location.SimplePosition(base=start),
-                end=hgvs.location.SimplePosition(base=end))
+                start=hgvs.location.start,
+                end=hgvs.location.end)
             alt = str(vo.state.sequence) or None  # "" => None
             edit = hgvs.edit.NARefAlt(ref=ref, alt=alt)
 
@@ -415,10 +411,10 @@ class Translator:
         if not self.is_valid_allele(vo):
             raise ValueError("_to_spdi requires a VRS Allele with SequenceLocation and LiteralSequenceExpression")
 
-        sequence_id = str(vo.location.sequence_id)
-        aliases = self.data_proxy.translate_sequence_identifier(sequence_id, namespace)
+        sequence = str(vo.location.sequence)
+        aliases = self.data_proxy.translate_sequence_identifier(sequence, namespace)
         aliases = [a.split(":")[1] for a in aliases]
-        start, end = vo.location.start.value, vo.location.end.value
+        start, end = vo.location.start, vo.location.end
         spdi_tail = f":{start}:{end-start}:{vo.state.sequence}"
         spdis = [a + spdi_tail for a in aliases]
         return spdis
@@ -443,8 +439,8 @@ class Translator:
         """
 
         if self.translate_sequence_identifiers:
-            seq_id = self.data_proxy.translate_sequence_identifier(allele.location.sequence_id._value, "ga4gh")[0]
-            allele.location.sequence_id = seq_id
+            seq_id = self.data_proxy.translate_sequence_identifier(allele.location.sequence.root, "ga4gh")[0]
+            allele.location.sequence = seq_id
 
         if self.normalize:
             allele = normalize(allele, self.data_proxy)
@@ -486,7 +482,8 @@ if __name__ == "__main__":
     coloredlogs.install(level="INFO")
 
     from ga4gh.vrs.dataproxy import create_dataproxy
-    dp = create_dataproxy("seqrepo+file:///usr/local/share/seqrepo/latest")
+    # dp = create_dataproxy("seqrepo+file:///usr/local/share/seqrepo/latest")
+    dp = create_dataproxy("seqrepo + http://localhost:5555/seqrepo")
     tlr = Translator(data_proxy=dp)
 
     expressions = [
@@ -496,9 +493,9 @@ if __name__ == "__main__":
         "NC_000013.11:g.32936732G>C",
         "NM_000551.3:21:1:T", {
             "location": {
-                "end": {"value": 22, "type": "Number"},
-                "start": {"value": 21, "type": "Number"},
-                "sequence_id": "ga4gh:SQ.v_QTc1p-MUYdgrRv4LMT6ByXIOsdw3C_",
+                "end": 22,
+                "start": 21,
+                "sequence": "ga4gh:SQ.v_QTc1p-MUYdgrRv4LMT6ByXIOsdw3C_",
                 "type": "SequenceLocation"
             },
             "state": {
@@ -507,8 +504,8 @@ if __name__ == "__main__":
             },
             "type": "Allele"
         }, {
-           "end": {"value": 22, "type": "Number"},
-           "start": {"value": 21, "type": "Number"}
+           "end": 22,
+           "start": 21,
         }
     ]
     formats = ["hgvs", "gnomad", "beacon", "spdi", "vrs", None]

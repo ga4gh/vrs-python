@@ -16,17 +16,17 @@ _logger = logging.getLogger(__name__)
 
 
 def _normalize_allele(allele, data_proxy):
-    sequence = SequenceProxy(data_proxy, allele.location.sequence_id._value)
+    sequence = SequenceProxy(data_proxy, allele.location.sequence)
 
-    ival = (allele.location.start.value, allele.location.end.value)
+    ival = (allele.location.start.value, allele.location.end)
 
     _allele_state = allele.state.type
     _states_with_sequence = ["SequenceState", "LiteralSequenceExpression"]
     if _allele_state in _states_with_sequence:
-        alleles = (None, allele.state.sequence._value)
+        alleles = (None, allele.state.sequence)
     elif _allele_state == "RepeatedSequenceExpression" and \
             allele.state.seq_expr.type in _states_with_sequence:
-        alleles = (None, allele.state.seq_expr.sequence._value)
+        alleles = (None, allele.state.seq_expr.sequence)
     else:
         alleles = (None, "")
 
@@ -39,8 +39,8 @@ def _normalize_allele(allele, data_proxy):
                                            mode=NormalizationMode.EXPAND,
                                            anchor_length=0)
 
-        new_allele.location.start.value = new_ival[0]
-        new_allele.location.end.value = new_ival[1]
+        new_allele.location.start = new_ival[0]
+        new_allele.location.end = new_ival[1]
 
         if new_allele.state.type in _states_with_sequence:
             new_allele.state.sequence = new_alleles[1]
@@ -72,7 +72,7 @@ def normalize(vo, data_proxy=None):
     """normalize given vrs object, regardless of type"""
 
     assert is_pydantic_instance(vo)
-    vo_type = vo.type._value
+    vo_type = vo.type
 
     if vo_type in handlers:
         handler = handlers[vo_type]
@@ -94,9 +94,9 @@ if __name__ == "__main__":    # pragma: no cover
     #
     allele_dict = {
         "location": {
-            "end": {"value": 44908822, "type": "Number"},
-            "start": {"value": 44908821, "type": "Number"},
-            "sequence_id": "refseq:NC_000019.10",
+            "end": 44908822,
+            "start": 44908821,
+            "sequence": "refseq:NC_000019.10",
             "type": "SequenceLocation"
         },
         "state": {
@@ -112,6 +112,6 @@ if __name__ == "__main__":    # pragma: no cover
     allele.state.sequence = "C"
     allele3 = normalize(allele, dp)
 
-    allele.location.interval.end.value = 44908823
+    allele.location.interval.end = 44908823
     allele.state.sequence = ""
     allele4 = normalize(allele, dp)
