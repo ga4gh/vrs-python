@@ -11,9 +11,9 @@ snv_inputs = {
 
 snv_output = {
     "location": {
-        "end": {"value": 32936732, "type": "Number"},
-        "start": {"value": 32936731, "type": "Number"},
-        "sequence_id": "ga4gh:SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT",
+        "end": 32936732,
+        "start": 32936731,
+        "sequence": "ga4gh:SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT",
         "type": "SequenceLocation"
     },
     "state": {
@@ -31,9 +31,9 @@ deletion_inputs = {
 
 deletion_output = {
     "location": {
-        "end": {"value": 20003097, "type": "Number"},
-        "start": {"value": 20003096, "type": "Number"},
-        "sequence_id": "ga4gh:SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT",
+        "end": 20003097,
+        "start": 20003096,
+        "sequence": "ga4gh:SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT",
         "type": "SequenceLocation"
     },
     "state": {
@@ -51,9 +51,9 @@ insertion_inputs = {
 
 insertion_output = {
     "location": {
-        "end": {"value": 20003010, "type": "Number"},
-        "start": {"value": 20003010, "type": "Number"},
-        "sequence_id": "ga4gh:SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT",
+        "end": 20003010,
+        "start":20003010,
+        "sequence": "ga4gh:SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT",
         "type": "SequenceLocation"
     },
     "state": {
@@ -71,9 +71,9 @@ duplication_inputs = {
 
 duplication_output = {
     "location": {
-        "end": {"value": 19993839, "type": "Number"},
-        "start": {"value": 19993837, "type": "Number"},
-        "sequence_id": "ga4gh:SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT",
+        "end": 19993839,
+        "start": 19993837,
+        "sequence": "ga4gh:SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT",
         "type": "SequenceLocation"
     },
     "state": {
@@ -86,30 +86,30 @@ duplication_output = {
 
 @pytest.mark.vcr
 def test_from_beacon(tlr):
-    assert tlr._from_beacon(snv_inputs["beacon"]).as_dict() == snv_output
+    assert tlr._from_beacon(snv_inputs["beacon"]).model_dump(exclude_none=True) == snv_output
 
 
 @pytest.mark.vcr
 def test_from_gnomad(tlr):
-    assert tlr._from_gnomad(snv_inputs["gnomad"]).as_dict() == snv_output
+    assert tlr._from_gnomad(snv_inputs["gnomad"]).model_dump(exclude_none=True) == snv_output
 
 
 @pytest.mark.vcr
 def test_from_hgvs(tlr):
-    assert tlr._from_hgvs(snv_inputs["hgvs"]).as_dict() == snv_output
-    assert tlr._from_hgvs(deletion_inputs["hgvs"]).as_dict() == deletion_output
-    assert tlr._from_hgvs(insertion_inputs["hgvs"]).as_dict() == insertion_output
-    assert tlr._from_hgvs(duplication_inputs["hgvs"]).as_dict() == duplication_output
+    assert tlr._from_hgvs(snv_inputs["hgvs"]).model_dump(exclude_none=True) == snv_output
+    assert tlr._from_hgvs(deletion_inputs["hgvs"]).model_dump(exclude_none=True) == deletion_output
+    assert tlr._from_hgvs(insertion_inputs["hgvs"]).model_dump(exclude_none=True) == insertion_output
+    assert tlr._from_hgvs(duplication_inputs["hgvs"]).model_dump(exclude_none=True) == duplication_output
 
 
 @pytest.mark.vcr
 def test_from_spdi(tlr):
-    assert tlr._from_spdi(snv_inputs["spdi"]).as_dict() == snv_output
+    assert tlr._from_spdi(snv_inputs["spdi"]).model_dump(exclude_none=True) == snv_output
     for spdi_del_expr in deletion_inputs["spdi"]:
-        assert tlr._from_spdi(spdi_del_expr).as_dict() == deletion_output, spdi_del_expr
+        assert tlr._from_spdi(spdi_del_expr).model_dump(exclude_none=True) == deletion_output, spdi_del_expr
     for spdi_ins_expr in insertion_inputs["spdi"]:
-        assert tlr._from_spdi(spdi_ins_expr).as_dict() == insertion_output, spdi_ins_expr
-    assert tlr._from_spdi(duplication_inputs["spdi"]).as_dict() == duplication_output
+        assert tlr._from_spdi(spdi_ins_expr).model_dump(exclude_none=True) == insertion_output, spdi_ins_expr
+    assert tlr._from_spdi(duplication_inputs["spdi"]).model_dump(exclude_none=True) == duplication_output
 
 
 @pytest.mark.vcr
@@ -126,9 +126,9 @@ hgvs_tests = (
         "id": "ga4gh:VA.zkZpkDHX0xaOHUPxa5kFt3TUiWbr53xm",
         "location": {
             "id": "ga4gh:SL.2Q2SMLzdWQbJvYbXwwgegrjJbOxiLIJP",
-            "end": {"value": 32936732, "type": "Number"},
-            "start": {"value": 32936731, "type": "Number"},
-            "sequence_id": "ga4gh:SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT",
+            "end": 32936732,
+            "start": 32936731,
+            "sequence": "ga4gh:SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT",
             "type": "SequenceLocation"
         },
         "state": {
@@ -141,9 +141,9 @@ hgvs_tests = (
         "id": "ga4gh:VA.RzhTjgnkCmLnaw3IBWnAubZs7eJHhho_",
         "location": {
             "id": "ga4gh:SL.Npx4j5beiNN9GSFTm8Ml6YxrNj_Ghkac",
-            "end": {"value": 55181320, "type": "Number"},
-            "start": {"value": 55181319, "type": "Number"},
-            "sequence_id": "ga4gh:SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul",
+            "end": 5181320,
+            "start": 55181319,
+            "sequence": "ga4gh:SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul",
             "type": "SequenceLocation"
         },
         "state": {
@@ -156,9 +156,9 @@ hgvs_tests = (
         "id": "ga4gh:VA.YdX-N1MsXLxVnfCPYBdkdhzaEJVcPVDA",
         "location": {
             "id": "ga4gh:SL.80HjxOYxb6OtmSUToUehMqU78JJFEaC1",
-            "end": {"value": 55181220, "type": "Number"},
-            "start": {"value": 55181219, "type": "Number"},
-            "sequence_id": "ga4gh:SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul",
+            "end": 55181220,
+            "start": 55181219,
+            "sequence": "ga4gh:SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul",
             "type": "SequenceLocation"
         },
         "state": {
@@ -171,9 +171,9 @@ hgvs_tests = (
         "id": "ga4gh:VA.osbbI5Me3Paj5mFN3wsD1RpuHhd0dJsv",
         "location": {
             "id": "ga4gh:SL.b30aH2-4AX1oG2LYmMqpBRRyjcpARlgP",
-            "end": {"value": 55181230, "type": "Number"},
-            "start": {"value": 55181230, "type": "Number"},
-            "sequence_id": "ga4gh:SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul",
+            "end": 55181230,
+            "start": 55181230,
+            "sequence": "ga4gh:SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul",
             "type": "SequenceLocation"
         },
         "state": {
@@ -186,9 +186,9 @@ hgvs_tests = (
         "id": "ga4gh:VA.0wERl6sqiSnHXe44bfbd4c6zvqAZVjqp",
         "location": {
             "id": "ga4gh:SL.OKUia3LZI-04cFnY1uSO0gEicgTz3suN",
-            "end": {"value": 32331094, "type": "Number"},
-            "start": {"value": 32331082, "type": "Number"},
-            "sequence_id": "ga4gh:SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT",
+            "end": 32331094,
+            "start": 32331082,
+            "sequence": "ga4gh:SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT",
             "type": "SequenceLocation"
         },
         "state": {
@@ -201,9 +201,9 @@ hgvs_tests = (
         "id": "ga4gh:VA.iuDk-UaV63YXoYUJHehin3vFfzfYnz0j",
         "location": {
             "id": "ga4gh:SL.yy5lb3KqJGmLbo5kJ7aGf4aW5Ih5-dI3",
-            "end": {"value": 32316467, "type": "Number"},
-            "start": {"value": 32316466, "type": "Number"},
-            "sequence_id": "ga4gh:SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT",
+            "end": 2316467,
+            "start": 32316466,
+            "sequence": "ga4gh:SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT",
             "type": "SequenceLocation"
         },
         "state": {
@@ -216,9 +216,9 @@ hgvs_tests = (
         "id": "ga4gh:VA.j-Lnf0txP05DFsLJNhH6Fau4lIBok-DI",
         "location": {
             "id": "ga4gh:SL.VFlsGPHaAJB_LsYzQd8t6vTWSGKWiEeB",
-            "end": {"value": 872, "type": "Number"},
-            "start": {"value": 871, "type": "Number"},
-            "sequence_id": "ga4gh:SQ.MBIgVnoHFw34aFqNUVGM0zgjC3d-v8dK",
+            "end": 872,
+            "start": 871,
+            "sequence": "ga4gh:SQ.MBIgVnoHFw34aFqNUVGM0zgjC3d-v8dK",
             "type": "SequenceLocation"
         },
         "state": {
@@ -231,9 +231,9 @@ hgvs_tests = (
         "id": "ga4gh:VA.iLlJQVkxftWXweu4Ad-2NMShYdxUR1DH",
         "location": {
             "id": "ga4gh:SL.rxnYlIIPfVZCxSGhxdvs_nAWlxQd3nen",
-            "end": {"value": 1263, "type": "Number"},
-            "start": {"value": 1262, "type": "Number"},
-            "sequence_id": "ga4gh:SQ.KN07u-RFqd1dTyOWOG98HnOq87Nq-ZIg",
+            "end": 1263,
+            "start": 1262,
+            "sequence": "ga4gh:SQ.KN07u-RFqd1dTyOWOG98HnOq87Nq-ZIg",
             "type": "SequenceLocation"
         },
         "state": {
@@ -251,7 +251,7 @@ def test_hgvs(tlr, hgvsexpr, expected):
     tlr.normalize = True
     tlr.identify = True
     allele = tlr.translate_from(hgvsexpr, "hgvs")
-    assert expected == allele.as_dict()
+    assert expected == allele.model_dump(exclude_none=True)
 
     to_hgvs = tlr.translate_to(allele, "hgvs")
     assert 1 == len(to_hgvs)

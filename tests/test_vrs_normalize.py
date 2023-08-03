@@ -9,15 +9,9 @@ from ga4gh.vrs import models, normalize
 
 allele_dict = {
     "location": {
-        "end": {
-            "type": "Number",
-            "value": 26090951
-        },
-        "start": {
-            "type": "Number",
-            "value": 26090950
-        },
-        "sequence_id": "refseq:NC_000006.12",
+        "end": 26090951,
+        "start": 26090950,
+        "sequence": "refseq:NC_000006.12",
         "type": "SequenceLocation"
     },
     "state": {
@@ -31,7 +25,7 @@ allele_dict2 = {
     "type": "Allele",
     "location": {
         "type": "SequenceLocation",
-        "sequence_id": "refseq:NC_000023.11",
+        "sequence": "refseq:NC_000023.11",
         "start": {
             "type": "IndefiniteRange",
             "comparator": "<=",
@@ -51,7 +45,7 @@ allele_dict2 = {
 
 seq_loc = {
         "type": "SequenceLocation",
-        "sequence_id": "refseq:NC_000001.11",
+        "sequence": "refseq:NC_000001.11",
         "start": {
             "type": "IndefiniteRange",
             "comparator": "<=",

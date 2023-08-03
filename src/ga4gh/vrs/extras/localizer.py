@@ -48,7 +48,7 @@ class Localizer:
     def localize_allele(self, allele):
         # copy input variant and replace location
         # N.B. deepcopy leads to recursion errors
-        allele_sl = ga4gh.vrs.models.Variation(**allele.as_dict())
+        allele_sl = ga4gh.vrs.models.Variation(**allele.model_dump())
         del allele_sl.id
         allele_sl.location = self.localize(allele.location)
         return allele_sl
@@ -59,7 +59,7 @@ class Localizer:
 
         """
 
-        assert loc.type._value == "ChromosomeLocation", "Expected a ChromosomeLocation object"
+        assert loc.type == "ChromosomeLocation", "Expected a ChromosomeLocation object"
 
         def _get_coords(m, cb):
             """return (start,end) of band `cb` in map `m`"""
@@ -103,8 +103,8 @@ class Localizer:
         return ga4gh.vrs.models.SequenceLocation(
             sequence_id=coerce_namespace(ac),
             interval=ga4gh.vrs.models.SequenceInterval(
-                start=ga4gh.vrs.models.Number(value=start),
-                end=ga4gh.vrs.models.Number(value=end))
+                start=ga4gh.vrs.models.start,
+                end=ga4gh.vrs.models.end)
             )
 
 
@@ -112,5 +112,5 @@ class Localizer:
 
 
 if __name__ == "__main__":
-    cbl = ga4gh.vrs.models.ChromosomeLocation(chr="11", start="q22.3", end="q23.1")
+    cbl = ga4gh.vrs.models.ChromosomeLocation(chr="11", start="q22.3", end="q23.1") # TODO non-existent ChromosomeLocation
     lr = Localizer()

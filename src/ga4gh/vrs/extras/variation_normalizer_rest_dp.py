@@ -16,7 +16,7 @@ class VariationNormalizerRESTDataProxy:
         Use this method if you don't have UTA installed locally or are unable
         to reach the public UTA database due to port issues.
         """
-        vo = vo.as_dict()
+        vo = vo.model_dump()
         data = dict(
             variation = vo,
             namespace = namespace
