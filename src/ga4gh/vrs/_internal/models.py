@@ -429,7 +429,8 @@ class Haplotype(BaseModel):
         None,
         description='A sha512t24u digest created using the VRS Computed Identifier algorithm.',
     )
-    members: Set[Union[Allele, IRI]] = Field(
+    # TODO members temporarily typed as List instead of Set
+    members: List[Union[Allele, IRI]] = Field(
         ...,
         description='List of Alleles, or references to Alleles, that comprise this Haplotype.',
         min_length=2,
@@ -572,7 +573,8 @@ class Genotype(BaseModel):
         None,
         description='A sha512t24u digest created using the VRS Computed Identifier algorithm.',
     )
-    members: Set[GenotypeMember] = Field(
+    # TODO members temporarily typed as List instead of Set
+    members: List[GenotypeMember] = Field(
         ...,
         description='Each GenotypeMember in `members` describes a MolecularVariation and the count of that variation at the locus.',
         min_length=1,
