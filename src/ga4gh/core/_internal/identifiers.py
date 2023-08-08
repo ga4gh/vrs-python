@@ -18,7 +18,7 @@ For that reason, they are implemented here in one file.
 import logging
 import re
 from typing import Union, Tuple
-from pydantic import BaseModel
+from pydantic import BaseModel, RootModel
 from canonicaljson import encode_canonical_json
 
 from .digests import sha512t24u
@@ -167,9 +167,8 @@ def export_pydantic_model(obj, exclude_none=True):
     # get_pydantic_root, taking whatever it is. Recursion should terminate fine.
     if isinstance(obj, BaseModel):
         # try custom root type first, if not, assume it's a normal class
-        obj2 = get_pydantic_root(obj)
-        if obj2 != obj:
-            obj = obj2
+        if isinstance(obj, RootModel):
+            obj = get_pydantic_root(obj)
         else:
             obj = obj.model_dump(exclude_none=exclude_none)
     return obj

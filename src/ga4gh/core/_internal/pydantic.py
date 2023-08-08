@@ -75,6 +75,6 @@ def pydantic_copy(obj: BaseModel) -> BaseModel:
 
     # Treat RootModel differently, it's a thin wrapper of another object, has no fields
     if issubclass(pydantic_class, RootModel):
-        return pydantic_class.model_construct(obj.model_dump())
+        return pydantic_class(obj.model_dump())
     else:
-        return pydantic_class.model_construct(**obj.model_dump())
+        return pydantic_class(**obj.model_dump())
