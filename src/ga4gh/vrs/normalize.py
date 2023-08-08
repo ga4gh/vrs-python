@@ -16,14 +16,17 @@ _logger = logging.getLogger(__name__)
 
 
 def _normalize_allele(allele, data_proxy):
-    sequence = SequenceProxy(data_proxy, allele.location.sequence)
+    sequence = SequenceProxy(data_proxy, allele.location.sequence.root)
 
     ival = (allele.location.start, allele.location.end)
 
     _allele_state = allele.state.type
     _states_with_sequence = ["ReferenceLengthExpression", "LiteralSequenceExpression"]
     if _allele_state in _states_with_sequence:
-        alleles = (None, allele.state.sequence)
+        alleles = (None, allele.state.sequence.root)
+    elif _allele_state == "RepeatedSequenceExpression" and \
+            allele.state.seq_expr.type in _states_with_sequence:
+        alleles = (None, allele.state.seq_expr.sequence.root)
     else:
         alleles = (None, "")
 
@@ -40,7 +43,7 @@ def _normalize_allele(allele, data_proxy):
         new_allele.location.end = new_ival[1]
 
         if new_allele.state.type in _states_with_sequence:
-            new_allele.state.sequence = new_alleles[1]
+            new_allele.state.sequence.root = new_alleles[1]
     except ValueError:
         # Occurs for ref agree Alleles (when alt = ref)
         pass
@@ -48,7 +51,11 @@ def _normalize_allele(allele, data_proxy):
     return new_allele
 
 
+# TODO _normalize_genotype?
+
+
 def _normalize_haplotype(o, data_proxy=None):
+
     o.members = sorted(o.members, key=ga4gh_digest)
     return o
 

@@ -87,7 +87,8 @@ class Translator:
 
 
     ############################################################################
-    ## INTERNAL
+    # INTERNAL
+
 
     def _from_beacon(self, beacon_expr, assembly_name=None):
         """Parse beacon expression into VRS Allele
@@ -434,13 +435,13 @@ class Translator:
 
 
     def _post_process_imported_allele(self, allele):
-        """Provide common post-processing for imported Alleles IN-PLACE.
-
+        """
+        Provide common post-processing for imported Alleles IN-PLACE.
         """
 
         if self.translate_sequence_identifiers:
             seq_id = self.data_proxy.translate_sequence_identifier(allele.location.sequence.root, "ga4gh")[0]
-            allele.location.sequence = seq_id
+            allele.location.sequence.root = seq_id
 
         if self.normalize:
             allele = normalize(allele, self.data_proxy)
@@ -469,7 +470,7 @@ class Translator:
     to_translators = {
         "hgvs": _to_hgvs,
         "spdi": _to_spdi,
-        #"gnomad": to_gnomad,
+        # "gnomad": to_gnomad,
     }
 
 
@@ -504,8 +505,8 @@ if __name__ == "__main__":
             },
             "type": "Allele"
         }, {
-           "end": 22,
-           "start": 21,
+            "end": 22,
+            "start": 21,
         }
     ]
     formats = ["hgvs", "gnomad", "beacon", "spdi", "vrs", None]
