@@ -17,8 +17,8 @@ For that reason, they are implemented here in one file.
 
 import logging
 import re
-from typing import Union
-from pydantic import BaseModel
+from typing import Union, Tuple
+from pydantic import BaseModel, RootModel
 from canonicaljson import encode_canonical_json
 
 from .digests import sha512t24u
@@ -131,16 +131,24 @@ def replace_with_digest(val: dict) -> Union[str, dict]:
 
 def collapse_identifiable_values(obj: dict) -> dict:
     """
-    Replaces dict values with their digests if they are defined
+    Replaces dict values with their digests if they are defined.
+    Does not collapse the top level object, only objects it contains.
     """
-    output_obj = {
-        k: replace_with_digest(obj[k])
-        for k in obj.keys()
-    }
-    return output_obj
+    if isinstance(obj, dict):
+        obj = {
+            k: replace_with_digest(collapse_identifiable_values(obj[k]))
+            for k in obj.keys()
+        }
+    elif isinstance(obj, list) or isinstance(obj, set):
+        obj = [replace_with_digest(collapse_identifiable_values(elem)) for elem in obj]
+    return obj
 
 
 def ga4gh_serialize(obj: BaseModel) -> bytes:
+    """
+    TODO find a way to output identify_all without the 'digest' fields on subobjects,
+    without traversing the whole tree again in collapse_identifiable_values.
+    """
     identified = identify_all(obj)
     if isinstance(identified, dict):
         # Replace identifiable subobjects with their digests
@@ -155,13 +163,12 @@ def ga4gh_serialize(obj: BaseModel) -> bytes:
 def export_pydantic_model(obj, exclude_none=True):
     # Export Pydantic model to raw Python object. If a custom root object,
     # return that. If a Model with fields, exports to a dict.
-    # TODO maybe just call export_pydantic_model on the .__root__ instead of
+    # TODO maybe just call export_pydantic_model on the .root instead of
     # get_pydantic_root, taking whatever it is. Recursion should terminate fine.
     if isinstance(obj, BaseModel):
         # try custom root type first, if not, assume it's a normal class
-        obj2 = get_pydantic_root(obj)
-        if obj2 != obj:
-            obj = obj2
+        if isinstance(obj, RootModel):
+            obj = get_pydantic_root(obj)
         else:
             obj = obj.model_dump(exclude_none=exclude_none)
     return obj
@@ -177,11 +184,13 @@ def identify_all(
     input_obj: Union[BaseModel, dict, str]
 ) -> Union[str, dict]:
     """
-    Compacts a Pydantic model prior to serialization as canonicaljson.
-    Rolls up nested identifiable objeccts and shortens
-    ga4gh identifier custom types to their digest segments.
+    Adds digests to an identifiable Pydantic object and any identifiable Pydantic
+    objects in its fields, at any depth.
 
-    TODO It would be nice eto have a pydantic-agnostic version of this that just takes
+    Returns the identified object tree, and the tree with identified objects
+    replaced with their digests.
+
+    TODO It would be nice to have a pydantic-agnostic version of this that just takes
     a dict for input_object, and another dict that has the identifiable+keys metadata.
     Something like scrape_model_metadata can be used to generate that metadata.
     """
