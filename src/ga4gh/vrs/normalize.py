@@ -15,7 +15,17 @@ from .dataproxy import SequenceProxy
 _logger = logging.getLogger(__name__)
 
 
-def _normalize_allele(allele, data_proxy):
+def _normalize_allele(input_allele, data_proxy):
+    """
+    Converts .location.sequence into an IRI if it is a SequenceReference because it makes the code simpler.
+    If it started as a sequence reference, put it back as one at the end.
+    """
+    allele = pydantic_copy(input_allele)
+    sequence_reference = None
+    if isinstance(allele.location.sequence, models.SequenceReference):
+        sequence_reference = allele.location.sequence
+        allele.location.sequence = models.IRI(sequence_reference.refgetAccession)
+
     sequence = SequenceProxy(data_proxy, allele.location.sequence.root)
 
     ival = (allele.location.start, allele.location.end)
@@ -43,10 +53,13 @@ def _normalize_allele(allele, data_proxy):
         new_allele.location.end = new_ival[1]
 
         if new_allele.state.type in _states_with_sequence:
-            new_allele.state.sequence.root = new_alleles[1]
+            new_allele.state.sequence = models.SequenceString(new_alleles[1])
     except ValueError:
         # Occurs for ref agree Alleles (when alt = ref)
         pass
+
+    if sequence_reference:
+        new_allele.location.sequence = sequence_reference
 
     return new_allele
 
