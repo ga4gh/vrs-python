@@ -28,7 +28,7 @@ from .pydantic import (
     is_identifiable,
     getattr_in,
     get_pydantic_root,
-    is_pydantic_custom_str_type
+    is_pydantic_custom_type
 )
 
 __all__ = "ga4gh_digest ga4gh_identify ga4gh_serialize is_ga4gh_identifier parse_ga4gh_identifier".split()
@@ -197,9 +197,9 @@ def identify_all(
     if input_obj is None:
         return None
     output_obj = input_obj
-    if is_pydantic_custom_str_type(input_obj):
+    if is_pydantic_custom_type(input_obj):
         val = export_pydantic_model(input_obj)
-        if is_curie_type(val) and is_ga4gh_identifier(val):
+        if isinstance(val, str) and is_curie_type(val) and is_ga4gh_identifier(val):
             val = parse_ga4gh_identifier(val)["digest"]
         output_obj = val
     elif is_pydantic_instance(input_obj):

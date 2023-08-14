@@ -64,6 +64,9 @@ def get_pydantic_root(obj: Union[Any, RootModel]) -> Any:
     return obj
 
 
+def is_pydantic_custom_type(obj: RootModel) -> bool:
+    return isinstance(obj, RootModel)
+
 def is_pydantic_custom_str_type(obj: RootModel) -> bool:
     return isinstance(obj, RootModel) and isinstance(obj.root, str)
 

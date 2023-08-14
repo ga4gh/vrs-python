@@ -18,15 +18,12 @@ _logger = logging.getLogger(__name__)
 def _normalize_allele(allele, data_proxy):
     sequence = SequenceProxy(data_proxy, allele.location.sequence)
 
-    ival = (allele.location.start.value, allele.location.end)
+    ival = (allele.location.start, allele.location.end)
 
     _allele_state = allele.state.type
-    _states_with_sequence = ["SequenceState", "LiteralSequenceExpression"]
+    _states_with_sequence = ["ReferenceLengthExpression", "LiteralSequenceExpression"]
     if _allele_state in _states_with_sequence:
         alleles = (None, allele.state.sequence)
-    elif _allele_state == "RepeatedSequenceExpression" and \
-            allele.state.seq_expr.type in _states_with_sequence:
-        alleles = (None, allele.state.seq_expr.sequence)
     else:
         alleles = (None, "")
 
