@@ -16,15 +16,15 @@ class VariationNormalizerRESTDataProxy:
         Use this method if you don't have UTA installed locally or are unable
         to reach the public UTA database due to port issues.
         """
-        vo = vo.model_dump()
+        vo = vo.model_dump(exclude_none=True)
         data = dict(
-            variation = vo,
-            namespace = namespace
+            variation=vo,
+            namespace=namespace
         )
         r = requests.post(
-            url = f"{self.api}/vrs_allele_to_hgvs",
+            url=f"{self.api}/vrs_allele_to_hgvs",
             json=data,
-            headers={ "Content-Type": "application/json; charset=utf-8" }
+            headers={"Content-Type": "application/json; charset=utf-8"}
         )
         if r.status_code == 200:
             return r.json().get("variations", [])

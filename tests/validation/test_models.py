@@ -42,6 +42,6 @@ def flatten_tests(vts):
 
 @pytest.mark.parametrize("cls,data,fn,exp", flatten_tests(validation_tests))
 def test_validation(cls, data, fn, exp):
-    o = models[cls](**data)
+    o = getattr(models, cls)(**data)
     fx = fxs[fn]
     assert exp == fx(o)

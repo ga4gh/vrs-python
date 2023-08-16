@@ -243,6 +243,7 @@ class IRI(RootModel):
 class SequenceReference(BaseModel):
     model_config = ConfigDict(
         extra='allow',
+        use_enum_values=True
     )
     id: Optional[str] = Field(
         None,
@@ -295,7 +296,6 @@ class ReferenceLengthExpression(BaseModel):
 
 
 
-
 class LiteralSequenceExpression(BaseModel):
     model_config = ConfigDict(
         extra='allow',
@@ -315,6 +315,7 @@ class LiteralSequenceExpression(BaseModel):
 class Mapping(BaseModel):
     model_config = ConfigDict(
         extra='allow',
+        use_enum_values=True
     )
     id: Optional[str] = Field(
         None,
@@ -481,6 +482,7 @@ class CopyNumberCount(BaseModel):
 class CopyNumberChange(BaseModel):
     model_config = ConfigDict(
         extra='allow',
+        use_enum_values=True
     )
     id: Optional[str] = Field(
         None,
