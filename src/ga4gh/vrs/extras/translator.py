@@ -6,6 +6,7 @@ Output formats: VRS (serialized), hgvs, spdi, gnomad (vcf)
 """
 
 from collections.abc import Mapping
+from typing import Union
 import logging
 import re
 
@@ -390,7 +391,6 @@ class Translator:
 
         return list(set(hgvs_exprs))
 
-
     def _to_spdi(self, vo, namespace="refseq"):
         """generates a *list* of SPDI expressions for VRS Allele.
 
@@ -412,11 +412,11 @@ class Translator:
         if not self.is_valid_allele(vo):
             raise ValueError("_to_spdi requires a VRS Allele with SequenceLocation and LiteralSequenceExpression")
 
-        sequence = str(vo.location.sequence)
+        sequence = str(export_sequencelocation_sequence_id(vo.location.sequence))
         aliases = self.data_proxy.translate_sequence_identifier(sequence, namespace)
         aliases = [a.split(":")[1] for a in aliases]
         start, end = vo.location.start, vo.location.end
-        spdi_tail = f":{start}:{end-start}:{vo.state.sequence}"
+        spdi_tail = f":{start}:{end-start}:{vo.state.sequence.root}"
         spdis = [a + spdi_tail for a in aliases]
         return spdis
 
@@ -474,6 +474,12 @@ class Translator:
     }
 
 
+def export_sequencelocation_sequence_id(
+        location_sequence: Union[models.IRI, models.SequenceReference]):
+    if isinstance(location_sequence, models.IRI):
+        return location_sequence.root
+    elif isinstance(location_sequence, models.SequenceReference):
+        return location_sequence.refgetAccession
 
 
 if __name__ == "__main__":
