@@ -6,6 +6,7 @@ Output formats: VRS (serialized), hgvs, spdi, gnomad (vcf)
 """
 
 from collections.abc import Mapping
+from typing import Union
 import logging
 import re
 
@@ -87,7 +88,8 @@ class Translator:
 
 
     ############################################################################
-    ## INTERNAL
+    # INTERNAL
+
 
     def _from_beacon(self, beacon_expr, assembly_name=None):
         """Parse beacon expression into VRS Allele
@@ -324,7 +326,7 @@ class Translator:
         if not self.is_valid_allele(vo):
             raise ValueError("_to_hgvs requires a VRS Allele with SequenceLocation and LiteralSequenceExpression")
 
-        sequence = str(vo.location.sequence)
+        sequence = str(export_sequencelocation_sequence_id(vo.location.sequence))
         aliases = self.data_proxy.translate_sequence_identifier(sequence, namespace)
 
         # infer type of sequence based on accession
@@ -350,9 +352,10 @@ class Translator:
                 ref = self.data_proxy.get_sequence(sequence, start, end)
                 start += 1
             ival = hgvs.location.Interval(
-                start=hgvs.location.start,
-                end=hgvs.location.end)
-            alt = str(vo.state.sequence) or None  # "" => None
+                start=str(vo.location.start),
+                end=str(vo.location.end)
+            )
+            alt = str(vo.state.sequence.root) or None  # "" => None
             edit = hgvs.edit.NARefAlt(ref=ref, alt=alt)
 
         posedit = hgvs.posedit.PosEdit(pos=ival, edit=edit)
@@ -389,7 +392,6 @@ class Translator:
 
         return list(set(hgvs_exprs))
 
-
     def _to_spdi(self, vo, namespace="refseq"):
         """generates a *list* of SPDI expressions for VRS Allele.
 
@@ -411,11 +413,11 @@ class Translator:
         if not self.is_valid_allele(vo):
             raise ValueError("_to_spdi requires a VRS Allele with SequenceLocation and LiteralSequenceExpression")
 
-        sequence = str(vo.location.sequence)
+        sequence = str(export_sequencelocation_sequence_id(vo.location.sequence))
         aliases = self.data_proxy.translate_sequence_identifier(sequence, namespace)
         aliases = [a.split(":")[1] for a in aliases]
         start, end = vo.location.start, vo.location.end
-        spdi_tail = f":{start}:{end-start}:{vo.state.sequence}"
+        spdi_tail = f":{start}:{end-start}:{vo.state.sequence.root}"
         spdis = [a + spdi_tail for a in aliases]
         return spdis
 
@@ -434,13 +436,13 @@ class Translator:
 
 
     def _post_process_imported_allele(self, allele):
-        """Provide common post-processing for imported Alleles IN-PLACE.
-
+        """
+        Provide common post-processing for imported Alleles IN-PLACE.
         """
 
         if self.translate_sequence_identifiers:
             seq_id = self.data_proxy.translate_sequence_identifier(allele.location.sequence.root, "ga4gh")[0]
-            allele.location.sequence = seq_id
+            allele.location.sequence.root = seq_id
 
         if self.normalize:
             allele = normalize(allele, self.data_proxy)
@@ -469,10 +471,16 @@ class Translator:
     to_translators = {
         "hgvs": _to_hgvs,
         "spdi": _to_spdi,
-        #"gnomad": to_gnomad,
+        # "gnomad": to_gnomad,
     }
 
 
+def export_sequencelocation_sequence_id(
+        location_sequence: Union[models.IRI, models.SequenceReference]):
+    if isinstance(location_sequence, models.IRI):
+        return location_sequence.root
+    elif isinstance(location_sequence, models.SequenceReference):
+        return location_sequence.refgetAccession
 
 
 if __name__ == "__main__":
@@ -504,8 +512,8 @@ if __name__ == "__main__":
             },
             "type": "Allele"
         }, {
-           "end": 22,
-           "start": 21,
+            "end": 22,
+            "start": 21,
         }
     ]
     formats = ["hgvs", "gnomad", "beacon", "spdi", "vrs", None]

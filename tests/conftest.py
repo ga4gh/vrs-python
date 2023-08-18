@@ -15,7 +15,10 @@ def dataproxy():
 
 @pytest.fixture(scope="session")
 def rest_dataproxy():
-    return SeqRepoRESTDataProxy(base_url="http://localhost:5000/seqrepo")
+    return SeqRepoRESTDataProxy(
+        base_url=os.environ.get(
+            "SEQREPO_REST_URL",
+            "http://localhost:5000/seqrepo"))
 
 
 @pytest.fixture(scope="session")
@@ -23,7 +26,7 @@ def tlr(rest_dataproxy):
     return Translator(
         data_proxy=rest_dataproxy,
         default_assembly_name="GRCh38",
-    # TODO: Set these to defaults and adjust relevant tests
+        # TODO: Set these to defaults and adjust relevant tests
         identify=False,
         normalize=False,
         translate_sequence_identifiers=True,
