@@ -326,7 +326,7 @@ class Translator:
         if not self.is_valid_allele(vo):
             raise ValueError("_to_hgvs requires a VRS Allele with SequenceLocation and LiteralSequenceExpression")
 
-        sequence = str(vo.location.sequence)
+        sequence = str(export_sequencelocation_sequence_id(vo.location.sequence))
         aliases = self.data_proxy.translate_sequence_identifier(sequence, namespace)
 
         # infer type of sequence based on accession
@@ -352,9 +352,10 @@ class Translator:
                 ref = self.data_proxy.get_sequence(sequence, start, end)
                 start += 1
             ival = hgvs.location.Interval(
-                start=hgvs.location.start,
-                end=hgvs.location.end)
-            alt = str(vo.state.sequence) or None  # "" => None
+                start=str(vo.location.start),
+                end=str(vo.location.end)
+            )
+            alt = str(vo.state.sequence.root) or None  # "" => None
             edit = hgvs.edit.NARefAlt(ref=ref, alt=alt)
 
         posedit = hgvs.posedit.PosEdit(pos=ival, edit=edit)
