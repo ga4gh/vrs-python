@@ -26,16 +26,8 @@ allele_dict2 = {
     "location": {
         "type": "SequenceLocation",
         "sequence": "refseq:NC_000023.11",
-        "start": {
-            "type": "IndefiniteRange",
-            "comparator": "<=",
-            "value": 155980375
-        },
-        "end": {
-            "type": "IndefiniteRange",
-            "comparator": ">=",
-            "value": 155980377
-        }
+        "start": [None, 155980375],
+        "end": [155980377, None]
     },
     "state": {
         "sequence": "",
@@ -46,16 +38,8 @@ allele_dict2 = {
 seq_loc = {
         "type": "SequenceLocation",
         "sequence": "refseq:NC_000001.11",
-        "start": {
-            "type": "IndefiniteRange",
-            "comparator": "<=",
-            "value": 244988599
-        },
-        "end": {
-            "type": "IndefiniteRange",
-            "comparator": ">=",
-            "value": 244988601
-        }
+        "start": [None, 244988599],
+        "end": [244988601, None]
     }
 
 allele_dict3 = {
