@@ -499,7 +499,7 @@ class CopyNumberChange(BaseModel):
         ...,
         description='A location for which the number of systemic copies is described.',
     )
-    copy_change: CopyChange = Field(
+    copyChange: CopyChange = Field(
         ...,
         description='MUST be one of "efo:0030069" (complete genomic loss), "efo:0020073" (high-level loss), "efo:0030068" (low-level loss), "efo:0030067" (loss), "efo:0030064" (regional base ploidy), "efo:0030070" (gain), "efo:0030071" (low-level gain), "efo:0030072" (high-level gain).',
     )
@@ -508,7 +508,7 @@ class CopyNumberChange(BaseModel):
         identifiable = True
         prefix = 'CX'
         keys = [
-            'copy_change',
+            'copyChange',
             'subject',
             'type'
         ]
