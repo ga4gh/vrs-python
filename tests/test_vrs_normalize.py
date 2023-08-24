@@ -36,6 +36,22 @@ allele_dict2 = {
 }
 
 
+allele_dict2_normalized = {
+    "type": "Allele",
+    "location": {
+        "type": "SequenceLocation",
+        "sequence": "refseq:NC_000023.11",
+        "start": [None, 155980375],
+        "end": [155980377, None]
+    },
+    "state": {
+        "length": 0,
+        "repeatSubunitLength": 2,
+        "type": "ReferenceLengthExpression"
+    }
+}
+
+
 allele_dict3 = {
     "type": "Allele",
     "location": {
@@ -59,7 +75,8 @@ def test_normalize_allele(rest_dataproxy):
 
     allele1 = models.Allele(**allele_dict2)
     allele2 = normalize(allele1, rest_dataproxy)
-    assert allele1 == allele2
+    assert allele1 != allele2
+    assert allele2 == models.Allele(**allele_dict2_normalized)
 
     # Definite ranges are not normalized
     allele3 = models.Allele(**allele_dict3)

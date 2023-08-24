@@ -158,10 +158,9 @@ def _normalize_allele(input_allele, data_proxy):
             # a Location specified by the coordinates of the new ival, a length
             # specified by the length of the alternate allele, and a repeat subunit
             # length
-            allele.state = models.ReferenceLengthExpression(
+            new_allele.state = models.ReferenceLengthExpression(
                 length=len(new_alleles[1]),
-                sequence=models.SequenceString(new_ref_seq),
-                repeat_subunit_length=repeat_subunit_len
+                repeatSubunitLength=repeat_subunit_len
             )
     except ValueError:
         # Occurs for ref agree Alleles (when alt = ref)
