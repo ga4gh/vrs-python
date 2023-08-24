@@ -112,40 +112,62 @@ def _normalize_allele(input_allele, data_proxy, rle_seq_limit=50):
         return input_allele
 
     ival = (start.value, end.value)
-
-    # Get alleles (the sequences to be normalized) for _normalize
     if allele.state.sequence:
         alleles = (None, allele.state.sequence.root)
     else:
         alleles = (None, "")
 
-    # If one of Reference Allele Sequence or Alternate Allele Sequence is empty,
-    # store the length of the non-empty sequence: this is the Repeat Subunit Length
-    len_ref_seq = len(ref_seq[ival[0]: ival[1]])
-    len_alt_seq = len(alleles[1])
-    if not len_ref_seq and len_alt_seq:
-        # Insertion
-        repeat_subunit_len = len_alt_seq
-    elif len_ref_seq and not len_alt_seq:
-        # Deletion
-        repeat_subunit_len = len_ref_seq
+    # Trim common flanking sequence from Allele sequences.
+    try:
+        trim_ival, trim_alleles = _normalize(ref_seq, ival, alleles, mode=None, trim=True)
+    except ValueError:
+        # Occurs for ref agree Alleles (when alt = ref)
+        len_ref_seq = len_alt_seq = 0
     else:
-        repeat_subunit_len = len_alt_seq - len_ref_seq
+        trim_ref_seq = ref_seq[trim_ival[0]: trim_ival[1]]
+        trim_alt_seq = trim_alleles[1]
+        len_ref_seq = len(trim_ref_seq)
+        len_alt_seq = len(trim_alt_seq)
+
+    # Compare the two allele sequences
+    if not len_ref_seq and not len_alt_seq:
+        return input_allele
 
     new_allele = pydantic_copy(allele)
-    try:
-        new_ival, new_alleles = _normalize(ref_seq,
-                                           ival,
-                                           alleles=alleles,
-                                           mode=NormalizationMode.EXPAND,
-                                           anchor_length=0)
 
+    if len_ref_seq and len_alt_seq:
+        new_allele.location.start = _get_new_allele_location_pos(
+            trim_ival[0], start.pos_type
+        )
+        new_allele.location.end = _get_new_allele_location_pos(
+            trim_ival[1], end.pos_type
+        )
+        new_allele.state.sequence = models.SequenceString(trim_alleles[1])
+        if sequence_reference:
+            new_allele.location.sequence = sequence_reference
+        return new_allele
+
+    # Determine bounds of ambiguity
+    try:
+        new_ival, new_alleles = _normalize(
+            ref_seq,
+            trim_ival,
+            alleles=trim_alleles,
+            mode=NormalizationMode.EXPAND,
+            anchor_length=0,
+            trim=False  # Don't need to trim, since we already did it above
+        )
+    except ValueError:
+        # Occurs for ref agree Alleles (when alt = ref)
+        pass
+    else:
         new_allele.location.start = _get_new_allele_location_pos(
             new_ival[0], start.pos_type
         )
         new_allele.location.end = _get_new_allele_location_pos(
             new_ival[1], end.pos_type
         )
+
         new_ref_seq = ref_seq[new_ival[0]: new_ival[1]]
 
         if not new_ref_seq:
@@ -156,26 +178,18 @@ def _normalize_allele(input_allele, data_proxy, rle_seq_limit=50):
                 sequence=models.SequenceString(new_alleles[1])
             )
         else:
-            # Otherwise, return a new Allele using a reference length expression, using
-            # a Location specified by the coordinates of the new ival, a length
-            # specified by the length of the alternate allele, and a repeat subunit
-            # length
+            # Otherwise, return a new Allele using a RLE
             sequence = models.SequenceString(new_alleles[1])
             len_sequence = len(sequence.root)
 
             new_allele.state = models.ReferenceLengthExpression(
                 length=len_sequence,
-                repeatSubunitLength=repeat_subunit_len
+                repeatSubunitLength=len_ref_seq or len_alt_seq
             )
 
             if rle_seq_limit and len_sequence < rle_seq_limit:
-                    new_allele.state.sequence = sequence
+                new_allele.state.sequence = sequence
 
-    except ValueError:
-        # Occurs for ref agree Alleles (when alt = ref)
-        pass
-
-    # Convert IRI back to SequenceReference
     if sequence_reference:
         new_allele.location.sequence = sequence_reference
 
