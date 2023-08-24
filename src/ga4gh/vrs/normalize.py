@@ -78,11 +78,16 @@ def _get_new_allele_location_pos(
     return val
 
 
-def _normalize_allele(input_allele, data_proxy):
+def _normalize_allele(input_allele, data_proxy, rle_seq_limit=50):
     """Normalize Allele using "fully-justified" normalization adapted from NCBI's
     VOCA. Fully-justified normalization expands such ambiguous representation over the
     entire region of ambiguity, resulting in an unambiguous representation that may be
     readily compared with other alleles.
+
+    :param input_allele: Input VRS Allele object
+    :param data_proxy: SeqRepo dataproxy
+    :param rle_seq_limit: If RLE is set as the new state, set the limit for the length
+        of the `sequence`. To exclude, set to 0.
 
     Does not attempt to normalize Allele's with definite ranges. Will return the
         `input_allele`
@@ -125,7 +130,7 @@ def _normalize_allele(input_allele, data_proxy):
         # Deletion
         repeat_subunit_len = len_ref_seq
     else:
-        repeat_subunit_len = 0
+        repeat_subunit_len = len_alt_seq - len_ref_seq
 
     new_allele = pydantic_copy(allele)
     try:
@@ -155,10 +160,17 @@ def _normalize_allele(input_allele, data_proxy):
             # a Location specified by the coordinates of the new ival, a length
             # specified by the length of the alternate allele, and a repeat subunit
             # length
+            sequence = models.SequenceString(new_alleles[1])
+            len_sequence = len(sequence.root)
+
             new_allele.state = models.ReferenceLengthExpression(
-                length=len(new_alleles[1]),
+                length=len_sequence,
                 repeatSubunitLength=repeat_subunit_len
             )
+
+            if rle_seq_limit and len_sequence < rle_seq_limit:
+                    new_allele.state.sequence = sequence
+
     except ValueError:
         # Occurs for ref agree Alleles (when alt = ref)
         pass
@@ -179,27 +191,26 @@ def _normalize_haplotype(o, data_proxy=None):
     return o
 
 
-def _normalize_variationset(o, data_proxy=None):
-    o.members = sorted(o.members, key=ga4gh_digest)
-    return o
-
-
 handlers = {
     "Allele": _normalize_allele,
     "Haplotype": _normalize_haplotype,
-    "VariationSet": _normalize_variationset,
 }
 
 
-def normalize(vo, data_proxy=None):
-    """normalize given vrs object, regardless of type"""
+def normalize(vo, data_proxy=None, **kwargs):
+    """normalize given vrs object, regardless of type
+
+    kwargs:
+        rle_seq_limit: If RLE is set as the new state, set the limit for the length
+            of the `sequence`. To exclude `state.sequence`, set to 0.
+    """
 
     assert is_pydantic_instance(vo)
     vo_type = vo.type
 
     if vo_type in handlers:
         handler = handlers[vo_type]
-        return handler(vo, data_proxy)
+        return handler(vo, data_proxy, **kwargs)
 
     # No handler for vo_type; pass-through unchanged
     return vo
