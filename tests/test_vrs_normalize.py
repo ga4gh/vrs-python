@@ -88,7 +88,7 @@ def test_normalize_allele(rest_dataproxy):
     assert allele1 == allele2
 
     allele1 = models.Allele(**allele_dict2)
-    allele2 = normalize(allele1, rest_dataproxy, rle_seq_limit=0)
+    allele2 = normalize(allele1, rest_dataproxy)
     assert allele1 == allele2
 
     # Definite ranges are not normalized
