@@ -87,7 +87,9 @@ def _normalize_allele(input_allele, data_proxy, rle_seq_limit=50):
     :param input_allele: Input VRS Allele object
     :param data_proxy: SeqRepo dataproxy
     :param rle_seq_limit: If RLE is set as the new state, set the limit for the length
-        of the `sequence`. To exclude, set to 0.
+        of the `sequence`.
+        To exclude `sequence` from the response, set to 0.
+        For no limit, set to `None`.
 
     Does not attempt to normalize Allele's with definite ranges. Will return the
         `input_allele`
@@ -185,7 +187,7 @@ def _normalize_allele(input_allele, data_proxy, rle_seq_limit=50):
                 repeatSubunitLength=len_ref_seq or len_alt_seq
             )
 
-            if rle_seq_limit and len_sequence < rle_seq_limit:
+            if (rle_seq_limit and len_sequence < rle_seq_limit) or (rle_seq_limit is None):
                 new_allele.state.sequence = sequence
 
     if sequence_reference:
@@ -251,13 +253,13 @@ if __name__ == "__main__":    # pragma: no cover
         },
         "type": "Allele"
     }
-    allele = models.Allele(**allele_dict)
+    a = models.Allele(**allele_dict)
 
-    allele2 = normalize(allele, dp)
+    allele2 = normalize(a, dp)
 
-    allele.state.sequence = "C"
-    allele3 = normalize(allele, dp)
+    a.state.sequence.root = "C"
+    allele3 = normalize(a, dp)
 
-    allele.location.interval.end = 44908823
-    allele.state.sequence = ""
-    allele4 = normalize(allele, dp)
+    a.location.end = 44908823
+    a.state.sequence.root = ""
+    allele4 = normalize(a, dp)
