@@ -35,27 +35,18 @@ allele_dict2 = {
     }
 }
 
-seq_loc = {
-        "type": "SequenceLocation",
-        "sequence": "refseq:NC_000001.11",
-        "start": [None, 244988599],
-        "end": [244988601, None]
-    }
 
 allele_dict3 = {
     "type": "Allele",
-    "location": seq_loc,
+    "location": {
+        "type": "SequenceLocation",
+        "sequence": "refseq:NC_000023.11",
+        "start": [155980374, 155980375],
+        "end": [155980377, 155980378]
+    },
     "state": {
-        "type": "RepeatedSequenceExpression",
-        "seq_expr": {
-            "location": seq_loc,
-            "type": "DerivedSequenceExpression",
-            "reverse_complement": False
-        },
-        "count": {
-            "type": "Number",
-            "value": 2
-        }
+        "sequence": "",
+        "type": "LiteralSequenceExpression"
     }
 }
 
@@ -70,6 +61,7 @@ def test_normalize_allele(rest_dataproxy):
     allele2 = normalize(allele1, rest_dataproxy)
     assert allele1 == allele2
 
-    allele1 = models.Allele(**allele_dict3)
-    allele2 = normalize(allele1, rest_dataproxy)
-    assert allele1 == allele2
+    # Definite ranges are not normalized
+    allele3 = models.Allele(**allele_dict3)
+    allele3_after_norm = normalize(allele3, rest_dataproxy)
+    assert allele3_after_norm == allele3
