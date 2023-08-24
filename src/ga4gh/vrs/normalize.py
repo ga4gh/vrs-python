@@ -55,10 +55,7 @@ def _get_allele_location_pos(
             return None
 
         val = pos.root[0] or pos.root[1]
-        if pos0_is_none:
-            pos_type  = PosType.RANGE_LT_OR_EQUAL
-        else:
-            pos_type = PosType.RANGE_GT_OR_EQUAL
+        pos_type = PosType.RANGE_LT_OR_EQUAL if pos0_is_none else PosType.RANGE_GT_OR_EQUAL
 
     return LocationPos(value=val, pos_type=pos_type)
 
