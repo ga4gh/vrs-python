@@ -152,10 +152,8 @@ def _normalize_allele(input_allele, data_proxy, rle_seq_limit=50):
         new_ival, new_alleles = _normalize(
             ref_seq,
             trim_ival,
-            alleles=trim_alleles,
-            mode=NormalizationMode.EXPAND,
-            anchor_length=0,
-            trim=False  # Don't need to trim, since we already did it above
+            (None, trim_alleles[1]),
+            mode=NormalizationMode.EXPAND
         )
     except ValueError:
         # Occurs for ref agree Alleles (when alt = ref)
