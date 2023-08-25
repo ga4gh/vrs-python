@@ -31,7 +31,7 @@ class LocationPos(NamedTuple):
 def _get_allele_location_pos(
     allele_vo: models.Allele, use_start: bool = True
 ) -> Optional[LocationPos]:
-    """Get Allele location start or end value for interval
+    """Get a representative position for Alleles with Location start or end defined by Range
 
     :param allele_vo: VRS Allele object
     :param use_start: `True` if using `allele_vo.location.start`. `False` if using
