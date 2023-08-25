@@ -91,7 +91,7 @@ def _normalize_allele(input_allele, data_proxy, rle_seq_limit=50):
         To exclude `sequence` from the response, set to 0.
         For no limit, set to `None`.
 
-    Does not attempt to normalize Allele's with definite ranges. Will return the
+    Does not attempt to normalize Alleles with definite ranges and will instead return the
         `input_allele`
     """
     allele = pydantic_copy(input_allele)
