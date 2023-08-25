@@ -179,16 +179,15 @@ def _normalize_allele(input_allele, data_proxy, rle_seq_limit=50):
             )
         else:
             # Otherwise, return a new Allele using a RLE
-            sequence = models.SequenceString(new_alleles[1])
-            len_sequence = len(sequence.root)
+            len_sequence = len(new_alleles[1])
 
             new_allele.state = models.ReferenceLengthExpression(
                 length=len_sequence,
                 repeatSubunitLength=len_ref_seq or len_alt_seq
             )
 
-            if (rle_seq_limit and len_sequence < rle_seq_limit) or (rle_seq_limit is None):
-                new_allele.state.sequence = sequence
+            if (rle_seq_limit and len_sequence <= rle_seq_limit) or (rle_seq_limit is None):
+                new_allele.state.sequence = models.SequenceString(new_alleles[1])
 
     if sequence_reference:
         new_allele.location.sequence = sequence_reference
