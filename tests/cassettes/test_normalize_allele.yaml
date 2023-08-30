@@ -11,77 +11,6 @@ interactions:
       User-Agent:
       - python-requests/2.31.0
     method: GET
-    uri: http://localhost:5000/seqrepo/1/metadata/NC_000006.12
-  response:
-    body:
-      string: "{\n  \"added\": \"2016-08-27T21:22:36Z\",\n  \"aliases\": [\n    \"GRCh38:6\",\n
-        \   \"GRCh38:chr6\",\n    \"GRCh38.p1:6\",\n    \"GRCh38.p1:chr6\",\n    \"GRCh38.p10:6\",\n
-        \   \"GRCh38.p10:chr6\",\n    \"GRCh38.p11:6\",\n    \"GRCh38.p11:chr6\",\n
-        \   \"GRCh38.p12:6\",\n    \"GRCh38.p12:chr6\",\n    \"GRCh38.p2:6\",\n    \"GRCh38.p2:chr6\",\n
-        \   \"GRCh38.p3:6\",\n    \"GRCh38.p3:chr6\",\n    \"GRCh38.p4:6\",\n    \"GRCh38.p4:chr6\",\n
-        \   \"GRCh38.p5:6\",\n    \"GRCh38.p5:chr6\",\n    \"GRCh38.p6:6\",\n    \"GRCh38.p6:chr6\",\n
-        \   \"GRCh38.p7:6\",\n    \"GRCh38.p7:chr6\",\n    \"GRCh38.p8:6\",\n    \"GRCh38.p8:chr6\",\n
-        \   \"GRCh38.p9:6\",\n    \"GRCh38.p9:chr6\",\n    \"MD5:5691468a67c7e7a7b5f2a3a683792c29\",\n
-        \   \"NCBI:NC_000006.12\",\n    \"refseq:NC_000006.12\",\n    \"SEGUID:WZuaTlR1qIRxrJ5dpG2Z0ydeqX4\",\n
-        \   \"SHA1:599b9a4e5475a88471ac9e5da46d99d3275ea97e\",\n    \"VMC:GS_0iKlIQk2oZLoeOG9P1riRU6hvL5Ux8TV\",\n
-        \   \"sha512t24u:0iKlIQk2oZLoeOG9P1riRU6hvL5Ux8TV\",\n    \"ga4gh:SQ.0iKlIQk2oZLoeOG9P1riRU6hvL5Ux8TV\"\n
-        \ ],\n  \"alphabet\": \"ACGNTY\",\n  \"length\": 170805979\n}\n"
-    headers:
-      Connection:
-      - close
-      Content-Length:
-      - '975'
-      Content-Type:
-      - application/json
-      Date:
-      - Wed, 30 Aug 2023 14:40:08 GMT
-      Server:
-      - Werkzeug/2.2.2 Python/3.10.4
-    status:
-      code: 200
-      message: OK
-- request:
-    body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      User-Agent:
-      - python-requests/2.31.0
-    method: GET
-    uri: http://localhost:5000/seqrepo/1/sequence/NC_000006.12?start=26090950&end=26090951
-  response:
-    body:
-      string: C
-    headers:
-      Connection:
-      - close
-      Content-Length:
-      - '1'
-      Content-Type:
-      - text/plain; charset=utf-8
-      Date:
-      - Wed, 30 Aug 2023 14:40:08 GMT
-      Server:
-      - Werkzeug/2.2.2 Python/3.10.4
-    status:
-      code: 200
-      message: OK
-- request:
-    body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      User-Agent:
-      - python-requests/2.31.0
-    method: GET
     uri: http://localhost:5000/seqrepo/1/metadata/ga4gh:SQ.0iKlIQk2oZLoeOG9P1riRU6hvL5Ux8TV
   response:
     body:
@@ -105,7 +34,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Wed, 30 Aug 2023 14:40:08 GMT
+      - Wed, 30 Aug 2023 18:17:48 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -135,288 +64,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Wed, 30 Aug 2023 14:40:08 GMT
-      Server:
-      - Werkzeug/2.2.2 Python/3.10.4
-    status:
-      code: 200
-      message: OK
-- request:
-    body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      User-Agent:
-      - python-requests/2.31.0
-    method: GET
-    uri: http://localhost:5000/seqrepo/1/metadata/refseq:NC_000023.11
-  response:
-    body:
-      string: "{\n  \"added\": \"2016-08-27T23:57:18Z\",\n  \"aliases\": [\n    \"GRCh38:X\",\n
-        \   \"GRCh38:chrX\",\n    \"GRCh38.p1:X\",\n    \"GRCh38.p1:chrX\",\n    \"GRCh38.p10:X\",\n
-        \   \"GRCh38.p10:chrX\",\n    \"GRCh38.p11:X\",\n    \"GRCh38.p11:chrX\",\n
-        \   \"GRCh38.p12:X\",\n    \"GRCh38.p12:chrX\",\n    \"GRCh38.p2:X\",\n    \"GRCh38.p2:chrX\",\n
-        \   \"GRCh38.p3:X\",\n    \"GRCh38.p3:chrX\",\n    \"GRCh38.p4:X\",\n    \"GRCh38.p4:chrX\",\n
-        \   \"GRCh38.p5:X\",\n    \"GRCh38.p5:chrX\",\n    \"GRCh38.p6:X\",\n    \"GRCh38.p6:chrX\",\n
-        \   \"GRCh38.p7:X\",\n    \"GRCh38.p7:chrX\",\n    \"GRCh38.p8:X\",\n    \"GRCh38.p8:chrX\",\n
-        \   \"GRCh38.p9:X\",\n    \"GRCh38.p9:chrX\",\n    \"MD5:2b3a55ff7f58eb308420c8a9b11cac50\",\n
-        \   \"NCBI:NC_000023.11\",\n    \"refseq:NC_000023.11\",\n    \"SEGUID:Z9QbQrrPjpjXSMJesDYqC3A43lA\",\n
-        \   \"SHA1:67d41b42bacf8e98d748c25eb0362a0b7038de50\",\n    \"VMC:GS_w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP\",\n
-        \   \"sha512t24u:w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP\",\n    \"ga4gh:SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP\"\n
-        \ ],\n  \"alphabet\": \"ACGNRSTWY\",\n  \"length\": 156040895\n}\n"
-    headers:
-      Connection:
-      - close
-      Content-Length:
-      - '978'
-      Content-Type:
-      - application/json
-      Date:
-      - Wed, 30 Aug 2023 14:40:08 GMT
-      Server:
-      - Werkzeug/2.2.2 Python/3.10.4
-    status:
-      code: 200
-      message: OK
-- request:
-    body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      User-Agent:
-      - python-requests/2.31.0
-    method: GET
-    uri: http://localhost:5000/seqrepo/1/sequence/refseq:NC_000023.11?start=155980375&end=155980377
-  response:
-    body:
-      string: TA
-    headers:
-      Connection:
-      - close
-      Content-Length:
-      - '2'
-      Content-Type:
-      - text/plain; charset=utf-8
-      Date:
-      - Wed, 30 Aug 2023 14:40:08 GMT
-      Server:
-      - Werkzeug/2.2.2 Python/3.10.4
-    status:
-      code: 200
-      message: OK
-- request:
-    body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      User-Agent:
-      - python-requests/2.31.0
-    method: GET
-    uri: http://localhost:5000/seqrepo/1/sequence/refseq:NC_000023.11?start=155980375&end=155980377
-  response:
-    body:
-      string: TA
-    headers:
-      Connection:
-      - close
-      Content-Length:
-      - '2'
-      Content-Type:
-      - text/plain; charset=utf-8
-      Date:
-      - Wed, 30 Aug 2023 14:40:08 GMT
-      Server:
-      - Werkzeug/2.2.2 Python/3.10.4
-    status:
-      code: 200
-      message: OK
-- request:
-    body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      User-Agent:
-      - python-requests/2.31.0
-    method: GET
-    uri: http://localhost:5000/seqrepo/1/sequence/refseq:NC_000023.11?start=155980375&end=155980377
-  response:
-    body:
-      string: TA
-    headers:
-      Connection:
-      - close
-      Content-Length:
-      - '2'
-      Content-Type:
-      - text/plain; charset=utf-8
-      Date:
-      - Wed, 30 Aug 2023 14:40:08 GMT
-      Server:
-      - Werkzeug/2.2.2 Python/3.10.4
-    status:
-      code: 200
-      message: OK
-- request:
-    body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      User-Agent:
-      - python-requests/2.31.0
-    method: GET
-    uri: http://localhost:5000/seqrepo/1/sequence/refseq:NC_000023.11?start=155980374&end=155980375
-  response:
-    body:
-      string: T
-    headers:
-      Connection:
-      - close
-      Content-Length:
-      - '1'
-      Content-Type:
-      - text/plain; charset=utf-8
-      Date:
-      - Wed, 30 Aug 2023 14:40:08 GMT
-      Server:
-      - Werkzeug/2.2.2 Python/3.10.4
-    status:
-      code: 200
-      message: OK
-- request:
-    body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      User-Agent:
-      - python-requests/2.31.0
-    method: GET
-    uri: http://localhost:5000/seqrepo/1/sequence/refseq:NC_000023.11?start=155980377&end=155980378
-  response:
-    body:
-      string: A
-    headers:
-      Connection:
-      - close
-      Content-Length:
-      - '1'
-      Content-Type:
-      - text/plain; charset=utf-8
-      Date:
-      - Wed, 30 Aug 2023 14:40:08 GMT
-      Server:
-      - Werkzeug/2.2.2 Python/3.10.4
-    status:
-      code: 200
-      message: OK
-- request:
-    body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      User-Agent:
-      - python-requests/2.31.0
-    method: GET
-    uri: http://localhost:5000/seqrepo/1/sequence/refseq:NC_000023.11?start=155980375&end=155980375
-  response:
-    body:
-      string: ''
-    headers:
-      Connection:
-      - close
-      Content-Length:
-      - '0'
-      Content-Type:
-      - text/plain; charset=utf-8
-      Date:
-      - Wed, 30 Aug 2023 14:40:08 GMT
-      Server:
-      - Werkzeug/2.2.2 Python/3.10.4
-    status:
-      code: 200
-      message: OK
-- request:
-    body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      User-Agent:
-      - python-requests/2.31.0
-    method: GET
-    uri: http://localhost:5000/seqrepo/1/sequence/refseq:NC_000023.11?start=155980377&end=155980377
-  response:
-    body:
-      string: ''
-    headers:
-      Connection:
-      - close
-      Content-Length:
-      - '0'
-      Content-Type:
-      - text/plain; charset=utf-8
-      Date:
-      - Wed, 30 Aug 2023 14:40:08 GMT
-      Server:
-      - Werkzeug/2.2.2 Python/3.10.4
-    status:
-      code: 200
-      message: OK
-- request:
-    body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      User-Agent:
-      - python-requests/2.31.0
-    method: GET
-    uri: http://localhost:5000/seqrepo/1/sequence/refseq:NC_000023.11?start=155980375&end=155980377
-  response:
-    body:
-      string: TA
-    headers:
-      Connection:
-      - close
-      Content-Length:
-      - '2'
-      Content-Type:
-      - text/plain; charset=utf-8
-      Date:
-      - Wed, 30 Aug 2023 14:40:08 GMT
+      - Wed, 30 Aug 2023 18:17:48 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -457,7 +105,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Wed, 30 Aug 2023 14:40:08 GMT
+      - Wed, 30 Aug 2023 18:17:48 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -475,7 +123,247 @@ interactions:
       User-Agent:
       - python-requests/2.31.0
     method: GET
-    uri: http://localhost:5000/seqrepo/1/metadata/refseq:NC_000023.11
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP?start=155980375&end=155980377
+  response:
+    body:
+      string: TA
+    headers:
+      Connection:
+      - close
+      Content-Length:
+      - '2'
+      Content-Type:
+      - text/plain; charset=utf-8
+      Date:
+      - Wed, 30 Aug 2023 18:17:48 GMT
+      Server:
+      - Werkzeug/2.2.2 Python/3.10.4
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.31.0
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP?start=155980375&end=155980377
+  response:
+    body:
+      string: TA
+    headers:
+      Connection:
+      - close
+      Content-Length:
+      - '2'
+      Content-Type:
+      - text/plain; charset=utf-8
+      Date:
+      - Wed, 30 Aug 2023 18:17:48 GMT
+      Server:
+      - Werkzeug/2.2.2 Python/3.10.4
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.31.0
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP?start=155980375&end=155980377
+  response:
+    body:
+      string: TA
+    headers:
+      Connection:
+      - close
+      Content-Length:
+      - '2'
+      Content-Type:
+      - text/plain; charset=utf-8
+      Date:
+      - Wed, 30 Aug 2023 18:17:48 GMT
+      Server:
+      - Werkzeug/2.2.2 Python/3.10.4
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.31.0
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP?start=155980374&end=155980375
+  response:
+    body:
+      string: T
+    headers:
+      Connection:
+      - close
+      Content-Length:
+      - '1'
+      Content-Type:
+      - text/plain; charset=utf-8
+      Date:
+      - Wed, 30 Aug 2023 18:17:48 GMT
+      Server:
+      - Werkzeug/2.2.2 Python/3.10.4
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.31.0
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP?start=155980377&end=155980378
+  response:
+    body:
+      string: A
+    headers:
+      Connection:
+      - close
+      Content-Length:
+      - '1'
+      Content-Type:
+      - text/plain; charset=utf-8
+      Date:
+      - Wed, 30 Aug 2023 18:17:48 GMT
+      Server:
+      - Werkzeug/2.2.2 Python/3.10.4
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.31.0
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP?start=155980375&end=155980375
+  response:
+    body:
+      string: ''
+    headers:
+      Connection:
+      - close
+      Content-Length:
+      - '0'
+      Content-Type:
+      - text/plain; charset=utf-8
+      Date:
+      - Wed, 30 Aug 2023 18:17:48 GMT
+      Server:
+      - Werkzeug/2.2.2 Python/3.10.4
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.31.0
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP?start=155980377&end=155980377
+  response:
+    body:
+      string: ''
+    headers:
+      Connection:
+      - close
+      Content-Length:
+      - '0'
+      Content-Type:
+      - text/plain; charset=utf-8
+      Date:
+      - Wed, 30 Aug 2023 18:17:48 GMT
+      Server:
+      - Werkzeug/2.2.2 Python/3.10.4
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.31.0
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP?start=155980375&end=155980377
+  response:
+    body:
+      string: TA
+    headers:
+      Connection:
+      - close
+      Content-Length:
+      - '2'
+      Content-Type:
+      - text/plain; charset=utf-8
+      Date:
+      - Wed, 30 Aug 2023 18:17:48 GMT
+      Server:
+      - Werkzeug/2.2.2 Python/3.10.4
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.31.0
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/metadata/ga4gh:SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP
   response:
     body:
       string: "{\n  \"added\": \"2016-08-27T23:57:18Z\",\n  \"aliases\": [\n    \"GRCh38:X\",\n
@@ -498,7 +386,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Wed, 30 Aug 2023 14:40:08 GMT
+      - Wed, 30 Aug 2023 18:17:48 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -516,7 +404,48 @@ interactions:
       User-Agent:
       - python-requests/2.31.0
     method: GET
-    uri: http://localhost:5000/seqrepo/1/sequence/refseq:NC_000023.11?start=155980373&end=155980375
+    uri: http://localhost:5000/seqrepo/1/metadata/ga4gh:SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP
+  response:
+    body:
+      string: "{\n  \"added\": \"2016-08-27T23:57:18Z\",\n  \"aliases\": [\n    \"GRCh38:X\",\n
+        \   \"GRCh38:chrX\",\n    \"GRCh38.p1:X\",\n    \"GRCh38.p1:chrX\",\n    \"GRCh38.p10:X\",\n
+        \   \"GRCh38.p10:chrX\",\n    \"GRCh38.p11:X\",\n    \"GRCh38.p11:chrX\",\n
+        \   \"GRCh38.p12:X\",\n    \"GRCh38.p12:chrX\",\n    \"GRCh38.p2:X\",\n    \"GRCh38.p2:chrX\",\n
+        \   \"GRCh38.p3:X\",\n    \"GRCh38.p3:chrX\",\n    \"GRCh38.p4:X\",\n    \"GRCh38.p4:chrX\",\n
+        \   \"GRCh38.p5:X\",\n    \"GRCh38.p5:chrX\",\n    \"GRCh38.p6:X\",\n    \"GRCh38.p6:chrX\",\n
+        \   \"GRCh38.p7:X\",\n    \"GRCh38.p7:chrX\",\n    \"GRCh38.p8:X\",\n    \"GRCh38.p8:chrX\",\n
+        \   \"GRCh38.p9:X\",\n    \"GRCh38.p9:chrX\",\n    \"MD5:2b3a55ff7f58eb308420c8a9b11cac50\",\n
+        \   \"NCBI:NC_000023.11\",\n    \"refseq:NC_000023.11\",\n    \"SEGUID:Z9QbQrrPjpjXSMJesDYqC3A43lA\",\n
+        \   \"SHA1:67d41b42bacf8e98d748c25eb0362a0b7038de50\",\n    \"VMC:GS_w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP\",\n
+        \   \"sha512t24u:w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP\",\n    \"ga4gh:SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP\"\n
+        \ ],\n  \"alphabet\": \"ACGNRSTWY\",\n  \"length\": 156040895\n}\n"
+    headers:
+      Connection:
+      - close
+      Content-Length:
+      - '978'
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 30 Aug 2023 18:17:48 GMT
+      Server:
+      - Werkzeug/2.2.2 Python/3.10.4
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.31.0
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP?start=155980373&end=155980375
   response:
     body:
       string: GT
@@ -528,7 +457,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Wed, 30 Aug 2023 14:40:08 GMT
+      - Wed, 30 Aug 2023 18:17:48 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -546,7 +475,7 @@ interactions:
       User-Agent:
       - python-requests/2.31.0
     method: GET
-    uri: http://localhost:5000/seqrepo/1/sequence/refseq:NC_000023.11?start=155980375&end=155980375
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP?start=155980375&end=155980375
   response:
     body:
       string: ''
@@ -558,7 +487,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Wed, 30 Aug 2023 14:40:08 GMT
+      - Wed, 30 Aug 2023 18:17:48 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -576,7 +505,7 @@ interactions:
       User-Agent:
       - python-requests/2.31.0
     method: GET
-    uri: http://localhost:5000/seqrepo/1/sequence/refseq:NC_000023.11?start=155980375&end=155980375
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP?start=155980375&end=155980375
   response:
     body:
       string: ''
@@ -588,7 +517,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Wed, 30 Aug 2023 14:40:08 GMT
+      - Wed, 30 Aug 2023 18:17:49 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -606,7 +535,7 @@ interactions:
       User-Agent:
       - python-requests/2.31.0
     method: GET
-    uri: http://localhost:5000/seqrepo/1/sequence/refseq:NC_000023.11?start=155980374&end=155980375
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP?start=155980374&end=155980375
   response:
     body:
       string: T
@@ -618,7 +547,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Wed, 30 Aug 2023 14:40:08 GMT
+      - Wed, 30 Aug 2023 18:17:49 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -636,7 +565,7 @@ interactions:
       User-Agent:
       - python-requests/2.31.0
     method: GET
-    uri: http://localhost:5000/seqrepo/1/sequence/refseq:NC_000023.11?start=155980373&end=155980374
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP?start=155980373&end=155980374
   response:
     body:
       string: G
@@ -648,7 +577,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Wed, 30 Aug 2023 14:40:08 GMT
+      - Wed, 30 Aug 2023 18:17:49 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -666,7 +595,7 @@ interactions:
       User-Agent:
       - python-requests/2.31.0
     method: GET
-    uri: http://localhost:5000/seqrepo/1/sequence/refseq:NC_000023.11?start=155980372&end=155980373
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP?start=155980372&end=155980373
   response:
     body:
       string: G
@@ -678,7 +607,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Wed, 30 Aug 2023 14:40:08 GMT
+      - Wed, 30 Aug 2023 18:17:49 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -696,7 +625,7 @@ interactions:
       User-Agent:
       - python-requests/2.31.0
     method: GET
-    uri: http://localhost:5000/seqrepo/1/sequence/refseq:NC_000023.11?start=155980375&end=155980376
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP?start=155980375&end=155980376
   response:
     body:
       string: T
@@ -708,7 +637,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Wed, 30 Aug 2023 14:40:08 GMT
+      - Wed, 30 Aug 2023 18:17:49 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -726,7 +655,7 @@ interactions:
       User-Agent:
       - python-requests/2.31.0
     method: GET
-    uri: http://localhost:5000/seqrepo/1/sequence/refseq:NC_000023.11?start=155980373&end=155980375
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP?start=155980373&end=155980375
   response:
     body:
       string: GT
@@ -738,7 +667,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Wed, 30 Aug 2023 14:40:08 GMT
+      - Wed, 30 Aug 2023 18:17:49 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -756,7 +685,7 @@ interactions:
       User-Agent:
       - python-requests/2.31.0
     method: GET
-    uri: http://localhost:5000/seqrepo/1/sequence/refseq:NC_000023.11?start=155980375&end=155980375
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP?start=155980375&end=155980375
   response:
     body:
       string: ''
@@ -768,7 +697,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Wed, 30 Aug 2023 14:40:08 GMT
+      - Wed, 30 Aug 2023 18:17:49 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -786,7 +715,7 @@ interactions:
       User-Agent:
       - python-requests/2.31.0
     method: GET
-    uri: http://localhost:5000/seqrepo/1/sequence/refseq:NC_000023.11?start=155980373&end=155980375
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP?start=155980373&end=155980375
   response:
     body:
       string: GT
@@ -798,7 +727,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Wed, 30 Aug 2023 14:40:08 GMT
+      - Wed, 30 Aug 2023 18:17:49 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:

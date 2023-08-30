@@ -11,21 +11,6 @@ allele_dict = {
     "location": {
         "end": 26090951,
         "start": 26090950,
-        "sequence": "NC_000006.12",
-        "type": "SequenceLocation"
-    },
-    "state": {
-        "sequence": "C",
-        "type": "LiteralSequenceExpression"
-      },
-    "type": "Allele"
-}
-
-
-allele_dict_sequence_reference = {
-    "location": {
-        "end": 26090951,
-        "start": 26090950,
         "sequence": {
             "type": "SequenceReference",
             "refgetAccession": "SQ.0iKlIQk2oZLoeOG9P1riRU6hvL5Ux8TV"
@@ -44,7 +29,10 @@ allele_dict2 = {
     "type": "Allele",
     "location": {
         "type": "SequenceLocation",
-        "sequence": "refseq:NC_000023.11",
+        "sequence": {
+            "type": "SequenceReference",
+            "refgetAccession": "SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP"
+        },
         "start": [None, 155980375],
         "end": [155980377, None]
     },
@@ -59,7 +47,10 @@ allele_dict2_normalized = {
     "type": "Allele",
     "location": {
         "type": "SequenceLocation",
-        "sequence": "refseq:NC_000023.11",
+        "sequence": {
+            "type": "SequenceReference",
+            "refgetAccession": "SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP"
+        },
         "start": [None, 155980375],
         "end": [155980377, None]
     },
@@ -75,7 +66,10 @@ allele_dict3 = {
     "type": "Allele",
     "location": {
         "type": "SequenceLocation",
-        "sequence": "ga4gh:SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP",
+        "sequence": {
+            "type": "SequenceReference",
+            "refgetAccession": "SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP"
+        },
         "start": [155980374, 155980375],
         "end": [155980377, 155980378]
     },
@@ -90,7 +84,10 @@ allele_dict4 = {
     "type": "Allele",
     "location": {
         "type": "SequenceLocation",
-        "sequence": "refseq:NC_000023.11",
+        "sequence": {
+            "type": "SequenceReference",
+            "refgetAccession": "SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP"
+        },
         "start": 155980373,
         "end": 155980375
     },
@@ -104,7 +101,10 @@ allele_dict4_normalized = {
     "type": "Allele",
     "location": {
         "type": "SequenceLocation",
-        "sequence": "refseq:NC_000023.11",
+        "sequence": {
+            "type": "SequenceReference",
+            "refgetAccession": "SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP"
+        },
         "start": 155980373,
         "end": 155980375
     },
@@ -122,10 +122,6 @@ def test_normalize_allele(rest_dataproxy):
     allele1 = models.Allele(**allele_dict)
     allele2 = normalize(allele1, rest_dataproxy)
     assert allele1 == allele2
-
-    allele1_seq_ref = models.Allele(**allele_dict_sequence_reference)
-    allele2_seq_ref = normalize(allele1_seq_ref, rest_dataproxy)
-    assert allele1_seq_ref == allele2_seq_ref
 
     allele1 = models.Allele(**allele_dict2)
     allele2 = normalize(allele1, rest_dataproxy, rle_seq_limit=0)
