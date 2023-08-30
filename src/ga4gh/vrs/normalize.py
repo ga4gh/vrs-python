@@ -3,6 +3,7 @@
 See https://vrs.ga4gh.org/en/stable/impl-guide/normalization.html
 
 """
+import logging
 from enum import IntEnum
 from typing import NamedTuple, Optional, Union
 
@@ -11,6 +12,9 @@ from ga4gh.core import is_pydantic_instance, ga4gh_digest, pydantic_copy
 
 from ._internal import models
 from .dataproxy import SequenceProxy
+
+
+_logger = logging.getLogger(__name__)
 
 
 class PosType(IntEnum):
@@ -103,6 +107,10 @@ def _normalize_allele(input_allele, data_proxy, rle_seq_limit=50):
     if isinstance(allele.location.sequence, models.SequenceReference):
         alias = f"ga4gh:{allele.location.sequence.refgetAccession}"
     else:
+        _logger.warning(
+            "`input_allele.location.sequence` expects a `SequenceReference`, returning "
+            "`input_allele` with no normalization."
+        )
         return input_allele
 
     # Get reference sequence and interval
