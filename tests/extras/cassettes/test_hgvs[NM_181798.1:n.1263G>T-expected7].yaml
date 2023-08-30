@@ -9,7 +9,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.29.0
+      - python-requests/2.31.0
     method: GET
     uri: http://localhost:5000/seqrepo/1/metadata/refseq:NM_181798.1
   response:
@@ -28,7 +28,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Sat, 17 Jun 2023 01:04:43 GMT
+      - Thu, 24 Aug 2023 02:35:48 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -44,7 +44,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.29.0
+      - python-requests/2.31.0
     method: GET
     uri: http://localhost:5000/seqrepo/1/metadata/ga4gh:SQ.KN07u-RFqd1dTyOWOG98HnOq87Nq-ZIg
   response:
@@ -63,7 +63,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Sat, 17 Jun 2023 01:04:43 GMT
+      - Thu, 24 Aug 2023 02:35:48 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -79,7 +79,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.29.0
+      - python-requests/2.31.0
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.KN07u-RFqd1dTyOWOG98HnOq87Nq-ZIg?start=1262&end=1263
   response:
@@ -93,7 +93,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Sat, 17 Jun 2023 01:04:43 GMT
+      - Thu, 24 Aug 2023 02:35:48 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -109,7 +109,37 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.29.0
+      - python-requests/2.31.0
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.KN07u-RFqd1dTyOWOG98HnOq87Nq-ZIg?start=1262&end=1263
+  response:
+    body:
+      string: G
+    headers:
+      Connection:
+      - close
+      Content-Length:
+      - '1'
+      Content-Type:
+      - text/plain; charset=utf-8
+      Date:
+      - Thu, 24 Aug 2023 02:35:48 GMT
+      Server:
+      - Werkzeug/2.2.2 Python/3.10.4
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.31.0
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.KN07u-RFqd1dTyOWOG98HnOq87Nq-ZIg?start=1261&end=1262
   response:
@@ -123,7 +153,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Sat, 17 Jun 2023 01:04:43 GMT
+      - Thu, 24 Aug 2023 02:35:48 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -139,7 +169,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.29.0
+      - python-requests/2.31.0
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.KN07u-RFqd1dTyOWOG98HnOq87Nq-ZIg?start=1263&end=1264
   response:
@@ -153,7 +183,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Sat, 17 Jun 2023 01:04:43 GMT
+      - Thu, 24 Aug 2023 02:35:48 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -169,7 +199,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.29.0
+      - python-requests/2.31.0
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.KN07u-RFqd1dTyOWOG98HnOq87Nq-ZIg?start=1262&end=1262
   response:
@@ -183,7 +213,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Sat, 17 Jun 2023 01:04:44 GMT
+      - Thu, 24 Aug 2023 02:35:48 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -199,7 +229,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.29.0
+      - python-requests/2.31.0
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.KN07u-RFqd1dTyOWOG98HnOq87Nq-ZIg?start=1263&end=1263
   response:
@@ -213,7 +243,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Sat, 17 Jun 2023 01:04:44 GMT
+      - Thu, 24 Aug 2023 02:35:48 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -229,7 +259,37 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.29.0
+      - python-requests/2.31.0
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.KN07u-RFqd1dTyOWOG98HnOq87Nq-ZIg?start=1262&end=1263
+  response:
+    body:
+      string: G
+    headers:
+      Connection:
+      - close
+      Content-Length:
+      - '1'
+      Content-Type:
+      - text/plain; charset=utf-8
+      Date:
+      - Thu, 24 Aug 2023 02:35:48 GMT
+      Server:
+      - Werkzeug/2.2.2 Python/3.10.4
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.31.0
     method: GET
     uri: http://localhost:5000/seqrepo/1/metadata/ga4gh:SQ.KN07u-RFqd1dTyOWOG98HnOq87Nq-ZIg
   response:
@@ -248,7 +308,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Sat, 17 Jun 2023 01:04:44 GMT
+      - Thu, 24 Aug 2023 02:35:48 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -264,7 +324,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.29.0
+      - python-requests/2.31.0
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.KN07u-RFqd1dTyOWOG98HnOq87Nq-ZIg?start=1262&end=1263
   response:
@@ -278,7 +338,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Sat, 17 Jun 2023 01:04:44 GMT
+      - Thu, 24 Aug 2023 02:35:48 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -294,7 +354,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.29.0
+      - python-requests/2.31.0
     method: GET
     uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nucleotide&id=NM_181798.1&rettype=fasta&seq_start=1263&seq_stop=1263&tool=bioutils&email=biocommons-dev@googlegroups.com
   response:
@@ -319,20 +379,20 @@ interactions:
       Content-Type:
       - text/plain
       Date:
-      - Sat, 17 Jun 2023 01:04:43 GMT
+      - Thu, 24 Aug 2023 02:35:48 GMT
       Keep-Alive:
       - timeout=4, max=40
       NCBI-PHID:
-      - 322C88C3B864A665000064884142F0CA.1.1.m_5
+      - 939B3D945261CB9500002B8BFE1352E9.1.1.m_5
       NCBI-SID:
-      - 276009E1E93550F1_B8F9SID
+      - C37CF93F6F18ED4F_AC89SID
       Referrer-Policy:
       - origin-when-cross-origin
       Server:
       - Finatra
       Set-Cookie:
-      - ncbi_sid=276009E1E93550F1_B8F9SID; domain=.nih.gov; path=/; expires=Mon, 17
-        Jun 2024 01:04:43 GMT
+      - ncbi_sid=C37CF93F6F18ED4F_AC89SID; domain=.nih.gov; path=/; expires=Sat, 24
+        Aug 2024 02:35:49 GMT
       Strict-Transport-Security:
       - max-age=31536000; includeSubDomains; preload
       Transfer-Encoding:
@@ -340,7 +400,7 @@ interactions:
       X-RateLimit-Limit:
       - '3'
       X-RateLimit-Remaining:
-      - '1'
+      - '2'
       X-UA-Compatible:
       - IE=Edge
       X-XSS-Protection:
@@ -360,15 +420,15 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.29.0
+      - python-requests/2.31.0
     method: GET
-    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nucleotide&id=NM_181798.1&rettype=fasta&seq_start=1263&seq_stop=1268&tool=bioutils&email=biocommons-dev@googlegroups.com
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nucleotide&id=NM_181798.1&rettype=fasta&seq_start=1262&seq_stop=1268&tool=bioutils&email=biocommons-dev@googlegroups.com
   response:
     body:
       string: !!binary |
-        H4sIAAAAAAAAAAzEuwrCMBgG0D1P8Y0KrZAKGh0E6VBBDFSyy9+a1kBuJGnBt9cznIt8vLjgx5PY
-        8TNvDvv6n8AtuIBM0WifEUOhnM3isAZbaNb1TEW/MX7Ie22Rl2EiZ+wXPZx2g07g2Nxb2fNthZLI
-        5zGZWLBSMuQLmgruKa+sU6pVHWM/AAAA//8DAATZgc6FAAAA
+        H4sIAAAAAAAAAAzEuwrCMBgG0D1P8Y0KrZAMWh2E0qGCGKhkl781rYHcSNKCb69nOFf5ePGGn87N
+        gV+4OIr6X4NbcAGZotE+I4ZCOZvVYQu20KLrhYp+Y/qQ99oir+NMztgvBjjtRp3Asbt3cuD7CiWR
+        z1MysWCjZMgXiAruKVvW9kp1qmfsBwAA//8DAFMv0XCGAAAA
     headers:
       Access-Control-Allow-Origin:
       - '*'
@@ -385,20 +445,20 @@ interactions:
       Content-Type:
       - text/plain
       Date:
-      - Sat, 17 Jun 2023 01:04:44 GMT
+      - Thu, 24 Aug 2023 02:35:50 GMT
       Keep-Alive:
       - timeout=4, max=40
       NCBI-PHID:
-      - 322C88C3B864A66500005C88433FE3A9.1.1.m_5
+      - D0BD0EC90D3A84D500002D5931FC0B2B.1.1.m_5
       NCBI-SID:
-      - FEE1B01EFB3EB9C2_D894SID
+      - DD21CA9B7A0D8433_87CASID
       Referrer-Policy:
       - origin-when-cross-origin
       Server:
       - Finatra
       Set-Cookie:
-      - ncbi_sid=FEE1B01EFB3EB9C2_D894SID; domain=.nih.gov; path=/; expires=Mon, 17
-        Jun 2024 01:04:44 GMT
+      - ncbi_sid=DD21CA9B7A0D8433_87CASID; domain=.nih.gov; path=/; expires=Sat, 24
+        Aug 2024 02:35:50 GMT
       Strict-Transport-Security:
       - max-age=31536000; includeSubDomains; preload
       Transfer-Encoding:

@@ -11,7 +11,10 @@ allele_dict = {
     "location": {
         "end": 26090951,
         "start": 26090950,
-        "sequence": "refseq:NC_000006.12",
+        "sequence": {
+            "type": "SequenceReference",
+            "refgetAccession": "SQ.0iKlIQk2oZLoeOG9P1riRU6hvL5Ux8TV"
+        },
         "type": "SequenceLocation"
     },
     "state": {
@@ -21,11 +24,15 @@ allele_dict = {
     "type": "Allele"
 }
 
+
 allele_dict2 = {
     "type": "Allele",
     "location": {
         "type": "SequenceLocation",
-        "sequence": "refseq:NC_000023.11",
+        "sequence": {
+            "type": "SequenceReference",
+            "refgetAccession": "SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP"
+        },
         "start": [None, 155980375],
         "end": [155980377, None]
     },
@@ -35,27 +42,77 @@ allele_dict2 = {
     }
 }
 
-seq_loc = {
+
+allele_dict2_normalized = {
+    "type": "Allele",
+    "location": {
         "type": "SequenceLocation",
-        "sequence": "refseq:NC_000001.11",
-        "start": [None, 244988599],
-        "end": [244988601, None]
+        "sequence": {
+            "type": "SequenceReference",
+            "refgetAccession": "SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP"
+        },
+        "start": [None, 155980375],
+        "end": [155980377, None]
+    },
+    "state": {
+        "length": 0,
+        "repeatSubunitLength": 2,
+        "type": "ReferenceLengthExpression"
     }
+}
+
 
 allele_dict3 = {
     "type": "Allele",
-    "location": seq_loc,
-    "state": {
-        "type": "RepeatedSequenceExpression",
-        "seq_expr": {
-            "location": seq_loc,
-            "type": "DerivedSequenceExpression",
-            "reverse_complement": False
+    "location": {
+        "type": "SequenceLocation",
+        "sequence": {
+            "type": "SequenceReference",
+            "refgetAccession": "SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP"
         },
-        "count": {
-            "type": "Number",
-            "value": 2
-        }
+        "start": [155980374, 155980375],
+        "end": [155980377, 155980378]
+    },
+    "state": {
+        "sequence": "",
+        "type": "LiteralSequenceExpression"
+    }
+}
+
+
+allele_dict4 = {
+    "type": "Allele",
+    "location": {
+        "type": "SequenceLocation",
+        "sequence": {
+            "type": "SequenceReference",
+            "refgetAccession": "SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP"
+        },
+        "start": 155980373,
+        "end": 155980375
+    },
+    "state": {
+        "sequence": "GTGT",
+        "type": "LiteralSequenceExpression"
+    }
+}
+
+allele_dict4_normalized = {
+    "type": "Allele",
+    "location": {
+        "type": "SequenceLocation",
+        "sequence": {
+            "type": "SequenceReference",
+            "refgetAccession": "SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP"
+        },
+        "start": 155980373,
+        "end": 155980375
+    },
+    "state": {
+        "length": 4,
+        "repeatSubunitLength": 2,
+        "sequence": "GTGT",
+        "type": "ReferenceLengthExpression"
     }
 }
 
@@ -67,9 +124,16 @@ def test_normalize_allele(rest_dataproxy):
     assert allele1 == allele2
 
     allele1 = models.Allele(**allele_dict2)
-    allele2 = normalize(allele1, rest_dataproxy)
-    assert allele1 == allele2
+    allele2 = normalize(allele1, rest_dataproxy, rle_seq_limit=0)
+    assert allele1 != allele2
+    assert allele2 == models.Allele(**allele_dict2_normalized)
 
-    allele1 = models.Allele(**allele_dict3)
-    allele2 = normalize(allele1, rest_dataproxy)
-    assert allele1 == allele2
+    # Definite ranges are not normalized
+    allele3 = models.Allele(**allele_dict3)
+    allele3_after_norm = normalize(allele3, rest_dataproxy)
+    assert allele3_after_norm == allele3
+
+    # Duplication
+    allele4 = models.Allele(**allele_dict4)
+    allele4_after_norm = normalize(allele4, rest_dataproxy)
+    assert allele4_after_norm == models.Allele(**allele_dict4_normalized)
