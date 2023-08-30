@@ -21,6 +21,25 @@ allele_dict = {
     "type": "Allele"
 }
 
+
+allele_dict_sequence_reference = {
+    "location": {
+        "end": 26090951,
+        "start": 26090950,
+        "sequence": {
+            "type": "SequenceReference",
+            "refgetAccession": "SQ.0iKlIQk2oZLoeOG9P1riRU6hvL5Ux8TV"
+        },
+        "type": "SequenceLocation"
+    },
+    "state": {
+        "sequence": "C",
+        "type": "LiteralSequenceExpression"
+      },
+    "type": "Allele"
+}
+
+
 allele_dict2 = {
     "type": "Allele",
     "location": {
@@ -103,6 +122,10 @@ def test_normalize_allele(rest_dataproxy):
     allele1 = models.Allele(**allele_dict)
     allele2 = normalize(allele1, rest_dataproxy)
     assert allele1 == allele2
+
+    allele1_seq_ref = models.Allele(**allele_dict_sequence_reference)
+    allele2_seq_ref = normalize(allele1_seq_ref, rest_dataproxy)
+    assert allele1_seq_ref == allele2_seq_ref
 
     allele1 = models.Allele(**allele_dict2)
     allele2 = normalize(allele1, rest_dataproxy, rle_seq_limit=0)

@@ -96,15 +96,14 @@ def _normalize_allele(input_allele, data_proxy, rle_seq_limit=50):
     """
     allele = pydantic_copy(input_allele)
 
-    # Temporarily convert SequenceReference to IRI because it makes the code simpler.
-    # This will be changed back to SequenceReference at the end of the method
-    sequence_reference = None
     if isinstance(allele.location.sequence, models.SequenceReference):
-        sequence_reference = allele.location.sequence
-        allele.location.sequence = models.IRI(sequence_reference.refgetAccession)
+        alias = f"ga4gh:{allele.location.sequence.refgetAccession}"
+    else:
+        # IRI
+        alias = allele.location.sequence.root
 
     # Get reference sequence and interval
-    ref_seq = SequenceProxy(data_proxy, allele.location.sequence.root)
+    ref_seq = SequenceProxy(data_proxy, alias)
     start = _get_allele_location_pos(allele, use_start=True)
     if start is None:
         return input_allele
@@ -145,8 +144,6 @@ def _normalize_allele(input_allele, data_proxy, rle_seq_limit=50):
             trim_ival[1], end.pos_type
         )
         new_allele.state.sequence = models.SequenceString(trim_alleles[1])
-        if sequence_reference:
-            new_allele.location.sequence = sequence_reference
         return new_allele
 
     # Determine bounds of ambiguity
@@ -188,9 +185,6 @@ def _normalize_allele(input_allele, data_proxy, rle_seq_limit=50):
 
             if (rle_seq_limit and len_sequence <= rle_seq_limit) or (rle_seq_limit is None):
                 new_allele.state.sequence = models.SequenceString(new_alleles[1])
-
-    if sequence_reference:
-        new_allele.location.sequence = sequence_reference
 
     return new_allele
 
