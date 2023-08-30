@@ -84,6 +84,10 @@ def _normalize_allele(input_allele, data_proxy, rle_seq_limit=50):
     entire region of ambiguity, resulting in an unambiguous representation that may be
     readily compared with other alleles.
 
+    This function assumes that IRIs are dereferenced, providing either the accession
+    (refseq:NC_000006.12, NC_000006.12) or ga4gh identifier for a sequence
+    (ga4gh:SQ.0iKlIQk2oZLoeOG9P1riRU6hvL5Ux8TV).
+
     :param input_allele: Input VRS Allele object
     :param data_proxy: SeqRepo dataproxy
     :param rle_seq_limit: If RLE is set as the new state, set the limit for the length
@@ -99,7 +103,7 @@ def _normalize_allele(input_allele, data_proxy, rle_seq_limit=50):
     if isinstance(allele.location.sequence, models.SequenceReference):
         alias = f"ga4gh:{allele.location.sequence.refgetAccession}"
     else:
-        # IRI
+        # Dereferenced IRI
         alias = allele.location.sequence.root
 
     # Get reference sequence and interval

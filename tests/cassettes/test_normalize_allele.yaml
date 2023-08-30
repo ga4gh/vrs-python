@@ -11,7 +11,7 @@ interactions:
       User-Agent:
       - python-requests/2.31.0
     method: GET
-    uri: http://localhost:5000/seqrepo/1/metadata/refseq:NC_000006.12
+    uri: http://localhost:5000/seqrepo/1/metadata/NC_000006.12
   response:
     body:
       string: "{\n  \"added\": \"2016-08-27T21:22:36Z\",\n  \"aliases\": [\n    \"GRCh38:6\",\n
@@ -34,7 +34,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Wed, 30 Aug 2023 13:26:45 GMT
+      - Wed, 30 Aug 2023 14:40:08 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -52,7 +52,7 @@ interactions:
       User-Agent:
       - python-requests/2.31.0
     method: GET
-    uri: http://localhost:5000/seqrepo/1/sequence/refseq:NC_000006.12?start=26090950&end=26090951
+    uri: http://localhost:5000/seqrepo/1/sequence/NC_000006.12?start=26090950&end=26090951
   response:
     body:
       string: C
@@ -64,7 +64,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Wed, 30 Aug 2023 13:26:45 GMT
+      - Wed, 30 Aug 2023 14:40:08 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -105,7 +105,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Wed, 30 Aug 2023 13:26:45 GMT
+      - Wed, 30 Aug 2023 14:40:08 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -135,7 +135,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Wed, 30 Aug 2023 13:26:45 GMT
+      - Wed, 30 Aug 2023 14:40:08 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -176,7 +176,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Wed, 30 Aug 2023 13:26:45 GMT
+      - Wed, 30 Aug 2023 14:40:08 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -206,7 +206,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Wed, 30 Aug 2023 13:26:45 GMT
+      - Wed, 30 Aug 2023 14:40:08 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -236,7 +236,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Wed, 30 Aug 2023 13:26:45 GMT
+      - Wed, 30 Aug 2023 14:40:08 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -266,7 +266,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Wed, 30 Aug 2023 13:26:45 GMT
+      - Wed, 30 Aug 2023 14:40:08 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -296,7 +296,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Wed, 30 Aug 2023 13:26:45 GMT
+      - Wed, 30 Aug 2023 14:40:08 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -326,7 +326,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Wed, 30 Aug 2023 13:26:45 GMT
+      - Wed, 30 Aug 2023 14:40:08 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -356,7 +356,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Wed, 30 Aug 2023 13:26:45 GMT
+      - Wed, 30 Aug 2023 14:40:08 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -386,7 +386,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Wed, 30 Aug 2023 13:26:45 GMT
+      - Wed, 30 Aug 2023 14:40:08 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -416,7 +416,48 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Wed, 30 Aug 2023 13:26:45 GMT
+      - Wed, 30 Aug 2023 14:40:08 GMT
+      Server:
+      - Werkzeug/2.2.2 Python/3.10.4
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.31.0
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/metadata/ga4gh:SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP
+  response:
+    body:
+      string: "{\n  \"added\": \"2016-08-27T23:57:18Z\",\n  \"aliases\": [\n    \"GRCh38:X\",\n
+        \   \"GRCh38:chrX\",\n    \"GRCh38.p1:X\",\n    \"GRCh38.p1:chrX\",\n    \"GRCh38.p10:X\",\n
+        \   \"GRCh38.p10:chrX\",\n    \"GRCh38.p11:X\",\n    \"GRCh38.p11:chrX\",\n
+        \   \"GRCh38.p12:X\",\n    \"GRCh38.p12:chrX\",\n    \"GRCh38.p2:X\",\n    \"GRCh38.p2:chrX\",\n
+        \   \"GRCh38.p3:X\",\n    \"GRCh38.p3:chrX\",\n    \"GRCh38.p4:X\",\n    \"GRCh38.p4:chrX\",\n
+        \   \"GRCh38.p5:X\",\n    \"GRCh38.p5:chrX\",\n    \"GRCh38.p6:X\",\n    \"GRCh38.p6:chrX\",\n
+        \   \"GRCh38.p7:X\",\n    \"GRCh38.p7:chrX\",\n    \"GRCh38.p8:X\",\n    \"GRCh38.p8:chrX\",\n
+        \   \"GRCh38.p9:X\",\n    \"GRCh38.p9:chrX\",\n    \"MD5:2b3a55ff7f58eb308420c8a9b11cac50\",\n
+        \   \"NCBI:NC_000023.11\",\n    \"refseq:NC_000023.11\",\n    \"SEGUID:Z9QbQrrPjpjXSMJesDYqC3A43lA\",\n
+        \   \"SHA1:67d41b42bacf8e98d748c25eb0362a0b7038de50\",\n    \"VMC:GS_w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP\",\n
+        \   \"sha512t24u:w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP\",\n    \"ga4gh:SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP\"\n
+        \ ],\n  \"alphabet\": \"ACGNRSTWY\",\n  \"length\": 156040895\n}\n"
+    headers:
+      Connection:
+      - close
+      Content-Length:
+      - '978'
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 30 Aug 2023 14:40:08 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -457,48 +498,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Wed, 30 Aug 2023 13:26:45 GMT
-      Server:
-      - Werkzeug/2.2.2 Python/3.10.4
-    status:
-      code: 200
-      message: OK
-- request:
-    body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      User-Agent:
-      - python-requests/2.31.0
-    method: GET
-    uri: http://localhost:5000/seqrepo/1/metadata/refseq:NC_000023.11
-  response:
-    body:
-      string: "{\n  \"added\": \"2016-08-27T23:57:18Z\",\n  \"aliases\": [\n    \"GRCh38:X\",\n
-        \   \"GRCh38:chrX\",\n    \"GRCh38.p1:X\",\n    \"GRCh38.p1:chrX\",\n    \"GRCh38.p10:X\",\n
-        \   \"GRCh38.p10:chrX\",\n    \"GRCh38.p11:X\",\n    \"GRCh38.p11:chrX\",\n
-        \   \"GRCh38.p12:X\",\n    \"GRCh38.p12:chrX\",\n    \"GRCh38.p2:X\",\n    \"GRCh38.p2:chrX\",\n
-        \   \"GRCh38.p3:X\",\n    \"GRCh38.p3:chrX\",\n    \"GRCh38.p4:X\",\n    \"GRCh38.p4:chrX\",\n
-        \   \"GRCh38.p5:X\",\n    \"GRCh38.p5:chrX\",\n    \"GRCh38.p6:X\",\n    \"GRCh38.p6:chrX\",\n
-        \   \"GRCh38.p7:X\",\n    \"GRCh38.p7:chrX\",\n    \"GRCh38.p8:X\",\n    \"GRCh38.p8:chrX\",\n
-        \   \"GRCh38.p9:X\",\n    \"GRCh38.p9:chrX\",\n    \"MD5:2b3a55ff7f58eb308420c8a9b11cac50\",\n
-        \   \"NCBI:NC_000023.11\",\n    \"refseq:NC_000023.11\",\n    \"SEGUID:Z9QbQrrPjpjXSMJesDYqC3A43lA\",\n
-        \   \"SHA1:67d41b42bacf8e98d748c25eb0362a0b7038de50\",\n    \"VMC:GS_w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP\",\n
-        \   \"sha512t24u:w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP\",\n    \"ga4gh:SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP\"\n
-        \ ],\n  \"alphabet\": \"ACGNRSTWY\",\n  \"length\": 156040895\n}\n"
-    headers:
-      Connection:
-      - close
-      Content-Length:
-      - '978'
-      Content-Type:
-      - application/json
-      Date:
-      - Wed, 30 Aug 2023 13:26:45 GMT
+      - Wed, 30 Aug 2023 14:40:08 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -528,7 +528,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Wed, 30 Aug 2023 13:26:46 GMT
+      - Wed, 30 Aug 2023 14:40:08 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -558,7 +558,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Wed, 30 Aug 2023 13:26:46 GMT
+      - Wed, 30 Aug 2023 14:40:08 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -588,7 +588,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Wed, 30 Aug 2023 13:26:46 GMT
+      - Wed, 30 Aug 2023 14:40:08 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -618,7 +618,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Wed, 30 Aug 2023 13:26:46 GMT
+      - Wed, 30 Aug 2023 14:40:08 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -648,7 +648,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Wed, 30 Aug 2023 13:26:46 GMT
+      - Wed, 30 Aug 2023 14:40:08 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -678,7 +678,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Wed, 30 Aug 2023 13:26:46 GMT
+      - Wed, 30 Aug 2023 14:40:08 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -708,7 +708,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Wed, 30 Aug 2023 13:26:46 GMT
+      - Wed, 30 Aug 2023 14:40:08 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -738,7 +738,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Wed, 30 Aug 2023 13:26:46 GMT
+      - Wed, 30 Aug 2023 14:40:08 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -768,7 +768,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Wed, 30 Aug 2023 13:26:46 GMT
+      - Wed, 30 Aug 2023 14:40:08 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -798,7 +798,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Wed, 30 Aug 2023 13:26:46 GMT
+      - Wed, 30 Aug 2023 14:40:08 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:

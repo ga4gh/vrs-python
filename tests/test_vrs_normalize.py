@@ -11,7 +11,7 @@ allele_dict = {
     "location": {
         "end": 26090951,
         "start": 26090950,
-        "sequence": "refseq:NC_000006.12",
+        "sequence": "NC_000006.12",
         "type": "SequenceLocation"
     },
     "state": {
@@ -75,7 +75,7 @@ allele_dict3 = {
     "type": "Allele",
     "location": {
         "type": "SequenceLocation",
-        "sequence": "refseq:NC_000023.11",
+        "sequence": "ga4gh:SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP",
         "start": [155980374, 155980375],
         "end": [155980377, 155980378]
     },
