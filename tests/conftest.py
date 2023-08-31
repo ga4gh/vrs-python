@@ -29,7 +29,6 @@ def tlr(rest_dataproxy):
         # TODO: Set these to defaults and adjust relevant tests
         identify=False,
         normalize=False,
-        translate_sequence_identifiers=True,
     )
 
 

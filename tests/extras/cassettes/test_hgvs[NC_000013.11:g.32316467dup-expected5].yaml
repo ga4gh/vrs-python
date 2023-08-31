@@ -23,7 +23,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Thu, 24 Aug 2023 02:35:43 GMT
+      - Thu, 31 Aug 2023 20:16:16 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -65,7 +65,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Thu, 24 Aug 2023 02:35:43 GMT
+      - Thu, 31 Aug 2023 20:16:16 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -95,157 +95,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Thu, 24 Aug 2023 02:35:43 GMT
-      Server:
-      - Werkzeug/2.2.2 Python/3.10.4
-    status:
-      code: 200
-      message: OK
-- request:
-    body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      User-Agent:
-      - python-requests/2.31.0
-    method: GET
-    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT?start=32316466&end=32316467
-  response:
-    body:
-      string: A
-    headers:
-      Connection:
-      - close
-      Content-Length:
-      - '1'
-      Content-Type:
-      - text/plain; charset=utf-8
-      Date:
-      - Thu, 24 Aug 2023 02:35:43 GMT
-      Server:
-      - Werkzeug/2.2.2 Python/3.10.4
-    status:
-      code: 200
-      message: OK
-- request:
-    body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      User-Agent:
-      - python-requests/2.31.0
-    method: GET
-    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT?start=32316466&end=32316467
-  response:
-    body:
-      string: A
-    headers:
-      Connection:
-      - close
-      Content-Length:
-      - '1'
-      Content-Type:
-      - text/plain; charset=utf-8
-      Date:
-      - Thu, 24 Aug 2023 02:35:43 GMT
-      Server:
-      - Werkzeug/2.2.2 Python/3.10.4
-    status:
-      code: 200
-      message: OK
-- request:
-    body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      User-Agent:
-      - python-requests/2.31.0
-    method: GET
-    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT?start=32316465&end=32316466
-  response:
-    body:
-      string: T
-    headers:
-      Connection:
-      - close
-      Content-Length:
-      - '1'
-      Content-Type:
-      - text/plain; charset=utf-8
-      Date:
-      - Thu, 24 Aug 2023 02:35:43 GMT
-      Server:
-      - Werkzeug/2.2.2 Python/3.10.4
-    status:
-      code: 200
-      message: OK
-- request:
-    body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      User-Agent:
-      - python-requests/2.31.0
-    method: GET
-    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT?start=32316467&end=32316468
-  response:
-    body:
-      string: T
-    headers:
-      Connection:
-      - close
-      Content-Length:
-      - '1'
-      Content-Type:
-      - text/plain; charset=utf-8
-      Date:
-      - Thu, 24 Aug 2023 02:35:43 GMT
-      Server:
-      - Werkzeug/2.2.2 Python/3.10.4
-    status:
-      code: 200
-      message: OK
-- request:
-    body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      User-Agent:
-      - python-requests/2.31.0
-    method: GET
-    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT?start=32316466&end=32316467
-  response:
-    body:
-      string: A
-    headers:
-      Connection:
-      - close
-      Content-Length:
-      - '1'
-      Content-Type:
-      - text/plain; charset=utf-8
-      Date:
-      - Thu, 24 Aug 2023 02:35:43 GMT
+      - Thu, 31 Aug 2023 20:16:16 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -275,7 +125,37 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Thu, 24 Aug 2023 02:35:43 GMT
+      - Thu, 31 Aug 2023 20:16:16 GMT
+      Server:
+      - Werkzeug/2.2.2 Python/3.10.4
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.31.0
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT?start=32316467&end=32316467
+  response:
+    body:
+      string: ''
+    headers:
+      Connection:
+      - close
+      Content-Length:
+      - '0'
+      Content-Type:
+      - text/plain; charset=utf-8
+      Date:
+      - Thu, 31 Aug 2023 20:16:16 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -305,7 +185,67 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Thu, 24 Aug 2023 02:35:43 GMT
+      - Thu, 31 Aug 2023 20:16:16 GMT
+      Server:
+      - Werkzeug/2.2.2 Python/3.10.4
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.31.0
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT?start=32316465&end=32316466
+  response:
+    body:
+      string: T
+    headers:
+      Connection:
+      - close
+      Content-Length:
+      - '1'
+      Content-Type:
+      - text/plain; charset=utf-8
+      Date:
+      - Thu, 31 Aug 2023 20:16:16 GMT
+      Server:
+      - Werkzeug/2.2.2 Python/3.10.4
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.31.0
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT?start=32316467&end=32316468
+  response:
+    body:
+      string: T
+    headers:
+      Connection:
+      - close
+      Content-Length:
+      - '1'
+      Content-Type:
+      - text/plain; charset=utf-8
+      Date:
+      - Thu, 31 Aug 2023 20:16:16 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -335,7 +275,97 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Thu, 24 Aug 2023 02:35:43 GMT
+      - Thu, 31 Aug 2023 20:16:16 GMT
+      Server:
+      - Werkzeug/2.2.2 Python/3.10.4
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.31.0
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT?start=32316467&end=32316467
+  response:
+    body:
+      string: ''
+    headers:
+      Connection:
+      - close
+      Content-Length:
+      - '0'
+      Content-Type:
+      - text/plain; charset=utf-8
+      Date:
+      - Thu, 31 Aug 2023 20:16:16 GMT
+      Server:
+      - Werkzeug/2.2.2 Python/3.10.4
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.31.0
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT?start=32316466&end=32316467
+  response:
+    body:
+      string: A
+    headers:
+      Connection:
+      - close
+      Content-Length:
+      - '1'
+      Content-Type:
+      - text/plain; charset=utf-8
+      Date:
+      - Thu, 31 Aug 2023 20:16:16 GMT
+      Server:
+      - Werkzeug/2.2.2 Python/3.10.4
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.31.0
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT?start=32316466&end=32316467
+  response:
+    body:
+      string: A
+    headers:
+      Connection:
+      - close
+      Content-Length:
+      - '1'
+      Content-Type:
+      - text/plain; charset=utf-8
+      Date:
+      - Thu, 31 Aug 2023 20:16:16 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -375,20 +405,20 @@ interactions:
       Content-Type:
       - text/plain
       Date:
-      - Thu, 24 Aug 2023 02:35:43 GMT
+      - Thu, 31 Aug 2023 20:16:16 GMT
       Keep-Alive:
       - timeout=4, max=40
       NCBI-PHID:
-      - 939B3D945261CB950000318BE8266158.1.1.m_5
+      - 322C572A8DE8D0950000404D6CB6CC0E.1.1.m_5
       NCBI-SID:
-      - 03EB3C85C6972737_8AD3SID
+      - B6CCAB2B97C54A09_4F38SID
       Referrer-Policy:
       - origin-when-cross-origin
       Server:
       - Finatra
       Set-Cookie:
-      - ncbi_sid=03EB3C85C6972737_8AD3SID; domain=.nih.gov; path=/; expires=Sat, 24
-        Aug 2024 02:35:43 GMT
+      - ncbi_sid=B6CCAB2B97C54A09_4F38SID; domain=.nih.gov; path=/; expires=Sat, 31
+        Aug 2024 20:16:16 GMT
       Strict-Transport-Security:
       - max-age=31536000; includeSubDomains; preload
       Transfer-Encoding:
@@ -440,20 +470,20 @@ interactions:
       Content-Type:
       - text/plain
       Date:
-      - Thu, 24 Aug 2023 02:35:44 GMT
+      - Thu, 31 Aug 2023 20:16:17 GMT
       Keep-Alive:
       - timeout=4, max=40
       NCBI-PHID:
-      - D0BD0EC90D3A84D5000023591BC2630E.1.1.m_5
+      - 322C572A8DE8D09500002E4D6F58A5DA.1.1.m_5
       NCBI-SID:
-      - 5F270D49B2084566_9803SID
+      - 073CE1DDE48C1357_9001SID
       Referrer-Policy:
       - origin-when-cross-origin
       Server:
       - Finatra
       Set-Cookie:
-      - ncbi_sid=5F270D49B2084566_9803SID; domain=.nih.gov; path=/; expires=Sat, 24
-        Aug 2024 02:35:44 GMT
+      - ncbi_sid=073CE1DDE48C1357_9001SID; domain=.nih.gov; path=/; expires=Sat, 31
+        Aug 2024 20:16:17 GMT
       Strict-Transport-Security:
       - max-age=31536000; includeSubDomains; preload
       Transfer-Encoding:
@@ -506,20 +536,20 @@ interactions:
       Content-Type:
       - text/plain
       Date:
-      - Thu, 24 Aug 2023 02:35:45 GMT
+      - Thu, 31 Aug 2023 20:16:17 GMT
       Keep-Alive:
       - timeout=4, max=40
       NCBI-PHID:
-      - D0BD0EC90D3A84D500002B59205FA11B.1.1.m_5
+      - 939B29D888F10AD500001645649489B4.1.1.m_5
       NCBI-SID:
-      - D10289F9B420159A_7BECSID
+      - 8CB66EC0240577D1_E8D6SID
       Referrer-Policy:
       - origin-when-cross-origin
       Server:
       - Finatra
       Set-Cookie:
-      - ncbi_sid=D10289F9B420159A_7BECSID; domain=.nih.gov; path=/; expires=Sat, 24
-        Aug 2024 02:35:45 GMT
+      - ncbi_sid=8CB66EC0240577D1_E8D6SID; domain=.nih.gov; path=/; expires=Sat, 31
+        Aug 2024 20:16:18 GMT
       Strict-Transport-Security:
       - max-age=31536000; includeSubDomains; preload
       Transfer-Encoding:
@@ -527,7 +557,7 @@ interactions:
       X-RateLimit-Limit:
       - '3'
       X-RateLimit-Remaining:
-      - '2'
+      - '1'
       X-UA-Compatible:
       - IE=Edge
       X-XSS-Protection:

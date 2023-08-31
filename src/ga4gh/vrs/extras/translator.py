@@ -46,12 +46,10 @@ class Translator:
     def __init__(self,
                  data_proxy,
                  default_assembly_name="GRCh38",
-                 translate_sequence_identifiers=True,
                  normalize=True,
                  identify=True):
         self.default_assembly_name = default_assembly_name
         self.data_proxy = data_proxy
-        self.translate_sequence_identifiers = translate_sequence_identifiers
         self.identify = identify
         self.normalize = normalize
         self.hgvs_tools = None
@@ -90,19 +88,46 @@ class Translator:
     ############################################################################
     # INTERNAL
 
+    def _get_refget_accession(self, alias):
+        """Get refget accession given alias
+
+        :param alias: Alias to get accession for
+        :return: Refget Accession if found
+        """
+        refget_accession = None
+        try:
+            aliases = self.data_proxy.translate_sequence_identifier(
+                alias, namespace="ga4gh"
+            )
+        except KeyError:
+            pass
+        else:
+            if aliases:
+                refget_accession = aliases[0].split("ga4gh:")[-1]
+
+        return refget_accession
 
     def _from_beacon(self, beacon_expr, assembly_name=None):
         """Parse beacon expression into VRS Allele
 
         #>>> a = tlr.from_beacon("13 : 32936732 G > C")
         #>>> a.model_dump()
-        {'location': {
-          'end': 32936732,
-          'start': 32936731,,
-          'sequence: 'GRCh38:13 ',
-          'type': 'SequenceLocation'},
-         'state': {'sequence': 'C', 'type': 'LiteralSequenceExpression'},
-         'type': 'Allele'}
+        {
+          'location': {
+            'end': 32936732,
+            'start': 32936731,,
+            'sequenceReference': {
+              'type': 'SequenceReference',
+              'refgetAccession': 'SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT'
+            },
+            'type': 'SequenceLocation'
+          },
+          'state': {
+            'sequence': 'C',
+            'type': 'LiteralSequenceExpression'
+          },
+          'type': 'Allele'
+        }
 
         """
 
@@ -116,13 +141,18 @@ class Translator:
         if assembly_name is None:
             assembly_name = self.default_assembly_name
         sequence = assembly_name + ":" + g["chr"]
+        refget_accession = self._get_refget_accession(sequence)
+        if not refget_accession:
+            return None
+
         start = int(g["pos"]) - 1
         ref = g["ref"]
         alt = g["alt"]
         end = start + len(ref)
         ins_seq = alt
 
-        location = models.SequenceLocation(sequence=sequence, start=start, end=end)
+        seq_ref = models.SequenceReference(refgetAccession=refget_accession)
+        location = models.SequenceLocation(sequenceReference=seq_ref, start=start, end=end)
         state = models.LiteralSequenceExpression(sequence=ins_seq)
         allele = models.Allele(location=location, state=state)
         allele = self._post_process_imported_allele(allele)
@@ -134,13 +164,22 @@ class Translator:
 
         #>>> a = tlr.from_gnomad("1-55516888-G-GA")
         #>>> a.model_dump()
-        {'location': {
-          'end': 55516888,
-          'start': 55516887,
-          'sequence': 'GRCh38:1',
-          'type': 'SequenceLocation'},
-          'state': {'sequence': 'GA', 'type': 'LiteralSequenceExpression'},
-          'type': 'Allele'}
+        {
+          'location': {
+            'end': 55516888,
+            'start': 55516887,
+            'sequenceReference': {
+              'refgetAccession': 'SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO',
+              'type': 'SequenceReference'
+            },
+            'type': 'SequenceLocation'
+          },
+          'state': {
+            'sequence': 'GA',
+            'type': 'LiteralSequenceExpression'
+          },
+          'type': 'Allele'
+        }
 
         """
 
@@ -154,13 +193,18 @@ class Translator:
         if assembly_name is None:
             assembly_name = self.default_assembly_name
         sequence = assembly_name + ":" + g["chr"]
+        refget_accession = self._get_refget_accession(sequence)
+        if not refget_accession:
+            return None
+
         start = int(g["pos"]) - 1
         ref = g["ref"]
         alt = g["alt"]
         end = start + len(ref)
         ins_seq = alt
 
-        location = models.SequenceLocation(sequence=sequence, start=start, end=end)
+        seq_ref = models.SequenceReference(refgetAccession=refget_accession)
+        location = models.SequenceLocation(sequenceReference=seq_ref, start=start, end=end)
         sstate = models.LiteralSequenceExpression(sequence=ins_seq)
         allele = models.Allele(location=location, state=sstate)
         allele = self._post_process_imported_allele(allele)
@@ -170,16 +214,22 @@ class Translator:
     def _from_hgvs(self, hgvs_expr):
         """parse hgvs into a VRS object (typically an Allele)
 
-        #>>> a = tlr.from_hgvs("NM_012345.6:c.22A>T")
+        #>>> a = tlr.from_hgvs("NC_000007.14:g.55181320A>T")
         #>>> a.model_dump()
         {
           'location': {
-            'end': 22,
-            'start': 21,
-            'sequence': 'refseq:NM_012345.6',
+            'end': 55181320,
+            'start': 55181319,
+            'sequenceReference': {
+              'type': 'SequenceReference',
+              'refgetAccession': 'SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul'
+            },
             'type': 'SequenceLocation'
           },
-          'state': {'sequence': 'T', 'type': 'LiteralSequenceExpression'},
+          'state': {
+            'sequence': 'T',
+            'type': 'LiteralSequenceExpression'
+          },
           'type': 'Allele'
         }
 
@@ -194,6 +244,9 @@ class Translator:
 
         # prefix accession with namespace
         sequence = coerce_namespace(sv.ac)
+        refget_accession = self._get_refget_accession(sequence)
+        if not refget_accession:
+            return None
 
         if isinstance(sv.posedit.pos, hgvs.location.BaseOffsetInterval):
             if sv.posedit.pos.start.is_intronic or sv.posedit.pos.end.is_intronic:
@@ -222,9 +275,8 @@ class Translator:
         else:
             raise ValueError(f"HGVS variant type {sv.posedit.edit.type} is unsupported")
 
-        location = models.SequenceLocation(sequence=sequence,
-                                           start=start,
-                                           end=end)
+        seq_ref = models.SequenceReference(refgetAccession=refget_accession)
+        location = models.SequenceLocation(sequenceReference=seq_ref, start=start, end=end)
         sstate = models.LiteralSequenceExpression(sequence=state)
         allele = models.Allele(location=location, state=sstate)
         allele = self._post_process_imported_allele(allele)
@@ -235,16 +287,22 @@ class Translator:
 
         """Parse SPDI expression in to a GA4GH Allele
 
-        #>>> a = tlr.from_spdi("NM_012345.6:21:1:T")
+        #>>> a = tlr.from_spdi("NC_000013.11:32936731:1:C")
         #>>> a.model_dump()
         {
           'location': {
-            'end': 22,
-            'start': 21,
-            'sequence': 'refseq:NM_012345.6',
+            'end': 32936732,
+            'start': 32936731,
+            'sequenceReference': {
+                'refgetAccession': 'SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT',
+                'type': 'SequenceReference'
+            },
             'type': 'SequenceLocation'
           },
-          'state': {'sequence': 'T', 'type': 'LiteralSequenceExpression'},
+          'state': {
+              'sequence': 'C',
+              'type': 'LiteralSequenceExpression'
+          },
           'type': 'Allele'
         }
         """
@@ -257,6 +315,10 @@ class Translator:
 
         g = m.groupdict()
         sequence = coerce_namespace(g["ac"])
+        refget_accession = self._get_refget_accession(sequence)
+        if not refget_accession:
+            return None
+
         start = int(g["pos"])
         try:
             del_len = int(g["del_len_or_seq"])
@@ -265,9 +327,8 @@ class Translator:
         end = start + del_len
         ins_seq = g["ins_seq"]
 
-        location = models.SequenceLocation(sequence=sequence,
-                                           start=start,
-                                           end=end)
+        seq_ref = models.SequenceReference(refgetAccession=refget_accession)
+        location = models.SequenceLocation(sequenceReference=seq_ref, start=start, end=end)
         sstate = models.LiteralSequenceExpression(sequence=ins_seq)
         allele = models.Allele(location=location, state=sstate)
         allele = self._post_process_imported_allele(allele)
@@ -323,10 +384,7 @@ class Translator:
                 return "g"
             return None
 
-        if not self.is_valid_allele(vo):
-            raise ValueError("_to_hgvs requires a VRS Allele with SequenceLocation and LiteralSequenceExpression")
-
-        sequence = str(export_sequencelocation_sequence_id(vo.location.sequence))
+        sequence = f"ga4gh:{export_sequencelocation_sequence_id(vo.location.sequenceReference)}"
         aliases = self.data_proxy.translate_sequence_identifier(sequence, namespace)
 
         # infer type of sequence based on accession
@@ -410,23 +468,13 @@ class Translator:
         is expected to be normalized per VRS spec.
 
         """
-        if not self.is_valid_allele(vo):
-            raise ValueError("_to_spdi requires a VRS Allele with SequenceLocation and LiteralSequenceExpression")
-
-        sequence = str(export_sequencelocation_sequence_id(vo.location.sequence))
+        sequence = f"ga4gh:{export_sequencelocation_sequence_id(vo.location.sequenceReference)}"
         aliases = self.data_proxy.translate_sequence_identifier(sequence, namespace)
         aliases = [a.split(":")[1] for a in aliases]
         start, end = vo.location.start, vo.location.end
         spdi_tail = f":{start}:{end-start}:{vo.state.sequence.root}"
         spdis = [a + spdi_tail for a in aliases]
         return spdis
-
-
-    def is_valid_allele(self, vo):
-        return (vo.type == "Allele"
-                and vo.location.type == "SequenceLocation"
-                and vo.state.type == "LiteralSequenceExpression")
-
 
     @lazy_property
     def _hgvs_parser(self):
@@ -439,11 +487,6 @@ class Translator:
         """
         Provide common post-processing for imported Alleles IN-PLACE.
         """
-
-        if self.translate_sequence_identifiers:
-            seq_id = self.data_proxy.translate_sequence_identifier(allele.location.sequence.root, "ga4gh")[0]
-            allele.location.sequence.root = seq_id
-
         if self.normalize:
             allele = normalize(allele, self.data_proxy)
 
@@ -452,12 +495,6 @@ class Translator:
             allele.location.id = ga4gh_identify(allele.location)
 
         return allele
-
-
-    def _seq_id_mapper(self, ir):
-        if self.translate_sequence_identifiers:
-            return self.data_proxy.translate_sequence_identifier(ir, "ga4gh")[0]
-        return ir
 
 
     from_translators = {
@@ -476,11 +513,12 @@ class Translator:
 
 
 def export_sequencelocation_sequence_id(
-        location_sequence: Union[models.IRI, models.SequenceReference]):
-    if isinstance(location_sequence, models.IRI):
-        return location_sequence.root
-    elif isinstance(location_sequence, models.SequenceReference):
-        return location_sequence.refgetAccession
+    location_sequence_reference: Union[models.IRI, models.SequenceReference]
+):
+    if isinstance(location_sequence_reference, models.IRI):
+        return location_sequence_reference.root
+    elif isinstance(location_sequence_reference, models.SequenceReference):
+        return location_sequence_reference.refgetAccession
 
 
 if __name__ == "__main__":
@@ -503,7 +541,10 @@ if __name__ == "__main__":
             "location": {
                 "end": 22,
                 "start": 21,
-                "sequence": "ga4gh:SQ.v_QTc1p-MUYdgrRv4LMT6ByXIOsdw3C_",
+                "sequenceReference": {
+                    "refgetAccession": "SQ.v_QTc1p-MUYdgrRv4LMT6ByXIOsdw3C_",
+                    "type": "SequenceReference"
+                },
                 "type": "SequenceLocation"
             },
             "state": {
