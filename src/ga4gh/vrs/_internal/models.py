@@ -24,7 +24,6 @@ import logging
 import sys
 import os
 import typing
-import pkg_resources
 from pydantic import BaseModel, ConfigDict, Field, RootModel, constr
 
 from ga4gh.core._internal.pydantic import (
@@ -33,12 +32,6 @@ from ga4gh.core._internal.pydantic import (
 )
 
 _logger = logging.getLogger(__name__)
-
-
-# specify VRSATILE_SCHEMA_DIR to use a schema other than the one embedded
-# in vrs-python
-schema_dir = os.environ.get("VRSATILE_SCHEMA_DIR", pkg_resources.resource_filename(__name__, "data/schemas/vrsatile"))
-schema_path = schema_dir + "/merged.json"
 
 
 def flatten(vals):

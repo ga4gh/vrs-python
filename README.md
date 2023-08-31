@@ -141,13 +141,6 @@ tests/validation/ directory.
 
     $ make test
 
-## Developing VRS (the schema) too
-
-If you want to develop the VRS schema in conjunction with vrs-python, the
-recommended approach for most users is to fork and clone the `ga4gh/vrs` repo,
-then set the `VRSATILE_SCHEMA_DIR` environment variable to use an alternative schema
-location.
-
 # Security Note (from the GA4GH Security Team)
 
 A stand-alone security review has been performed on the specification itself.
