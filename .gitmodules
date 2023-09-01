@@ -1,8 +1,4 @@
 [submodule "submodules/vrs"]
 	path = submodules/vrs
 	url = https://github.com/ga4gh/vrs.git
-	branch = metaschema-update
-[submodule "submodules/vrsatile"]
-	path = submodules/vrsatile
-	url = https://github.com/ga4gh/vrsatile.git
-	branch = metaschema-update
+	branch = 2.0-alpha
