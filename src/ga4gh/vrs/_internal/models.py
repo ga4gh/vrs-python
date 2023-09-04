@@ -344,7 +344,7 @@ class SequenceLocation(BaseModel):
         None,
         description='A sha512t24u digest created using the VRS Computed Identifier algorithm.',
     )
-    sequence: Optional[Union[IRI, SequenceReference]] = Field(
+    sequenceReference: Optional[Union[IRI, SequenceReference]] = Field(
         None, description='A SequenceReference.'
     )
     start: Union[Range, int] = Field(
@@ -363,7 +363,7 @@ class SequenceLocation(BaseModel):
             'type',
             'start',
             'end',
-            'sequence'
+            'sequenceReference'
         ]
 
 

@@ -23,7 +23,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Thu, 24 Aug 2023 02:35:32 GMT
+      - Thu, 31 Aug 2023 20:16:02 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -65,7 +65,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Thu, 24 Aug 2023 02:35:32 GMT
+      - Thu, 31 Aug 2023 20:16:02 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -95,7 +95,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Thu, 24 Aug 2023 02:35:32 GMT
+      - Thu, 31 Aug 2023 20:16:03 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -125,37 +125,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Thu, 24 Aug 2023 02:35:32 GMT
-      Server:
-      - Werkzeug/2.2.2 Python/3.10.4
-    status:
-      code: 200
-      message: OK
-- request:
-    body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      User-Agent:
-      - python-requests/2.31.0
-    method: GET
-    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT?start=32936731&end=32936732
-  response:
-    body:
-      string: C
-    headers:
-      Connection:
-      - close
-      Content-Length:
-      - '1'
-      Content-Type:
-      - text/plain; charset=utf-8
-      Date:
-      - Thu, 24 Aug 2023 02:35:32 GMT
+      - Thu, 31 Aug 2023 20:16:03 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -195,20 +165,20 @@ interactions:
       Content-Type:
       - text/plain
       Date:
-      - Thu, 24 Aug 2023 02:35:36 GMT
+      - Thu, 31 Aug 2023 20:16:07 GMT
       Keep-Alive:
       - timeout=4, max=40
       NCBI-PHID:
-      - 939B3D945261CB9500005F8BC3E00CE8.1.1.m_5
+      - D0BD6E1D0758AC7500003735D2DB17B5.1.1.m_5
       NCBI-SID:
-      - 7312853517AD9CE9_1F4ESID
+      - 9E731ACC80E665E2_1BB4SID
       Referrer-Policy:
       - origin-when-cross-origin
       Server:
       - Finatra
       Set-Cookie:
-      - ncbi_sid=7312853517AD9CE9_1F4ESID; domain=.nih.gov; path=/; expires=Sat, 24
-        Aug 2024 02:35:36 GMT
+      - ncbi_sid=9E731ACC80E665E2_1BB4SID; domain=.nih.gov; path=/; expires=Sat, 31
+        Aug 2024 20:16:07 GMT
       Strict-Transport-Security:
       - max-age=31536000; includeSubDomains; preload
       Transfer-Encoding:

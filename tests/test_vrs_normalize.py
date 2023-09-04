@@ -11,7 +11,7 @@ allele_dict = {
     "location": {
         "end": 26090951,
         "start": 26090950,
-        "sequence": {
+        "sequenceReference": {
             "type": "SequenceReference",
             "refgetAccession": "SQ.0iKlIQk2oZLoeOG9P1riRU6hvL5Ux8TV"
         },
@@ -29,7 +29,7 @@ allele_dict2 = {
     "type": "Allele",
     "location": {
         "type": "SequenceLocation",
-        "sequence": {
+        "sequenceReference": {
             "type": "SequenceReference",
             "refgetAccession": "SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP"
         },
@@ -47,7 +47,7 @@ allele_dict2_normalized = {
     "type": "Allele",
     "location": {
         "type": "SequenceLocation",
-        "sequence": {
+        "sequenceReference": {
             "type": "SequenceReference",
             "refgetAccession": "SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP"
         },
@@ -66,7 +66,7 @@ allele_dict3 = {
     "type": "Allele",
     "location": {
         "type": "SequenceLocation",
-        "sequence": {
+        "sequenceReference": {
             "type": "SequenceReference",
             "refgetAccession": "SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP"
         },
@@ -84,7 +84,7 @@ allele_dict4 = {
     "type": "Allele",
     "location": {
         "type": "SequenceLocation",
-        "sequence": {
+        "sequenceReference": {
             "type": "SequenceReference",
             "refgetAccession": "SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP"
         },
@@ -101,7 +101,7 @@ allele_dict4_normalized = {
     "type": "Allele",
     "location": {
         "type": "SequenceLocation",
-        "sequence": {
+        "sequenceReference": {
             "type": "SequenceReference",
             "refgetAccession": "SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP"
         },

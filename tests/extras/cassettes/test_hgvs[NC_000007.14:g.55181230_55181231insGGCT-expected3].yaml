@@ -34,7 +34,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Thu, 24 Aug 2023 02:35:42 GMT
+      - Thu, 31 Aug 2023 20:16:12 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -64,7 +64,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Thu, 24 Aug 2023 02:35:42 GMT
+      - Thu, 31 Aug 2023 20:16:12 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -94,7 +94,37 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Thu, 24 Aug 2023 02:35:42 GMT
+      - Thu, 31 Aug 2023 20:16:12 GMT
+      Server:
+      - Werkzeug/2.2.2 Python/3.10.4
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.31.0
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul?start=55181230&end=55181230
+  response:
+    body:
+      string: ''
+    headers:
+      Connection:
+      - close
+      Content-Length:
+      - '0'
+      Content-Type:
+      - text/plain; charset=utf-8
+      Date:
+      - Thu, 31 Aug 2023 20:16:12 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -124,7 +154,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Thu, 24 Aug 2023 02:35:42 GMT
+      - Thu, 31 Aug 2023 20:16:12 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -154,7 +184,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Thu, 24 Aug 2023 02:35:42 GMT
+      - Thu, 31 Aug 2023 20:16:12 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -184,7 +214,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Thu, 24 Aug 2023 02:35:42 GMT
+      - Thu, 31 Aug 2023 20:16:12 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -214,7 +244,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Thu, 24 Aug 2023 02:35:42 GMT
+      - Thu, 31 Aug 2023 20:16:12 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -244,7 +274,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Thu, 24 Aug 2023 02:35:42 GMT
+      - Thu, 31 Aug 2023 20:16:12 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:

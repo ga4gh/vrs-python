@@ -89,7 +89,7 @@ def _normalize_allele(input_allele, data_proxy, rle_seq_limit=50):
     readily compared with other alleles.
 
     This function assumes that IRIs are dereferenced, providing a `SequenceReference` as
-    the `allele.location.sequence`. If a `SequenceReference` is not provided, the allele
+    the `allele.location.sequenceReference`. If a `SequenceReference` is not provided, the allele
     will be returned as is with no normalization.
 
     :param input_allele: Input VRS Allele object
@@ -104,12 +104,12 @@ def _normalize_allele(input_allele, data_proxy, rle_seq_limit=50):
     """
     allele = pydantic_copy(input_allele)
 
-    if isinstance(allele.location.sequence, models.SequenceReference):
-        alias = f"ga4gh:{allele.location.sequence.refgetAccession}"
+    if isinstance(allele.location.sequenceReference, models.SequenceReference):
+        alias = f"ga4gh:{allele.location.sequenceReference.refgetAccession}"
     else:
         _logger.warning(
-            "`input_allele.location.sequence` expects a `SequenceReference`, returning "
-            "`input_allele` with no normalization."
+            "`input_allele.location.sequenceReference` expects a `SequenceReference`, "
+            "returning `input_allele` with no normalization."
         )
         return input_allele
 
@@ -248,7 +248,10 @@ if __name__ == "__main__":    # pragma: no cover
         "location": {
             "end": 44908822,
             "start": 44908821,
-            "sequence": "refseq:NC_000019.10",
+            "sequenceReference": {
+                "type": "SequenceReference",
+                "refgetAccession": "SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl"
+            },
             "type": "SequenceLocation"
         },
         "state": {
