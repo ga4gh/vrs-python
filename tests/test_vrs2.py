@@ -6,7 +6,7 @@ from ga4gh.core import (
     is_pydantic_instance,
     is_curie_type,
     pydantic_copy)
-from ga4gh.vrs import models
+from ga4gh.vrs import models, vrs_enref, vrs_deref
 
 allele_dict = {
     'location': {
@@ -170,3 +170,33 @@ def test_iri():
     assert is_curie_type(iri)
     assert iri.root == pydantic_copy(iri).root
     assert ga4gh_serialize(iri) == b'asdf'
+
+
+def test_enref():
+    object_store = {}
+    allele_383650_enreffed = vrs_enref(allele_383650, object_store=object_store)
+    orig_no_loc = allele_383650.model_dump().copy()
+    orig_no_loc.pop("location")
+    actual_no_loc = allele_383650_enreffed.model_dump().copy()
+    actual_no_loc.pop("location")
+    assert orig_no_loc == actual_no_loc, "Original and enreffed match except for enreffed field"
+    assert allele_383650_enreffed.location == 'ga4gh:SL.6kJ-T5Y6EhiJVUxKZoFbOL5e4KkV0Yf6'
+    assert allele_383650_enreffed.model_dump(exclude_none=True) == {
+        'type': 'Allele',
+        'location': 'ga4gh:SL.6kJ-T5Y6EhiJVUxKZoFbOL5e4KkV0Yf6',
+        'state': {
+            'type': 'LiteralSequenceExpression',
+            'sequence': 'T'}}
+
+
+    dereffed = vrs_deref(allele_383650_enreffed, object_store=object_store)
+    assert (dereffed.location.model_dump(exclude_none=True) == {
+        'type': 'SequenceLocation',
+        'sequenceReference': {
+            'type': 'SequenceReference',
+            'refgetAccession': 'ga4gh:SQ.KEO-4XBcm1cxeo_DIQ8_ofqGUkp4iZhI'
+        },
+        'start': 128325834,
+        'end': 128325835})
+    assert dereffed.location.model_dump(exclude_none=True) == allele_383650.location.model_dump(exclude_none=True)
+    assert dereffed.model_dump() == allele_383650.model_dump()

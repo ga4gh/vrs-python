@@ -48,7 +48,9 @@ def is_curie_type(o: Any) -> bool:
     """
     if isinstance(o, RootModel):
         o = o.root
-    return re.match(r'[a-zA-Z0-9.]+:\S+', o)
+    if isinstance(o, str):
+        return re.match(r'[a-zA-Z0-9.]+:\S+', o)
+    return False
 
 
 def is_pydantic_instance(o: Any) -> bool:
@@ -66,6 +68,7 @@ def get_pydantic_root(obj: Union[Any, RootModel]) -> Any:
 
 def is_pydantic_custom_type(obj: RootModel) -> bool:
     return isinstance(obj, RootModel)
+
 
 def is_pydantic_custom_str_type(obj: RootModel) -> bool:
     return isinstance(obj, RootModel) and isinstance(obj.root, str)

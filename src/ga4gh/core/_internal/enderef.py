@@ -8,9 +8,18 @@ typically be generated from the schema by
 build_class_referable_attribute_map() in .models.py.
 
 """
+import logging
 
 from .identifiers import ga4gh_identify, is_ga4gh_identifier
-from .pydantic import is_pydantic_instance, is_list, is_curie_type, is_identifiable, pydantic_copy
+from .pydantic import (
+    is_pydantic_instance,
+    is_list,
+    is_curie_type,
+    is_identifiable,
+    get_pydantic_root,
+    pydantic_copy)
+
+_logger = logging.getLogger(__name__)
 
 
 def ga4gh_enref(o, cra_map, object_store=None):
@@ -35,9 +44,9 @@ def ga4gh_enref(o, cra_map, object_store=None):
         """depth-first recursive, in-place enref of object; returns id of object"""
         ref_att_names = cra_map.get(o.type, [])
         for ran in ref_att_names:
-            v = o[ran]
+            v = getattr(o, ran)
             if is_list(v):
-                o[ran] = [_enref(o2) for o2 in v]
+                setattr(o, ran, [_enref(o2) for o2 in v])
             elif isinstance(v, str):
                 pass
             elif is_curie_type(v):    # already a reference
@@ -45,7 +54,7 @@ def ga4gh_enref(o, cra_map, object_store=None):
             elif v is not None:
                 _id = _id_and_store(v)
                 if _id:
-                    o[ran] = _id
+                    setattr(o, ran, _id)
 
         return _id_and_store(o)
 
@@ -73,15 +82,18 @@ def ga4gh_deref(o, cra_map, object_store):
     def _deref(o):
         """depth-first recursive, in-place deref of object; returns id of object"""
         if o.type not in cra_map:
+            _logger.warn(f"{o.type} not in cra_map {cra_map}")
             return o
 
         ref_att_names = cra_map[o.type]
         for ran in ref_att_names:
-            v = o[ran]
+            v = getattr(o, ran)
             if is_list(v):
-                o[ran] = [_deref(object_store[str(curie)]) for curie in v]
+                setattr(o, ran, [_deref(object_store[str(curie)]) for curie in v])
             elif is_ga4gh_identifier(v):
-                o[ran] = _deref(object_store[str(v)])
+                v = get_pydantic_root(v)
+                dereffed_identifier = object_store[str(v)]
+                setattr(o, ran, _deref(dereffed_identifier))
             else:
                 pass    # some object; pass as-is
 

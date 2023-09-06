@@ -57,7 +57,7 @@ def is_ga4gh_identifier(ir):
     False
 
     """
-    return str(ir).startswith(ns_w_sep)
+    return str(get_pydantic_root(ir)).startswith(ns_w_sep)
 
 
 def parse_ga4gh_identifier(ir):
