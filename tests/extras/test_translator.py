@@ -1,7 +1,5 @@
 import pytest
 
-from ga4gh.vrs import models
-
 snv_inputs = {
     "hgvs": "NC_000013.11:g.32936732G>C",
     "beacon": "13 : 32936732 G > C",
@@ -29,7 +27,8 @@ snv_output = {
 # https://www.ncbi.nlm.nih.gov/clinvar/variation/1373966/?new_evidence=true
 deletion_inputs = {
     "hgvs": "NC_000013.11:g.20003097del",
-    "spdi": ["NC_000013.11:20003096:C:", "NC_000013.11:20003096:1:"]
+    "spdi": ["NC_000013.11:20003096:C:", "NC_000013.11:20003096:1:"],
+    "gnomad": "13-20003096-AC-A"
 }
 
 deletion_output = {
@@ -49,10 +48,50 @@ deletion_output = {
     "type": "Allele"
 }
 
+
+gnomad_deletion_output = {
+    "location": {
+        "end": 20003097,
+        "start": 20003095,
+        "sequenceReference": {
+            "refgetAccession": "SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT",
+            "type": "SequenceReference"
+        },
+        "type": "SequenceLocation"
+    },
+    "state": {
+        "sequence": "A",
+        "type": "LiteralSequenceExpression"
+    },
+    "type": "Allele"
+}
+
+
+deletion_output_normalized = {
+    "location": {
+        "end": 20003097,
+        "start": 20003096,
+        "sequenceReference": {
+            "refgetAccession": "SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT",
+            "type": "SequenceReference"
+        },
+        "type": "SequenceLocation"
+    },
+    "state": {
+        "length": 0,
+        "repeatSubunitLength": 1,
+        "sequence": "",
+        "type": "ReferenceLengthExpression"
+    },
+    "type": "Allele"
+}
+
+
 # https://www.ncbi.nlm.nih.gov/clinvar/variation/1687427/?new_evidence=true
 insertion_inputs = {
     "hgvs": "NC_000013.11:g.20003010_20003011insG",
-    "spdi": ["NC_000013.11:20003010::G", "NC_000013.11:20003010:0:G"]
+    "spdi": ["NC_000013.11:20003010::G", "NC_000013.11:20003010:0:G"],
+    "gnomad": "13-20003010-A-AG"
 }
 
 insertion_output = {
@@ -72,10 +111,30 @@ insertion_output = {
     "type": "Allele"
 }
 
+
+gnomad_insertion_output = {
+    "location": {
+        "end": 20003010,
+        "start": 20003009,
+        "sequenceReference": {
+            "refgetAccession": "SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT",
+            "type": "SequenceReference"
+        },
+        "type": "SequenceLocation"
+    },
+    "state": {
+        "sequence": "AG",
+        "type": "LiteralSequenceExpression"
+    },
+    "type": "Allele"
+}
+
+
 # https://www.ncbi.nlm.nih.gov/clinvar/variation/1264314/?new_evidence=true
 duplication_inputs = {
     "hgvs": "NC_000013.11:g.19993838_19993839dup",
-    "spdi": "NC_000013.11:19993837:GT:GTGT"
+    "spdi": "NC_000013.11:19993837:GT:GTGT",
+    "gnomad": "13-19993838-GT-GTGT"
 }
 
 duplication_output = {
@@ -96,18 +155,49 @@ duplication_output = {
 }
 
 
+duplication_output_normalized = {
+    "location": {
+        "end": 19993839,
+        "start": 19993837,
+        "sequenceReference": {
+            "refgetAccession": "SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT",
+            "type": "SequenceReference"
+        },
+        "type": "SequenceLocation"
+    },
+    "state": {
+        "length": 4,
+        "repeatSubunitLength": 2,
+        "sequence": "GTGT",
+        "type": "ReferenceLengthExpression"
+    },
+    "type": "Allele"
+}
+
+
 @pytest.mark.vcr
 def test_from_beacon(tlr):
+    tlr.normalize = False
     assert tlr._from_beacon(snv_inputs["beacon"]).model_dump(exclude_none=True) == snv_output
 
 
 @pytest.mark.vcr
 def test_from_gnomad(tlr):
+    tlr.normalize = False
     assert tlr._from_gnomad(snv_inputs["gnomad"]).model_dump(exclude_none=True) == snv_output
+    assert tlr._from_gnomad(deletion_inputs["gnomad"]).model_dump(exclude_none=True) == gnomad_deletion_output
+    assert tlr._from_gnomad(insertion_inputs["gnomad"]).model_dump(exclude_none=True) == gnomad_insertion_output
+    assert tlr._from_gnomad(duplication_inputs["gnomad"]).model_dump(exclude_none=True) == duplication_output
 
+    tlr.normalize = True
+    assert tlr._from_gnomad(snv_inputs["gnomad"]).model_dump(exclude_none=True) == snv_output
+    assert tlr._from_gnomad(deletion_inputs["gnomad"]).model_dump(exclude_none=True) == deletion_output_normalized
+    assert tlr._from_gnomad(insertion_inputs["gnomad"]).model_dump(exclude_none=True) == insertion_output
+    assert tlr._from_gnomad(duplication_inputs["gnomad"]).model_dump(exclude_none=True) == duplication_output_normalized
 
 @pytest.mark.vcr
 def test_from_hgvs(tlr):
+    tlr.normalize = False
     assert tlr._from_hgvs(snv_inputs["hgvs"]).model_dump(exclude_none=True) == snv_output
     assert tlr._from_hgvs(deletion_inputs["hgvs"]).model_dump(exclude_none=True) == deletion_output
     assert tlr._from_hgvs(insertion_inputs["hgvs"]).model_dump(exclude_none=True) == insertion_output
@@ -116,6 +206,7 @@ def test_from_hgvs(tlr):
 
 @pytest.mark.vcr
 def test_from_spdi(tlr):
+    tlr.normalize = False
     assert tlr._from_spdi(snv_inputs["spdi"]).model_dump(exclude_none=True) == snv_output
     for spdi_del_expr in deletion_inputs["spdi"]:
         assert tlr._from_spdi(spdi_del_expr).model_dump(exclude_none=True) == deletion_output, spdi_del_expr
