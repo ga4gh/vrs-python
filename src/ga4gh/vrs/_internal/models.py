@@ -92,7 +92,7 @@ def pydantic_class_refatt_map():
     ))
     # Types directly reffable
     reffable_classes = list(filter(
-        lambda c: ('id' in c.__fields__
+        lambda c: ('id' in c.model_fields
                    and is_identifiable(c)),
         model_classes
     ))
@@ -100,7 +100,7 @@ def pydantic_class_refatt_map():
     union_reffable_classes = []
     for model_class in model_classes:
         if issubclass(model_class, RootModel):
-            flattened_type_annotation = flatten_type(model_class.__fields__["root"].annotation)
+            flattened_type_annotation = flatten_type(model_class.model_fields["root"].annotation)
             print("flattened_type_annotation: " + str(flattened_type_annotation))
             if overlaps(reffable_classes, flattened_type_annotation):
                 union_reffable_classes.append(model_class)
@@ -108,7 +108,7 @@ def pydantic_class_refatt_map():
     # Find any field whose type is a subclass of a reffable type,
     # or which is a typing.List that includes a reffable type.
     for model_class in model_classes:
-        fields = model_class.__fields__
+        fields = model_class.model_fields
         class_reffable_fields = []
         for fieldname, field in fields.items():
             if fieldname == 'root':
