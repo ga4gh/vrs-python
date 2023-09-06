@@ -23,7 +23,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Thu, 31 Aug 2023 20:16:16 GMT
+      - Wed, 06 Sep 2023 22:19:07 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -65,7 +65,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Thu, 31 Aug 2023 20:16:16 GMT
+      - Wed, 06 Sep 2023 22:19:07 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -95,7 +95,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Thu, 31 Aug 2023 20:16:16 GMT
+      - Wed, 06 Sep 2023 22:19:07 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -125,7 +125,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Thu, 31 Aug 2023 20:16:16 GMT
+      - Wed, 06 Sep 2023 22:19:07 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -155,7 +155,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Thu, 31 Aug 2023 20:16:16 GMT
+      - Wed, 06 Sep 2023 22:19:07 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -185,7 +185,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Thu, 31 Aug 2023 20:16:16 GMT
+      - Wed, 06 Sep 2023 22:19:07 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -215,7 +215,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Thu, 31 Aug 2023 20:16:16 GMT
+      - Wed, 06 Sep 2023 22:19:07 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -245,7 +245,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Thu, 31 Aug 2023 20:16:16 GMT
+      - Wed, 06 Sep 2023 22:19:07 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -275,7 +275,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Thu, 31 Aug 2023 20:16:16 GMT
+      - Wed, 06 Sep 2023 22:19:07 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -305,7 +305,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Thu, 31 Aug 2023 20:16:16 GMT
+      - Wed, 06 Sep 2023 22:19:07 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -335,7 +335,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Thu, 31 Aug 2023 20:16:16 GMT
+      - Wed, 06 Sep 2023 22:19:07 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -365,74 +365,9 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Thu, 31 Aug 2023 20:16:16 GMT
+      - Wed, 06 Sep 2023 22:19:07 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
-    status:
-      code: 200
-      message: OK
-- request:
-    body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      User-Agent:
-      - python-requests/2.31.0
-    method: GET
-    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nucleotide&id=NC_000013.11&rettype=fasta&seq_start=32316466&seq_stop=32316467&tool=bioutils&email=biocommons-dev@googlegroups.com
-  response:
-    body:
-      string: !!binary |
-        H4sIAAAAAAAAALLzc443AAJDYz1DQytjI2NDMxMzM10ow1zBIz83X6E4sSAzNa9YITmjCMgtzs9N
-        VTA01lFwD3LOMLbQKzA0UQgoysxNLKpUcCwuTs1NyqnkCnHk4gIAAAD//wMAfY62d1wAAAA=
-    headers:
-      Access-Control-Allow-Origin:
-      - '*'
-      Access-Control-Expose-Headers:
-      - X-RateLimit-Limit,X-RateLimit-Remaining
-      Cache-Control:
-      - private
-      Connection:
-      - Keep-Alive
-      Content-Disposition:
-      - attachment; filename="sequence.fasta"
-      Content-Security-Policy:
-      - upgrade-insecure-requests
-      Content-Type:
-      - text/plain
-      Date:
-      - Thu, 31 Aug 2023 20:16:16 GMT
-      Keep-Alive:
-      - timeout=4, max=40
-      NCBI-PHID:
-      - 322C572A8DE8D0950000404D6CB6CC0E.1.1.m_5
-      NCBI-SID:
-      - B6CCAB2B97C54A09_4F38SID
-      Referrer-Policy:
-      - origin-when-cross-origin
-      Server:
-      - Finatra
-      Set-Cookie:
-      - ncbi_sid=B6CCAB2B97C54A09_4F38SID; domain=.nih.gov; path=/; expires=Sat, 31
-        Aug 2024 20:16:16 GMT
-      Strict-Transport-Security:
-      - max-age=31536000; includeSubDomains; preload
-      Transfer-Encoding:
-      - chunked
-      X-RateLimit-Limit:
-      - '3'
-      X-RateLimit-Remaining:
-      - '2'
-      X-UA-Compatible:
-      - IE=Edge
-      X-XSS-Protection:
-      - 1; mode=block
-      content-encoding:
-      - gzip
     status:
       code: 200
       message: OK
@@ -470,20 +405,20 @@ interactions:
       Content-Type:
       - text/plain
       Date:
-      - Thu, 31 Aug 2023 20:16:17 GMT
+      - Wed, 06 Sep 2023 22:19:07 GMT
       Keep-Alive:
       - timeout=4, max=40
       NCBI-PHID:
-      - 322C572A8DE8D09500002E4D6F58A5DA.1.1.m_5
+      - 322C85E7550F506500004126D2F7CD8A.1.1.m_5
       NCBI-SID:
-      - 073CE1DDE48C1357_9001SID
+      - 18BCC2CE4B2A705E_8B96SID
       Referrer-Policy:
       - origin-when-cross-origin
       Server:
       - Finatra
       Set-Cookie:
-      - ncbi_sid=073CE1DDE48C1357_9001SID; domain=.nih.gov; path=/; expires=Sat, 31
-        Aug 2024 20:16:17 GMT
+      - ncbi_sid=18BCC2CE4B2A705E_8B96SID; domain=.nih.gov; path=/; expires=Fri, 06
+        Sep 2024 22:19:07 GMT
       Strict-Transport-Security:
       - max-age=31536000; includeSubDomains; preload
       Transfer-Encoding:
@@ -513,13 +448,13 @@ interactions:
       User-Agent:
       - python-requests/2.31.0
     method: GET
-    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nucleotide&id=NC_000013.11&rettype=fasta&seq_start=32316466&seq_stop=32316487&tool=bioutils&email=biocommons-dev@googlegroups.com
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nucleotide&id=NC_000013.11&rettype=fasta&seq_start=32316467&seq_stop=32316487&tool=bioutils&email=biocommons-dev@googlegroups.com
   response:
     body:
       string: !!binary |
-        H4sIAAAAAAAAALLzc443AAJDYz1DQytjI2NDMxMzM10Iw8JcwSM/N1+hOLEgMzWvWCE5owjILc7P
-        TVUwNNZRcA9yzjC20CswNFEIKMrMTSyqVHAsLk7NTcqp5ApxDAlxd3cMcXZ2dHR0B0F3IJOLCwAA
-        AP//AwDLG37GcAAAAA==
+        H4sIAAAAAAAAALLzc443AAJDYz1DQytjI2NDMxMzc10Iw8JcwSM/N1+hOLEgMzWvWCE5owjILc7P
+        TVUwNNZRcA9yzjC20CswNFEIKMrMTSyqVHAsLk7NTcqp5HIMCXF3dwxxdnZ0dHQHQXcgk4sLAAAA
+        //8DAG14V2hvAAAA
     headers:
       Access-Control-Allow-Origin:
       - '*'
@@ -536,20 +471,20 @@ interactions:
       Content-Type:
       - text/plain
       Date:
-      - Thu, 31 Aug 2023 20:16:17 GMT
+      - Wed, 06 Sep 2023 22:19:08 GMT
       Keep-Alive:
       - timeout=4, max=40
       NCBI-PHID:
-      - 939B29D888F10AD500001645649489B4.1.1.m_5
+      - 322C85E7550F506500003D26D4DA9F79.1.1.m_5
       NCBI-SID:
-      - 8CB66EC0240577D1_E8D6SID
+      - 9ECD78878F6CDDF2_6ED0SID
       Referrer-Policy:
       - origin-when-cross-origin
       Server:
       - Finatra
       Set-Cookie:
-      - ncbi_sid=8CB66EC0240577D1_E8D6SID; domain=.nih.gov; path=/; expires=Sat, 31
-        Aug 2024 20:16:18 GMT
+      - ncbi_sid=9ECD78878F6CDDF2_6ED0SID; domain=.nih.gov; path=/; expires=Fri, 06
+        Sep 2024 22:19:08 GMT
       Strict-Transport-Security:
       - max-age=31536000; includeSubDomains; preload
       Transfer-Encoding:

@@ -28,7 +28,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Thu, 31 Aug 2023 20:16:20 GMT
+      - Wed, 06 Sep 2023 22:19:10 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -63,7 +63,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Thu, 31 Aug 2023 20:16:20 GMT
+      - Wed, 06 Sep 2023 22:19:10 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -93,7 +93,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Thu, 31 Aug 2023 20:16:20 GMT
+      - Wed, 06 Sep 2023 22:19:10 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -123,7 +123,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Thu, 31 Aug 2023 20:16:20 GMT
+      - Wed, 06 Sep 2023 22:19:10 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -158,7 +158,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Thu, 31 Aug 2023 20:16:20 GMT
+      - Wed, 06 Sep 2023 22:19:10 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -188,7 +188,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Thu, 31 Aug 2023 20:16:20 GMT
+      - Wed, 06 Sep 2023 22:19:10 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -229,20 +229,20 @@ interactions:
       Content-Type:
       - text/plain
       Date:
-      - Thu, 31 Aug 2023 20:16:20 GMT
+      - Wed, 06 Sep 2023 22:19:11 GMT
       Keep-Alive:
       - timeout=4, max=40
       NCBI-PHID:
-      - 939B29D888F10AD5000027457065372F.1.1.m_5
+      - D0BD3C059681261500003ED290DEE977.1.1.m_5
       NCBI-SID:
-      - 1F4DC42F25DAA920_AA86SID
+      - 732AD5AA27B3A662_E66FSID
       Referrer-Policy:
       - origin-when-cross-origin
       Server:
       - Finatra
       Set-Cookie:
-      - ncbi_sid=1F4DC42F25DAA920_AA86SID; domain=.nih.gov; path=/; expires=Sat, 31
-        Aug 2024 20:16:20 GMT
+      - ncbi_sid=732AD5AA27B3A662_E66FSID; domain=.nih.gov; path=/; expires=Fri, 06
+        Sep 2024 22:19:11 GMT
       Strict-Transport-Security:
       - max-age=31536000; includeSubDomains; preload
       Transfer-Encoding:
@@ -272,13 +272,13 @@ interactions:
       User-Agent:
       - python-requests/2.31.0
     method: GET
-    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nucleotide&id=NM_181798.1&rettype=fasta&seq_start=1262&seq_stop=1268&tool=bioutils&email=biocommons-dev@googlegroups.com
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nucleotide&id=NM_181798.1&rettype=fasta&seq_start=1263&seq_stop=1268&tool=bioutils&email=biocommons-dev@googlegroups.com
   response:
     body:
       string: !!binary |
-        H4sIAAAAAAAAAAzEuwrCMBgG0D1P8Y0KrZAMWh2E0qGCGKhkl781rYHcSNKCb69nOFf5ePGGn87N
-        gV+4OIr6X4NbcAGZotE+I4ZCOZvVYQu20KLrhYp+Y/qQ99oir+NMztgvBjjtRp3Asbt3cuD7CiWR
-        z1MysWCjZMgXiAruKVvW9kp1qmfsBwAA//8DAFMv0XCGAAAA
+        H4sIAAAAAAAAAAzEuwrCMBgG0D1P8Y0KrZAKGh0E6VBBDFSyy9+a1kBuJGnBt9cznIt8vLjgx5PY
+        8TNvDvv6n8AtuIBM0WifEUOhnM3isAZbaNb1TEW/MX7Ie22Rl2EiZ+wXPZx2g07g2Nxb2fNthZLI
+        5zGZWLBSMuQLmgruKa+sU6pVHWM/AAAA//8DAATZgc6FAAAA
     headers:
       Access-Control-Allow-Origin:
       - '*'
@@ -295,20 +295,20 @@ interactions:
       Content-Type:
       - text/plain
       Date:
-      - Thu, 31 Aug 2023 20:16:21 GMT
+      - Wed, 06 Sep 2023 22:19:11 GMT
       Keep-Alive:
       - timeout=4, max=40
       NCBI-PHID:
-      - 322C572A8DE8D0950000394D7F162BF2.1.1.m_5
+      - 939B68E6D1C40EA5000024EAA4329593.1.1.m_5
       NCBI-SID:
-      - 38DEB32B67EC79ED_5DEDSID
+      - D60C6900D718CBA4_E1D0SID
       Referrer-Policy:
       - origin-when-cross-origin
       Server:
       - Finatra
       Set-Cookie:
-      - ncbi_sid=38DEB32B67EC79ED_5DEDSID; domain=.nih.gov; path=/; expires=Sat, 31
-        Aug 2024 20:16:21 GMT
+      - ncbi_sid=D60C6900D718CBA4_E1D0SID; domain=.nih.gov; path=/; expires=Fri, 06
+        Sep 2024 22:19:12 GMT
       Strict-Transport-Security:
       - max-age=31536000; includeSubDomains; preload
       Transfer-Encoding:
