@@ -300,6 +300,28 @@ def test_hgvs(tlr, hgvsexpr, expected):
     assert hgvsexpr == to_hgvs[0]
 
 
+def test_to_hgvs_invalid(tlr):
+    # IRI is passed
+    iri_vo =  models.Allele(
+        **{
+            "location": {
+                "end": 1263,
+                "start": 1262,
+                "sequenceReference": "seqrefs.jsonc#/NM_181798.1",
+                "type": "SequenceLocation"
+            },
+            "state": {
+                "sequence": "T",
+                "type": "LiteralSequenceExpression"
+            },
+            "type": "Allele"
+        }
+    )
+    with pytest.raises(TypeError) as e:
+        tlr.translate_to(iri_vo, "hgvs")
+    assert str(e.value) == "`vo.location.sequenceReference` expects a `SequenceReference`"
+
+
 # TODO: Readd these tests
 # @pytest.mark.vcr
 # def test_errors(tlr):

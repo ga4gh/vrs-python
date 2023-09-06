@@ -369,6 +369,9 @@ class Translator:
 
         If the VRS object cannot be expressed as HGVS, raises ValueError.
 
+        This method assumes that IRIs are dereferenced, providing a `SequenceReference`
+        as the `vo.location.sequenceReference`. If a `SequenceReference` is not
+        provided, raises TypeError
         """
 
         def ir_stype(a):
@@ -383,6 +386,11 @@ class Translator:
             if a.startswith("GRCh"):
                 return "g"
             return None
+
+        if not isinstance(vo.location.sequenceReference, models.SequenceReference):
+            raise TypeError(
+                "`vo.location.sequenceReference` expects a `SequenceReference`"
+            )
 
         sequence = f"ga4gh:{export_sequencelocation_sequence_id(vo.location.sequenceReference)}"
         aliases = self.data_proxy.translate_sequence_identifier(sequence, namespace)
@@ -410,8 +418,8 @@ class Translator:
                 ref = self.data_proxy.get_sequence(sequence, start, end)
                 start += 1
             ival = hgvs.location.Interval(
-                start=str(vo.location.start),
-                end=str(vo.location.end)
+                start=hgvs.location.SimplePosition(start),
+                end=hgvs.location.SimplePosition(end)
             )
             alt = str(vo.state.sequence.root) or None  # "" => None
             edit = hgvs.edit.NARefAlt(ref=ref, alt=alt)

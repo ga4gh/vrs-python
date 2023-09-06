@@ -28,7 +28,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Thu, 31 Aug 2023 20:16:18 GMT
+      - Wed, 06 Sep 2023 22:19:08 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -63,7 +63,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Thu, 31 Aug 2023 20:16:18 GMT
+      - Wed, 06 Sep 2023 22:19:08 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -93,7 +93,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Thu, 31 Aug 2023 20:16:18 GMT
+      - Wed, 06 Sep 2023 22:19:08 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -123,7 +123,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Thu, 31 Aug 2023 20:16:18 GMT
+      - Wed, 06 Sep 2023 22:19:08 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -158,7 +158,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Thu, 31 Aug 2023 20:16:18 GMT
+      - Wed, 06 Sep 2023 22:19:08 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -188,7 +188,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Thu, 31 Aug 2023 20:16:18 GMT
+      - Wed, 06 Sep 2023 22:19:08 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -229,20 +229,20 @@ interactions:
       Content-Type:
       - text/plain
       Date:
-      - Thu, 31 Aug 2023 20:16:18 GMT
+      - Wed, 06 Sep 2023 22:19:09 GMT
       Keep-Alive:
       - timeout=4, max=40
       NCBI-PHID:
-      - 939B29D888F10AD50000544567E271A9.1.1.m_5
+      - 939B68E6D1C40EA5000053EA9C2F634E.1.1.m_5
       NCBI-SID:
-      - 27E94100778C456F_83D0SID
+      - C32CE9D56C0FC4EA_0ECDSID
       Referrer-Policy:
       - origin-when-cross-origin
       Server:
       - Finatra
       Set-Cookie:
-      - ncbi_sid=27E94100778C456F_83D0SID; domain=.nih.gov; path=/; expires=Sat, 31
-        Aug 2024 20:16:18 GMT
+      - ncbi_sid=C32CE9D56C0FC4EA_0ECDSID; domain=.nih.gov; path=/; expires=Fri, 06
+        Sep 2024 22:19:09 GMT
       Strict-Transport-Security:
       - max-age=31536000; includeSubDomains; preload
       Transfer-Encoding:
@@ -272,13 +272,13 @@ interactions:
       User-Agent:
       - python-requests/2.31.0
     method: GET
-    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nucleotide&id=NM_001331029.1&rettype=fasta&seq_start=871&seq_stop=892&tool=bioutils&email=biocommons-dev@googlegroups.com
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nucleotide&id=NM_001331029.1&rettype=fasta&seq_start=872&seq_stop=892&tool=bioutils&email=biocommons-dev@googlegroups.com
   response:
     body:
       string: !!binary |
-        H4sIAAAAAAAAAAzGsQrCMBQF0L1fcUeFKnntYOsgxA51sZSSXZ4SbMAmIXkV/Hs7nXMZ7g+lqK5J
-        Ve2Rzs2JDk1b4RaWgMzRWZ8RUxDrPOIccpxZOFsQkn2vH5aQfsjrc/VOQNUVu3Ecadq2LyGJfX4l
-        FwVfTo69oCmxTIMujDa91p3p9Baz0ffamKL4AwAA//8DAJnR/l+RAAAA
+        H4sIAAAAAAAAAAzGsQrCMBQF0L1fcUeFKk062DoIsUNdLKFkl6cEG7BJSF4E/95O51ym+6NpRNuK
+        RvZHce5O8tD1ErewBmSKzvqMmAJb5xGXkONCTNlCINl3+RCH9EMuz+IdQ8grdlprMW/b1+BEPr+S
+        i4wvJUee0dVY50lVyoxKDWZQW8zGOCpjquoPAAD//wMAQOE1ipAAAAA=
     headers:
       Access-Control-Allow-Origin:
       - '*'
@@ -295,20 +295,20 @@ interactions:
       Content-Type:
       - text/plain
       Date:
-      - Thu, 31 Aug 2023 20:16:20 GMT
+      - Wed, 06 Sep 2023 22:19:09 GMT
       Keep-Alive:
       - timeout=4, max=40
       NCBI-PHID:
-      - 939B29D888F10AD5000026456BBA7A02.1.1.m_5
+      - D0BD3C0596812615000053D28D7656EE.1.1.m_5
       NCBI-SID:
-      - B2DAEA1A9D35DB08_63C8SID
+      - FA71EC3A86529D4A_0A89SID
       Referrer-Policy:
       - origin-when-cross-origin
       Server:
       - Finatra
       Set-Cookie:
-      - ncbi_sid=B2DAEA1A9D35DB08_63C8SID; domain=.nih.gov; path=/; expires=Sat, 31
-        Aug 2024 20:16:19 GMT
+      - ncbi_sid=FA71EC3A86529D4A_0A89SID; domain=.nih.gov; path=/; expires=Fri, 06
+        Sep 2024 22:19:10 GMT
       Strict-Transport-Security:
       - max-age=31536000; includeSubDomains; preload
       Transfer-Encoding:

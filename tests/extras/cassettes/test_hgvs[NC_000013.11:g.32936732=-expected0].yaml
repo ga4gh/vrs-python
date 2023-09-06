@@ -11,6 +11,48 @@ interactions:
       User-Agent:
       - python-requests/2.31.0
     method: GET
+    uri: http://localhost:5000/seqrepo/1/metadata/refseq:NC_000013.11
+  response:
+    body:
+      string: "{\n  \"added\": \"2016-08-27T23:50:14Z\",\n  \"aliases\": [\n    \"GRCh38:13\",\n
+        \   \"GRCh38:chr13\",\n    \"GRCh38.p1:13\",\n    \"GRCh38.p1:chr13\",\n    \"GRCh38.p10:13\",\n
+        \   \"GRCh38.p10:chr13\",\n    \"GRCh38.p11:13\",\n    \"GRCh38.p11:chr13\",\n
+        \   \"GRCh38.p12:13\",\n    \"GRCh38.p12:chr13\",\n    \"GRCh38.p2:13\",\n
+        \   \"GRCh38.p2:chr13\",\n    \"GRCh38.p3:13\",\n    \"GRCh38.p3:chr13\",\n
+        \   \"GRCh38.p4:13\",\n    \"GRCh38.p4:chr13\",\n    \"GRCh38.p5:13\",\n    \"GRCh38.p5:chr13\",\n
+        \   \"GRCh38.p6:13\",\n    \"GRCh38.p6:chr13\",\n    \"GRCh38.p7:13\",\n    \"GRCh38.p7:chr13\",\n
+        \   \"GRCh38.p8:13\",\n    \"GRCh38.p8:chr13\",\n    \"GRCh38.p9:13\",\n    \"GRCh38.p9:chr13\",\n
+        \   \"MD5:a5437debe2ef9c9ef8f3ea2874ae1d82\",\n    \"NCBI:NC_000013.11\",\n
+        \   \"refseq:NC_000013.11\",\n    \"SEGUID:2oDBty0yKV9wHo7gg+Bt+fPgi5o\",\n
+        \   \"SHA1:da80c1b72d32295f701e8ee083e06df9f3e08b9a\",\n    \"VMC:GS__0wi-qoDrvram155UmcSC-zA5ZK4fpLT\",\n
+        \   \"sha512t24u:_0wi-qoDrvram155UmcSC-zA5ZK4fpLT\",\n    \"ga4gh:SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT\"\n
+        \ ],\n  \"alphabet\": \"ACGKNTY\",\n  \"length\": 114364328\n}\n"
+    headers:
+      Connection:
+      - close
+      Content-Length:
+      - '1002'
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 06 Sep 2023 22:18:46 GMT
+      Server:
+      - Werkzeug/2.2.2 Python/3.10.4
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.31.0
+    method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/NC_000013.11?start=32936731&end=32936732
   response:
     body:
@@ -23,7 +65,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Thu, 31 Aug 2023 20:16:02 GMT
+      - Wed, 06 Sep 2023 22:18:46 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -65,7 +107,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Thu, 31 Aug 2023 20:16:02 GMT
+      - Wed, 06 Sep 2023 22:18:46 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -95,7 +137,49 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Thu, 31 Aug 2023 20:16:03 GMT
+      - Wed, 06 Sep 2023 22:18:46 GMT
+      Server:
+      - Werkzeug/2.2.2 Python/3.10.4
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.31.0
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/metadata/ga4gh:SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT
+  response:
+    body:
+      string: "{\n  \"added\": \"2016-08-27T23:50:14Z\",\n  \"aliases\": [\n    \"GRCh38:13\",\n
+        \   \"GRCh38:chr13\",\n    \"GRCh38.p1:13\",\n    \"GRCh38.p1:chr13\",\n    \"GRCh38.p10:13\",\n
+        \   \"GRCh38.p10:chr13\",\n    \"GRCh38.p11:13\",\n    \"GRCh38.p11:chr13\",\n
+        \   \"GRCh38.p12:13\",\n    \"GRCh38.p12:chr13\",\n    \"GRCh38.p2:13\",\n
+        \   \"GRCh38.p2:chr13\",\n    \"GRCh38.p3:13\",\n    \"GRCh38.p3:chr13\",\n
+        \   \"GRCh38.p4:13\",\n    \"GRCh38.p4:chr13\",\n    \"GRCh38.p5:13\",\n    \"GRCh38.p5:chr13\",\n
+        \   \"GRCh38.p6:13\",\n    \"GRCh38.p6:chr13\",\n    \"GRCh38.p7:13\",\n    \"GRCh38.p7:chr13\",\n
+        \   \"GRCh38.p8:13\",\n    \"GRCh38.p8:chr13\",\n    \"GRCh38.p9:13\",\n    \"GRCh38.p9:chr13\",\n
+        \   \"MD5:a5437debe2ef9c9ef8f3ea2874ae1d82\",\n    \"NCBI:NC_000013.11\",\n
+        \   \"refseq:NC_000013.11\",\n    \"SEGUID:2oDBty0yKV9wHo7gg+Bt+fPgi5o\",\n
+        \   \"SHA1:da80c1b72d32295f701e8ee083e06df9f3e08b9a\",\n    \"VMC:GS__0wi-qoDrvram155UmcSC-zA5ZK4fpLT\",\n
+        \   \"sha512t24u:_0wi-qoDrvram155UmcSC-zA5ZK4fpLT\",\n    \"ga4gh:SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT\"\n
+        \ ],\n  \"alphabet\": \"ACGKNTY\",\n  \"length\": 114364328\n}\n"
+    headers:
+      Connection:
+      - close
+      Content-Length:
+      - '1002'
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 06 Sep 2023 22:18:46 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -125,7 +209,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Thu, 31 Aug 2023 20:16:03 GMT
+      - Wed, 06 Sep 2023 22:18:46 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -143,12 +227,12 @@ interactions:
       User-Agent:
       - python-requests/2.31.0
     method: GET
-    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nucleotide&id=NC_000013.11&rettype=fasta&seq_start=32936731&seq_stop=32936732&tool=bioutils&email=biocommons-dev@googlegroups.com
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nucleotide&id=NC_000013.11&rettype=fasta&seq_start=32936732&seq_stop=32936732&tool=bioutils&email=biocommons-dev@googlegroups.com
   response:
     body:
       string: !!binary |
-        H4sIAAAAAAAAALLzc443AAJDYz1DQytjI0tjM3NjQ10ow0jBIz83X6E4sSAzNa9YITmjCMgtzs9N
-        VTA01lFwD3LOMLbQKzA0UQgoysxNLKpUcCwuTs1Nyqnkcnbm4gIAAAD//wMA49yXRFwAAAA=
+        H4sIAAAAAAAAALLzc443AAJDYz1DQytjI0tjM3NjI10YQ8EjPzdfoTixIDM1r1ghOaMIyC3Oz01V
+        MDTWUXAPcs4wttArMDRRCCjKzE0sqlRwLC5OzU3KqeRy5uICAAAA//8DALFcilZbAAAA
     headers:
       Access-Control-Allow-Origin:
       - '*'
@@ -165,20 +249,20 @@ interactions:
       Content-Type:
       - text/plain
       Date:
-      - Thu, 31 Aug 2023 20:16:07 GMT
+      - Wed, 06 Sep 2023 22:18:51 GMT
       Keep-Alive:
       - timeout=4, max=40
       NCBI-PHID:
-      - D0BD6E1D0758AC7500003735D2DB17B5.1.1.m_5
+      - 939B68E6D1C40EA5000028EA596BF585.1.1.m_5
       NCBI-SID:
-      - 9E731ACC80E665E2_1BB4SID
+      - E2C51A30ABE4B3F3_884DSID
       Referrer-Policy:
       - origin-when-cross-origin
       Server:
       - Finatra
       Set-Cookie:
-      - ncbi_sid=9E731ACC80E665E2_1BB4SID; domain=.nih.gov; path=/; expires=Sat, 31
-        Aug 2024 20:16:07 GMT
+      - ncbi_sid=E2C51A30ABE4B3F3_884DSID; domain=.nih.gov; path=/; expires=Fri, 06
+        Sep 2024 22:18:51 GMT
       Strict-Transport-Security:
       - max-age=31536000; includeSubDomains; preload
       Transfer-Encoding:
