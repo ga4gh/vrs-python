@@ -61,7 +61,7 @@ def flatten_type(t):
         if t.__origin__ == typing.Literal:
             return list(t.__args__)
         elif (t.__origin__ == typing.Union
-              or issubclass(t.__origin__,  typing.List)):
+              or issubclass(t.__origin__, typing.List)):
             return list(flatten([flatten_type(sub_t) for sub_t in t.__args__]))
     return [t]
 
@@ -73,7 +73,6 @@ def overlaps(a: list, b: list):
     return len(set(a).intersection(set(b))) > 0
 
 
-# <<<<<<< HEAD
 def pydantic_class_refatt_map():
     """
     Builds a map of class names to their field names that are referable types.
@@ -92,36 +91,28 @@ def pydantic_class_refatt_map():
         [gl_name_value[1] for gl_name_value in global_map.items()]
     ))
     # Types directly reffable
-    # reffable_classes = list(filter(
-    #     lambda c: ('id' in c.__fields__
-    #                and hasattr(c, 'ga4gh_digest')),
-    #     model_classes
-    # ))
     reffable_classes = list(filter(
-        lambda c: ('id' in c.__fields__
+        lambda c: ('id' in c.model_fields
                    and is_identifiable(c)),
         model_classes
     ))
     # Types reffable because they are a union of reffable types
-    union_reffable_classes = list(filter(
-        lambda c: ('__root__' in c.__fields__
-                   and overlaps(reffable_classes,
-                                flatten_type(c.__fields__['__root__'].type_))),
-        model_classes
-    ))
+    union_reffable_classes = []
+    for model_class in model_classes:
+        if issubclass(model_class, RootModel):
+            flattened_type_annotation = flatten_type(model_class.model_fields["root"].annotation)
+            if overlaps(reffable_classes, flattened_type_annotation):
+                union_reffable_classes.append(model_class)
     reffable_fields = {}
     # Find any field whose type is a subclass of a reffable type,
     # or which is a typing.List that includes a reffable type.
-    # Interestingly, ModelField.type_ is the member type for List types, not type List itself.
     for model_class in model_classes:
-        # if model_class in union_reffable_classes:
-        #     continue  # These don't have fields other than __root__
-        fields = model_class.__fields__
+        fields = model_class.model_fields
         class_reffable_fields = []
         for fieldname, field in fields.items():
-            if fieldname == '__root__':
+            if fieldname == 'root':
                 continue
-            field_type = field.type_  # a typing or normal annotation like str
+            field_type = field.annotation  # a typing or normal annotation like str
             # types can be raw class type annotation (int, str, dict, etc)
             # typing.Literal, typing.Union, typing.Optional
             # Use flatten_type to simplify these
@@ -140,9 +131,6 @@ def pydantic_class_refatt_map():
             union_reffable_classes,
             reffable_fields,
             class_keys)
-
-# =======
-# >>>>>>> pydantic-2.0-model
 
 
 class CopyChange(Enum):
@@ -611,10 +599,10 @@ class SystemicVariation(RootModel):
     )
 
 
-# # At end so classes exist
-# (
-#     reffable_classes,
-#     union_reffable_classes,
-#     class_refatt_map,
-#     class_keys
-# ) = pydantic_class_refatt_map()
+# At end so classes exist
+(
+    reffable_classes,
+    union_reffable_classes,
+    class_refatt_map,
+    class_keys
+) = pydantic_class_refatt_map()
