@@ -2,11 +2,8 @@
 
         su wag002adm # replace with your admin account name`
 
-2.  Start PostgreSQL:
+2.  Start PostgreSQL. This will be OS and package manager/installation dependent; these commands assume an ARM Mac and PostgreSQL installed via Homebrew.
 
-        # OS and package manager dependent;
-        # these commands and file locations assume an ARM Mac environment
-        # and PostgreSQL installation with homebrew
         pg_ctl -D /opt/homebrew/var/postgres start
         ps aux | grep postgres # check that postgres processes are running
 
