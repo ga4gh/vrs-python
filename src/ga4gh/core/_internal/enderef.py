@@ -59,7 +59,7 @@ def ga4gh_enref(o, cra_map, object_store=None):
         return _id_and_store(o)
 
     if not is_pydantic_instance(o):
-        raise ValueError("Called ga4gh_enref() with non-python_jsonschema_object instance")
+        raise ValueError("Called ga4gh_enref() with non-pydantic instance")
     if not is_identifiable(o):
         raise ValueError("Called ga4gh_enref() with non-identifiable object")
 
@@ -82,7 +82,7 @@ def ga4gh_deref(o, cra_map, object_store):
     def _deref(o):
         """depth-first recursive, in-place deref of object; returns id of object"""
         if o.type not in cra_map:
-            _logger.warn(f"{o.type} not in cra_map {cra_map}")
+            _logger.warning(f"{o.type} not in cra_map {cra_map}")
             return o
 
         ref_att_names = cra_map[o.type]
@@ -100,7 +100,7 @@ def ga4gh_deref(o, cra_map, object_store):
         return o
 
     if not is_pydantic_instance(o):
-        raise ValueError("Called ga4gh_deref() with non-python_jsonschema_object instance")
+        raise ValueError("Called ga4gh_deref() with non-non-pydantic instance")
     if not is_identifiable(o):
         raise ValueError("Called ga4gh_deref() with non-identifiable object")
 

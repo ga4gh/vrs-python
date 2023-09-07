@@ -101,7 +101,6 @@ def pydantic_class_refatt_map():
     for model_class in model_classes:
         if issubclass(model_class, RootModel):
             flattened_type_annotation = flatten_type(model_class.model_fields["root"].annotation)
-            print("flattened_type_annotation: " + str(flattened_type_annotation))
             if overlaps(reffable_classes, flattened_type_annotation):
                 union_reffable_classes.append(model_class)
     reffable_fields = {}
