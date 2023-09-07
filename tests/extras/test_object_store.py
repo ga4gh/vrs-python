@@ -3,13 +3,13 @@ import ast
 import os
 import pytest
 import shutil
+import sys
 
 from ga4gh.vrs.extras.object_store import Sqlite3MutableMapping
 
 
-def test_simple():
-    tmpdir = tempfile.mkdtemp()
-    db_path = tmpdir + "/test_simple.sqlite3"
+def test_simple(tmp_path):
+    db_path = str(tmp_path) + "/test_simple.sqlite3"
     object_store = Sqlite3MutableMapping(db_path)
 
     kvp = {
@@ -37,9 +37,8 @@ def test_simple():
     assert len(object_store) == 0
 
 
-def test_complex():
-    tmpdir = tempfile.mkdtemp()
-    db_path = tmpdir + "/test_complex.sqlite3"
+def test_complex(tmp_path):
+    db_path = str(tmp_path) + "/test_complex.sqlite3"
 
     kvp = {
         "A": "A-value",
@@ -57,25 +56,22 @@ def test_complex():
     }
 
     object_store = Sqlite3MutableMapping(db_path)
-    try:
-        assert len(object_store) == 0
+    assert len(object_store) == 0
 
-        for k, v in kvp.items():
-            object_store[k] = v
+    for k, v in kvp.items():
+        object_store[k] = v
 
-        assert len(kvp) == len(object_store)
-        assert set([k for k, v in kvp.items()]) == set(object_store.keys())
+    assert len(kvp) == len(object_store)
+    assert set([k for k, v in kvp.items()]) == set(object_store.keys())
 
-        for k_act, v_act in object_store.items():
-            assert kvp[k_act] == v_act
-    finally:
-        object_store.close()
-        shutil.rmtree(tmpdir)
+    for k_act, v_act in object_store.items():
+        assert kvp[k_act] == v_act
+
+    object_store.close()
 
 
-def test_classes():
-    tmpdir = tempfile.mkdtemp()
-    db_path = tmpdir + "/test_complex.sqlite3"
+def test_classes(tmp_path):
+    db_path = str(tmp_path) + "/test_complex.sqlite3"
 
     class TestClass(object):
         def __init__(self, id):
@@ -88,29 +84,28 @@ def test_classes():
             return f"{self.id}-{arg}"
 
     object_store = Sqlite3MutableMapping(db_path)
-    try:
-        val1 = TestClass("val1")
-        val2 = TestClass("val2")
-        object_store["val1"] = val1
-        object_store["val2"] = val2
 
-        # Test retrieval of custom object contents
-        assert len(object_store) == 2
-        assert object_store["val1"].id == "val1"
-        assert object_store["val2"].id == "val2"
-        assert object_store["val1"].somefunction("X") == "val1-X"
+    val1 = TestClass("val1")
+    val2 = TestClass("val2")
+    object_store["val1"] = val1
+    object_store["val2"] = val2
 
-        # Test deletes of custom objects
+    # Test retrieval of custom object contents
+    assert len(object_store) == 2
+    assert object_store["val1"].id == "val1"
+    assert object_store["val2"].id == "val2"
+    assert object_store["val1"].somefunction("X") == "val1-X"
+
+    # Test deletes of custom objects
+    del object_store["val1"]
+    assert len(object_store) == 1
+    with pytest.raises(KeyError):
         del object_store["val1"]
-        assert len(object_store) == 1
-        with pytest.raises(KeyError):
-            del object_store["val1"]
 
-        del object_store["val2"]
-        assert len(object_store) == 0
-    finally:
-        object_store.close()
-        shutil.rmtree(tmpdir)
+    del object_store["val2"]
+    assert len(object_store) == 0
+
+    object_store.close()
 
 
 # This version verifies that setting autocommit=False may
@@ -128,9 +123,8 @@ def test_classes():
 #     for i in range(value_count):
 #         assert object_store[f"key{i}"] == f"value{i}"
 
-def test_commit():
-    tmpdir = tempfile.mkdtemp()
-    db_path = tmpdir + "/test_commit.sqlite3"
+def test_commit(tmp_path):
+    db_path = str(tmp_path) + "/test_commit.sqlite3"
     object_store = Sqlite3MutableMapping(db_path, autocommit=False)
 
     value_count = int(1e4)
@@ -145,9 +139,8 @@ def test_commit():
         assert object_store[f"key{i}"] == f"value{i}"
 
 
-def test_contextmanager():
-    tmpdir = tempfile.mkdtemp()
-    db_path = tmpdir + "/test_contextmanager.sqlite3"
+def test_contextmanager(tmp_path):
+    db_path = str(tmp_path) + "/test_contextmanager.sqlite3"
     value_count = int(1e4)
     with Sqlite3MutableMapping(db_path, autocommit=False) as object_store:
         for i in range(value_count):
