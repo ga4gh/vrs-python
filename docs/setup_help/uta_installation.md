@@ -54,10 +54,15 @@ If you wanted to wait for the 5 hour update till later please follow these steps
         curl -O http://dl.biocommons.org/uta/$UTA_VERSION
         gzip -cdq ${UTA_VERSION} | grep -v "^REFRESH MATERIALIZED VIEW" | psql -h localhost -U uta_admin --echo-errors --single-transaction -v ON_ERROR_STOP=1 -d uta -p 5432
 
-10. Log back into `psql` and manually refresh the materialized views:
+10. Log back onto the `uta` database as `uta_admin` in `psql`:
 
+        psql uta uta_admin
+
+11. Manually refresh the materialized views:
+
+        // this will take 5+ hours
         REFRESH MATERIALIZED VIEW uta_20210129.exon_set_exons_fp_mv;
         REFRESH MATERIALIZED VIEW uta_20210129.tx_exon_set_summary_mv;
         REFRESH MATERIALIZED VIEW uta_20210129.tx_def_summary_mv;
-        REFRESH MATERIALIZED VIEW uta_20210129.tx_similarity_mv; // This step will take 5 or more hours
+        REFRESH MATERIALIZED VIEW uta_20210129.tx_similarity_mv;
 
