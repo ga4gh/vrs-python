@@ -21,7 +21,7 @@ jobs:
   release:
     runs-on: ubuntu-latest
     needs: get_branch
-    if: needs.get_branch.outputs.branch_name == '0.9'
+    if: needs.get_branch.outputs.branch_name == '2-alpha'
     steps:
     - uses: actions/checkout@v3
       with:
