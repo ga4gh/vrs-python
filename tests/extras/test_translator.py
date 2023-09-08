@@ -1,5 +1,7 @@
 import pytest
 
+from ga4gh.vrs import models
+
 snv_inputs = {
     "hgvs": "NC_000013.11:g.32936732G>C",
     "beacon": "13 : 32936732 G > C",
