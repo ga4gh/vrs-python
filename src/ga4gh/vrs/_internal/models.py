@@ -150,9 +150,6 @@ class ResidueAlphabet(Enum):
 
 
 class Range(RootModel):
-    model_config = ConfigDict(
-        extra='allow',
-    )
     root: List[Optional[int]] = Field(
         ...,
         description='An inclusive range of values bounded by one or more integers.',
@@ -162,9 +159,6 @@ class Range(RootModel):
 
 
 class Residue(RootModel):
-    model_config = ConfigDict(
-        extra='allow',
-    )
     root: constr(pattern=r'[A-Z*\-]') = Field(
         ...,
         description='A character representing a specific residue (i.e., molecular species) or groupings of these ("ambiguity codes"), using [one-letter IUPAC abbreviations](https://en.wikipedia.org/wiki/International_Union_of_Pure_and_Applied_Chemistry#Amino_acid_and_nucleotide_base_codes) for nucleic acids and amino acids.',
@@ -172,9 +166,6 @@ class Residue(RootModel):
 
 
 class SequenceString(RootModel):
-    model_config = ConfigDict(
-        extra='allow',
-    )
     root: constr(pattern=r'^[A-Z*\-]*$') = Field(
         ...,
         description='A character string of Residues that represents a biological sequence using the conventional sequence order (5’-to-3’ for nucleic acid sequences, and amino-to-carboxyl for amino acid sequences). IUPAC ambiguity codes are permitted in Sequence Strings.',
@@ -201,9 +192,6 @@ class Extension(BaseModel):
 
 
 class Code(RootModel):
-    model_config = ConfigDict(
-        extra='allow',
-    )
     root: constr(pattern=r'\S+( \S+)*') = Field(
         ...,
         description='Indicates that the value is taken from a set of controlled strings defined elsewhere. Technically, a code is restricted to a string which has at least one character and no leading or  trailing whitespace, and where there is no whitespace other than single spaces in the contents.',
@@ -212,9 +200,6 @@ class Code(RootModel):
 
 
 class IRI(RootModel):
-    model_config = ConfigDict(
-        extra='allow',
-    )
     root: str = Field(
         ...,
         description='An IRI Reference (either an IRI or a relative-reference), according to `RFC3986 section 4.1  <https://datatracker.ietf.org/doc/html/rfc3986#section-4.1>` and `RFC3987 section 2.1 <https://datatracker.ietf.org/doc/html/rfc3987#section-2.1>`. MAY be a JSON Pointer as an IRI fragment, as  described by `RFC6901 section 6 <https://datatracker.ietf.org/doc/html/rfc6901#section-6>`.',
@@ -356,9 +341,6 @@ class SequenceLocation(BaseModel):
 
 
 class SequenceExpression(RootModel):
-    model_config = ConfigDict(
-        extra='allow',
-    )
     root: Union[LiteralSequenceExpression, ReferenceLengthExpression] = Field(
         ..., description='An expression describing a Sequence.', discriminator='type'
     )
@@ -496,9 +478,6 @@ class CopyNumberChange(BaseModel):
 
 
 class Location(RootModel):
-    model_config = ConfigDict(
-        extra='allow',
-    )
     root: SequenceLocation = Field(
         ...,
         description='A contiguous segment of a biological sequence.',
@@ -533,9 +512,6 @@ class GenotypeMember(BaseModel):
 
 
 class MolecularVariation(RootModel):
-    model_config = ConfigDict(
-        extra='allow',
-    )
     root: Union[Allele, Haplotype] = Field(
         ..., description='A variation on a contiguous molecule.', discriminator='type'
     )
@@ -578,9 +554,6 @@ class Genotype(BaseModel):
 
 
 class Variation(RootModel):
-    model_config = ConfigDict(
-        extra='allow',
-    )
     root: Union[Allele, CopyNumberChange, CopyNumberCount, Genotype, Haplotype] = Field(
         ...,
         description='A representation of the state of one or more biomolecules.',
@@ -589,9 +562,6 @@ class Variation(RootModel):
 
 
 class SystemicVariation(RootModel):
-    model_config = ConfigDict(
-        extra='allow',
-    )
     root: Union[CopyNumberChange, CopyNumberCount, Genotype] = Field(
         ...,
         description='A Variation of multiple molecules in the context of a system, e.g. a genome, sample, or homologous chromosomes.',
