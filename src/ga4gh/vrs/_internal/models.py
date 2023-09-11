@@ -498,8 +498,7 @@ class SequenceLocation(_Ga4ghIdentifiableObject):
         description='The end coordinate or range of the SequenceLocation. The minimum value of this coordinate or range is 0. MUST represent a coordinate or range greater than the value of `start`.',
     )
 
-    class ga4gh:
-        identifiable = True
+    class ga4gh(_Ga4ghIdentifiableObject.ga4gh):
         prefix = 'SL'
         keys = [
             'type',
@@ -519,8 +518,7 @@ class Allele(_Ga4ghIdentifiableObject):
         ..., description='An expression of the sequence state'
     )
 
-    class ga4gh:
-        identifiable = True
+    class ga4gh(_Ga4ghIdentifiableObject.ga4gh):
         prefix = 'VA'
         keys = [
             'location',
@@ -540,8 +538,7 @@ class Haplotype(_Ga4ghIdentifiableObject):
         min_length=2,
     )
 
-    class ga4gh:
-        identifiable = True
+    class ga4gh(_Ga4ghIdentifiableObject.ga4gh):
         prefix = 'HT'
         keys = [
             'members',
@@ -568,8 +565,7 @@ class CopyNumberCount(_CopyNumber):
         ..., description='The integral number of copies of the subject in a system'
     )
 
-    class ga4gh:
-        identifiable = True
+    class ga4gh(_Ga4ghIdentifiableObject.ga4gh):
         prefix = 'CN'
         keys = [
             'copies',
@@ -592,8 +588,7 @@ class CopyNumberChange(_CopyNumber):
         description='MUST be one of "efo:0030069" (complete genomic loss), "efo:0020073" (high-level loss), "efo:0030068" (low-level loss), "efo:0030067" (loss), "efo:0030064" (regional base ploidy), "efo:0030070" (gain), "efo:0030071" (low-level gain), "efo:0030072" (high-level gain).',
     )
 
-    class ga4gh:
-        identifiable = True
+    class ga4gh(_Ga4ghIdentifiableObject.ga4gh):
         prefix = 'CX'
         keys = [
             'copyChange',
@@ -615,7 +610,8 @@ class GenotypeMember(_ValueObject):
         ..., description='A MolecularVariation at a Genotype locus.'
     )
 
-    class ga4gh:
+    class ga4gh(_Ga4ghIdentifiableObject.ga4gh):
+        identifiable = False
         keys = [
             'type',
             'count',
@@ -649,8 +645,7 @@ class Genotype(_Ga4ghIdentifiableObject):
         description='The total number of copies of all MolecularVariation at this locus, MUST be greater than or equal to the sum of GenotypeMember copy counts. If greater than the total counts, this implies additional MolecularVariation that are expected to exist but are not explicitly indicated.',
     )
 
-    class ga4gh:
-        identifiable = True
+    class ga4gh(_Ga4ghIdentifiableObject.ga4gh):
         prefix = 'GT'
         keys = [
             'count',
