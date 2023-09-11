@@ -658,10 +658,12 @@ class Genotype(_Ga4ghIdentifiableObject):
             'type'
         ]
 
+
 class SequenceExpression(RootModel):
     root: Union[LiteralSequenceExpression, ReferenceLengthExpression] = Field(
         ..., description='An expression describing a Sequence.', discriminator='type'
     )
+
 
 class Location(RootModel):
     root: SequenceLocation = Field(
