@@ -20,8 +20,8 @@ services:
 
   uta:
     # Test:
-    # psql -XAt postgres://anonymous@localhost/uta -c 'select count(*) from transcript'
-    # 249909
+    # psql -XAt postgres://anonymous@localhost/uta -c 'select count(*) from uta_20210129b.transcript'
+    # 314227
     image: biocommons/uta:uta_20210129b
     volumes:
       - uta_vol:/var/lib/postgresql/data
