@@ -11,7 +11,7 @@ from ga4gh.core import ga4gh_serialize, ga4gh_digest, ga4gh_identify
 from ga4gh.vrs import models
 
 fxs = {
-    "ga4gh_serialize": lambda o: ga4gh_serialize(o).decode(),
+    "ga4gh_serialize": lambda o: ga4gh_serialize(o).decode() if ga4gh_serialize(o) else None,
     "ga4gh_digest": ga4gh_digest,
     "ga4gh_identify": ga4gh_identify,
 }

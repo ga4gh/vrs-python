@@ -17,14 +17,14 @@ V1 pydantic: datamodel-codegen --input submodules/vrs/schema/merged.json --input
 V2 pydantic: datamodel-codegen --input submodules/vrs/schema/merged.json --input-file-type jsonschema --output models.py --output-model-type pydantic_v2.BaseModel --allow-extra-fields
 """
 
-from typing import Any, Dict, List, Literal, Optional, Set, Union
+from typing import Any, Dict, List, Literal, Optional, Union
 from enum import Enum
 import inspect
 import logging
 import sys
-import os
 import typing
-from pydantic import BaseModel, ConfigDict, Field, RootModel, constr
+
+from pydantic import BaseModel, ConfigDict, Field, RootModel, constr, model_validator
 
 from ga4gh.core._internal.pydantic import (
     is_identifiable,
@@ -133,20 +133,285 @@ def pydantic_class_refatt_map():
             class_keys)
 
 
-class CopyChange(Enum):
-    efo_0030069 = 'efo:0030069'
-    efo_0020073 = 'efo:0020073'
-    efo_0030068 = 'efo:0030068'
-    efo_0030067 = 'efo:0030067'
-    efo_0030064 = 'efo:0030064'
-    efo_0030070 = 'efo:0030070'
-    efo_0030071 = 'efo:0030071'
-    efo_0030072 = 'efo:0030072'
+class Relation(Enum):
+    """A mapping relation between concepts as defined by the Simple Knowledge
+    Organization System (SKOS).
+    """
+
+    CLOSE_MATCH = 'closeMatch'
+    EXACT_MATCH = 'exactMatch'
+    BROAD_MATCH = 'broadMatch'
+    NARROW_MATCH = 'narrowMatch'
+    RELATED_MATCH = 'relatedMatch'
+
+
+class Syntax(Enum):
+    """Define constraints for syntax"""
+
+    HGVS_C = "hgvs.c"
+    HGVS_P = "hgvs.p"
+    HGVS_G = "hgvs.g"
+    HGVS_M = "hgvs.m"
+    HGVS_N = "hgvs.n"
+    HGVS_R = "hgvs.r"
+    ISCN = "iscn"
+    GNOMAD = "gnomad"
+    SPDI = "spdi"
 
 
 class ResidueAlphabet(Enum):
-    amino_acid = 'amino acid'
-    nucleic_acid = 'nucleic acid'
+    AA = 'aa'
+    NA = 'na'
+
+
+class CopyChange(Enum):
+    EFO_0030069 = 'efo:0030069'
+    EFO_0020073 = 'efo:0020073'
+    EFO_0030068 = 'efo:0030068'
+    EFO_0030067 = 'efo:0030067'
+    EFO_0030064 = 'efo:0030064'
+    EFO_0030070 = 'efo:0030070'
+    EFO_0030071 = 'efo:0030071'
+    EFO_0030072 = 'efo:0030072'
+
+
+class Code(RootModel):
+    """Indicates that the value is taken from a set of controlled strings defined
+    elsewhere. Technically, a code is restricted to a string which has at least one
+    character and no leading or  trailing whitespace, and where there is no whitespace
+    other than single spaces in the contents."""
+
+    root: constr(pattern=r'\S+( \S+)*') = Field(
+        ...,
+        description='Indicates that the value is taken from a set of controlled strings defined elsewhere. Technically, a code is restricted to a string which has at least one character and no leading or  trailing whitespace, and where there is no whitespace other than single spaces in the contents.',
+        example='ENSG00000139618',
+    )
+
+
+class IRI(RootModel):
+    root: str = Field(
+        ...,
+        description='An IRI Reference (either an IRI or a relative-reference), according to `RFC3986 section 4.1  <https://datatracker.ietf.org/doc/html/rfc3986#section-4.1>` and `RFC3987 section 2.1 <https://datatracker.ietf.org/doc/html/rfc3987#section-2.1>`. MAY be a JSON Pointer as an IRI fragment, as  described by `RFC6901 section 6 <https://datatracker.ietf.org/doc/html/rfc6901#section-6>`.',
+    )
+
+
+class Extension(BaseModel):
+    """The Extension class provides VODs with a means to extend descriptions with other
+    attributes unique to a content provider. These extensions are not expected to be
+    natively understood under VRSATILE, but may be used for pre-negotiated exchange of
+    message attributes when needed.
+    """
+    model_config = ConfigDict(
+        extra='allow',
+    )
+    type: Literal['Extension'] = Field('Extension', description='MUST be "Extension".')
+    name: str = Field(..., description='A name for the Extension')
+    value: Optional[Union[float, str, bool, Dict[str, Any], List[Any]]] = Field(
+        None, description='Any primitive or structured object'
+    )
+
+
+class _Entity(BaseModel):
+    """Entity is the root class of `core` classes model - those that have identifiers
+    and other general metadata like labels, xrefs, urls, descriptions, etc. All core
+    classes descend from and inherit its attributes.
+    """
+
+    id: Optional[str] = Field(
+        None,
+        description="The 'logical' identifier of the entity in the system of record, e.g. a UUID. This 'id' is  unique within a given system. The identified entity may have a different 'id' in a different  system, or may refer to an 'id' for the shared concept in another system (e.g. a CURIE)."
+    )
+    label: Optional[str] = Field(
+        None,
+        description='A primary label for the entity.'
+    )
+    description: Optional[str] = Field(
+        None,
+        description='A free-text description of the entity.'
+    )
+    extensions: Optional[List[Extension]] = None
+
+
+class Coding(BaseModel):
+    """a concept codified by a terminology system."""
+
+    label: Optional[str] = Field(
+        None,
+        description='A primary label for the coding.'
+    )
+    system: str = Field(
+        ...,
+        description='Identity of the terminology system.'
+    )
+    version: Optional[str] = Field(
+        None,
+        description='Version of the terminology system.'
+    )
+    code: Code = Field(
+        ...,
+        description='Symbol in syntax defined by the terminology system.'
+    )
+
+class Mapping(_Entity):
+    """A mapping to a concept in a terminology system."""
+    model_config = ConfigDict(
+        use_enum_values=True
+    )
+
+    coding: Coding
+    relation: Relation = Field(
+        ...,
+        description='A mapping relation between concepts as defined by the Simple Knowledge Organization System (SKOS).'
+    )
+
+
+class _MappableEntity(_Entity):
+    """an Entity that is mappable to codings in other terminology systems."""
+
+    mappings: Optional[List[Mapping]] = None
+
+
+class _DomainEntity(_MappableEntity):
+    """An Entity that is specific to a particular biomedical domain such as disease,
+    therapeutics, or genes.
+    """
+
+    type: str
+    aliases: Optional[List[str]] = Field(
+        None,
+        description='Aliases are alternate labels for a Domain Entity.'
+    )
+
+
+class Phenotype(_DomainEntity):
+    """An observable characteristic or trait of an organism."""
+
+    type: Literal['Phenotype'] = Field(
+        'Phenotype',
+        description='MUST be "Phenotype".'
+    )
+
+
+class Disease(_DomainEntity):
+    """A particular abnormal condition that negatively affects the structure or function
+    of all or part of an organism and is not immediately due to any external injury.
+    """
+
+    type: Literal['Disease'] = Field(
+        'Disease',
+        description='MUST be "Disease".'
+    )
+
+
+class TraitSet(_DomainEntity):
+    """A set of phenotype and/or disease concepts that together constitute a condition."""
+
+    type: Literal['TraitSet'] = Field(
+        'TraitSet',
+        description='MUST be "TraitSet".'
+    )
+    traits: List[Union[Disease, Phenotype]] = Field(
+        ...,
+        min_length=2
+    )
+
+
+class TherapeuticAction(_DomainEntity):
+    """A therapeutic action taken that is intended to alter or stop a pathologic process."""
+
+    type: Literal['TherapeuticAction'] = Field(
+        'TherapeuticAction',
+        description='MUST be "TherapeuticAction".'
+    )
+
+
+class TherapeuticAgent(_DomainEntity):
+    """An administered therapeutic agent that is intended to alter or stop a pathologic process."""
+
+    type: Literal['TherapeuticAgent'] = Field(
+        'TherapeuticAgent',
+        description='MUST be "TherapeuticAgent".'
+    )
+
+
+class TherapeuticSubstituteGroup(_DomainEntity):
+    """A group of therapeutic procedures that may be treated as substitutes for one another."""
+
+    type: Literal['TherapeuticSubstituteGroup'] = Field(
+        'TherapeuticSubstituteGroup',
+        description='MUST be "TherapeuticSubstituteGroup".'
+    )
+    substitutes: List[Union[TherapeuticAction, TherapeuticAgent]] = Field(
+        ...,
+        description='The individual therapeutic procedures that may be treated as substitutes.',
+        min_length=2
+    )
+
+
+class CombinationTherapy(_DomainEntity):
+    """A therapeutic procedure that involves multiple different therapeutic procedures
+    performed in combination.
+    """
+
+    type: Literal['CombinationTherapy'] = Field(
+        'CombinationTherapy',
+        description='MUST be "CombinationTherapy".'
+    )
+    components: List[Union[
+        TherapeuticSubstituteGroup,
+        TherapeuticAction,
+        TherapeuticAgent
+    ]] = Field(
+        ...,
+        description='The individual therapeutic procedure components that constitute the combination therapy.',
+        min_length=2
+    )
+
+
+class Gene(_DomainEntity):
+    """A basic physical and functional unit of heredity."""
+
+    type: Literal['Gene'] = Field(
+        'Gene',
+        description='MUST be "Gene".'
+    )
+
+
+class _ValueObject(_Entity):
+    """A contextual value whose equality is based on value, not identity. All VRS Value
+    Objects may have computed digests from the VRS Computed Identifier algorithm.
+    See https://en.wikipedia.org/wiki/Value_object for more on Value Objects.
+    """
+
+    digest: Optional[constr(pattern=r'[0-9A-Za-z_\-]{32}')] = Field(
+        None,
+        description='A sha512t24u digest created using the VRS Computed Identifier algorithm.',
+    )
+
+
+class _Ga4ghIdentifiableObject(_ValueObject):
+    """A contextual value object for which a GA4GH computed identifier can be created."""
+
+    type: str
+
+    class ga4gh:
+        identifiable = True
+        prefix: str
+        keys: List[str]
+
+
+class Expression(BaseModel):
+    """Representation of a variation by a specified nomenclature or syntax for a
+    Variation object. Common examples of expressions for the description of molecular
+    variation include the HGVS and ISCN nomenclatures.
+    """
+    model_config = ConfigDict(
+        use_enum_values=True
+    )
+
+    syntax: Syntax
+    value: str
+    syntax_version: Optional[str] = None
 
 
 class Range(RootModel):
@@ -172,56 +437,12 @@ class SequenceString(RootModel):
     )
 
 
-class MappingClass(Enum):
-    closeMatch = 'closeMatch'
-    exactMatch = 'exactMatch'
-    broadMatch = 'broadMatch'
-    narrowMatch = 'narrowMatch'
-    relatedMatch = 'relatedMatch'
-
-
-class Extension(BaseModel):
+class SequenceReference(_ValueObject):
     model_config = ConfigDict(
-        extra='allow',
-    )
-    type: str = Field('Extension', description='MUST be "Extension".')
-    name: str = Field(..., description='A name for the Extension')
-    value: Optional[Union[float, str, bool, Dict[str, Any], List[Any]]] = Field(
-        None, description='Any primitive or structured object'
-    )
-
-
-class Code(RootModel):
-    root: constr(pattern=r'\S+( \S+)*') = Field(
-        ...,
-        description='Indicates that the value is taken from a set of controlled strings defined elsewhere. Technically, a code is restricted to a string which has at least one character and no leading or  trailing whitespace, and where there is no whitespace other than single spaces in the contents.',
-        example='ENSG00000139618',
-    )
-
-
-class IRI(RootModel):
-    root: str = Field(
-        ...,
-        description='An IRI Reference (either an IRI or a relative-reference), according to `RFC3986 section 4.1  <https://datatracker.ietf.org/doc/html/rfc3986#section-4.1>` and `RFC3987 section 2.1 <https://datatracker.ietf.org/doc/html/rfc3987#section-2.1>`. MAY be a JSON Pointer as an IRI fragment, as  described by `RFC6901 section 6 <https://datatracker.ietf.org/doc/html/rfc6901#section-6>`.',
-    )
-
-
-class SequenceReference(BaseModel):
-    model_config = ConfigDict(
-        extra='allow',
         use_enum_values=True
     )
-    id: Optional[str] = Field(
-        None,
-        description="The 'logical' identifier of the entity in the system of record, e.g. a UUID. This 'id' is  unique within a given system. The identified entity may have a different 'id' in a different  system, or may refer to an 'id' for the shared concept in another system (e.g. a CURIE).",
-    )
-    label: Optional[str] = None
-    extensions: Optional[List[Extension]] = None
-    type: str = Field('SequenceReference', description='MUST be "SequenceReference"')
-    digest: Optional[constr(pattern=r'[0-9A-Za-z_\-]{32}')] = Field(
-        None,
-        description='A sha512t24u digest created using the VRS Computed Identifier algorithm.',
-    )
+
+    type: Literal['SequenceReference'] = Field('SequenceReference', description='MUST be "SequenceReference"')
     refgetAccession: constr(pattern=r'SQ.[0-9A-Za-z_\-]{32}') = Field(
         ...,
         description='A `GA4GH RefGet <http://samtools.github.io/hts-specs/refget.html>` identifier for the referenced sequence, using the sha512t24u digest.',
@@ -229,24 +450,15 @@ class SequenceReference(BaseModel):
     residueAlphabet: Optional[ResidueAlphabet] = None
 
     class ga4gh:
-        identifiable = True
-        prefix = 'SQR'
-        keys = [
-            'refgetAccession',
-            'type'
-        ]
+        assigned: bool = Field(
+            True,
+            description='This special property indicates that the `digest` field follows an alternate convention and is expected to have the value assigned following that convention. For SequenceReference, it is expected the digest will be the refget accession value without the `SQ.` prefix.'
+        )
 
 
-class ReferenceLengthExpression(BaseModel):
-    model_config = ConfigDict(
-        extra='allow',
-    )
-    id: Optional[str] = Field(
-        None,
-        description="The 'logical' identifier of the entity in the system of record, e.g. a UUID. This 'id' is  unique within a given system. The identified entity may have a different 'id' in a different  system, or may refer to an 'id' for the shared concept in another system (e.g. a CURIE).",
-    )
-    label: Optional[str] = None
-    extensions: Optional[List[Extension]] = None
+class ReferenceLengthExpression(_ValueObject):
+    """An expression of a length of a sequence from a repeating reference."""
+
     type: Literal['ReferenceLengthExpression'] = Field(
         'ReferenceLengthExpression', description='MUST be "ReferenceLengthExpression"'
     )
@@ -256,67 +468,24 @@ class ReferenceLengthExpression(BaseModel):
     sequence: Optional[SequenceString] = Field(
         None, description='the Sequence encoded by the Reference Length Expression.'
     )
-    repeatSubunitLength: Optional[int] = Field(
+    repeatSubunitLength: int = Field(
         None, description='The number of residues in the repeat subunit.'
     )
 
 
+class LiteralSequenceExpression(_ValueObject):
+    """An explicit expression of a Sequence."""
 
-class LiteralSequenceExpression(BaseModel):
-    model_config = ConfigDict(
-        extra='allow',
-    )
-    id: Optional[str] = Field(
-        None,
-        description="The 'logical' identifier of the entity in the system of record, e.g. a UUID. This 'id' is  unique within a given system. The identified entity may have a different 'id' in a different  system, or may refer to an 'id' for the shared concept in another system (e.g. a CURIE).",
-    )
-    label: Optional[str] = None
-    extensions: Optional[List[Extension]] = None
     type: Literal['LiteralSequenceExpression'] = Field(
         'LiteralSequenceExpression', description='MUST be "LiteralSequenceExpression"'
     )
     sequence: SequenceString = Field(..., description='the literal sequence')
 
 
-class Mapping(BaseModel):
-    model_config = ConfigDict(
-        extra='allow',
-        use_enum_values=True
-    )
-    id: Optional[str] = Field(
-        None,
-        description="The 'logical' identifier of the entity in the system of record, e.g. a UUID. This 'id' is  unique within a given system. The identified entity may have a different 'id' in a different  system, or may refer to an 'id' for the shared concept in another system (e.g. a CURIE).",
-    )
-    label: Optional[str] = None
-    extensions: Optional[List[Extension]] = None
-    system: str = Field(..., description='Identity of the terminology system.')
-    version: Optional[str] = Field(
-        None, description='Version of the terminology system.'
-    )
-    code: Code = Field(
-        ..., description='Symbol in syntax defined by the terminology system.'
-    )
-    mapping: MappingClass = Field(
-        ...,
-        description='A mapping between concepts as defined by the Simple Knowledge Organization System (SKOS).',
-    )
+class SequenceLocation(_Ga4ghIdentifiableObject):
+    """A `Location` defined by an interval on a referenced `Sequence`."""
 
-
-class SequenceLocation(BaseModel):
-    model_config = ConfigDict(
-        extra='allow',
-    )
-    id: Optional[str] = Field(
-        None,
-        description="The 'logical' identifier of the entity in the system of record, e.g. a UUID. This 'id' is  unique within a given system. The identified entity may have a different 'id' in a different  system, or may refer to an 'id' for the shared concept in another system (e.g. a CURIE).",
-    )
-    label: Optional[str] = None
-    extensions: Optional[List[Extension]] = None
     type: Literal['SequenceLocation'] = Field('SequenceLocation', description='MUST be "SequenceLocation"')
-    digest: Optional[constr(pattern=r'[0-9A-Za-z_\-]{32}')] = Field(
-        None,
-        description='A sha512t24u digest created using the VRS Computed Identifier algorithm.',
-    )
     sequenceReference: Optional[Union[IRI, SequenceReference]] = Field(
         None, description='A SequenceReference.'
     )
@@ -340,27 +509,9 @@ class SequenceLocation(BaseModel):
         ]
 
 
-class SequenceExpression(RootModel):
-    root: Union[LiteralSequenceExpression, ReferenceLengthExpression] = Field(
-        ..., description='An expression describing a Sequence.', discriminator='type'
-    )
+class Allele(_Ga4ghIdentifiableObject):
 
-
-class Allele(BaseModel):
-    model_config = ConfigDict(
-        extra='allow',
-    )
-    id: Optional[str] = Field(
-        None,
-        description="The 'logical' identifier of the entity in the system of record, e.g. a UUID. This 'id' is  unique within a given system. The identified entity may have a different 'id' in a different  system, or may refer to an 'id' for the shared concept in another system (e.g. a CURIE).",
-    )
-    label: Optional[str] = None
-    extensions: Optional[List[Extension]] = None
     type: Literal['Allele'] = Field('Allele', description='MUST be "Allele"')
-    digest: Optional[constr(pattern=r'[0-9A-Za-z_\-]{32}')] = Field(
-        None,
-        description='A sha512t24u digest created using the VRS Computed Identifier algorithm.',
-    )
     location: Union[IRI, SequenceLocation] = Field(
         ..., description='The location of the Allele'
     )
@@ -378,25 +529,14 @@ class Allele(BaseModel):
         ]
 
 
-class Haplotype(BaseModel):
-    model_config = ConfigDict(
-        extra='allow',
-    )
-    id: Optional[str] = Field(
-        None,
-        description="The 'logical' identifier of the entity in the system of record, e.g. a UUID. This 'id' is  unique within a given system. The identified entity may have a different 'id' in a different  system, or may refer to an 'id' for the shared concept in another system (e.g. a CURIE).",
-    )
-    label: Optional[str] = None
-    extensions: Optional[List[Extension]] = None
+class Haplotype(_Ga4ghIdentifiableObject):
+    """A set of non-overlapping Allele members that co-occur on the same molecule."""
+
     type: Literal['Haplotype'] = Field('Haplotype', description='MUST be "Haplotype"')
-    digest: Optional[constr(pattern=r'[0-9A-Za-z_\-]{32}')] = Field(
-        None,
-        description='A sha512t24u digest created using the VRS Computed Identifier algorithm.',
-    )
     # TODO members temporarily typed as List instead of Set
     members: List[Union[Allele, IRI]] = Field(
         ...,
-        description='List of Alleles, or references to Alleles, that comprise this Haplotype.',
+        description='A list of Alleles (or IRI references to `Alleles`) that comprise a Haplotype. Since each `Haplotype` member MUST be an `Allele`, and all members MUST share a common `SequenceReference`, implementations MAY use a compact representation of Haplotype that omits type and `SequenceReference` information in individual Haplotype members. Implementations MUST transform compact `Allele` representations into an `Allele` when computing GA4GH identifiers.',
         min_length=2,
     )
 
@@ -409,25 +549,21 @@ class Haplotype(BaseModel):
         ]
 
 
-class CopyNumberCount(BaseModel):
-    model_config = ConfigDict(
-        extra='allow',
-    )
-    id: Optional[str] = Field(
-        None,
-        description="The 'logical' identifier of the entity in the system of record, e.g. a UUID. This 'id' is  unique within a given system. The identified entity may have a different 'id' in a different  system, or may refer to an 'id' for the shared concept in another system (e.g. a CURIE).",
-    )
-    label: Optional[str] = None
-    extensions: Optional[List[Extension]] = None
-    type: Literal['CopyNumberCount'] = Field('CopyNumberCount', description='MUST be "CopyNumberCount"')
-    digest: Optional[constr(pattern=r'[0-9A-Za-z_\-]{32}')] = Field(
-        None,
-        description='A sha512t24u digest created using the VRS Computed Identifier algorithm.',
-    )
-    subject: Union[IRI, SequenceLocation] = Field(
+class _CopyNumber(_Ga4ghIdentifiableObject):
+    """A measure of the copies of a `Location` within a system (e.g. genome, cell, etc.)"""
+
+    location: Union[IRI, SequenceLocation] = Field(
         ...,
         description='A location for which the number of systemic copies is described.',
     )
+
+
+class CopyNumberCount(_CopyNumber):
+    """The absolute count of discrete copies of a `Location` or `Gene`, within a system
+    (e.g. genome, cell, etc.).
+    """
+
+    type: Literal['CopyNumberCount'] = Field('CopyNumberCount', description='MUST be "CopyNumberCount"')
     copies: Union[Range, int] = Field(
         ..., description='The integral number of copies of the subject in a system'
     )
@@ -437,31 +573,20 @@ class CopyNumberCount(BaseModel):
         prefix = 'CN'
         keys = [
             'copies',
-            'subject',
+            'location',
             'type'
         ]
 
 
-class CopyNumberChange(BaseModel):
+class CopyNumberChange(_CopyNumber):
+    """An assessment of the copy number of a `Location` or a `Gene` within a system
+    (e.g. genome, cell, etc.) relative to a baseline ploidy.
+    """
     model_config = ConfigDict(
-        extra='allow',
         use_enum_values=True
     )
-    id: Optional[str] = Field(
-        None,
-        description="The 'logical' identifier of the entity in the system of record, e.g. a UUID. This 'id' is  unique within a given system. The identified entity may have a different 'id' in a different  system, or may refer to an 'id' for the shared concept in another system (e.g. a CURIE).",
-    )
-    label: Optional[str] = None
-    extensions: Optional[List[Extension]] = None
+
     type: Literal['CopyNumberChange'] = Field('CopyNumberChange', description='MUST be "CopyNumberChange"')
-    digest: Optional[constr(pattern=r'[0-9A-Za-z_\-]{32}')] = Field(
-        None,
-        description='A sha512t24u digest created using the VRS Computed Identifier algorithm.',
-    )
-    subject: Union[IRI, SequenceLocation] = Field(
-        ...,
-        description='A location for which the number of systemic copies is described.',
-    )
     copyChange: CopyChange = Field(
         ...,
         description='MUST be one of "efo:0030069" (complete genomic loss), "efo:0020073" (high-level loss), "efo:0030068" (low-level loss), "efo:0030067" (loss), "efo:0030064" (regional base ploidy), "efo:0030070" (gain), "efo:0030071" (low-level gain), "efo:0030072" (high-level gain).',
@@ -472,30 +597,17 @@ class CopyNumberChange(BaseModel):
         prefix = 'CX'
         keys = [
             'copyChange',
-            'subject',
+            'location',
             'type'
         ]
 
 
-class Location(RootModel):
-    root: SequenceLocation = Field(
-        ...,
-        description='A contiguous segment of a biological sequence.',
-        discriminator='type',
-    )
+class GenotypeMember(_ValueObject):
+    """A class for expressing the count of a specific `MolecularVariation` present
+    in-trans at a genomic locus represented by a `Genotype`.
+    """
 
-
-class GenotypeMember(BaseModel):
-    model_config = ConfigDict(
-        extra='allow',
-    )
-    id: Optional[str] = Field(
-        None,
-        description="The 'logical' identifier of the entity in the system of record, e.g. a UUID. This 'id' is  unique within a given system. The identified entity may have a different 'id' in a different  system, or may refer to an 'id' for the shared concept in another system (e.g. a CURIE).",
-    )
-    label: Optional[str] = None
-    extensions: Optional[List[Extension]] = None
-    type: str = Field('GenotypeMember', description='MUST be "GenotypeMember".')
+    type: Literal['GenotypeMember'] = Field('GenotypeMember', description='MUST be "GenotypeMember".')
     count: Union[Range, int] = Field(
         ..., description='The number of copies of the `variation` at a Genotype locus.'
     )
@@ -512,27 +624,21 @@ class GenotypeMember(BaseModel):
 
 
 class MolecularVariation(RootModel):
+    """A variation on a contiguous molecule."""
+
     root: Union[Allele, Haplotype] = Field(
         ..., description='A variation on a contiguous molecule.', discriminator='type'
     )
 
 
-class Genotype(BaseModel):
-    model_config = ConfigDict(
-        extra='allow',
+class Genotype(_Ga4ghIdentifiableObject):
+    """A quantified set of _in-trans_ `MolecularVariation` at a genomic locus."""
+
+    type: Literal['Genotype'] = Field(
+        'Genotype',
+        description='MUST be "Genotype"'
     )
-    id: Optional[str] = Field(
-        None,
-        description="The 'logical' identifier of the entity in the system of record, e.g. a UUID. This 'id' is  unique within a given system. The identified entity may have a different 'id' in a different  system, or may refer to an 'id' for the shared concept in another system (e.g. a CURIE).",
-    )
-    label: Optional[str] = None
-    extensions: Optional[List[Extension]] = None
-    type: Literal['Genotype'] = Field('Genotype', description='MUST be "Genotype"')
-    digest: Optional[constr(pattern=r'[0-9A-Za-z_\-]{32}')] = Field(
-        None,
-        description='A sha512t24u digest created using the VRS Computed Identifier algorithm.',
-    )
-    # TODO members temporarily typed as List instead of Set
+    # TODO members temporarily typed as List instead of Set + validate unique items
     members: List[GenotypeMember] = Field(
         ...,
         description='Each GenotypeMember in `members` describes a MolecularVariation and the count of that variation at the locus.',
@@ -552,6 +658,40 @@ class Genotype(BaseModel):
             'type'
         ]
 
+class SequenceExpression(RootModel):
+    root: Union[LiteralSequenceExpression, ReferenceLengthExpression] = Field(
+        ..., description='An expression describing a Sequence.', discriminator='type'
+    )
+
+class Location(RootModel):
+    root: SequenceLocation = Field(
+        ...,
+        description='A contiguous segment of a biological sequence.',
+        discriminator='type',
+    )
+
+
+class Condition(RootModel):
+    """A disease or other medical disorder."""
+
+    root: Union[Disease, Phenotype, TraitSet] = Field(
+        ...,
+        description='A disease or other medical disorder.',
+        discriminator='type',
+    )
+
+
+class TherapeuticProcedure(RootModel):
+    """An action or administration of therapeutic agents to produce an effect  that is
+    intended to alter or stop a pathologic process.
+    """
+
+    root: Union[CombinationTherapy, TherapeuticAction, TherapeuticAgent, TherapeuticSubstituteGroup] = Field(
+        ...,
+        description='An action or administration of therapeutic agents to produce an effect that is intended to alter or stop a pathologic process.',
+        discriminator='type',
+    )
+
 
 class Variation(RootModel):
     root: Union[Allele, CopyNumberChange, CopyNumberCount, Genotype, Haplotype] = Field(
@@ -562,6 +702,10 @@ class Variation(RootModel):
 
 
 class SystemicVariation(RootModel):
+    """A Variation of multiple molecules in the context of a system, e.g. a genome,
+    sample, or homologous chromosomes.
+    """
+
     root: Union[CopyNumberChange, CopyNumberCount, Genotype] = Field(
         ...,
         description='A Variation of multiple molecules in the context of a system, e.g. a genome, sample, or homologous chromosomes.',

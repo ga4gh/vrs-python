@@ -101,6 +101,12 @@ def ga4gh_identify(vro):
     return None
 
 
+def _is_sequence_reference(input_obj) -> bool:
+    """Determine if `input_obj` is a Sequence Reference"""
+
+    return getattr_in(input_obj, ["ga4gh", "assigned", "default"]) and input_obj.type == "SequenceReference"
+
+
 def ga4gh_digest(vro: BaseModel, do_compact=True):
     """
     Return the GA4GH digest for the object.
@@ -116,8 +122,12 @@ def ga4gh_digest(vro: BaseModel, do_compact=True):
     'u5fspwVbQ79QkX6GHLF8tXPCAXFJqRPx'
 
     """
-    s = ga4gh_serialize(vro)
-    return sha512t24u(s)
+    if _is_sequence_reference(vro):
+        digest = vro.refgetAccession.split("SQ.")[-1]
+    else:
+        s = ga4gh_serialize(vro)
+        digest = sha512t24u(s)
+    return digest
 
 
 def replace_with_digest(val: dict) -> Union[str, dict]:
@@ -149,6 +159,9 @@ def ga4gh_serialize(obj: BaseModel) -> bytes:
     TODO find a way to output identify_all without the 'digest' fields on subobjects,
     without traversing the whole tree again in collapse_identifiable_values.
     """
+    if _is_sequence_reference(obj):
+        return None
+
     identified = identify_all(obj)
     if isinstance(identified, dict):
         # Replace identifiable subobjects with their digests
@@ -185,7 +198,7 @@ def identify_all(
 ) -> Union[str, dict]:
     """
     Adds digests to an identifiable Pydantic object and any identifiable Pydantic
-    objects in its fields, at any depth.
+    objects in its fields, at any depth. Assumes IRIs are dereferenced.
 
     Returns the identified object tree, and the tree with identified objects
     replaced with their digests.
@@ -206,6 +219,8 @@ def identify_all(
         exported_obj = export_pydantic_model(input_obj)
         if "digest" in exported_obj and exported_obj["digest"] is not None:
             output_obj = exported_obj
+        elif _is_sequence_reference(input_obj):
+            output_obj = exported_obj["refgetAccession"].split("SQ.")[-1]
         else:
             # Take static key set from the object, or use all fields
             include_keys = getattr_in(input_obj, ["ga4gh", "keys"])

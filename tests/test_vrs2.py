@@ -113,25 +113,24 @@ def test_vr():
     # Sequence Reference
     seqref = a.location.sequenceReference
     seqref_serialized = ga4gh_serialize(seqref)
-    assert seqref_serialized == b'{"refgetAccession":"SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul","type":"SequenceReference"}'
-    assert sha512t24u(seqref_serialized) == 'OFEyBMeo55q3QRrxAY5FiDqnkdyf0GTV'
-    assert ga4gh_digest(seqref) == 'OFEyBMeo55q3QRrxAY5FiDqnkdyf0GTV'
-    assert ga4gh_identify(seqref) == 'ga4gh:SQR.OFEyBMeo55q3QRrxAY5FiDqnkdyf0GTV'
+    assert seqref_serialized is None
+    assert ga4gh_digest(seqref) == 'F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul'
+    assert ga4gh_identify(seqref) is None
 
     # Location
     loc = a.location
     loc_serialized = ga4gh_serialize(loc)
-    assert loc_serialized == b'{"end":55181320,"sequenceReference":"OFEyBMeo55q3QRrxAY5FiDqnkdyf0GTV","start":55181319,"type":"SequenceLocation"}'
-    assert sha512t24u(loc_serialized) == 'TQ--CzByOOf6uc89QqNqEzrFLSCkNiv0'
-    assert ga4gh_digest(loc) == 'TQ--CzByOOf6uc89QqNqEzrFLSCkNiv0'
-    assert ga4gh_identify(loc) == 'ga4gh:SL.TQ--CzByOOf6uc89QqNqEzrFLSCkNiv0'
+    assert loc_serialized == b'{"end":55181320,"sequenceReference":"F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul","start":55181319,"type":"SequenceLocation"}'
+    assert sha512t24u(loc_serialized) == 'wbBBFBTTyBcJPyjkK7z_dCcHFm5pE-2K'
+    assert ga4gh_digest(loc) == 'wbBBFBTTyBcJPyjkK7z_dCcHFm5pE-2K'
+    assert ga4gh_identify(loc) == 'ga4gh:SL.wbBBFBTTyBcJPyjkK7z_dCcHFm5pE-2K'
 
     # Allele
     allele_serialized = ga4gh_serialize(a)
-    assert allele_serialized == b'{"location":"TQ--CzByOOf6uc89QqNqEzrFLSCkNiv0","state":{"sequence":"T","type":"LiteralSequenceExpression"},"type":"Allele"}'
-    assert sha512t24u(allele_serialized) == 'NqnE9Bl89TMfNYExrZbDINwbHlKP9_CT'
-    assert ga4gh_digest(a) == 'NqnE9Bl89TMfNYExrZbDINwbHlKP9_CT'
-    assert ga4gh_identify(a) == 'ga4gh:VA.NqnE9Bl89TMfNYExrZbDINwbHlKP9_CT'
+    assert allele_serialized == b'{"location":"wbBBFBTTyBcJPyjkK7z_dCcHFm5pE-2K","state":{"sequence":"T","type":"LiteralSequenceExpression"},"type":"Allele"}'
+    assert sha512t24u(allele_serialized) == 'hOZr7drvRxkUT_srSFVq1NCzvAJdKJlw'
+    assert ga4gh_digest(a) == 'hOZr7drvRxkUT_srSFVq1NCzvAJdKJlw'
+    assert ga4gh_identify(a) == 'ga4gh:VA.hOZr7drvRxkUT_srSFVq1NCzvAJdKJlw'
 
     # Commenting out enref/deref tests.
     # We are deciding whether this will continue to be included in this library.
@@ -149,20 +148,20 @@ def test_haplotype():
     assert haplotype_431012.model_dump(exclude_none=True) == haplotype_431012_dict
     assert is_pydantic_instance(haplotype_431012)
     haplotype_serialized = ga4gh_serialize(haplotype_431012)
-    assert haplotype_serialized == b'{"members":["RFAhPFhH-CBJ3nbdhWmmHPwxx9hJutgG","7r7UeyWSoPcazmQPVuEGdLoDRpvbdfev"],"type":"Haplotype"}'
-    assert sha512t24u(haplotype_serialized) == 'e2fugjAm6tih0rFyXSRboriU6UCP87Jg'
-    assert ga4gh_digest(haplotype_431012) == 'e2fugjAm6tih0rFyXSRboriU6UCP87Jg'
-    assert ga4gh_identify(haplotype_431012) == 'ga4gh:HT.e2fugjAm6tih0rFyXSRboriU6UCP87Jg'
+    assert haplotype_serialized == b'{"members":["734G5mtNwe40do8F6GKuqQP4QxyjBqVp","bU3n0M2YQaV5C5ebODJYZ0GnbyCrOIHi"],"type":"Haplotype"}'
+    assert sha512t24u(haplotype_serialized) == 'fFR5oRpeD8Cuq2hfs3bXd1rgJUQrQA26'
+    assert ga4gh_digest(haplotype_431012) == 'fFR5oRpeD8Cuq2hfs3bXd1rgJUQrQA26'
+    assert ga4gh_identify(haplotype_431012) == 'ga4gh:HT.fFR5oRpeD8Cuq2hfs3bXd1rgJUQrQA26'
 
 
 def test_genotype():
     assert genotype_431013.model_dump(exclude_none=True) == genotype_431013_dict
     assert is_pydantic_instance(genotype_431013)
     genotype_serialized = ga4gh_serialize(genotype_431013)
-    assert genotype_serialized == b'{"count":1,"members":[{"count":1,"type":"GenotypeMember","variation":"e2fugjAm6tih0rFyXSRboriU6UCP87Jg"},{"count":1,"type":"GenotypeMember","variation":"CI3eGgzgzIRgVXqVt3lG5DgPshFbXrxg"}],"type":"Genotype"}'
-    assert sha512t24u(genotype_serialized) == 'rNZKmmqSEx-NlSQELt3ckIarQrZOdrkP'
-    assert ga4gh_digest(genotype_431013) == 'rNZKmmqSEx-NlSQELt3ckIarQrZOdrkP'
-    assert ga4gh_identify(genotype_431013) == 'ga4gh:GT.rNZKmmqSEx-NlSQELt3ckIarQrZOdrkP'
+    assert genotype_serialized == b'{"count":1,"members":[{"count":1,"type":"GenotypeMember","variation":"fFR5oRpeD8Cuq2hfs3bXd1rgJUQrQA26"},{"count":1,"type":"GenotypeMember","variation":"AUYSTKn2HElZ_Gg-Cv9Pm6Yx9Xpvx8Tm"}],"type":"Genotype"}'
+    assert sha512t24u(genotype_serialized) == '51J0mMryCGjdce3qBpqNt4n_hXUQmw83'
+    assert ga4gh_digest(genotype_431013) == '51J0mMryCGjdce3qBpqNt4n_hXUQmw83'
+    assert ga4gh_identify(genotype_431013) == 'ga4gh:GT.51J0mMryCGjdce3qBpqNt4n_hXUQmw83'
 
 
 def test_iri():
@@ -180,10 +179,10 @@ def test_enref():
     actual_no_loc = allele_383650_enreffed.model_dump().copy()
     actual_no_loc.pop("location")
     assert orig_no_loc == actual_no_loc, "Original and enreffed match except for enreffed field"
-    assert allele_383650_enreffed.location == 'ga4gh:SL.6kJ-T5Y6EhiJVUxKZoFbOL5e4KkV0Yf6'
+    assert allele_383650_enreffed.location == 'ga4gh:SL.cWtFS2CsCI1E_ocNVu6PeFQaMtVxIE-L'
     assert allele_383650_enreffed.model_dump(exclude_none=True) == {
         'type': 'Allele',
-        'location': 'ga4gh:SL.6kJ-T5Y6EhiJVUxKZoFbOL5e4KkV0Yf6',
+        'location': 'ga4gh:SL.cWtFS2CsCI1E_ocNVu6PeFQaMtVxIE-L',
         'state': {
             'type': 'LiteralSequenceExpression',
             'sequence': 'T'}}

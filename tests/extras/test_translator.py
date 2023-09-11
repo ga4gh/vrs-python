@@ -228,9 +228,9 @@ def test_to_spdi(tlr):
 
 hgvs_tests = (
     ("NC_000013.11:g.32936732=", {
-        "id": "ga4gh:VA.WzOhVdPkrJOnhUL8SftSUstQzkM9oNvJ",
+        "id": "ga4gh:VA.GuDPEe-WojSx4b4DxupN3si1poaR61qL",
         "location": {
-            "id": "ga4gh:SL.4vFSS0UP_RYIDcOihI1qe9D8pfPOCmYO",
+            "id": "ga4gh:SL.jnDT8dINDpAXO35MdLK-8KzLSDL-N3LI",
             "end": 32936732,
             "start": 32936731,
             "sequenceReference": {
@@ -246,9 +246,9 @@ hgvs_tests = (
         "type": "Allele"
     }),
     ("NC_000007.14:g.55181320A>T", {
-        "id": "ga4gh:VA.NqnE9Bl89TMfNYExrZbDINwbHlKP9_CT",
+        "id": "ga4gh:VA.hOZr7drvRxkUT_srSFVq1NCzvAJdKJlw",
         "location": {
-            "id": "ga4gh:SL.TQ--CzByOOf6uc89QqNqEzrFLSCkNiv0",
+            "id": "ga4gh:SL.wbBBFBTTyBcJPyjkK7z_dCcHFm5pE-2K",
             "end": 55181320,
             "start": 55181319,
             "sequenceReference": {
@@ -264,9 +264,9 @@ hgvs_tests = (
         "type": "Allele"
     }),
     ("NC_000007.14:g.55181220del", {
-        "id": "ga4gh:VA.LkQ5L2nuMTpGHUuX8AQ-ip48R9OoqZyO",
+        "id": "ga4gh:VA.BNV6SfAuqDYKTTRknLcS-QuTryF5rSBi",
         "location": {
-            "id": "ga4gh:SL.UlmvVOCsBly7i3vrmpt9GcHOeyabloZ2",
+            "id": "ga4gh:SL.hnIOG_kul0Lf3mO1ddTRFb0GbQhtQ19t",
             "end": 55181220,
             "start": 55181219,
             "sequenceReference": {
@@ -284,9 +284,9 @@ hgvs_tests = (
         "type": "Allele"
     }),
     ("NC_000007.14:g.55181230_55181231insGGCT", {
-        "id": "ga4gh:VA.wYp6zlK9p7BSwKjSNK4Ntf1t-T7u3lkS",
+        "id": "ga4gh:VA.lgVw2ZR6UnCLa3sjIMh2D72hQnn6Ksmk",
         "location": {
-            "id": "ga4gh:SL.O5Bpm2yq0ca7ytKWMDHM8VxlCxMnWWWR",
+            "id": "ga4gh:SL.1lu5HsEX4eCQhhoJj_79fjr8H-i98wV3",
             "end": 55181230,
             "start": 55181230,
             "sequenceReference": {
@@ -302,9 +302,9 @@ hgvs_tests = (
         "type": "Allele"
     }),
     ("NC_000013.11:g.32331093_32331094dup", {
-        "id": "ga4gh:VA.bAl1UhwYzOMjsBRmPTx_n_2vVxLFEB1h",
+        "id": "ga4gh:VA.g-q4OzcyYFC5eVQFSrbXwgJScSREvrY-",
         "location": {
-            "id": "ga4gh:SL.6lpDP0SExMWXuC0-D6TjfPlL4nLgMIqi",
+            "id": "ga4gh:SL.PJ8lHWhAMNRSrxHvkarfDjRWxF-GwaJ_",
             "end": 32331094,
             "start": 32331082,
             "sequenceReference": {
@@ -322,9 +322,9 @@ hgvs_tests = (
         "type": "Allele"
     }),
     ("NC_000013.11:g.32316467dup", {
-        "id": "ga4gh:VA.HOJCOtVRhXGNiRD0Xw1D-QoAU0n5aLi-",
+        "id": "ga4gh:VA._KlbF6GZCbuLxbL9z4hZE3oZSLzBHstS",
         "location": {
-            "id": "ga4gh:SL.ia0FFLAV3CLz-614ow72Dj-xdErUVHg8",
+            "id": "ga4gh:SL.LURTeRdwh5bQf_QqPBoaA--MECYmrY5U",
             "end": 32316467,
             "start": 32316466,
             "sequenceReference": {
@@ -342,9 +342,9 @@ hgvs_tests = (
         "type": "Allele"
     }),
     ("NM_001331029.1:n.872A>G", {
-        "id": "ga4gh:VA.syC87m7tZ_SE5iIJqfld6wNfp3DdF3aP",
+        "id": "ga4gh:VA.OKiSoD8f-I0VYwvn9xVGjLxrZ09WWQqK",
         "location": {
-            "id": "ga4gh:SL.fiDihf21EVsPPEoUEG6pTSPbAq7ePxdS",
+            "id": "ga4gh:SL.3flYcxCjrFFW3ex7GqcHLNH8agsKnz49",
             "end": 872,
             "start": 871,
             "sequenceReference": {
@@ -360,9 +360,9 @@ hgvs_tests = (
         "type": "Allele"
     }),
     ("NM_181798.1:n.1263G>T", {
-        "id": "ga4gh:VA.rybgbhHiMzGm06azoxsoIkw8SEQ7bdZw",
+        "id": "ga4gh:VA.wEet5lX0qWJAPuya4MNZsw6ghNYJBSvi",
         "location": {
-            "id": "ga4gh:SL.tGsgbZUd5CXglh3KbYV_f6OqxWlIOwqy",
+            "id": "ga4gh:SL.nAdMOa2ccNYPU-DEzzSzN1BaaKvEjYdX",
             "end": 1263,
             "start": 1262,
             "sequenceReference": {
