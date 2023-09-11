@@ -17,7 +17,7 @@ For that reason, they are implemented here in one file.
 
 import logging
 import re
-from typing import Union, Tuple
+from typing import Union, Optional
 from pydantic import BaseModel, RootModel
 from canonicaljson import encode_canonical_json
 
@@ -154,7 +154,7 @@ def collapse_identifiable_values(obj: dict) -> dict:
     return obj
 
 
-def ga4gh_serialize(obj: BaseModel) -> bytes:
+def ga4gh_serialize(obj: BaseModel) -> Optional[bytes]:
     """
     TODO find a way to output identify_all without the 'digest' fields on subobjects,
     without traversing the whole tree again in collapse_identifiable_values.
