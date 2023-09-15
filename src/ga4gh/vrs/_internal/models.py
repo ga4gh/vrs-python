@@ -292,7 +292,13 @@ class SequenceLocation(_Ga4ghIdentifiableObject):
         ]
 
 
-class Allele(_Ga4ghIdentifiableObject):
+class _VariationBase(_Ga4ghIdentifiableObject):
+    """Base class for variation"""
+
+    expressions: Optional[List[Expression]] = None
+
+
+class Allele(_VariationBase):
 
     type: Literal['Allele'] = Field('Allele', description='MUST be "Allele"')
     location: Union[IRI, SequenceLocation] = Field(
@@ -311,7 +317,7 @@ class Allele(_Ga4ghIdentifiableObject):
         ]
 
 
-class Haplotype(_Ga4ghIdentifiableObject):
+class Haplotype(_VariationBase):
     """A set of non-overlapping Allele members that co-occur on the same molecule."""
 
     type: Literal['Haplotype'] = Field('Haplotype', description='MUST be "Haplotype"')
@@ -330,7 +336,7 @@ class Haplotype(_Ga4ghIdentifiableObject):
         ]
 
 
-class _CopyNumber(_Ga4ghIdentifiableObject):
+class _CopyNumber(_VariationBase):
     """A measure of the copies of a `Location` within a system (e.g. genome, cell, etc.)"""
 
     location: Union[IRI, SequenceLocation] = Field(
@@ -411,7 +417,7 @@ class MolecularVariation(RootModel):
     )
 
 
-class Genotype(_Ga4ghIdentifiableObject):
+class Genotype(_VariationBase):
     """A quantified set of _in-trans_ `MolecularVariation` at a genomic locus."""
 
     type: Literal['Genotype'] = Field(
