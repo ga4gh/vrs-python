@@ -127,7 +127,7 @@ class Translator:
     def translate_to(self, vo, fmt):
         """translate vrs object `vo` to named format `fmt`"""
         t = self.to_translators[fmt]
-        return t(self, vo)
+        return t(vo)
 
 
     ############################################################################
