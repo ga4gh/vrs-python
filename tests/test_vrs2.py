@@ -199,3 +199,15 @@ def test_enref():
         'end': 128325835})
     assert dereffed.location.model_dump(exclude_none=True) == allele_383650.location.model_dump(exclude_none=True)
     assert dereffed.model_dump() == allele_383650.model_dump()
+
+
+def test_class_refatt_map():
+    class_refatt_map_expected = {
+        'Allele': ['location'],
+        'Haplotype': ['members'],
+        '_CopyNumber': ['location'],
+        'CopyNumberCount': ['location'],
+        'CopyNumberChange': ['location'],
+        'GenotypeMember': ['variation']
+    }
+    assert class_refatt_map_expected == models.class_refatt_map
