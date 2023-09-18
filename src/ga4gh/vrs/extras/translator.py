@@ -53,26 +53,71 @@ class Translator:
         self.identify = identify
         self.normalize = normalize
         self.hgvs_tools = None
+        self.from_translators = {}
+        self.to_translators = {}
 
+    @lazy_property
+    def _hgvs_parser(self):
+        """instantiates and returns an hgvs parser instance"""
+        _logger.info("Creating parser")
+        return hgvs.parser.Parser()
 
-    def translate_from(self, var, fmt=None):
+    def _get_parsed_hgvs(self, hgvs_expr: str):
+        """Get parsed HGVS expression"""
+        if not self.hgvs_re.match(hgvs_expr):
+            return None
+
+        return self._hgvs_parser.parse_hgvs_variant(hgvs_expr)
+
+    def _get_hgvs_refget_ac(self, sv: hgvs.sequencevariant.SequenceVariant):
+        """Get refget accession for hgvs sequence variant"""
+        # prefix accession with namespace
+        sequence = coerce_namespace(sv.ac)
+        return self._get_refget_accession(sequence)
+
+    @staticmethod
+    def _ir_stype(a):
+        """Get accession's sequence type"""
+        if a.startswith("refseq:NM_"):
+            return "n"
+        if a.startswith("refseq:NP_"):
+            return "p"
+        if a.startswith("refseq:NG_"):
+            return "g"
+        if a.startswith("refseq:NC_"):
+            return "g"
+        if a.startswith("GRCh"):
+            return "g"
+        return None
+
+    def translate_from(self, var, fmt, **kwargs):
         """Translate variation `var` to VRS object
 
         If `fmt` is None, guess the appropriate format and return the variant.
         If `fmt` is specified, try only that format.
 
         See also notes about `from_` and `to_` methods.
+
+        kwargs:
+            For CnvTranslator
+                copies: The number of copies to use. If provided will return a
+                    CopyNumberCount
+                copy_change: Copy change. If not provided, default is efo:0030067 for
+                    deletions and efo:0030070 for duplications
         """
-
         if fmt:
-            t = self.from_translators[fmt]
-            o = t(self, var)
-            if o is None:
-                raise ValueError(f"Unable to parse data as {fmt} variation")
-            return o
+            try:
+                t = self.from_translators[fmt]
+            except KeyError:
+                raise NotImplementedError(f"{fmt} is not supported")
+            else:
+                o = t(var, **kwargs)
+                if o is None:
+                    raise ValueError(f"Unable to parse data as {fmt} variation")
+                return o
 
-        for fmt, t in self.from_translators.items():
-            o = t(self, var)
+        for _, t in self.from_translators.items():
+            o = t(var, **kwargs)
             if o:
                 return o
 
@@ -82,7 +127,7 @@ class Translator:
     def translate_to(self, vo, fmt):
         """translate vrs object `vo` to named format `fmt`"""
         t = self.to_translators[fmt]
-        return t(self, vo)
+        return t(vo)
 
 
     ############################################################################
@@ -107,7 +152,50 @@ class Translator:
 
         return refget_accession
 
-    def _from_beacon(self, beacon_expr, assembly_name=None):
+    def _get_hgvs_tools(self):
+        """ Only create UTA db connection if needed. There will be one connection per
+        translator.
+        """
+        if self.hgvs_tools is None:
+            uta_conn = hgvs.dataproviders.uta.connect()
+            self.hgvs_tools = HgvsTools(uta_conn)
+        return self.hgvs_tools
+
+    def _from_vrs(self, var):
+        """convert from dict representation of VRS JSON to VRS object"""
+        if not isinstance(var, Mapping):
+            return None
+        if "type" not in var:
+            return None
+        try:
+            model = models[var["type"]]
+        except KeyError:
+            return None
+        return model(**var)
+
+class AlleleTranslator(Translator):
+    """Class for translating formats to and from VRS Alleles"""
+
+    def __init__(
+        self, data_proxy, default_assembly_name="GRCh38", normalize=True, identify=True
+    ):
+        """Initialize AlleleTranslator class"""
+        super().__init__(data_proxy, default_assembly_name, normalize, identify)
+
+        self.from_translators = {
+            "beacon": self._from_beacon,
+            "gnomad": self._from_gnomad,
+            "hgvs": self._from_hgvs,
+            "spdi": self._from_spdi,
+            "vrs": self._from_vrs,
+        }
+
+        self.to_translators = {
+            "hgvs": self._to_hgvs,
+            "spdi": self._to_spdi,
+        }
+
+    def _from_beacon(self, beacon_expr, assembly_name=None, **kwargs):
         """Parse beacon expression into VRS Allele
 
         #>>> a = tlr.from_beacon("13 : 32936732 G > C")
@@ -159,7 +247,7 @@ class Translator:
         return allele
 
 
-    def _from_gnomad(self, gnomad_expr, assembly_name=None):
+    def _from_gnomad(self, gnomad_expr, assembly_name=None, **kwargs):
         """Parse gnomAD-style VCF expression into VRS Allele
 
         #>>> a = tlr.from_gnomad("1-55516888-G-GA")
@@ -210,9 +298,8 @@ class Translator:
         allele = self._post_process_imported_allele(allele)
         return allele
 
-
-    def _from_hgvs(self, hgvs_expr):
-        """parse hgvs into a VRS object (typically an Allele)
+    def _from_hgvs(self, hgvs_expr: str, **kwargs):
+        """parse hgvs into a VRS Allele Object
 
         #>>> a = tlr.from_hgvs("NC_000007.14:g.55181320A>T")
         #>>> a.model_dump()
@@ -234,17 +321,11 @@ class Translator:
         }
 
         """
-
-        if not isinstance(hgvs_expr, str):
-            return None
-        if not self.hgvs_re.match(hgvs_expr):
+        sv = self._get_parsed_hgvs(hgvs_expr)
+        if not sv:
             return None
 
-        sv = self._hgvs_parser.parse_hgvs_variant(hgvs_expr)
-
-        # prefix accession with namespace
-        sequence = coerce_namespace(sv.ac)
-        refget_accession = self._get_refget_accession(sequence)
+        refget_accession = self._get_hgvs_refget_ac(sv)
         if not refget_accession:
             return None
 
@@ -283,7 +364,7 @@ class Translator:
         return allele
 
 
-    def _from_spdi(self, spdi_expr):
+    def _from_spdi(self, spdi_expr, **kwargs):
 
         """Parse SPDI expression in to a GA4GH Allele
 
@@ -334,27 +415,6 @@ class Translator:
         allele = self._post_process_imported_allele(allele)
         return allele
 
-
-    def _from_vrs(self, var):
-        """convert from dict representation of VRS JSON to VRS object"""
-        if not isinstance(var, Mapping):
-            return None
-        if "type" not in var:
-            return None
-        try:
-            model = models[var["type"]]
-        except KeyError:
-            return None
-        return model(**var)
-
-    def _get_hgvs_tools(self):
-        """ Only create UTA db connection if needed. There will be one connectionn per translator.
-        """
-        if self.hgvs_tools is None:
-            uta_conn = hgvs.dataproviders.uta.connect()
-            self.hgvs_tools = HgvsTools(uta_conn)
-        return self.hgvs_tools
-
     def _to_hgvs(self, vo, namespace="refseq"):
         """generates a *list* of HGVS expressions for VRS Allele.
 
@@ -374,19 +434,6 @@ class Translator:
         provided, raises TypeError
         """
 
-        def ir_stype(a):
-            if a.startswith("refseq:NM_"):
-                return "n"
-            if a.startswith("refseq:NP_"):
-                return "p"
-            if a.startswith("refseq:NG_"):
-                return "g"
-            if a.startswith("refseq:NC_"):
-                return "g"
-            if a.startswith("GRCh"):
-                return "g"
-            return None
-
         if not isinstance(vo.location.sequenceReference, models.SequenceReference):
             raise TypeError(
                 "`vo.location.sequenceReference` expects a `SequenceReference`"
@@ -397,7 +444,7 @@ class Translator:
 
         # infer type of sequence based on accession
         # TODO: move to bioutils
-        stypes = list(set(t for t in (ir_stype(a) for a in aliases) if t))
+        stypes = list(set(t for t in (self._ir_stype(a) for a in aliases) if t))
         if len(stypes) != 1:
             raise ValueError(f"Couldn't infer sequence type for {sequence} ({stypes})")
         stype = stypes[0]
@@ -484,13 +531,6 @@ class Translator:
         spdis = [a + spdi_tail for a in aliases]
         return spdis
 
-    @lazy_property
-    def _hgvs_parser(self):
-        """instantiates and returns an hgvs parser instance"""
-        _logger.info("Creating  parser")
-        return hgvs.parser.Parser()
-
-
     def _post_process_imported_allele(self, allele):
         """
         Provide common post-processing for imported Alleles IN-PLACE.
@@ -505,21 +545,6 @@ class Translator:
         return allele
 
 
-    from_translators = {
-        "beacon": _from_beacon,
-        "gnomad": _from_gnomad,
-        "hgvs": _from_hgvs,
-        "spdi": _from_spdi,
-        "vrs": _from_vrs,
-    }
-
-    to_translators = {
-        "hgvs": _to_hgvs,
-        "spdi": _to_spdi,
-        # "gnomad": to_gnomad,
-    }
-
-
 def export_sequencelocation_sequence_id(
     location_sequence_reference: Union[models.IRI, models.SequenceReference]
 ):
@@ -528,6 +553,65 @@ def export_sequencelocation_sequence_id(
     elif isinstance(location_sequence_reference, models.SequenceReference):
         return location_sequence_reference.refgetAccession
 
+
+class CnvTranslator(Translator):
+    """Class for translating formats from format to VRS Copy Number"""
+
+    def __init__(
+        self, data_proxy, default_assembly_name="GRCh38", normalize=True, identify=True
+    ):
+        """Initialize CnvTranslator class"""
+        super().__init__(data_proxy, default_assembly_name, normalize, identify)
+        self.from_translators = {
+            "hgvs": self._from_hgvs,
+        }
+
+    def _from_hgvs(self, hgvs_dup_del_expr: str, **kwargs):
+        """parse hgvs into a VRS CNV Object
+
+        kwargs:
+            copies: The number of copies to use. If provided will return a
+                CopyNumberCount
+            copy_change: Copy change. If not provided, default is efo:0030067 for
+                deletions and efo:0030070 for duplications
+        """
+        sv = self._get_parsed_hgvs(hgvs_dup_del_expr)
+        if not sv:
+            return None
+
+        sv_type = sv.posedit.edit.type
+        if sv_type not in {"del", "dup"}:
+            raise ValueError("Must provide a 'del' or 'dup'")
+
+        refget_accession = self._get_hgvs_refget_ac(sv)
+        if not refget_accession:
+            return None
+
+        location = models.SequenceLocation(
+            sequenceReference=models.SequenceReference(refgetAccession=refget_accession),
+            start=sv.posedit.pos.start.base - 1,
+            end=sv.posedit.pos.end.base
+        )
+
+        copies = kwargs.get("copies")
+        if copies:
+            cnv = models.CopyNumberCount(location=location, copies=copies)
+        else:
+            copy_change = kwargs.get("copy_change")
+            if not copy_change:
+                copy_change = models.CopyChange.EFO_0030067 if sv_type == "del" else models.CopyChange.EFO_0030070
+            cnv = models.CopyNumberChange(location=location, copyChange=copy_change)
+
+        cnv =self._post_process_imported_cnv(cnv)
+        return cnv
+
+    def _post_process_imported_cnv(self, copy_number):
+        """Provide common post-processing for imported Copy Numbers IN-PLACE."""
+        if self.identify:
+            copy_number.id = ga4gh_identify(copy_number)
+            copy_number.location.id = ga4gh_identify(copy_number.location)
+
+        return copy_number
 
 if __name__ == "__main__":
     # pylint: disable=ungrouped-imports

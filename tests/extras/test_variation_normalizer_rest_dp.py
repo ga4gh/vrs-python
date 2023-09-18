@@ -2,7 +2,7 @@ import pytest
 
 from ga4gh.vrs import models
 from ga4gh.vrs.extras.variation_normalizer_rest_dp import VariationNormalizerRESTDataProxy
-from tests.extras.test_translator import hgvs_tests
+from tests.extras.test_allele_translator import hgvs_tests
 
 
 @pytest.fixture(scope="module")

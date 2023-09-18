@@ -20,7 +20,7 @@ from biocommons.seqrepo import SeqRepo
 import pysam
 
 from ga4gh.vrs.dataproxy import SeqRepoDataProxy
-from ga4gh.vrs.extras.translator import Translator
+from ga4gh.vrs.extras.translator import AlleleTranslator
 
 
 class VCFAnnotator:
@@ -28,13 +28,13 @@ class VCFAnnotator:
     This class provides utility for annotating VCF's with VRS allele id's.
 
     VCF's are read using pysam and stored as pysam objects.
-    Alleles are translated into vrs allele id's using VRS-Python Translator.
+    Alleles are translated into vrs allele id's using VRS-Python AlleleTranslator.
 
     """
 
-    def __init__(self, tlr) -> None:
+    def __init__(self, tlr: AlleleTranslator) -> None:
         """
-        param: Translator tlr Valid translator object with a specified data proxy
+        param: AlleleTranslator tlr Valid translator object with a specified data proxy
         """
         self.tlr = tlr
 
@@ -111,7 +111,7 @@ if __name__ == "__main__":
     options = parse_args(sys.argv[1:])
     print(f"These are the options that you have selected: {options}\n")
     data_proxy = SeqRepoDataProxy(SeqRepo("/usr/local/share/seqrepo/latest"))
-    tlr = Translator(data_proxy)
+    tlr = AlleleTranslator(data_proxy)
     vcf_annotator = VCFAnnotator(tlr)
     vcf_annotator.annotate(options.VCF_IN, options.out, options.vrs_file)
 
