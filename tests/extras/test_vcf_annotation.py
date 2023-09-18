@@ -6,17 +6,17 @@ import tempfile
 import pytest
 
 from ga4gh.vrs.extras.vcf_annotation import VCFAnnotator
-from ga4gh.vrs.extras.translator import Translator
+from ga4gh.vrs.extras.translator import AlleleTranslator
 
 
 @pytest.fixture(scope="module")
-def tlr_local(dataproxy):
-    return Translator(data_proxy=dataproxy)
+def allele_tlr_local(dataproxy):
+    return AlleleTranslator(data_proxy=dataproxy)
 
 
 @pytest.fixture(scope="module")
-def vcf_annotator(tlr_local):
-    return VCFAnnotator(tlr_local)
+def vcf_annotator(allele_tlr_local):
+    return VCFAnnotator(allele_tlr_local)
 
 
 @pytest.mark.vcr

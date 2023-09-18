@@ -1,6 +1,18 @@
 import pytest
 
 from ga4gh.vrs import models
+from ga4gh.vrs.extras.translator import AlleleTranslator
+
+
+@pytest.fixture(scope="module")
+def tlr(rest_dataproxy):
+    return AlleleTranslator(
+        data_proxy=rest_dataproxy,
+        default_assembly_name="GRCh38",
+        identify=False,
+        normalize=False,
+    )
+
 
 snv_inputs = {
     "hgvs": "NC_000013.11:g.32936732G>C",
