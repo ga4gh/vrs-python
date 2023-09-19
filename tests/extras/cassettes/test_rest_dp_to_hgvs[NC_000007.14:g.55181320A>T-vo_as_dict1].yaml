@@ -1,42 +1,41 @@
 interactions:
-  - request:
-      body:
-        '{"variation": {"id": "ga4gh:VA.RzhTjgnkCmLnaw3IBWnAubZs7eJHhho_", "type":
-        "Allele", "location": {"id": "ga4gh:SL.Npx4j5beiNN9GSFTm8Ml6YxrNj_Ghkac", "type":
-        "SequenceLocation", "sequence_id": "ga4gh:SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul",
-        "start": {"type": "Number", "value": 55181319}, "end": {"type": "Number", "value":
-        55181320}}, "state": {"type": "LiteralSequenceExpression", "sequence": "T"}},
-        "namespace": "refseq"}'
-      headers:
-        Accept:
-          - "*/*"
-        Accept-Encoding:
-          - gzip, deflate
-        Connection:
-          - keep-alive
-        Content-Length:
-          - "419"
-        Content-Type:
-          - application/json; charset=utf-8
-        User-Agent:
-          - python-requests/2.29.0
-      method: POST
-      uri: https://normalize.cancervariants.org/variation/vrs_allele_to_hgvs
-    response:
-      body:
-        string: '{"query":{"variation":{"id":"ga4gh:VA.RzhTjgnkCmLnaw3IBWnAubZs7eJHhho_","type":"Allele","location":{"id":"ga4gh:SL.Npx4j5beiNN9GSFTm8Ml6YxrNj_Ghkac","type":"SequenceLocation","sequence_id":"ga4gh:SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul","start":{"type":"Number","value":55181319},"end":{"type":"Number","value":55181320}},"state":{"type":"LiteralSequenceExpression","sequence":"T"}},"namespace":"refseq"},"warnings":[],"service_meta_":{"version":"0.7.0-dev8","response_datetime":"2023-07-12T12:27:03.715402","name":"variation-normalizer","url":"https://github.com/cancervariants/variation-normalization"},"vrs_python_meta_":{"version":"0.9.0a1","name":"vrs-python","url":"https://github.com/ga4gh/vrs-python"},"variations":["NC_000007.14:g.55181320A>T"]}'
-      headers:
-        Connection:
-          - keep-alive
-        Content-Length:
-          - "750"
-        Content-Type:
-          - application/json
-        Date:
-          - Wed, 12 Jul 2023 12:27:03 GMT
-        Server:
-          - nginx
-      status:
-        code: 200
-        message: OK
+- request:
+    body: '{"variation": {"id": "ga4gh:VA.hOZr7drvRxkUT_srSFVq1NCzvAJdKJlw", "type":
+      "Allele", "location": {"id": "ga4gh:SL.wbBBFBTTyBcJPyjkK7z_dCcHFm5pE-2K", "type":
+      "SequenceLocation", "sequenceReference": {"type": "SequenceReference", "refgetAccession":
+      "SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul"}, "start": 55181319, "end": 55181320},
+      "state": {"type": "LiteralSequenceExpression", "sequence": "T"}}, "namespace":
+      "refseq"}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '411'
+      Content-Type:
+      - application/json; charset=utf-8
+      User-Agent:
+      - python-requests/2.31.0
+    method: POST
+    uri: http://variation-normalization-dev-eb.us-east-2.elasticbeanstalk.com/variation/vrs_allele_to_hgvs
+  response:
+    body:
+      string: '{"query":{"variation":{"id":"ga4gh:VA.hOZr7drvRxkUT_srSFVq1NCzvAJdKJlw","type":"Allele","location":{"id":"ga4gh:SL.wbBBFBTTyBcJPyjkK7z_dCcHFm5pE-2K","type":"SequenceLocation","sequenceReference":{"type":"SequenceReference","refgetAccession":"SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul"},"start":55181319,"end":55181320},"state":{"type":"LiteralSequenceExpression","sequence":"T"}},"namespace":"refseq"},"warnings":[],"service_meta_":{"name":"variation-normalizer","version":"0.8.0-dev0","response_datetime":"2023-09-18T20:51:02.583796","url":"https://github.com/cancervariants/variation-normalization"},"vrs_python_meta_":{"name":"vrs-python","version":"2.0.0.dev1","url":"https://github.com/ga4gh/vrs-python"},"variations":["NC_000007.14:g.55181320A>T"]}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '748'
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 18 Sep 2023 20:51:02 GMT
+      Server:
+      - nginx
+    status:
+      code: 200
+      message: OK
 version: 1

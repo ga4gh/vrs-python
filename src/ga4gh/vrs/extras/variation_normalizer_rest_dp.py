@@ -8,11 +8,11 @@ class VariationNormalizerRESTDataProxy:
         """
         Initialize class with the API URL
         """
-        self.api = "https://normalize.cancervariants.org/variation"
+        self.api = "http://variation-normalization-dev-eb.us-east-2.elasticbeanstalk.com/variation"
 
     def to_hgvs(self, vo, namespace="refseq"):
         """
-        tranlsate vrs allele object (vo) to hgvs format
+        translate vrs allele object (vo) to hgvs format
         Use this method if you don't have UTA installed locally or are unable
         to reach the public UTA database due to port issues.
         """
