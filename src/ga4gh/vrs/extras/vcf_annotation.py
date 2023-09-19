@@ -267,9 +267,17 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
             vrs_field_data[self.VRS_ALLELE_IDS_FIELD].append(allele_id)
 
             if vrs_attributes:
-                start = str(vrs_obj.location.start) if vrs_obj else ""
-                end = str(vrs_obj.location.end) if vrs_obj else ""
-                alt = str(vrs_obj.state.sequence.root) if vrs_obj.state.sequence else ""
+                if vrs_obj:
+                    start = str(vrs_obj.location.start)
+                    end = str(vrs_obj.location.end)
+                    if vrs_obj.state.sequence:
+                        alt = str(vrs_obj.state.sequence.root)
+                    else:
+                        alt = ""
+                else:
+                    start = ""
+                    end = ""
+                    alt = ""
 
                 vrs_field_data[self.VRS_STARTS_FIELD].append(start)
                 vrs_field_data[self.VRS_ENDS_FIELD].append(end)
