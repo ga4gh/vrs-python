@@ -200,6 +200,40 @@ def test_enref():
     assert dereffed.location.model_dump(exclude_none=True) == allele_383650.location.model_dump(exclude_none=True)
     assert dereffed.model_dump() == allele_383650.model_dump()
 
+def test_enref2():
+    object_store = {}
+    a = {
+        "type": "Allele",
+        "location": {
+            "type": "SequenceLocation",
+            "sequenceReference": {
+                "type": "SequenceReference",
+                "refgetAccession": "SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl"
+            },
+            "start": 44908821,
+            "end": 44908822
+        },
+        "state": {
+            "type": "LiteralSequenceExpression",
+            "sequence": "T"
+        }
+    }
+    vo_a = models.Allele(**a)
+    a_enreffed = vrs_enref(vo_a, object_store=object_store)
+    orig_no_loc = vo_a.model_dump().copy()
+    orig_no_loc.pop("location")
+    actual_no_loc = a_enreffed.model_dump().copy()
+    actual_no_loc.pop("location")
+    assert orig_no_loc == actual_no_loc, "Original and enreffed match except for enreffed field"
+    assert a_enreffed.location == 'ga4gh:SL.m4B7OEJ6J3q6gPakM8mSEqKZeQkj1KYC'
+    assert a_enreffed.model_dump(exclude_none=True) == {
+        'type': 'Allele',
+        'location': 'ga4gh:SL.m4B7OEJ6J3q6gPakM8mSEqKZeQkj1KYC',
+        'state': {
+            'type': 'LiteralSequenceExpression',
+            'sequence': 'T'
+        }
+    }
 
 def test_class_refatt_map():
     class_refatt_map_expected = {

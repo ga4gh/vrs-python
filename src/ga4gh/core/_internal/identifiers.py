@@ -210,6 +210,10 @@ def identify_all(
     if input_obj is None:
         return None
     output_obj = input_obj
+    if isinstance(input_obj, str):
+        if input_obj.startswith("ga4gh:") and not input_obj.startswith("ga4gh:SQ"):
+            return input_obj.split(".")[-1]
+
     if is_pydantic_custom_type(input_obj):
         val = export_pydantic_model(input_obj)
         if isinstance(val, str) and is_curie_type(val) and is_ga4gh_identifier(val):
