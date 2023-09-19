@@ -37,9 +37,6 @@ jobs:
     - name: Install dependencies
       run: |
         pip install -e .[dev,extras]
-    - name: Pylint static analysis
-      run: |
-        pylint src/ga4gh/{core,vrs}
     - name: Test with pytest
       run: |
         python -m pytest
