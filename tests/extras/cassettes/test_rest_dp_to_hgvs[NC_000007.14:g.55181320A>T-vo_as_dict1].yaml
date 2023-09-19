@@ -20,7 +20,7 @@ interactions:
       User-Agent:
       - python-requests/2.31.0
     method: POST
-    uri: http://normalize.cancervariants.org/variation/vrs_allele_to_hgvs
+    uri: https://normalize.cancervariants.org/variation/vrs_allele_to_hgvs
   response:
     body:
       string: '{"query":{"variation":{"id":"ga4gh:VA.hOZr7drvRxkUT_srSFVq1NCzvAJdKJlw","type":"Allele","location":{"id":"ga4gh:SL.wbBBFBTTyBcJPyjkK7z_dCcHFm5pE-2K","type":"SequenceLocation","sequenceReference":{"type":"SequenceReference","refgetAccession":"SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul"},"start":55181319,"end":55181320},"state":{"type":"LiteralSequenceExpression","sequence":"T"}},"namespace":"refseq"},"warnings":[],"service_meta_":{"name":"variation-normalizer","version":"0.8.0-dev0","response_datetime":"2023-09-18T20:51:02.583796","url":"https://github.com/cancervariants/variation-normalization"},"vrs_python_meta_":{"name":"vrs-python","version":"2.0.0.dev1","url":"https://github.com/ga4gh/vrs-python"},"variations":["NC_000007.14:g.55181320A>T"]}'
