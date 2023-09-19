@@ -8,7 +8,7 @@ class VariationNormalizerRESTDataProxy:
         """
         Initialize class with the API URL
         """
-        self.api = "http://variation-normalization-dev-eb.us-east-2.elasticbeanstalk.com/variation"
+        self.api = "http://normalize.cancervariants.org/variation"
 
     def to_hgvs(self, vo, namespace="refseq"):
         """

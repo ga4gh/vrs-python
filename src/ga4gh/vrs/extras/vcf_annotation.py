@@ -269,7 +269,7 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
             if vrs_attributes:
                 start = str(vrs_obj.location.start) if vrs_obj else ""
                 end = str(vrs_obj.location.end) if vrs_obj else ""
-                alt = str(vrs_obj.state.sequence) if vrs_obj else ""
+                alt = str(vrs_obj.state.sequence.root) if vrs_obj else ""
 
                 vrs_field_data[self.VRS_STARTS_FIELD].append(start)
                 vrs_field_data[self.VRS_ENDS_FIELD].append(end)
