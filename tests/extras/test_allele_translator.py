@@ -1,7 +1,7 @@
 import pytest
 
 from ga4gh.vrs import models
-from ga4gh.vrs.extras.translator import AlleleTranslator
+from ga4gh.vrs.extras.translator import AlleleTranslator, ValidationError
 
 
 @pytest.fixture(scope="module")
@@ -15,24 +15,24 @@ def tlr(rest_dataproxy):
 
 
 snv_inputs = {
-    "hgvs": "NC_000013.11:g.32936732G>C",
-    "beacon": "13 : 32936732 G > C",
-    "spdi": "NC_000013.11:32936731:1:C",
-    "gnomad": "13-32936732-G-C"
+    "hgvs": "NC_000019.10:g.44908822C>T",
+    "beacon": "19 : 44908822 C > T",
+    "spdi": "NC_000019.10:44908821:1:T",
+    "gnomad": "19-44908822-C-T"
 }
 
 snv_output = {
     "location": {
-        "end": 32936732,
-        "start": 32936731,
+        "end": 44908822,
+        "start": 44908821,
         "sequenceReference": {
-            "refgetAccession": "SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT",
+            "refgetAccession": "SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl",
             "type": "SequenceReference"
         },
         "type": "SequenceLocation"
     },
     "state": {
-        "sequence": "C",
+        "sequence": "T",
         "type": "LiteralSequenceExpression"
     },
     "type": "Allele"
@@ -208,6 +208,25 @@ def test_from_gnomad(tlr):
     assert tlr._from_gnomad(deletion_inputs["gnomad"]).model_dump(exclude_none=True) == deletion_output_normalized
     assert tlr._from_gnomad(insertion_inputs["gnomad"]).model_dump(exclude_none=True) == insertion_output
     assert tlr._from_gnomad(duplication_inputs["gnomad"]).model_dump(exclude_none=True) == duplication_output_normalized
+
+    # Invalid input. Ref does not match regex
+    assert not tlr._from_gnomad("13-32936732-helloworld-C")
+
+    # Ref != Actual ref
+    invalid_var = "13-32936732-G-C"
+    error_msg = "Expected reference sequence G on GRCh38:13 at positions (32936731, 32936732) but found C"
+
+    with pytest.raises(ValidationError) as e:
+        tlr._from_gnomad(invalid_var)
+    assert str(e.value) == error_msg
+
+    with pytest.raises(ValidationError) as e:
+        tlr.translate_from(invalid_var, fmt="gnomad")
+    assert str(e.value) == error_msg
+
+    # require_validation set to False
+    assert tlr._from_gnomad(invalid_var, require_validation=False)
+
 
 @pytest.mark.vcr
 def test_from_hgvs(tlr):

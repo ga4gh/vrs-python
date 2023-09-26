@@ -6,7 +6,7 @@ Output formats: VRS (serialized), hgvs, spdi, gnomad (vcf)
 """
 
 from collections.abc import Mapping
-from typing import Union
+from typing import Union, Tuple
 import logging
 import re
 
@@ -26,6 +26,10 @@ from ga4gh.vrs.utils.hgvs_tools import HgvsTools
 _logger = logging.getLogger(__name__)
 
 
+class ValidationError(Exception):
+    """Class for validation errors during translation"""
+
+
 class Translator:
     """Translates various variation formats to and from GA4GH VRS models
 
@@ -38,7 +42,7 @@ class Translator:
     """
 
     beacon_re = re.compile(r"(?P<chr>[^-]+)\s*:\s*(?P<pos>\d+)\s*(?P<ref>\w+)\s*>\s*(?P<alt>\w+)")
-    gnomad_re = re.compile(r"(?P<chr>[^-]+)-(?P<pos>\d+)-(?P<ref>\w+)-(?P<alt>\w+)")
+    gnomad_re = re.compile(r"(?P<chr>[^-]+)-(?P<pos>\d+)-(?P<ref>[ACGTN]+)-(?P<alt>[ACGTN]+|\*|\.)", re.IGNORECASE)
     hgvs_re = re.compile(r"[^:]+:[cgnpr]\.")
     spdi_re = re.compile(r"(?P<ac>[^:]+):(?P<pos>\d+):(?P<del_len_or_seq>\w*):(?P<ins_seq>\w*)")
 
@@ -90,7 +94,7 @@ class Translator:
             return "g"
         return None
 
-    def translate_from(self, var, fmt, **kwargs):
+    def translate_from(self, var, fmt=None, **kwargs):
         """Translate variation `var` to VRS object
 
         If `fmt` is None, guess the appropriate format and return the variant.
@@ -100,10 +104,17 @@ class Translator:
 
         kwargs:
             For CnvTranslator
-                copies: The number of copies to use. If provided will return a
+                copies(int): The number of copies to use. If provided will return a
                     CopyNumberCount
-                copy_change: Copy change. If not provided, default is efo:0030067 for
-                    deletions and efo:0030070 for duplications
+                copy_change(models.CopyChange): Copy change. If not provided, default is
+                    efo:0030067 for deletions and efo:0030070 for duplications
+            For AlleleTranslator
+                assembly_name (str): Assembly used for `var`. Defaults to the
+                    `default_assembly_name`. Only used for beacon and gnomad.
+                require_validation (bool): If `True` then validation checks must pass in
+                    order to return a VRS object. A `ValidationError` will be raised if
+                    validation checks fail. If `False` then VRS object will be returned
+                    even if validation checks fail. Defaults to `True`.
         """
         if fmt:
             try:
@@ -145,7 +156,7 @@ class Translator:
                 alias, namespace="ga4gh"
             )
         except KeyError:
-            pass
+            _logger.error("KeyError when getting refget accession: %s", alias)
         else:
             if aliases:
                 refget_accession = aliases[0].split("ga4gh:")[-1]
@@ -173,6 +184,31 @@ class Translator:
             return None
         return model(**var)
 
+    def _is_valid_ref_seq(
+        self, sequence_id: str, start_pos: int, end_pos: int, ref: str
+    ) -> Tuple[bool, str]:
+        """Return wether or not the expected reference sequence matches the actual
+        reference sequence
+
+        :param sequence_id: Sequence ID to use
+        :param start_pos: Start pos (inter-residue) on the sequence_id
+        :param end_pos: End pos (inter-residue) on the sequence_id
+        :param ref: The expected reference sequence on the sequence_id given the
+            start_pos and end_pos
+        :return: Tuple containing whether or not actual reference sequence matches
+            the expected reference sequence and error message if mismatch
+        """
+        actual_ref = self.data_proxy.get_sequence(sequence_id, start_pos, end_pos)
+        is_valid = actual_ref == ref
+        err_msg = ""
+        if not is_valid:
+            err_msg = (
+                f"Expected reference sequence {ref} on {sequence_id} at positions "
+                f"({start_pos}, {end_pos}) but found {actual_ref}"
+            )
+            _logger.warning(err_msg)
+        return is_valid, err_msg
+
 class AlleleTranslator(Translator):
     """Class for translating formats to and from VRS Alleles"""
 
@@ -195,18 +231,21 @@ class AlleleTranslator(Translator):
             "spdi": self._to_spdi,
         }
 
-    def _from_beacon(self, beacon_expr, assembly_name=None, **kwargs):
+    def _from_beacon(self, beacon_expr, **kwargs):
         """Parse beacon expression into VRS Allele
 
-        #>>> a = tlr.from_beacon("13 : 32936732 G > C")
+        kwargs:
+            assembly_name (str): Assembly used for `beacon_expr`.
+
+        #>>> a = tlr.from_beacon("19 : 44908822 C > T")
         #>>> a.model_dump()
         {
           'location': {
-            'end': 32936732,
-            'start': 32936731,,
+            'end': 44908822,
+            'start': 44908821,
             'sequenceReference': {
               'type': 'SequenceReference',
-              'refgetAccession': 'SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT'
+              'refgetAccession': 'SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl'
             },
             'type': 'SequenceLocation'
           },
@@ -226,8 +265,7 @@ class AlleleTranslator(Translator):
             return None
 
         g = m.groupdict()
-        if assembly_name is None:
-            assembly_name = self.default_assembly_name
+        assembly_name = kwargs.get("assembly_name", self.default_assembly_name)
         sequence = assembly_name + ":" + g["chr"]
         refget_accession = self._get_refget_accession(sequence)
         if not refget_accession:
@@ -247,8 +285,15 @@ class AlleleTranslator(Translator):
         return allele
 
 
-    def _from_gnomad(self, gnomad_expr, assembly_name=None, **kwargs):
+    def _from_gnomad(self, gnomad_expr, **kwargs):
         """Parse gnomAD-style VCF expression into VRS Allele
+
+        kwargs:
+            assembly_name (str): Assembly used for `gnomad_expr`.
+            require_validation (bool): If `True` then validation checks must pass in
+                order to return a VRS object. A `ValidationError` will be raised if
+                validation checks fail. If `False` then VRS object will be returned even
+                if validation checks fail. Defaults to `True`.
 
         #>>> a = tlr.from_gnomad("1-55516888-G-GA")
         #>>> a.model_dump()
@@ -278,18 +323,22 @@ class AlleleTranslator(Translator):
             return None
 
         g = m.groupdict()
-        if assembly_name is None:
-            assembly_name = self.default_assembly_name
+        assembly_name = kwargs.get("assembly_name", self.default_assembly_name)
         sequence = assembly_name + ":" + g["chr"]
         refget_accession = self._get_refget_accession(sequence)
         if not refget_accession:
             return None
 
         start = int(g["pos"]) - 1
-        ref = g["ref"]
-        alt = g["alt"]
+        ref = g["ref"].upper()
+        alt = g["alt"].upper()
         end = start + len(ref)
         ins_seq = alt
+
+        # validation checks
+        valid_ref_seq, err_msg = self._is_valid_ref_seq(sequence, start, end, ref)
+        if kwargs.get("require_validation", True) and not valid_ref_seq:
+            raise ValidationError(err_msg)
 
         seq_ref = models.SequenceReference(refgetAccession=refget_accession)
         location = models.SequenceLocation(sequenceReference=seq_ref, start=start, end=end)
@@ -627,8 +676,8 @@ if __name__ == "__main__":
     expressions = [
         "bogus",
         "1-55516888-G-GA",
-        "13 : 32936732 G > C",
-        "NC_000013.11:g.32936732G>C",
+        "19 : 44908822 C > T",
+        "NC_000019.10:g.44908822C>T",
         "NM_000551.3:21:1:T", {
             "location": {
                 "end": 22,
