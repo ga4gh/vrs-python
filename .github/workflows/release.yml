@@ -2,50 +2,64 @@ name: Upload tagged commit to PyPI
 on:
   push:
     tags:
-    - '*.*.**'
+      - "*.*.**"
 jobs:
   get_branch:
     runs-on: ubuntu-latest
     outputs:
       branch_name: ${{ steps.get_branch_name.outputs.name }}
     steps:
-    - uses: actions/checkout@v2
-      with:
-        fetch-depth: 0
-    - name: Get branch name
-      id: get_branch_name
-      run: |
-        raw=$(git branch -r --contains ${{ github.ref }})
-        branch=${raw##*/}
-        echo "::set-output name=name::$branch"
-  release:
-    runs-on: ubuntu-18.04
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Get branch name
+        id: get_branch_name
+        run: |
+          raw=$(git branch -r --contains ${{ github.ref }})
+          branch=${raw##*/}
+          echo "::set-output name=name::$branch"
+  build:
+    name: Build distribution
+    runs-on: ubuntu-latest
     needs: get_branch
-    if: needs.get_branch.outputs.branch_name == 'main'
+    if: needs.get_branch.outputs.branch_name == "main"
     steps:
-    - uses: actions/checkout@v2
-      with:
-        fetch-depth: 0
-    - name: Set up Python 3.10
-      uses: actions/setup-python@v2
-      with:
-        python-version: 3.10
-    - name: Update submodules
-      run: git submodule update --init --recursive
-    - name: Install dependencies
-      run: |
-        python3 -m pip install --upgrade pip
-        pip install setuptools wheel twine
-    - name: Build
-      run: python3 setup.py sdist bdist_wheel
-    - name: PyPI test
-      uses: pypa/gh-action-pypi-publish@master
-      with:
-        user: __token__
-        password: ${{ secrets.TEST_PYPI_API_TOKEN }}
-        repository_url: https://test.pypi.org/legacy/
-    - name: PyPI publish
-      uses: pypa/gh-action-pypi-publish@master
-      with:
-        user: __token__
-        password: ${{ secrets.PYPI_API_TOKEN }}
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+      - name: Update submodules
+        run: git submodule update --init --recursive
+      - name: Install pypa/build
+        run: >-
+          python3 -m
+          pip install
+          build
+          --user
+      - name: Build a binary wheel and a source tarball
+        run: python3 -m build
+      - name: Store the distribution packages
+        uses: actions/upload-artifact@v3
+        with:
+          name: python-package-distributions
+          path: dist/
+  publish-to-pypi:
+    name: >-
+      Publish Python distribution to PyPI
+    needs:
+      - build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/ga4gh-vrs
+    permissions:
+      id-token: write # IMPORTANT: mandatory for trusted publishing
+    steps:
+      - name: Download all the dists
+        uses: actions/download-artifact@v3
+        with:
+          name: python-package-distributions
+          path: dist/
+      - name: Publish distribution to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
