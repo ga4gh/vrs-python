@@ -189,6 +189,7 @@ class Expression(BaseModel):
     Variation object. Common examples of expressions for the description of molecular
     variation include the HGVS and ISCN nomenclatures.
     """
+
     model_config = ConfigDict(
         use_enum_values=True
     )
@@ -199,26 +200,32 @@ class Expression(BaseModel):
 
 
 class Range(RootModel):
+    """An inclusive range of values bounded by one or more integers."""
+
     root: List[Optional[int]] = Field(
         ...,
-        description='An inclusive range of values bounded by one or more integers.',
         max_length=2,
         min_length=2,
     )
 
 
 class Residue(RootModel):
-    root: constr(pattern=r'[A-Z*\-]') = Field(
-        ...,
-        description='A character representing a specific residue (i.e., molecular species) or groupings of these ("ambiguity codes"), using [one-letter IUPAC abbreviations](https://en.wikipedia.org/wiki/International_Union_of_Pure_and_Applied_Chemistry#Amino_acid_and_nucleotide_base_codes) for nucleic acids and amino acids.',
-    )
+    """A character representing a specific residue (i.e., molecular species) or
+    groupings of these ("ambiguity codes"), using
+    [one-letter IUPAC abbreviations](https://en.wikipedia.org/wiki/International_Union_of_Pure_and_Applied_Chemistry#Amino_acid_and_nucleotide_base_codes) for nucleic acids and amino acids.
+    """
+
+    root: constr(pattern=r'[A-Z*\-]') = Field(...)
 
 
 class SequenceString(RootModel):
-    root: constr(pattern=r'^[A-Z*\-]*$') = Field(
-        ...,
-        description='A character string of Residues that represents a biological sequence using the conventional sequence order (5’-to-3’ for nucleic acid sequences, and amino-to-carboxyl for amino acid sequences). IUPAC ambiguity codes are permitted in Sequence Strings.',
-    )
+    """A character string of Residues that represents a biological sequence using the
+    conventional sequence order (5’-to-3’ for nucleic acid sequences, and
+    amino-to-carboxyl for amino acid sequences). IUPAC ambiguity codes are permitted in
+    Sequence Strings.
+    """
+
+    root: constr(pattern=r'^[A-Z*\-]*$') = Field(...)
 
 
 class SequenceReference(_ValueObject):
@@ -412,9 +419,7 @@ class GenotypeMember(_ValueObject):
 class MolecularVariation(RootModel):
     """A variation on a contiguous molecule."""
 
-    root: Union[Allele, Haplotype] = Field(
-        ..., description='A variation on a contiguous molecule.', discriminator='type'
-    )
+    root: Union[Allele, Haplotype] = Field(..., discriminator='type')
 
 
 class Genotype(_VariationBase):
@@ -445,23 +450,24 @@ class Genotype(_VariationBase):
 
 
 class SequenceExpression(RootModel):
+    """An expression describing a Sequence."""
+
     root: Union[LiteralSequenceExpression, ReferenceLengthExpression] = Field(
-        ..., description='An expression describing a Sequence.', discriminator='type'
+        ..., discriminator='type'
     )
 
 
 class Location(RootModel):
-    root: SequenceLocation = Field(
-        ...,
-        description='A contiguous segment of a biological sequence.',
-        discriminator='type',
-    )
+    """A contiguous segment of a biological sequence."""
+
+    root: SequenceLocation = Field(..., discriminator='type')
 
 
 class Variation(RootModel):
+    """A representation of the state of one or more biomolecules."""
+
     root: Union[Allele, CopyNumberChange, CopyNumberCount, Genotype, Haplotype] = Field(
         ...,
-        description='A representation of the state of one or more biomolecules.',
         discriminator='type',
     )
 

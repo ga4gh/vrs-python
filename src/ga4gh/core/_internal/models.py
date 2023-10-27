@@ -35,16 +35,21 @@ class Code(RootModel):
 
     root: constr(pattern=r'\S+( \S+)*') = Field(
         ...,
-        description='Indicates that the value is taken from a set of controlled strings defined elsewhere. Technically, a code is restricted to a string which has at least one character and no leading or  trailing whitespace, and where there is no whitespace other than single spaces in the contents.',
-        example='ENSG00000139618',
+        json_schema_extra={
+            'examples': ['ENSG00000139618'],
+        },
     )
 
 
 class IRI(RootModel):
-    root: str = Field(
-        ...,
-        description='An IRI Reference (either an IRI or a relative-reference), according to `RFC3986 section 4.1  <https://datatracker.ietf.org/doc/html/rfc3986#section-4.1>` and `RFC3987 section 2.1 <https://datatracker.ietf.org/doc/html/rfc3987#section-2.1>`. MAY be a JSON Pointer as an IRI fragment, as  described by `RFC6901 section 6 <https://datatracker.ietf.org/doc/html/rfc6901#section-6>`.',
-    )
+    """An IRI Reference (either an IRI or a relative-reference), according to
+    `RFC3986 section 4.1  <https://datatracker.ietf.org/doc/html/rfc3986#section-4.1>`
+    and `RFC3987 section 2.1 <https://datatracker.ietf.org/doc/html/rfc3987#section-2.1>`.
+    MAY be a JSON Pointer as an IRI fragment, as  described by
+    `RFC6901 section 6 <https://datatracker.ietf.org/doc/html/rfc6901#section-6>`.
+    """
+
+    root: str = Field(...)
 
 
 class Extension(BaseModel):
@@ -227,7 +232,6 @@ class Condition(RootModel):
 
     root: Union[Disease, Phenotype, TraitSet] = Field(
         ...,
-        description='A disease or other medical disorder.',
         discriminator='type',
     )
 
@@ -239,7 +243,6 @@ class TherapeuticProcedure(RootModel):
 
     root: Union[CombinationTherapy, TherapeuticAction, TherapeuticAgent, TherapeuticSubstituteGroup] = Field(
         ...,
-        description='An action or administration of therapeutic agents to produce an effect that is intended to alter or stop a pathologic process.',
         discriminator='type',
     )
 
