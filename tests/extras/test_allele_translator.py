@@ -209,6 +209,14 @@ def test_from_gnomad(tlr):
     assert tlr._from_gnomad(insertion_inputs["gnomad"]).model_dump(exclude_none=True) == insertion_output
     assert tlr._from_gnomad(duplication_inputs["gnomad"]).model_dump(exclude_none=True) == duplication_output_normalized
 
+    assert tlr._from_gnomad("17-83129587-GTTGWCACATGA-G")
+
+    # Test valid characters
+    assert tlr._from_gnomad(
+        "7-2-ACGTURYKMSWBDHVN-ACGTURYKMSWBDHVN",
+        require_validation=False
+    )
+
     # Invalid input. Ref does not match regex
     assert not tlr._from_gnomad("13-32936732-helloworld-C")
 
