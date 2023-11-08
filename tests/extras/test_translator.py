@@ -106,6 +106,14 @@ def test_from_beacon(tlr):
 def test_from_gnomad(tlr):
     assert tlr._from_gnomad(snv_inputs["gnomad"]).as_dict() == snv_output
 
+    assert tlr._from_gnomad("17-83129587-GTTGWCACATGA-G")
+
+    # Test valid characters
+    assert tlr._from_gnomad(
+        "7-2-ACGTURYKMSWBDHVN-ACGTURYKMSWBDHVN",
+        require_validation=False
+    )
+
     # Invalid input. Ref does not match regex
     assert not tlr._from_gnomad("13-32936732-helloworld-C")
 
