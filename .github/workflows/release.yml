@@ -22,7 +22,7 @@ jobs:
     name: Build distribution
     runs-on: ubuntu-latest
     needs: get_branch
-    if: needs.get_branch.outputs.branch_name == "main"
+    if: needs.get_branch.outputs.branch_name == 'main'
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python
