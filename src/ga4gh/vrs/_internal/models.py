@@ -23,7 +23,7 @@ import inspect
 import sys
 import typing
 
-from pydantic import BaseModel, ConfigDict, Field, RootModel, constr
+from pydantic import BaseModel, ConfigDict, Field, RootModel, constr, field_validator
 
 from ga4gh.core._internal.pydantic import (
     is_identifiable,
@@ -327,6 +327,14 @@ class Haplotype(_VariationBase):
         description='A list of Alleles (or IRI references to `Alleles`) that comprise a Haplotype. Since each `Haplotype` member MUST be an `Allele`, and all members MUST share a common `SequenceReference`, implementations MAY use a compact representation of Haplotype that omits type and `SequenceReference` information in individual Haplotype members. Implementations MUST transform compact `Allele` representations into an `Allele` when computing GA4GH identifiers.',
         min_length=2,
     )
+
+    @field_validator("members")
+    @classmethod
+    def one_of_check(cls, v):
+        """oneOf property check on members"""
+        if len(set(map(type, v))) != 1:
+            raise ValueError("List must be one of `Allele` or `IRI`")
+        return v
 
     class ga4gh(_Ga4ghIdentifiableObject.ga4gh):
         prefix = 'HT'

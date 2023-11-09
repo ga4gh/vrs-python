@@ -1,3 +1,5 @@
+import pytest
+
 from ga4gh.core import (
     sha512t24u,
     ga4gh_digest,
@@ -152,6 +154,13 @@ def test_haplotype():
     assert sha512t24u(haplotype_serialized) == 'fFR5oRpeD8Cuq2hfs3bXd1rgJUQrQA26'
     assert ga4gh_digest(haplotype_431012) == 'fFR5oRpeD8Cuq2hfs3bXd1rgJUQrQA26'
     assert ga4gh_identify(haplotype_431012) == 'ga4gh:HT.fFR5oRpeD8Cuq2hfs3bXd1rgJUQrQA26'
+
+    # Test where members do not pass oneOf property check
+    with pytest.raises(ValueError) as e:
+        models.Haplotype(
+            members=[allele_383650, models.IRI("variants.json#/1")]
+        )
+    assert "List must be one of `Allele` or `IRI`" in str(e)
 
 
 def test_genotype():
