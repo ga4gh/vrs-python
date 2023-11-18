@@ -104,7 +104,7 @@ Here are some things to try.
 
 Once installed as described above, type
 
-    $ source venv/3.7/bin/activate
+    $ source venv/3.10/bin/activate
     $ jupyter notebook --notebook-dir notebooks/
 
 The following jupyter extensions are recommended but not required
@@ -118,6 +118,23 @@ The following jupyter extensions are recommended but not required
 [Terra](https://terra.bio) is a cloud platform for biomedical research developed by the Broad Institute, Microsoft and Verily. The platform includes preconfigured environments that provide user-friendly access to various applications commonly used in bioinformatics, including Jupyter Notebooks.
 
 We have created a public [`VRS-demo-notebooks`](https://app.terra.bio/#workspaces/terra-outreach/VRS-demo-notebooks) workspace in Terra that contains the demo notebooks along with instructions for running them with minimal setup. To get started, see either the [`VRS-demo-notebooks`](https://app.terra.bio/#workspaces/terra-outreach/VRS-demo-notebooks) workspace or the [`Terra.ipynb`](notebooks/Terra.ipynb) notebook in this repository.
+
+## Running the Notebooks with VS Code
+[VS Code](https://code.visualstudio.com/) is a code editor developed by Microsoft. It is lightweight, highly customizable, and supports a wide range of programming languages, with a robust extension system.
+
+**1.Open VS Code**: Launch Visual Studio Code.   
+
+**2.Install Jupyter Extension**: Use Extensions view (Ctrl+Shift+X) to install the Jupyter extension.
+
+**3.Open Project in VS Code**: Navigate to your project folder and open it in VS Code.   
+
+**4.Select Python Interpreter**: In a notebook, click "Select Python Interpreter" and choose your Python 3.10 virtual environment.  
+
+**5.Run Notebook**: After selecting the interpreter, run the notebook using "Run All Cells" or individual cells.
+
+**6.Ensure Kernel is Selected**: Check the top-right corner for the Jupyter kernel. If not set to the correct Python version, click and choose the desired kernel.    
+
+**7.Python Interpreter Not Selected**: If the Python interpreter is not selected, open a notebook file and click "Select Python Interpreter" again. Choose the Python 3.10 virtual environment you've set up for this project.  
 
 
 # Development
