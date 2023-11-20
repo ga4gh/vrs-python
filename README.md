@@ -120,22 +120,17 @@ The following jupyter extensions are recommended but not required
 We have created a public [`VRS-demo-notebooks`](https://app.terra.bio/#workspaces/terra-outreach/VRS-demo-notebooks) workspace in Terra that contains the demo notebooks along with instructions for running them with minimal setup. To get started, see either the [`VRS-demo-notebooks`](https://app.terra.bio/#workspaces/terra-outreach/VRS-demo-notebooks) workspace or the [`Terra.ipynb`](notebooks/Terra.ipynb) notebook in this repository.
 
 ## Running the Notebooks with VS Code
-[VS Code](https://code.visualstudio.com/) is a code editor developed by Microsoft. It is lightweight, highly customizable, and supports a wide range of programming languages, with a robust extension system.
+[VS Code](https://code.visualstudio.com/) is a code editor developed by Microsoft. It is lightweight, highly customizable, and supports a wide range of programming languages, with a robust extension system.You can download VS Code [here](https://code.visualstudio.com/Download).
 
-**1.Open VS Code**: Launch Visual Studio Code.   
+**1. Open VS Code**: Launch Visual Studio Code.   
 
-**2.Install Jupyter Extension**: Use Extensions view (Ctrl+Shift+X) to install the Jupyter extension.
+**2. Install Jupyter Extension**: Use Extensions view (Ctrl+Shift+X or ⌘+Shift+X) to install the [Jupyter extension](https://marketplace.visualstudio.com/items?itemName=ms-toolsai.jupyter).
 
-**3.Open Project in VS Code**: Navigate to your project folder and open it in VS Code.   
+**3. Open Project in VS Code**: Navigate to your project folder and open it in VS Code.   
 
-**4.Select Python Interpreter**: In a notebook, click "Select Python Interpreter" and choose your Python 3.10 virtual environment.  
+**4. Select Jupyter Kernel**: In a notebook, click `Select Kernel` at the top right.  Select the option where the path is `venv/3.10/bin/python3`. See [here](https://code.visualstudio.com/docs/datascience/jupyter-kernel-management) for more information on managing Jupyter Kernels in VS Code. 
 
-**5.Run Notebook**: After selecting the interpreter, run the notebook using "Run All Cells" or individual cells.
-
-**6.Ensure Kernel is Selected**: Check the top-right corner for the Jupyter kernel. If not set to the correct Python version, click and choose the desired kernel.    
-
-**7.Python Interpreter Not Selected**: If the Python interpreter is not selected, open a notebook file and click "Select Python Interpreter" again. Choose the Python 3.10 virtual environment you've set up for this project.  
-
+**5. Run Notebook**: After selecting the kernel you can now run the notebook.
 
 # Development
 
