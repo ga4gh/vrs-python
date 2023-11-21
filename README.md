@@ -123,7 +123,6 @@ We have created a public [`VRS-demo-notebooks`](https://app.terra.bio/#workspace
 [VS Code](https://code.visualstudio.com/) is a code editor developed by Microsoft. It is lightweight, highly customizable, and supports a wide range of programming languages, with a robust extension system. You can download VS Code [here](https://code.visualstudio.com/Download).
 
 **1. Open VS Code**: Launch Visual Studio Code.   
-
 **2. Install the Jupyter Extension**: Use Extensions view (Ctrl+Shift+X or ⌘+Shift+X) to install the [Jupyter extension](https://marketplace.visualstudio.com/items?itemName=ms-toolsai.jupyter).
 
 **3. Open the Project in VS Code**: Navigate to your project folder and open it in VS Code.   
