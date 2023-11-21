@@ -128,7 +128,6 @@ We have created a public [`VRS-demo-notebooks`](https://app.terra.bio/#workspace
 
 **3. Open the Project in VS Code**: Navigate to your project folder and open it in VS Code.   
 **4. Select the Jupyter Kernel**: In a notebook, click `Select Kernel` at the top right. Select the option where the path is `venv/3.10/bin/python3`. See [here](https://code.visualstudio.com/docs/datascience/jupyter-kernel-management) for more information on managing Jupyter Kernels in VS Code.  
-
 **5. Run the Notebook**: After selecting the kernel you can now run the notebook.
 
 # Development
