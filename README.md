@@ -120,12 +120,13 @@ The following jupyter extensions are recommended but not required
 We have created a public [`VRS-demo-notebooks`](https://app.terra.bio/#workspaces/terra-outreach/VRS-demo-notebooks) workspace in Terra that contains the demo notebooks along with instructions for running them with minimal setup. To get started, see either the [`VRS-demo-notebooks`](https://app.terra.bio/#workspaces/terra-outreach/VRS-demo-notebooks) workspace or the [`Terra.ipynb`](notebooks/Terra.ipynb) notebook in this repository.
 
 ## Running the Notebooks with VS Code
+
 [VS Code](https://code.visualstudio.com/) is a code editor developed by Microsoft. It is lightweight, highly customizable, and supports a wide range of programming languages, with a robust extension system. You can download VS Code [here](https://code.visualstudio.com/Download).
 
-**1. Open VS Code**: Launch Visual Studio Code.   
+**1. Open VS Code**: Launch Visual Studio Code.
 **2. Install the Jupyter Extension**: Use Extensions view (Ctrl+Shift+X or ⌘+Shift+X) to install the [Jupyter extension](https://marketplace.visualstudio.com/items?itemName=ms-toolsai.jupyter).
-**3. Open the Project in VS Code**: Navigate to your project folder and open it in VS Code.   
-**4. Select the Jupyter Kernel**: In a notebook, click `Select Kernel` at the top right. Select the option where the path is `venv/3.10/bin/python3`. See [here](https://code.visualstudio.com/docs/datascience/jupyter-kernel-management) for more information on managing Jupyter Kernels in VS Code.  
+**3. Open the Project in VS Code**: Navigate to your project folder and open it in VS Code.
+**4. Select the Jupyter Kernel**: In a notebook, click `Select Kernel` at the top right. Select the option where the path is `venv/3.10/bin/python3`. See [here](https://code.visualstudio.com/docs/datascience/jupyter-kernel-management) for more information on managing Jupyter Kernels in VS Code.
 **5. Run the Notebook**: After selecting the kernel you can now run the notebook.
 
 # Development
