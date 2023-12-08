@@ -25,16 +25,13 @@ This repository contains several related components:
 # VRS-Python and VRS Version Correspondence
 
 The ga4gh/vrs-python repo embeds the ga4gh/vrs repo as a git submodule, and
-therefore each ga4gh.vrs package on PyPi embeds a particular version of VRS. The
-correspondences between the packages may be summarized as:
+therefore each ga4gh.vrs package on PyPI embeds a particular version of VRS. The
+correspondences that are currently maintained may be summarized as:
 
-| vrs-python branch | vrs branch |
-| --- | --- |
-| [main](https://github.com/ga4gh/vrs-python/tree/main) | [main](https://github.com/ga4gh/vrs/tree/main) |
-| [0.6](https://github.com/ga4gh/vrs-python/tree/0.6) | [1.1](https://github.com/ga4gh/vrs/tree/1.1) |
-| [0.7](https://github.com/ga4gh/vrs-python/tree/0.7) | [1.2](https://github.com/ga4gh/vrs/tree/1.2) |
-| [0.8](https://github.com/ga4gh/vrs-python/tree/0.8) | [1.3](https://github.com/ga4gh/vrs/tree/1.3) |
-| [0.9](https://github.com/ga4gh/vrs-python/tree/0.9) | [metaschema-update](https://github.com/ga4gh/vrs/tree/metaschema-update) |
+| vrs-python branch | vrs-python tag/version | vrs branch | vrs version |
+| --- | --- | --- | --- |
+| [0.8](https://github.com/ga4gh/vrs-python/tree/0.8) | 0.8.x | [1.3](https://github.com/ga4gh/vrs/tree/1.3) | 1.3.x |
+| [2-alpha](https://github.com/ga4gh/vrs-python/tree/2-alpha) | 2.0.0.ax | [2.0-alpha](https://github.com/ga4gh/vrs/tree/2.0-alpha) | 2.0-alpha
 
 ⚠ **Developers: See the development section below for recommendations for using submodules
 gracefully (and without causing problems for others!).**
