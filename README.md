@@ -39,8 +39,15 @@ correspondences between the packages may be summarized as:
 ⚠ **Developers: See the development section below for recommendations for using submodules
 gracefully (and without causing problems for others!).**
 
+# Pre-requisite
+ [Python](https://www.python.org/) | [3.10](https://www.python.org/downloads/release/python-3100/) 
+
 # Installation
 
+## Creating a Virtual Environment
+
+    python3.10 -m venv venv/3.10
+    source venv/3.10/bin/activate
 ## Installing with pip
 
     pip install 'ga4gh.vrs[extras]'
@@ -104,7 +111,6 @@ Here are some things to try.
 
 Once installed as described above, type
 
-    $ source venv/3.10/bin/activate
     $ jupyter notebook --notebook-dir notebooks/
 
 The following jupyter extensions are recommended but not required
