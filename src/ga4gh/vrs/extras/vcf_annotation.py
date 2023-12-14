@@ -94,10 +94,17 @@ class SeqRepoProxyType(str, Enum):
     help="The assembly that the `vcf_in` data uses.",
     type=str
 )
+@click.option(
+    "--skip_ref",
+    is_flag=True,
+    default=False,
+    show_default=True,
+    help="Skip VRS computation for REF alleles."
+)
 def annotate_click(  # pylint: disable=too-many-arguments
     vcf_in: str, vcf_out: Optional[str], vrs_pickle_out: Optional[str],
     vrs_attributes: bool, seqrepo_dp_type: SeqRepoProxyType, seqrepo_root_dir: str,
-    seqrepo_base_url: str, assembly: str
+    seqrepo_base_url: str, assembly: str, skip_ref: bool
 ) -> None:
     """Annotate VCF file via click
 
@@ -110,7 +117,7 @@ def annotate_click(  # pylint: disable=too-many-arguments
     msg = f"Annotating {vcf_in} with the VCF Annotator..."
     _logger.info(msg)
     click.echo(msg)
-    annotator.annotate(vcf_in, vcf_out, vrs_pickle_out, vrs_attributes, assembly)
+    annotator.annotate(vcf_in, vcf_out, vrs_pickle_out, vrs_attributes, assembly, (not skip_ref))
     end = timer()
     msg = f"VCF Annotator finished in {(end - start):.5f} seconds"
     _logger.info(msg)
