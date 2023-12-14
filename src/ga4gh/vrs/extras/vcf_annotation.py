@@ -146,7 +146,7 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
     def annotate(  # pylint: disable=too-many-arguments,too-many-locals
         self, vcf_in: str, vcf_out: Optional[str] = None,
         vrs_pickle_out: Optional[str] = None, vrs_attributes: bool = False,
-        assembly: str = "GRCh38"
+        assembly: str = "GRCh38", compute_for_ref: bool = True
     ) -> None:
         """Annotates an input VCF file with VRS Allele IDs & creates a pickle file
         containing the vrs object information.
@@ -158,6 +158,7 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
             VRS_State fields in the INFO field. If `False` will not include these fields.
             Only used if `vcf_out` is provided.
         :param str assembly: The assembly used in `vcf_in` data
+        :param compute_for_ref: If true, compute VRS IDs for the reference allele
         """
         if not any((vcf_out, vrs_pickle_out)):
             raise VCFAnnotatorException(
@@ -199,7 +200,7 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
         for record in vcf_in:
             vrs_field_data = self._get_vrs_data(
                 record, vrs_data, assembly, additional_info_fields, vrs_attributes,
-                output_pickle, output_vcf
+                output_pickle, output_vcf, compute_for_ref
             )
 
             if output_vcf:
@@ -286,7 +287,8 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
     def _get_vrs_data(  # pylint: disable=too-many-arguments,too-many-locals
         self, record: pysam.VariantRecord, vrs_data: Dict, assembly: str,  # pylint: disable=no-member
         additional_info_fields: List[str], vrs_attributes: bool = False,
-        output_pickle: bool = True, output_vcf: bool = True
+        output_pickle: bool = True, output_vcf: bool = True,
+        compute_for_ref: bool = True
     ) -> Dict:
         """Get VRS data for record's reference and alt alleles.
 
@@ -306,17 +308,19 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
         :return: If `output_vcf = True`, a dictionary containing VRS Fields and list
             of associated values. If `output_vcf = False`, an empty dictionary will be
             returned.
+        :param compute_for_ref: If true, compute VRS IDs for the reference allele
         """
         vrs_field_data = {field: [] for field in additional_info_fields} if output_vcf else {}
 
         # Get VRS data for reference allele
         gnomad_loc = f"{record.chrom}-{record.pos}"
-        reference_allele = f"{gnomad_loc}-{record.ref}-{record.ref}"
-        self._get_vrs_object(
-            reference_allele, vrs_data, vrs_field_data, assembly,
-            output_pickle=output_pickle, output_vcf=output_vcf,
-            vrs_attributes=vrs_attributes
-        )
+        if compute_for_ref:
+            reference_allele = f"{gnomad_loc}-{record.ref}-{record.ref}"
+            self._get_vrs_object(
+                reference_allele, vrs_data, vrs_field_data, assembly,
+                output_pickle=output_pickle, output_vcf=output_vcf,
+                vrs_attributes=vrs_attributes
+            )
 
         # Get VRS data for alts
         alts = record.alts or []
