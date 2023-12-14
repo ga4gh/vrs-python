@@ -164,30 +164,33 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
             raise VCFAnnotatorException(
                 "Must provide one of: `vcf_out` or `vrs_pickle_out`")
 
+        info_field_num = "R" if compute_for_ref else "A"
+        info_field_desc = "REF and ALT" if compute_for_ref else "ALT"
+
         vrs_data = {}
         vcf_in = pysam.VariantFile(filename=vcf_in)  # pylint: disable=no-member
         vcf_in.header.info.add(
-            self.VRS_ALLELE_IDS_FIELD, 1, "String",
+            self.VRS_ALLELE_IDS_FIELD, info_field_num, "String",
             ("The computed identifiers for the GA4GH VRS Alleles corresponding to the "
-             "GT indexes of the REF and ALT alleles")
+             f"GT indexes of the {info_field_desc} alleles")
         )
 
         additional_info_fields = [self.VRS_ALLELE_IDS_FIELD]
         if vrs_attributes:
             vcf_in.header.info.add(
-                self.VRS_STARTS_FIELD, 1, "String",
+                self.VRS_STARTS_FIELD, info_field_num, "String",
                 ("Interresidue coordinates used as the location starts for the GA4GH "
-                 "VRS Alleles corresponding to the GT indexes of the REF and ALT alleles")
+                 f"VRS Alleles corresponding to the GT indexes of the {info_field_desc} alleles")
             )
             vcf_in.header.info.add(
-                self.VRS_ENDS_FIELD, 1, "String",
+                self.VRS_ENDS_FIELD, info_field_num, "String",
                 ("Interresidue coordinates used as the location ends for the GA4GH VRS "
-                 "Alleles corresponding to the GT indexes of the REF and ALT alleles")
+                 f"Alleles corresponding to the GT indexes of the {info_field_desc} alleles")
             )
             vcf_in.header.info.add(
-                self.VRS_STATES_FIELD, 1, "String",
+                self.VRS_STATES_FIELD, info_field_num, "String",
                 ("The literal sequence states used for the GA4GH VRS Alleles "
-                 "corresponding to the GT indexes of the REF and ALT alleles")
+                 f"corresponding to the GT indexes of the {info_field_desc} alleles")
             )
             additional_info_fields += [self.VRS_STARTS_FIELD, self.VRS_ENDS_FIELD, self.VRS_STATES_FIELD]
 
@@ -205,7 +208,7 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
 
             if output_vcf:
                 for k in additional_info_fields:
-                    record.info[k] = ",".join(vrs_field_data[k])
+                    record.info[k] = vrs_field_data[k]
                 vcf_out.write(record)
 
         vcf_in.close()
