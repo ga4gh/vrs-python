@@ -94,10 +94,17 @@ class SeqRepoProxyType(str, Enum):
     help="The assembly that the `vcf_in` data uses.",
     type=str
 )
+@click.option(
+    "--skip_ref",
+    is_flag=True,
+    default=False,
+    show_default=True,
+    help="Skip VRS computation for REF alleles."
+)
 def annotate_click(  # pylint: disable=too-many-arguments
     vcf_in: str, vcf_out: Optional[str], vrs_pickle_out: Optional[str],
     vrs_attributes: bool, seqrepo_dp_type: SeqRepoProxyType, seqrepo_root_dir: str,
-    seqrepo_base_url: str, assembly: str
+    seqrepo_base_url: str, assembly: str, skip_ref: bool
 ) -> None:
     """Annotate VCF file via click
 
@@ -110,7 +117,7 @@ def annotate_click(  # pylint: disable=too-many-arguments
     msg = f"Annotating {vcf_in} with the VCF Annotator..."
     _logger.info(msg)
     click.echo(msg)
-    annotator.annotate(vcf_in, vcf_out, vrs_pickle_out, vrs_attributes, assembly)
+    annotator.annotate(vcf_in, vcf_out, vrs_pickle_out, vrs_attributes, assembly, (not skip_ref))
     end = timer()
     msg = f"VCF Annotator finished in {(end - start):.5f} seconds"
     _logger.info(msg)
@@ -146,7 +153,7 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
     def annotate(  # pylint: disable=too-many-arguments,too-many-locals
         self, vcf_in: str, vcf_out: Optional[str] = None,
         vrs_pickle_out: Optional[str] = None, vrs_attributes: bool = False,
-        assembly: str = "GRCh38"
+        assembly: str = "GRCh38", compute_for_ref: bool = True
     ) -> None:
         """Annotates an input VCF file with VRS Allele IDs & creates a pickle file
         containing the vrs object information.
@@ -158,35 +165,39 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
             VRS_State fields in the INFO field. If `False` will not include these fields.
             Only used if `vcf_out` is provided.
         :param str assembly: The assembly used in `vcf_in` data
+        :param compute_for_ref: If true, compute VRS IDs for the reference allele
         """
         if not any((vcf_out, vrs_pickle_out)):
             raise VCFAnnotatorException(
                 "Must provide one of: `vcf_out` or `vrs_pickle_out`")
 
+        info_field_num = "R" if compute_for_ref else "A"
+        info_field_desc = "REF and ALT" if compute_for_ref else "ALT"
+
         vrs_data = {}
         vcf_in = pysam.VariantFile(filename=vcf_in)  # pylint: disable=no-member
         vcf_in.header.info.add(
-            self.VRS_ALLELE_IDS_FIELD, 1, "String",
+            self.VRS_ALLELE_IDS_FIELD, info_field_num, "String",
             ("The computed identifiers for the GA4GH VRS Alleles corresponding to the "
-             "GT indexes of the REF and ALT alleles")
+             f"GT indexes of the {info_field_desc} alleles")
         )
 
         additional_info_fields = [self.VRS_ALLELE_IDS_FIELD]
         if vrs_attributes:
             vcf_in.header.info.add(
-                self.VRS_STARTS_FIELD, 1, "String",
+                self.VRS_STARTS_FIELD, info_field_num, "String",
                 ("Interresidue coordinates used as the location starts for the GA4GH "
-                 "VRS Alleles corresponding to the GT indexes of the REF and ALT alleles")
+                 f"VRS Alleles corresponding to the GT indexes of the {info_field_desc} alleles")
             )
             vcf_in.header.info.add(
-                self.VRS_ENDS_FIELD, 1, "String",
+                self.VRS_ENDS_FIELD, info_field_num, "String",
                 ("Interresidue coordinates used as the location ends for the GA4GH VRS "
-                 "Alleles corresponding to the GT indexes of the REF and ALT alleles")
+                 f"Alleles corresponding to the GT indexes of the {info_field_desc} alleles")
             )
             vcf_in.header.info.add(
-                self.VRS_STATES_FIELD, 1, "String",
+                self.VRS_STATES_FIELD, info_field_num, "String",
                 ("The literal sequence states used for the GA4GH VRS Alleles "
-                 "corresponding to the GT indexes of the REF and ALT alleles")
+                 f"corresponding to the GT indexes of the {info_field_desc} alleles")
             )
             additional_info_fields += [self.VRS_STARTS_FIELD, self.VRS_ENDS_FIELD, self.VRS_STATES_FIELD]
 
@@ -199,12 +210,12 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
         for record in vcf_in:
             vrs_field_data = self._get_vrs_data(
                 record, vrs_data, assembly, additional_info_fields, vrs_attributes,
-                output_pickle, output_vcf
+                output_pickle, output_vcf, compute_for_ref
             )
 
             if output_vcf:
                 for k in additional_info_fields:
-                    record.info[k] = ",".join(vrs_field_data[k])
+                    record.info[k] = vrs_field_data[k]
                 vcf_out.write(record)
 
         vcf_in.close()
@@ -286,7 +297,8 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
     def _get_vrs_data(  # pylint: disable=too-many-arguments,too-many-locals
         self, record: pysam.VariantRecord, vrs_data: Dict, assembly: str,  # pylint: disable=no-member
         additional_info_fields: List[str], vrs_attributes: bool = False,
-        output_pickle: bool = True, output_vcf: bool = True
+        output_pickle: bool = True, output_vcf: bool = True,
+        compute_for_ref: bool = True
     ) -> Dict:
         """Get VRS data for record's reference and alt alleles.
 
@@ -306,17 +318,19 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
         :return: If `output_vcf = True`, a dictionary containing VRS Fields and list
             of associated values. If `output_vcf = False`, an empty dictionary will be
             returned.
+        :param compute_for_ref: If true, compute VRS IDs for the reference allele
         """
         vrs_field_data = {field: [] for field in additional_info_fields} if output_vcf else {}
 
         # Get VRS data for reference allele
         gnomad_loc = f"{record.chrom}-{record.pos}"
-        reference_allele = f"{gnomad_loc}-{record.ref}-{record.ref}"
-        self._get_vrs_object(
-            reference_allele, vrs_data, vrs_field_data, assembly,
-            output_pickle=output_pickle, output_vcf=output_vcf,
-            vrs_attributes=vrs_attributes
-        )
+        if compute_for_ref:
+            reference_allele = f"{gnomad_loc}-{record.ref}-{record.ref}"
+            self._get_vrs_object(
+                reference_allele, vrs_data, vrs_field_data, assembly,
+                output_pickle=output_pickle, output_vcf=output_vcf,
+                vrs_attributes=vrs_attributes
+            )
 
         # Get VRS data for alts
         alts = record.alts or []
