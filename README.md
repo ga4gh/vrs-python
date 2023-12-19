@@ -41,7 +41,7 @@ gracefully (and without causing problems for others!).**
 
 # Pre-requisite
 
-[Python](https://www.python.org/) | [3.10](https://www.python.org/downloads/release/python-3100/)
+[Python 3.10](https://www.python.org/downloads/release/python-3100/)
 
 # Development
 
@@ -87,7 +87,10 @@ then set the `VRS_SCHEMA_DIR` environment variable to use an alternative schema
 location.
 
 # Installation
-
+Activate the virtual environment (if not already) :
+  
+    $ source venv/3.10/bin/activate
+    
 ## Installing with pip
 
     pip install 'ga4gh.vrs[extras]'
@@ -148,6 +151,8 @@ Here are some things to try.
       vrs-python_seqrepo-rest-service_1 exited with code 1
 
 # Running the Notebooks
+
+
 
 Once installed as described above, type
 
