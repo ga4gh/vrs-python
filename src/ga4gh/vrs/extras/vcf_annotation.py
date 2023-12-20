@@ -6,7 +6,6 @@ python3 -m src.ga4gh.vrs.extras.vcf_annotation --vcf_in input.vcf.gz \
 """
 import logging
 import pickle
-import re
 from enum import Enum
 from typing import Dict, List, Optional
 from timeit import default_timer as timer
