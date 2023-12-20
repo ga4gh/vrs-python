@@ -16,8 +16,8 @@ def vcf_annotator():
 def test_annotate_vcf_grch38_noattrs(vcf_annotator, vcr_cassette):
     vcr_cassette.allow_playback_repeats = False
     input_vcf = f"{TEST_DATA_DIR}/test_vcf_input.vcf"
-    output_vcf = f"{TEST_DATA_DIR}/test_vcf_output.vcf.gz"
-    output_vrs_pkl = f"{TEST_DATA_DIR}/test_vcf_pkl.pkl"
+    output_vcf = f"{TEST_DATA_DIR}/test_vcf_output_grch38_noattrs.vcf.gz"
+    output_vrs_pkl = f"{TEST_DATA_DIR}/test_vcf_pkl_grch38_noattrs.pkl"
     expected_vcf_no_vrs_attrs = f"{TEST_DATA_DIR}/test_vcf_expected_output_no_vrs_attrs.vcf.gz"
 
     # Test GRCh38 assembly, which was used for input_vcf and no vrs attributes
@@ -36,8 +36,8 @@ def test_annotate_vcf_grch38_noattrs(vcf_annotator, vcr_cassette):
 def test_annotate_vcf_grch38_attrs(vcf_annotator, vcr_cassette):
     vcr_cassette.allow_playback_repeats = False
     input_vcf = f"{TEST_DATA_DIR}/test_vcf_input.vcf"
-    output_vcf = f"{TEST_DATA_DIR}/test_vcf_output.vcf.gz"
-    output_vrs_pkl = f"{TEST_DATA_DIR}/test_vcf_pkl.pkl"
+    output_vcf = f"{TEST_DATA_DIR}/test_vcf_output_grch38_attrs.vcf.gz"
+    output_vrs_pkl = f"{TEST_DATA_DIR}/test_vcf_pkl_grch38_attrs.pkl"
     expected_vcf = f"{TEST_DATA_DIR}/test_vcf_expected_output.vcf.gz"
 
     # Test GRCh38 assembly, which was used for input_vcf and vrs attributes
@@ -56,8 +56,8 @@ def test_annotate_vcf_grch38_attrs(vcf_annotator, vcr_cassette):
 def test_annotate_vcf_grch38_attrs_altsonly(vcf_annotator, vcr_cassette):
     vcr_cassette.allow_playback_repeats = False
     input_vcf = f"{TEST_DATA_DIR}/test_vcf_input.vcf"
-    output_vcf = f"{TEST_DATA_DIR}/test_vcf_output.vcf.gz"
-    output_vrs_pkl = f"{TEST_DATA_DIR}/test_vcf_pkl.pkl"
+    output_vcf = f"{TEST_DATA_DIR}/test_vcf_output_grch38_attrs_altsonly.vcf.gz"
+    output_vrs_pkl = f"{TEST_DATA_DIR}/test_vcf_pkl_grch38_attrs_altsonly.pkl"
     expected_altsonly_vcf = f"{TEST_DATA_DIR}/test_vcf_expected_altsonly_output.vcf.gz"
 
     # Test GRCh38 assembly with VRS computed for ALTs only, which was used for input_vcf and vrs attributes
@@ -76,8 +76,8 @@ def test_annotate_vcf_grch38_attrs_altsonly(vcf_annotator, vcr_cassette):
 def test_annotate_vcf_grch37_attrs(vcf_annotator, vcr_cassette):
     vcr_cassette.allow_playback_repeats = False
     input_vcf = f"{TEST_DATA_DIR}/test_vcf_input.vcf"
-    output_vcf = f"{TEST_DATA_DIR}/test_vcf_output.vcf.gz"
-    output_vrs_pkl = f"{TEST_DATA_DIR}/test_vcf_pkl.pkl"
+    output_vcf = f"{TEST_DATA_DIR}/test_vcf_output_grch37_attrs.vcf.gz"
+    output_vrs_pkl = f"{TEST_DATA_DIR}/test_vcf_pkl_grch37_attrs.pkl"
     expected_vcf = f"{TEST_DATA_DIR}/test_vcf_expected_output.vcf.gz"
 
     # Test GRCh37 assembly, which was not used for input_vcf
@@ -96,8 +96,8 @@ def test_annotate_vcf_grch37_attrs(vcf_annotator, vcr_cassette):
 def test_annotate_vcf_pickle_only(vcf_annotator, vcr_cassette):
     vcr_cassette.allow_playback_repeats = False
     input_vcf = f"{TEST_DATA_DIR}/test_vcf_input.vcf"
-    output_vcf = f"{TEST_DATA_DIR}/test_vcf_output.vcf.gz"
-    output_vrs_pkl = f"{TEST_DATA_DIR}/test_vcf_pkl.pkl"
+    output_vcf = f"{TEST_DATA_DIR}/test_vcf_output_pickle_only.vcf.gz"
+    output_vrs_pkl = f"{TEST_DATA_DIR}/test_vcf_pkl_pickle_only.pkl"
 
     # Test only pickle output
     vcf_annotator.annotate(input_vcf, vrs_pickle_out=output_vrs_pkl, vrs_attributes=True)
@@ -110,8 +110,8 @@ def test_annotate_vcf_pickle_only(vcf_annotator, vcr_cassette):
 def test_annotate_vcf_vcf_only(vcf_annotator, vcr_cassette):
     vcr_cassette.allow_playback_repeats = False
     input_vcf = f"{TEST_DATA_DIR}/test_vcf_input.vcf"
-    output_vcf = f"{TEST_DATA_DIR}/test_vcf_output.vcf.gz"
-    output_vrs_pkl = f"{TEST_DATA_DIR}/test_vcf_pkl.pkl"
+    output_vcf = f"{TEST_DATA_DIR}/test_vcf_output_vcf_only.vcf.gz"
+    output_vrs_pkl = f"{TEST_DATA_DIR}/test_vcf_pkl_vcf_only.pkl"
     expected_vcf = f"{TEST_DATA_DIR}/test_vcf_expected_output.vcf.gz"
 
     # Test only VCF output
