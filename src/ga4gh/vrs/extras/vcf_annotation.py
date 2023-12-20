@@ -137,16 +137,14 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
     VRS_ERROR_FIELD = "VRS_Error"
 
     # VCF character escape map
-    VCF_ESCAPE_MAP = {
-        "%": "%25",
-        ":": "%3A",
-        ";": "%3B",
-        "=": "%3D",
-        ",": "%2C",
-        "\r": "%0D",
-        "\n": "%0A",
-        "\t": "%09" 
-    }
+    VCF_ESCAPE_MAP = [
+        ("%", "%25"),
+        (";", "%3B"),
+        (",", "%2C"),
+        ("\r", "%0D"),
+        ("\n", "%0A"),
+        ("\t", "%09"),
+    ]
 
     def __init__(self, seqrepo_dp_type: SeqRepoProxyType = SeqRepoProxyType.LOCAL,
                  seqrepo_base_url: str = "http://localhost:5000/seqrepo",
@@ -234,12 +232,10 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
             except Exception as ex:
                 _logger.exception("VRS error on %s-%s", record.chrom, record.pos)
                 err_msg = f"{ex}" or f"{type(ex)}"
-                for search in [ "%", ",", ";", "\t", "\n" ]:
-                     err_msg = err_msg.replace(search, self.VCF_ESCAPE_MAP[search])
+                for search_repl in VCFAnnotator.VCF_ESCAPE_MAP:
+                    err_msg = err_msg.replace(search_repl[0], search_repl[1])
                 additional_info_fields = [self.VRS_ERROR_FIELD]
-                vrs_field_data = {
-                    self.VRS_ERROR_FIELD: [ err_msg ]
-                }
+                vrs_field_data = {self.VRS_ERROR_FIELD: [err_msg]}
 
             _logger.debug("VCF record %s-%s generated vrs_field_data %s", record.chrom, record.pos, vrs_field_data)
 
