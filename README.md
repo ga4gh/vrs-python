@@ -63,6 +63,10 @@ Fork the repo at https://github.com/ga4gh/vrs-python/ .
     $ cd vrs-python
     $ make devready
 
+Activate the virtual environment (if not already) :
+
+    $ source venv/3.10/bin/activate
+
 ## Pre-commit
 
 We use [pre-commit](https://pre-commit.com/) to check code style.
@@ -87,10 +91,7 @@ then set the `VRS_SCHEMA_DIR` environment variable to use an alternative schema
 location.
 
 # Installation
-Activate the virtual environment (if not already) :
-  
-    $ source venv/3.10/bin/activate
-    
+
 ## Installing with pip
 
     pip install 'ga4gh.vrs[extras]'
@@ -151,8 +152,6 @@ Here are some things to try.
       vrs-python_seqrepo-rest-service_1 exited with code 1
 
 # Running the Notebooks
-
-
 
 Once installed as described above, type
 
