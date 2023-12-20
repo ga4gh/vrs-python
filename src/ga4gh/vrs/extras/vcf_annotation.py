@@ -235,7 +235,7 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
             except Exception as ex:
                 _logger.exception("VRS error on %s-%s", record.chrom, record.pos)
                 err_msg = f"{ex}" or f"{type(ex)}"
-                for search in [ ",", ";", "\t" ]:
+                for search in [ "%", ",", ";", "\t", "\n" ]:
                      err_msg = err_msg.replace(search, self.VCF_ESCAPE_MAP[search])
                 additional_info_fields = [self.VRS_ERROR_FIELD]
                 vrs_field_data = {
