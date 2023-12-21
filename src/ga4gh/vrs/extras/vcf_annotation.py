@@ -134,6 +134,17 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
     VRS_STARTS_FIELD = "VRS_Starts"
     VRS_ENDS_FIELD = "VRS_Ends"
     VRS_STATES_FIELD = "VRS_States"
+    VRS_ERROR_FIELD = "VRS_Error"
+
+    # VCF character escape map
+    VCF_ESCAPE_MAP = [
+        ("%", "%25"),
+        (";", "%3B"),
+        (",", "%2C"),
+        ("\r", "%0D"),
+        ("\n", "%0A"),
+        ("\t", "%09"),
+    ]
 
     def __init__(self, seqrepo_dp_type: SeqRepoProxyType = SeqRepoProxyType.LOCAL,
                  seqrepo_base_url: str = "http://localhost:5000/seqrepo",
@@ -181,8 +192,11 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
             ("The computed identifiers for the GA4GH VRS Alleles corresponding to the "
              f"GT indexes of the {info_field_desc} alleles")
         )
+        vcf_in.header.info.add(
+            self.VRS_ERROR_FIELD, ".", "String",
+            ("If an error occurred computing a VRS Identifier, the error message")
+        )
 
-        additional_info_fields = [self.VRS_ALLELE_IDS_FIELD]
         if vrs_attributes:
             vcf_in.header.info.add(
                 self.VRS_STARTS_FIELD, info_field_num, "String",
@@ -199,7 +213,6 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
                 ("The literal sequence states used for the GA4GH VRS Alleles "
                  f"corresponding to the GT indexes of the {info_field_desc} alleles")
             )
-            additional_info_fields += [self.VRS_STARTS_FIELD, self.VRS_ENDS_FIELD, self.VRS_STATES_FIELD]
 
         if vcf_out:
             vcf_out = pysam.VariantFile(vcf_out, "w", header=vcf_in.header)  # pylint: disable=no-member
@@ -208,10 +221,23 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
         output_pickle = bool(vrs_pickle_out)
 
         for record in vcf_in:
-            vrs_field_data = self._get_vrs_data(
-                record, vrs_data, assembly, additional_info_fields, vrs_attributes,
-                output_pickle, output_vcf, compute_for_ref
-            )
+            additional_info_fields = [self.VRS_ALLELE_IDS_FIELD]
+            if vrs_attributes:
+                additional_info_fields += [self.VRS_STARTS_FIELD, self.VRS_ENDS_FIELD, self.VRS_STATES_FIELD]
+            try:
+                vrs_field_data = self._get_vrs_data(
+                    record, vrs_data, assembly, additional_info_fields, vrs_attributes,
+                    output_pickle, output_vcf, compute_for_ref
+                )
+            except Exception as ex:
+                _logger.exception("VRS error on %s-%s", record.chrom, record.pos)
+                err_msg = f"{ex}" or f"{type(ex)}"
+                for search_repl in VCFAnnotator.VCF_ESCAPE_MAP:
+                    err_msg = err_msg.replace(search_repl[0], search_repl[1])
+                additional_info_fields = [self.VRS_ERROR_FIELD]
+                vrs_field_data = {self.VRS_ERROR_FIELD: [err_msg]}
+
+            _logger.debug("VCF record %s-%s generated vrs_field_data %s", record.chrom, record.pos, vrs_field_data)
 
             if output_vcf:
                 for k in additional_info_fields:
@@ -256,15 +282,19 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
         except (ValidationError, TranslatorValidationError) as e:
             vrs_obj = None
             _logger.error("ValidationError when translating %s from gnomad: %s", vcf_coords, str(e))
+            raise
         except KeyError as e:
             vrs_obj = None
             _logger.error("KeyError when translating %s from gnomad: %s", vcf_coords, str(e))
+            raise
         except AssertionError as e:
             vrs_obj = None
             _logger.error("AssertionError when translating %s from gnomad: %s", vcf_coords, str(e))
+            raise
         except Exception as e:  # pylint: disable=broad-except
             vrs_obj = None
             _logger.error("Unhandled Exception when translating %s from gnomad: %s", vcf_coords, str(e))
+            raise
         else:
             if not vrs_obj:
                 _logger.debug("None was returned when translating %s from gnomad", vcf_coords)
