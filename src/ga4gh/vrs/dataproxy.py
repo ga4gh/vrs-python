@@ -94,11 +94,13 @@ class _SeqRepoDataProxyBase(_DataProxy):
     # wraps seqreqpo classes in order to provide translation to/from
     # `ga4gh` identifiers.
 
+    @functools.lru_cache()
     def get_metadata(self, identifier):
         md = self._get_metadata(identifier)
         md["aliases"] = list(a for a in md["aliases"])
         return md
 
+    @functools.lru_cache()
     def get_sequence(self, identifier, start=None, end=None):
         return self._get_sequence(identifier, start=start, end=end)
 
