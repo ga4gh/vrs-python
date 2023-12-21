@@ -241,7 +241,7 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
 
             if output_vcf:
                 for k in additional_info_fields:
-                    record.info[k] = vrs_field_data[k]
+                    record.info[k] = [value or "." for value in vrs_field_data[k]]
                 vcf_out.write(record)
 
         vcf_in.close()
