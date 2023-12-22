@@ -8,7 +8,7 @@ from ga4gh.vrs.extras.vcf_annotation import VCFAnnotator, VCFAnnotatorException
 
 TEST_DATA_DIR = "tests/extras/data"
 
-@pytest.fixture(scope="module")
+@pytest.fixture
 def vcf_annotator():
     return VCFAnnotator("rest")
 
