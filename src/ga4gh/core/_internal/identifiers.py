@@ -94,10 +94,14 @@ def ga4gh_identify(vro):
 
     """
     if is_identifiable(vro):
-        digest = ga4gh_digest(vro)
-        pfx = vro.ga4gh.prefix
-        ir = f"{namespace}{curie_sep}{pfx}{ref_sep}{digest}"
-        return ir
+        id = getattr(vro, "id", None)
+        if id:
+            return id
+        else:
+            digest = ga4gh_digest(vro)
+            pfx = vro.ga4gh.prefix
+            ir = f"{namespace}{curie_sep}{pfx}{ref_sep}{digest}"
+            return ir
     return None
 
 
