@@ -93,6 +93,9 @@ location.
 # Installation
 
 ## Installing with pip
+Before installing the `ga4gh.vrs[extras]` package, ensure that **PostgreSQL** is installed on your system. You can download and install PostgreSQL from [here](https://www.postgresql.org/download/).
+
+Once PostgreSQL is installed, proceed with the following command to install the `ga4gh.vrs[extras]` package:
 
     pip install 'ga4gh.vrs[extras]'
 
