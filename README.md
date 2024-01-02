@@ -93,6 +93,8 @@ location.
 # Installation
 
 ## Installing with pip
+Check out the Mac setup guide for vrs-python [here](https://github.com/ga4gh/vrs-python/blob/main/docs/setup_help/m1_mac_setup.md). This is a crucial step before diving into UTA. Once you've completed the setup, proceed with configuring the PostgreSQL database for the Unified Transcriptome Annotation (UTA) application  [here](https://github.com/ga4gh/vrs-python/blob/main/docs/setup_help/uta_installation.md).   
+
 Before installing the `ga4gh.vrs[extras]` package, ensure that **PostgreSQL** is installed on your system. You can download and install PostgreSQL from [here](https://www.postgresql.org/download/).
 
 Once PostgreSQL is installed, proceed with the following command to install the `ga4gh.vrs[extras]` package:
