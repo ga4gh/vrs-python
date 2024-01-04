@@ -22,7 +22,7 @@ from .pydantic import (
 _logger = logging.getLogger(__name__)
 
 
-def ga4gh_enref(o, cra_map, object_store=None):
+def ga4gh_enref(o, cra_map, object_store=None, return_id_obj_tuple=False):
     """Recursively convert "referable attributes" from inlined to
     referenced form.  Returns a new object.
 
@@ -65,8 +65,8 @@ def ga4gh_enref(o, cra_map, object_store=None):
 
     # in-place replacement on object copy
     o = pydantic_copy(o)
-    _enref(o)
-    return o
+    _id = _enref(o)
+    return (_id, o) if return_id_obj_tuple else o
 
 
 def ga4gh_deref(o, cra_map, object_store):

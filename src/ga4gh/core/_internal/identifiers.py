@@ -15,8 +15,11 @@ For that reason, they are implemented here in one file.
 
 """
 
+import contextvars
 import logging
 import re
+from contextlib import ContextDecorator
+from enum import IntEnum
 from typing import Union, Optional
 from pydantic import BaseModel, RootModel
 from canonicaljson import encode_canonical_json
@@ -42,6 +45,53 @@ ref_sep = "."
 ga4gh_ir_regexp = re.compile(r"^ga4gh:(?P<type>[^.]+)\.(?P<digest>.+)$")
 
 ns_w_sep = namespace + curie_sep
+
+
+class GA4GHComputeIdentifierWhen(IntEnum):
+    """
+    Defines the rule for when the `ga4gh_identify` method should compute
+    an identifier ('id' attribute) for the specified object.  The options are:
+      ALWAYS - Always compute the identifier (this is the default behavior)
+      INVALID - Compute the identifier if it is missing or is present but syntactically invalid
+      MISSING - Only compute the identifier if missing
+
+    The default behavior is safe and ensures that the identifiers are correct, 
+    but at a performance cost. Where the source of inputs to `ga4gh_identify` 
+    are well controlled, for example when annotating a VCF file with VRS IDs, 
+    using `MISSING` can improve performance.
+    """
+
+    ALWAYS = 0
+    INVALID = 1
+    MISSING = 2
+
+
+ga4gh_compute_identifier_when = contextvars.ContextVar("ga4gh_compute_identifier_when")
+
+
+class use_ga4gh_compute_identifier_when(ContextDecorator):
+    """
+    Context manager that defines when to compute identifiers
+    for all operations within the context.  For example:
+
+    with use_ga4gh_compute_identifier_when(GA4GHComputeIdentifierWhen.INVALID):
+        VCFAnnotator(...).annotate(...)
+
+    Or:
+
+    @use_ga4gh_compute_identifier_when(GA4GHComputeIdentifierWhen.INVALID)
+    def my_method():
+    """
+
+    def __init__(self, when: GA4GHComputeIdentifierWhen):
+        self.when = when
+        self.token = None
+
+    def __enter__(self):
+        self.token = ga4gh_compute_identifier_when.set(self.when)
+
+    def __exit__(self, exc_type, exc, exc_tb):
+        ga4gh_compute_identifier_when.reset(self.token)
 
 
 def is_ga4gh_identifier(ir):
@@ -94,10 +144,25 @@ def ga4gh_identify(vro):
 
     """
     if is_identifiable(vro):
-        digest = ga4gh_digest(vro)
-        pfx = vro.ga4gh.prefix
-        ir = f"{namespace}{curie_sep}{pfx}{ref_sep}{digest}"
+        when_rule = ga4gh_compute_identifier_when.get(GA4GHComputeIdentifierWhen.ALWAYS)
+        do_compute = False
+        ir = None
+        if when_rule == GA4GHComputeIdentifierWhen.ALWAYS:
+            do_compute = True
+        else:
+            ir = getattr(vro, "id", None)
+            if when_rule == GA4GHComputeIdentifierWhen.MISSING:
+                do_compute = ir is None or ir == ""
+            else:  # INVALID
+                do_compute = ir is None or ir == "" or ga4gh_ir_regexp.match(ir) is None
+
+        if do_compute:
+            digest = ga4gh_digest(vro)
+            pfx = vro.ga4gh.prefix
+            ir = f"{namespace}{curie_sep}{pfx}{ref_sep}{digest}"
+
         return ir
+
     return None
 
 

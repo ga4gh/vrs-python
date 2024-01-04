@@ -102,10 +102,9 @@ def _normalize_allele(input_allele, data_proxy, rle_seq_limit=50):
     Does not attempt to normalize Alleles with definite ranges and will instead return the
         `input_allele`
     """
-    allele = pydantic_copy(input_allele)
 
-    if isinstance(allele.location.sequenceReference, models.SequenceReference):
-        alias = f"ga4gh:{allele.location.sequenceReference.refgetAccession}"
+    if isinstance(input_allele.location.sequenceReference, models.SequenceReference):
+        alias = f"ga4gh:{input_allele.location.sequenceReference.refgetAccession}"
     else:
         _logger.warning(
             "`input_allele.location.sequenceReference` expects a `SequenceReference`, "
@@ -115,17 +114,17 @@ def _normalize_allele(input_allele, data_proxy, rle_seq_limit=50):
 
     # Get reference sequence and interval
     ref_seq = SequenceProxy(data_proxy, alias)
-    start = _get_allele_location_pos(allele, use_start=True)
+    start = _get_allele_location_pos(input_allele, use_start=True)
     if start is None:
         return input_allele
 
-    end = _get_allele_location_pos(allele, use_start=False)
+    end = _get_allele_location_pos(input_allele, use_start=False)
     if end is None:
         return input_allele
 
     ival = (start.value, end.value)
-    if allele.state.sequence:
-        alleles = (None, allele.state.sequence.root)
+    if input_allele.state.sequence:
+        alleles = (None, input_allele.state.sequence.root)
     else:
         alleles = (None, "")
 
@@ -145,7 +144,7 @@ def _normalize_allele(input_allele, data_proxy, rle_seq_limit=50):
     if not len_ref_seq and not len_alt_seq:
         return input_allele
 
-    new_allele = pydantic_copy(allele)
+    new_allele = pydantic_copy(input_allele)
 
     if len_ref_seq and len_alt_seq:
         new_allele.location.start = _get_new_allele_location_pos(
