@@ -5,7 +5,10 @@ from ga4gh.core import (
     ga4gh_identify,
     is_pydantic_instance,
     is_curie_type,
-    pydantic_copy)
+    pydantic_copy,
+    use_ga4gh_compute_identifier_when,
+    GA4GHComputeIdentifierWhen,
+)
 from ga4gh.vrs import models, vrs_enref, vrs_deref
 
 allele_dict = {
@@ -245,3 +248,91 @@ def test_class_refatt_map():
         'GenotypeMember': ['variation']
     }
     assert class_refatt_map_expected == models.class_refatt_map
+
+
+def test_compute_identifiers_when():
+    a = {
+        "type": "Allele",
+        "location": {
+            "type": "SequenceLocation",
+            "sequenceReference": {
+                "type": "SequenceReference",
+                "refgetAccession": "SQ.jdEWLvLvT8827O59m1Agh5H3n6kTzBsJ",
+            },
+            "start": 44908821,
+            "end": 44908822,
+        },
+        "state": {"type": "LiteralSequenceExpression", "sequence": "T"},
+    }
+    correct_id = "ga4gh:VA.PkeY9RbMt9CEFakQ0AgDdAQ7POUeoWR0"
+    syntax_valid_id = "ga4gh:VA.39eae078d9bb30da2a5c5d1969cb1472"
+    syntax_invalid_id = "ga4gh:12345"
+
+    # when id property is missing
+    vo_a = models.Allele(**a)
+    assert ga4gh_identify(vo_a) == correct_id
+    with use_ga4gh_compute_identifier_when(GA4GHComputeIdentifierWhen.ALWAYS):
+        assert ga4gh_identify(vo_a) == correct_id
+    with use_ga4gh_compute_identifier_when(GA4GHComputeIdentifierWhen.INVALID):
+        assert ga4gh_identify(vo_a) == correct_id
+    with use_ga4gh_compute_identifier_when(GA4GHComputeIdentifierWhen.MISSING):
+        assert ga4gh_identify(vo_a) == correct_id
+
+    # when id property is none
+    a["id"] = None
+    vo_a = models.Allele(**a)
+    assert ga4gh_identify(vo_a) == correct_id
+    with use_ga4gh_compute_identifier_when(GA4GHComputeIdentifierWhen.ALWAYS):
+        assert ga4gh_identify(vo_a) == correct_id
+    with use_ga4gh_compute_identifier_when(GA4GHComputeIdentifierWhen.INVALID):
+        assert ga4gh_identify(vo_a) == correct_id
+    with use_ga4gh_compute_identifier_when(GA4GHComputeIdentifierWhen.MISSING):
+        assert ga4gh_identify(vo_a) == correct_id
+
+    # when id property is blank
+    a["id"] = ""
+    vo_a = models.Allele(**a)
+    assert ga4gh_identify(vo_a) == correct_id
+    with use_ga4gh_compute_identifier_when(GA4GHComputeIdentifierWhen.ALWAYS):
+        assert ga4gh_identify(vo_a) == correct_id
+    with use_ga4gh_compute_identifier_when(GA4GHComputeIdentifierWhen.INVALID):
+        assert ga4gh_identify(vo_a) == correct_id
+    with use_ga4gh_compute_identifier_when(GA4GHComputeIdentifierWhen.MISSING):
+        assert ga4gh_identify(vo_a) == correct_id
+
+    # when id property is syntactically invalid
+    a["id"] = syntax_invalid_id
+    vo_a = models.Allele(**a)
+    assert ga4gh_identify(vo_a) == correct_id
+    with use_ga4gh_compute_identifier_when(GA4GHComputeIdentifierWhen.ALWAYS):
+        assert ga4gh_identify(vo_a) == correct_id
+    with use_ga4gh_compute_identifier_when(GA4GHComputeIdentifierWhen.INVALID):
+        assert ga4gh_identify(vo_a) == correct_id
+    with use_ga4gh_compute_identifier_when(GA4GHComputeIdentifierWhen.MISSING):
+        assert ga4gh_identify(vo_a) == syntax_invalid_id
+
+    # when id property is syntactically valid
+    a["id"] = syntax_valid_id
+    vo_a = models.Allele(**a)
+    assert ga4gh_identify(vo_a) == correct_id
+    with use_ga4gh_compute_identifier_when(GA4GHComputeIdentifierWhen.ALWAYS):
+        assert ga4gh_identify(vo_a) == correct_id
+    with use_ga4gh_compute_identifier_when(GA4GHComputeIdentifierWhen.INVALID):
+        assert ga4gh_identify(vo_a) == syntax_valid_id
+    with use_ga4gh_compute_identifier_when(GA4GHComputeIdentifierWhen.MISSING):
+        assert ga4gh_identify(vo_a) == syntax_valid_id
+
+    # when id property is correct
+    a["id"] = correct_id
+    vo_a = models.Allele(**a)
+    assert ga4gh_identify(vo_a) == correct_id
+    assert ga4gh_identify(vo_a) is not correct_id
+    with use_ga4gh_compute_identifier_when(GA4GHComputeIdentifierWhen.ALWAYS):
+        assert ga4gh_identify(vo_a) == correct_id
+        assert ga4gh_identify(vo_a) is not correct_id
+    with use_ga4gh_compute_identifier_when(GA4GHComputeIdentifierWhen.INVALID):
+        assert ga4gh_identify(vo_a) == correct_id
+        assert ga4gh_identify(vo_a) is correct_id
+    with use_ga4gh_compute_identifier_when(GA4GHComputeIdentifierWhen.MISSING):
+        assert ga4gh_identify(vo_a) == correct_id
+        assert ga4gh_identify(vo_a) is correct_id
