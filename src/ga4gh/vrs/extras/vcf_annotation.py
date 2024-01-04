@@ -15,6 +15,7 @@ import pysam
 from biocommons.seqrepo import SeqRepo
 from pydantic import ValidationError
 
+from ga4gh.core import GA4GHComputeIdentifierWhen, use_ga4gh_compute_identifier_when
 from ga4gh.vrs.dataproxy import SeqRepoDataProxy, SeqRepoRESTDataProxy
 from ga4gh.vrs.extras.translator import AlleleTranslator, ValidationError as TranslatorValidationError
 
@@ -161,6 +162,7 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
             self.dp = SeqRepoRESTDataProxy(seqrepo_base_url)
         self.tlr = AlleleTranslator(self.dp)
 
+    @use_ga4gh_compute_identifier_when(GA4GHComputeIdentifierWhen.MISSING)
     def annotate(  # pylint: disable=too-many-arguments,too-many-locals
         self, vcf_in: str, vcf_out: Optional[str] = None,
         vrs_pickle_out: Optional[str] = None, vrs_attributes: bool = False,
