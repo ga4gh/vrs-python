@@ -93,6 +93,27 @@ location.
 # Installation
 
 ## Installing with pip
+Before installing the `ga4gh.vrs[extras]` package, ensure that **PostgreSQL** is installed on your system. You can download and install PostgreSQL from [here](https://www.postgresql.org/download/).    
+### To install PostgreSQL using ``Homebrew``   
+1.**Install Homebrew**: If you don't have Homebrew installed, you can install it by opening Terminal and running the following command:
+```
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+```
+2.**Update Homebrew**: Make sure Homebrew is up-to-date by running:
+```
+brew update
+```
+3.**Install PostgreSQL**: Use the following command to install PostgreSQL:
+```
+brew install postgresql
+```
+4.**Start PostgreSQL**: Once the installation is complete, you can start the PostgreSQL service using:
+```
+brew services start postgresql
+```
+You can refer to these documents [setup help docs](https://github.com/ga4gh/vrs-python/tree/main/docs/setup_help) for additional assistance.
+
+Once PostgreSQL is installed, proceed with the following command to install the `ga4gh.vrs[extras]` package:
 
     pip install 'ga4gh.vrs[extras]'
 
@@ -174,7 +195,7 @@ We have created a public [`VRS-demo-notebooks`](https://app.terra.bio/#workspace
 [VS Code](https://code.visualstudio.com/) is a code editor developed by Microsoft. It is lightweight, highly customizable, and supports a wide range of programming languages, with a robust extension system. You can download VS Code [here](https://code.visualstudio.com/Download).
 
 **1. Open VS Code**: Launch Visual Studio Code.  
-**2. Install the Jupyter Extension**: Use Extensions view (Ctrl+Shift+X or ⌘+Shift+X) to install the [Jupyter extension](https://marketplace.visualstudio.com/items?itemName=ms-toolsai.jupyter).
+**2. Install the Jupyter Extension**: Use Extensions view (Ctrl+Shift+X or ⌘+Shift+X) to install the [Jupyter extension](https://marketplace.visualstudio.com/items?itemName=ms-toolsai.jupyter).  
 **3. Open the Project in VS Code**: Navigate to your project folder and open it in VS Code.  
 **4. Select the Jupyter Kernel**: In a notebook, click `Select Kernel` at the top right. Select the option where the path is `venv/3.10/bin/python3`. See [here](https://code.visualstudio.com/docs/datascience/jupyter-kernel-management) for more information on managing Jupyter Kernels in VS Code.  
 **5. Run the Notebook**: After selecting the kernel you can now run the notebook.
