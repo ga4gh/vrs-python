@@ -117,6 +117,7 @@ The following jupyter extensions are recommended but not required
 We have created a public [`VRS-demo-notebooks`](https://app.terra.bio/#workspaces/terra-outreach/VRS-demo-notebooks) workspace in Terra that contains the demo notebooks along with instructions for running them with minimal setup. To get started, see either the [`VRS-demo-notebooks`](https://app.terra.bio/#workspaces/terra-outreach/VRS-demo-notebooks) workspace or the [`Terra.ipynb`](notebooks/Terra.ipynb) notebook in this repository.
 
 ## Running the Notebooks with VS Code
+
 [VS Code](https://code.visualstudio.com/) is a code editor developed by Microsoft. It is lightweight, highly customizable, and supports a wide range of programming languages, with a robust extension system. You can download VS Code [here](https://code.visualstudio.com/Download).
 
 **1. Open VS Code**: Launch Visual Studio Code.   
