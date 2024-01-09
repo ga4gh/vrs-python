@@ -96,7 +96,7 @@ location.
 
 PostgreSQL is required for UTA. Ensure that PostgreSQL is installed on your system. You can download and install PostgreSQL from [here](https://www.postgresql.org/download/) or [install using Homebrew](#install-postgresql-using-homebrew).
 
-There are additional [setup help docs](https://github.com/ga4gh/vrs-python/tree/2.x/docs/setup_help) for additional assistance.
+There are [macOS docs](https://github.com/ga4gh/vrs-python/tree/2.x/docs/setup_help) for additional assistance.
 
 ### Install PostgreSQL using Homebrew
 
