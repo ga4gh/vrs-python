@@ -74,7 +74,7 @@ Check that the containers are running:
     $ docker ps
     CONTAINER ID        IMAGE                                    //  NAMES
     86e872ab0c69        biocommons/seqrepo-rest-service:latest   //  vrs-python_seqrepo-rest-service_1
-    a40576b8cf1f        biocommons/uta:uta_20180821              //  vrs-python_uta_1
+    a40576b8cf1f        biocommons/uta:uta_20210129b              //  vrs-python_uta_1
 
 Depending on your network and host, the _first_ run is likely to take 5-15
 minutes in order to download and install data. Subsequent startups should be
