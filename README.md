@@ -92,28 +92,31 @@ location.
 
 # Installation
 
-## Installing with pip
-Before installing the `ga4gh.vrs[extras]` package, ensure that **PostgreSQL** is installed on your system. You can download and install PostgreSQL from [here](https://www.postgresql.org/download/).
-### To install PostgreSQL using ``Homebrew``
-1.**Install Homebrew**: If you don't have Homebrew installed, you can install it by opening Terminal and running the following command:
-```
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-```
-2.**Update Homebrew**: Make sure Homebrew is up-to-date by running:
-```
-brew update
-```
-3.**Install PostgreSQL**: Use the following command to install PostgreSQL:
-```
-brew install postgresql
-```
-4.**Start PostgreSQL**: Once the installation is complete, you can start the PostgreSQL service using:
-```
-brew services start postgresql
-```
-You can refer to these documents [setup help docs](https://github.com/ga4gh/vrs-python/tree/main/docs/setup_help) for additional assistance.
+## Install PostgreSQL
 
-Once PostgreSQL is installed, proceed with the following command to install the `ga4gh.vrs[extras]` package:
+PostgreSQL is required for UTA. Ensure that PostgreSQL is installed on your system. You can download and install PostgreSQL from [here](https://www.postgresql.org/download/) or [install using Homebrew](#install-postgresql-using-homebrew).
+
+There are additional [setup help docs](https://github.com/ga4gh/vrs-python/tree/2.x/docs/setup_help) for additional assistance.
+
+### Install PostgreSQL using Homebrew
+
+1. Install Homebrew: See the [documentation](https://docs.brew.sh/Installation) for how to install.
+
+1. Update Homebrew: Make sure Homebrew is up-to-date by running:
+
+        brew update
+
+1. Install PostgreSQL: Use the following command to install [PostgreSQL](https://formulae.brew.sh/formula/postgresql@14#default):
+
+        brew install postgresql@14
+
+1. Start PostgreSQL: Once the installation is complete, you can start the PostgreSQL service using:
+
+        brew services start postgresql
+
+## Installing the VRS-Python package with pip
+
+Once PostgreSQL is installed, proceed with the following command to install the VRS-Python package:
 
     pip install 'ga4gh.vrs[extras]'
 
