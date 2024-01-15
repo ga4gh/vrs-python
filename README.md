@@ -92,7 +92,31 @@ location.
 
 # Installation
 
-## Installing with pip
+## Install PostgreSQL
+
+PostgreSQL is required for UTA. Ensure that PostgreSQL is installed on your system. You can download and install PostgreSQL from [here](https://www.postgresql.org/download/) or [install using Homebrew](#install-postgresql-using-homebrew).
+
+There are [macOS docs](https://github.com/ga4gh/vrs-python/tree/2.x/docs/setup_help) for additional assistance.
+
+### Install PostgreSQL using Homebrew
+
+1. Install Homebrew: See the [documentation](https://docs.brew.sh/Installation) for how to install.
+
+1. Update Homebrew: Make sure Homebrew is up-to-date by running:
+
+        brew update
+
+1. Install PostgreSQL: Use the following command to install [PostgreSQL](https://formulae.brew.sh/formula/postgresql@14#default):
+
+        brew install postgresql@14
+
+1. Start PostgreSQL: Once the installation is complete, you can start the PostgreSQL service using:
+
+        brew services start postgresql
+
+## Installing the VRS-Python package with pip
+
+Once PostgreSQL is installed, proceed with the following command to install the VRS-Python package:
 
     pip install 'ga4gh.vrs[extras]'
 
