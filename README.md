@@ -30,7 +30,7 @@ correspondences between the packages that are **currently maintained** may be su
 
 | vrs-python branch | vrs-python tag/version | vrs branch | vrs version |
 | --- | --- | --- | --- |
-| [2.x](https://github.com/ga4gh/vrs-python/tree/2.x) _(default branch)_ | 2.x | [2.x](https://github.com/ga4gh/vrs/tree/2.x) | 2.x
+| [main](https://github.com/ga4gh/vrs-python/tree/main) _(default branch)_ | 2.x | [2.0-alpha](https://github.com/ga4gh/vrs/tree/2.0-alpha) | 2.x
 | [1.x](https://github.com/ga4gh/vrs-python/tree/1.x) | 0.8.x | [1.x](https://github.com/ga4gh/vrs/tree/1.x) | 1.x |
 
 ⚠ **Note: Only 2.x branch is being actively maintained. The 1.x branch will only be maintained for bug fixes.** 
