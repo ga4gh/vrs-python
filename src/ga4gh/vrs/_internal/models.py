@@ -233,7 +233,7 @@ class SequenceReference(_ValueObject):
     )
 
     type: Literal['SequenceReference'] = Field('SequenceReference', description='MUST be "SequenceReference"')
-    refgetAccession: constr(pattern=r'SQ.[0-9A-Za-z_\-]{32}') = Field(
+    refgetAccession: constr(pattern=r'^SQ.[0-9A-Za-z_\-]{32}$') = Field(
         ...,
         description='A `GA4GH RefGet <http://samtools.github.io/hts-specs/refget.html>` identifier for the referenced sequence, using the sha512t24u digest.',
     )
