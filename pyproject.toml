@@ -58,8 +58,9 @@ dependencies = [
 dynamic = ["version"]
 
 [project.urls]
-homepage = "https://github.com/ga4gh/vrs-python"
-
+Homepage = "https://github.com/ga4gh/vrs-python"
+Source = "https://github.com/ga4gh/vrs-python"
+"Bug Tracker" = "https://github.com/ga4gh/vrs-python/issues"
 
 [project.optional-dependencies]
 extras = [
@@ -106,3 +107,10 @@ deps = [
   "pip>=23.0",
   "setuptools>=64.0"
 ]
+
+[tool.yapf]
+based_on_style = "pep8"
+column_limit = 120
+spaces_before_comment = 4
+split_before_logical_operator = true
+split_before_named_assigns = true
