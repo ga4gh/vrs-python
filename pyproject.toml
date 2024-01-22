@@ -10,6 +10,7 @@ where = ["src"]
 
 [project]
 name = "ga4gh.vrs"
+description = "GA4GH Variation Representation Specification (VRS) reference implementation (https://github.com/ga4gh/vrs-python/)"
 authors = [
     {name = "Reece Hart", email = "reecehart@gmail.com"},
     {name = "Alex H. Wagner", email = "alex.wagner@nationwidechildrens.org"},
@@ -45,7 +46,6 @@ keywords = [
     "variation"
 ]
 requires-python = ">=3.8"
-description = "GA4GH Variation Representation Specification (VRS) reference implementation (https://github.com/ga4gh/vrs-python/)"
 license = {file = "LICENSE"}
 dependencies = [
     "bioutils",
