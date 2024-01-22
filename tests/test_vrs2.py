@@ -156,6 +156,7 @@ def test_vr():
                 "type": "SequenceLocation",
                 "sequenceReference": {
                     "type": "SequenceReference",
+                    # refgetAccession can't include a namespace prefix
                     "refgetAccession": "ga4gh:SQ.KEO-4XBcm1cxeo_DIQ8_ofqGUkp4iZhI"
                 },
                 "start": 128325834,
@@ -173,7 +174,7 @@ def test_vr():
                 "type": "SequenceLocation",
                 "sequenceReference": {
                     "type": "SequenceReference",
-                    "refgetAccession": "ga4gh:SQ.KEO-4XBcm1cxeo_DIQ8_ofqGUkp4iZhI"
+                    "refgetAccession": "SQ.KEO-4XBcm1cxeo_DIQ8_ofqGUkp4iZhI"
                 },
                 "start": 128325834,
                 "end": 128325835
@@ -182,7 +183,8 @@ def test_vr():
                 "type": "LiteralSequenceExpression",
                 "sequence": "T"
             },
-            "digest": "this-should-fail:734G5mtNwe40do8F6GKuqQP4QxyjBqVp"
+            # digest can't include a namespace prefix
+            "digest": "ga4gh:734G5mtNwe40do8F6GKuqQP4QxyjBqVp"
         })
 
 
