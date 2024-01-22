@@ -1,0 +1,96 @@
+[build-system]
+requires = ["setuptools>=64", "setuptools-scm>=8"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[project]
+name = "ga4gh.vrs"
+authors = [
+    {name = "Reece Hart", email = "reecehart@gmail.com"},
+    {name = "Alex H. Wagner", email = "alex.wagner@nationwidechildrens.org"},
+    {name = "Andreas Prlic", email = "andreas.prlic@gmail.com"},
+    {name = "Larry Babb", email = "lbabb@broadinstitute.org"}
+]
+readme = "README.md"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Framework :: Pydantic",
+    "Framework :: Pydantic :: 2",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Healthcare Industry",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+    "Topic :: Scientific/Engineering :: Medical Science Apps."
+]
+keywords = [
+    "bioinformatics",
+    "ga4gh",
+    "genomics",
+    "hgvs",
+    "spdi",
+    "variation"
+]
+requires-python = ">=3.8"
+description = "GA4GH Variation Representation Specification (VRS) reference implementation (https://github.com/ga4gh/vrs-python/)"
+license = {file = "LICENSE"}
+dependencies = [
+    "bioutils",
+    "canonicaljson",
+    "coloredlogs",
+    "numpy",
+    "pyyaml",
+    "pydantic~=2.1"
+]
+dynamic = ["version"]
+
+[project.urls]
+homepage = "https://github.com/ga4gh/vrs-python"
+
+
+[project.optional-dependencies]
+extras = [
+    "psycopg2-binary",
+    "biocommons.seqrepo>=0.5.1",
+    "bioutils>=0.5.2",
+    "hgvs>=1.4",
+    "requests",
+    "dill~=0.3.7",
+    "click"
+]
+dev = [
+    "ipython",
+    "jedi<0.18",  # https://github.com/ipython/ipython/issues/12677#issuecomment-752258403
+    "pylint",
+    "pytest",
+    "pytest-cov",
+    "pytest-vcr",
+    "pyyaml",
+    "restview",
+    "smart_open",
+    "tox",
+    "vcrpy",
+    "yapf"
+]
+notebooks = ["ipython", "jupyter", "tabulate"]
+
+[tool.pytest.ini_options]
+# TODO: add src to testpaths to trigger doctests. However, this
+# requires injecting fixtures, which requires conftest.py in src/,
+# which requires packaging changes. Deferred.
+addopts = "--cov-config=setup.cfg --cov-report=term-missing --cov=ga4gh"
+testpaths = "src tests"
+doctest_optionflags = "ALLOW_UNICODE ALLOW_BYTES ELLIPSIS IGNORE_EXCEPTION_DETAIL NORMALIZE_WHITESPACE"
