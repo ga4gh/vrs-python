@@ -167,7 +167,7 @@ class _ValueObject(_Entity):
     See https://en.wikipedia.org/wiki/Value_object for more on Value Objects.
     """
 
-    digest: Optional[constr(pattern=r'[0-9A-Za-z_\-]{32}')] = Field(
+    digest: Optional[constr(pattern=r'^[0-9A-Za-z_\-]{32}$')] = Field(
         None,
         description='A sha512t24u digest created using the VRS Computed Identifier algorithm.',
     )

@@ -166,6 +166,24 @@ def test_vr():
                 "sequence": "T"
             }
         })
+    with pytest.raises(ValidationError):
+        models.Allele(**{
+            "type": "Allele",
+            "location": {
+                "type": "SequenceLocation",
+                "sequenceReference": {
+                    "type": "SequenceReference",
+                    "refgetAccession": "ga4gh:SQ.KEO-4XBcm1cxeo_DIQ8_ofqGUkp4iZhI"
+                },
+                "start": 128325834,
+                "end": 128325835
+            },
+            "state": {
+                "type": "LiteralSequenceExpression",
+                "sequence": "T"
+            },
+            "digest": "ga4gh:734G5mtNwe40do8F6GKuqQP4QxyjBqVp"
+        })
 
 
 
