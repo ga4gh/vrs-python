@@ -182,7 +182,7 @@ def test_vr():
                 "type": "LiteralSequenceExpression",
                 "sequence": "T"
             },
-            "digest": "ga4gh:734G5mtNwe40do8F6GKuqQP4QxyjBqVp"
+            "digest": "this-should-fail:734G5mtNwe40do8F6GKuqQP4QxyjBqVp"
         })
 
 
