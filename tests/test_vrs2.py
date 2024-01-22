@@ -1,3 +1,6 @@
+from pydantic import ValidationError
+import pytest
+
 from ga4gh.core import (
     sha512t24u,
     ga4gh_digest,
@@ -36,7 +39,7 @@ allele_383650_dict = {
         "type": "SequenceLocation",
         "sequenceReference": {
             "type": "SequenceReference",
-            "refgetAccession": "ga4gh:SQ.KEO-4XBcm1cxeo_DIQ8_ofqGUkp4iZhI"
+            "refgetAccession": "SQ.KEO-4XBcm1cxeo_DIQ8_ofqGUkp4iZhI"
         },
         "start": 128325834,
         "end": 128325835
@@ -52,7 +55,7 @@ allele_417816_dict = {
         "type": "SequenceLocation",
         "sequenceReference": {
             "type": "SequenceReference",
-            "refgetAccession": "ga4gh:SQ.KEO-4XBcm1cxeo_DIQ8_ofqGUkp4iZhI"
+            "refgetAccession": "SQ.KEO-4XBcm1cxeo_DIQ8_ofqGUkp4iZhI"
         },
         "start": 128325809,
         "end": 128325810
@@ -68,7 +71,7 @@ allele_280320_dict = {
         "type": "SequenceLocation",
         "sequenceReference": {
             "type": "SequenceReference",
-            "refgetAccession": "ga4gh:SQ.KEO-4XBcm1cxeo_DIQ8_ofqGUkp4iZhI"
+            "refgetAccession": "SQ.KEO-4XBcm1cxeo_DIQ8_ofqGUkp4iZhI"
         },
         "start": 128322879,
         "end": 128322891
@@ -146,6 +149,45 @@ def test_vr():
     # a3 = vrs_deref(a2, vros)
     # assert a == a3
 
+    with pytest.raises(ValidationError):
+        models.Allele(**{
+            "type": "Allele",
+            "location": {
+                "type": "SequenceLocation",
+                "sequenceReference": {
+                    "type": "SequenceReference",
+                    # refgetAccession can't include a namespace prefix
+                    "refgetAccession": "ga4gh:SQ.KEO-4XBcm1cxeo_DIQ8_ofqGUkp4iZhI"
+                },
+                "start": 128325834,
+                "end": 128325835
+            },
+            "state": {
+                "type": "LiteralSequenceExpression",
+                "sequence": "T"
+            }
+        })
+    with pytest.raises(ValidationError):
+        models.Allele(**{
+            "type": "Allele",
+            "location": {
+                "type": "SequenceLocation",
+                "sequenceReference": {
+                    "type": "SequenceReference",
+                    "refgetAccession": "SQ.KEO-4XBcm1cxeo_DIQ8_ofqGUkp4iZhI"
+                },
+                "start": 128325834,
+                "end": 128325835
+            },
+            "state": {
+                "type": "LiteralSequenceExpression",
+                "sequence": "T"
+            },
+            # digest can't include a namespace prefix
+            "digest": "ga4gh:734G5mtNwe40do8F6GKuqQP4QxyjBqVp"
+        })
+
+
 
 def test_haplotype():
     assert haplotype_431012.model_dump(exclude_none=True) == haplotype_431012_dict
@@ -196,7 +238,7 @@ def test_enref():
         'type': 'SequenceLocation',
         'sequenceReference': {
             'type': 'SequenceReference',
-            'refgetAccession': 'ga4gh:SQ.KEO-4XBcm1cxeo_DIQ8_ofqGUkp4iZhI'
+            'refgetAccession': 'SQ.KEO-4XBcm1cxeo_DIQ8_ofqGUkp4iZhI'
         },
         'start': 128325834,
         'end': 128325835})

@@ -167,7 +167,7 @@ class _ValueObject(_Entity):
     See https://en.wikipedia.org/wiki/Value_object for more on Value Objects.
     """
 
-    digest: Optional[constr(pattern=r'[0-9A-Za-z_\-]{32}')] = Field(
+    digest: Optional[constr(pattern=r'^[0-9A-Za-z_\-]{32}$')] = Field(
         None,
         description='A sha512t24u digest created using the VRS Computed Identifier algorithm.',
     )
@@ -233,7 +233,7 @@ class SequenceReference(_ValueObject):
     )
 
     type: Literal['SequenceReference'] = Field('SequenceReference', description='MUST be "SequenceReference"')
-    refgetAccession: constr(pattern=r'SQ.[0-9A-Za-z_\-]{32}') = Field(
+    refgetAccession: constr(pattern=r'^SQ.[0-9A-Za-z_\-]{32}$') = Field(
         ...,
         description='A `GA4GH RefGet <http://samtools.github.io/hts-specs/refget.html>` identifier for the referenced sequence, using the sha512t24u digest.',
     )
