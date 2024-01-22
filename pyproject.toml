@@ -94,3 +94,15 @@ notebooks = ["ipython", "jupyter", "tabulate"]
 addopts = "--cov-config=setup.cfg --cov-report=term-missing --cov=ga4gh"
 testpaths = "src tests"
 doctest_optionflags = "ALLOW_UNICODE ALLOW_BYTES ELLIPSIS IGNORE_EXCEPTION_DETAIL NORMALIZE_WHITESPACE"
+
+[tool.tox]
+envlist = ["py38", "py39", "py310", "py311", "py312"]
+
+[tool.tox.testenv]
+whitelist_externals = ["make"]
+commands = ["make test"]
+commands_pre = ["make install-extras"]
+deps = [
+  "pip>=23.0",
+  "setuptools>=64.0"
+]
