@@ -1,7 +1,6 @@
 # vrs-python
 
 [![PyPI version](https://badge.fury.io/py/ga4gh.vrs.svg)](https://pypi.org/project/ga4gh.vrs)
-[![Travis](https://travis-ci.org/ga4gh/vrs-python.svg?branch=master)](https://travis-ci.org/ga4gh/vrs-python)
 
 vrs-python provides Python language support for the [GA4GH Variation
 Representation Specification
@@ -33,7 +32,7 @@ correspondences between the packages that are **currently maintained** may be su
 | [main](https://github.com/ga4gh/vrs-python/tree/main) _(default branch)_ | 2.x | [2.0-alpha](https://github.com/ga4gh/vrs/tree/2.0-alpha) | 2.x
 | [1.x](https://github.com/ga4gh/vrs-python/tree/1.x) | 0.8.x | [1.x](https://github.com/ga4gh/vrs/tree/1.x) | 1.x |
 
-⚠ **Note: Only 2.x branch is being actively maintained. The 1.x branch will only be maintained for bug fixes.** 
+⚠ **Note: Only 2.x branch is being actively maintained. The 1.x branch will only be maintained for bug fixes.**
 
 ⚠ **Developers: See the development section below for recommendations for using submodules
 gracefully (and without causing problems for others!).**
