@@ -82,12 +82,6 @@ test:
 doctest:
 	python3 -m pytest --doctest-modules
 
-#=> tox: execute tests via tox
-.PHONY: tox
-tox:
-	tox
-
-
 ############################################################################
 #= UTILITY TARGETS
 
@@ -128,7 +122,7 @@ cleaner: clean
 #=> cleanest: remove files and directories that require more time/network fetches to rebuild
 .PHONY: cleanest
 cleanest: cleaner
-	rm -fr .eggs .tox venv
+	rm -fr .eggs venv
 
 
 ## <LICENSE>
