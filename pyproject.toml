@@ -92,7 +92,7 @@ notebooks = ["ipython", "jupyter", "tabulate"]
 # TODO: add src to testpaths to trigger doctests. However, this
 # requires injecting fixtures, which requires conftest.py in src/,
 # which requires packaging changes. Deferred.
-addopts = "--cov-config=setup.cfg --cov-report=term-missing --cov=ga4gh"
+addopts = "--cov-report=term-missing --cov=ga4gh"
 testpaths = "src tests"
 doctest_optionflags = "ALLOW_UNICODE ALLOW_BYTES ELLIPSIS IGNORE_EXCEPTION_DETAIL NORMALIZE_WHITESPACE"
 
