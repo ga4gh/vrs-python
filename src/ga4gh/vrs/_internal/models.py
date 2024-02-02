@@ -279,6 +279,7 @@ class LiteralSequenceExpression(_ValueObject):
     sequence: SequenceString = Field(..., description='the literal sequence')
 
     class ga4gh(_Ga4ghIdentifiableObject.ga4gh):
+        identifiable = False
         keys = [
             'sequence',
             'type'
