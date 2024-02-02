@@ -239,7 +239,7 @@ class SequenceReference(_ValueObject):
     )
     residueAlphabet: Optional[ResidueAlphabet] = None
 
-    class ga4gh:
+    class ga4gh(_Ga4ghIdentifiableObject.ga4gh):
         assigned: bool = Field(
             True,
             description='This special property indicates that the `digest` field follows an alternate convention and is expected to have the value assigned following that convention. For SequenceReference, it is expected the digest will be the refget accession value without the `SQ.` prefix.'
@@ -262,6 +262,13 @@ class ReferenceLengthExpression(_ValueObject):
         None, description='The number of residues in the repeat subunit.'
     )
 
+    class ga4gh(_Ga4ghIdentifiableObject.ga4gh):
+        keys = [
+            'length',
+            'repeatSubunitLength',
+            'type'
+        ]
+
 
 class LiteralSequenceExpression(_ValueObject):
     """An explicit expression of a Sequence."""
@@ -270,6 +277,12 @@ class LiteralSequenceExpression(_ValueObject):
         'LiteralSequenceExpression', description='MUST be "LiteralSequenceExpression"'
     )
     sequence: SequenceString = Field(..., description='the literal sequence')
+
+    class ga4gh(_Ga4ghIdentifiableObject.ga4gh):
+        keys = [
+            'sequence',
+            'type'
+        ]
 
 
 class SequenceLocation(_Ga4ghIdentifiableObject):
