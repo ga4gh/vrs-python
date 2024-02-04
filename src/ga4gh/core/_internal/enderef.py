@@ -15,7 +15,7 @@ from .pydantic import (
     is_pydantic_instance,
     is_list,
     is_curie_type,
-    is_identifiable,
+    is_ga4gh_identifiable,
     get_pydantic_root,
     pydantic_copy)
 
@@ -60,7 +60,7 @@ def ga4gh_enref(o, cra_map, object_store=None, return_id_obj_tuple=False):
 
     if not is_pydantic_instance(o):
         raise ValueError("Called ga4gh_enref() with non-pydantic instance")
-    if not is_identifiable(o):
+    if not is_ga4gh_identifiable(o):
         raise ValueError("Called ga4gh_enref() with non-identifiable object")
 
     # in-place replacement on object copy
@@ -101,7 +101,7 @@ def ga4gh_deref(o, cra_map, object_store):
 
     if not is_pydantic_instance(o):
         raise ValueError("Called ga4gh_deref() with non-non-pydantic instance")
-    if not is_identifiable(o):
+    if not is_ga4gh_identifiable(o):
         raise ValueError("Called ga4gh_deref() with non-identifiable object")
 
     # in-place replacement on object copy

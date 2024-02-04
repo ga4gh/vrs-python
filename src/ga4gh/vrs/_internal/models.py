@@ -26,7 +26,7 @@ import typing
 from pydantic import BaseModel, ConfigDict, Field, RootModel, constr
 
 from ga4gh.core._internal.pydantic import (
-    is_identifiable,
+    is_ga4gh_identifiable,
     getattr_in
 )
 from ga4gh.core._internal.models import IRI, _Entity
@@ -91,7 +91,7 @@ def pydantic_class_refatt_map():
     # Types directly reffable
     reffable_classes = list(filter(
         lambda c: ('id' in c.model_fields
-                   and is_identifiable(c)),
+                   and is_ga4gh_identifiable(c)),
         model_classes
     ))
     # Types reffable because they are a union of reffable types
@@ -172,16 +172,17 @@ class _ValueObject(_Entity):
         description='A sha512t24u digest created using the VRS Computed Identifier algorithm.',
     )
 
+    class ga4gh:
+        keys: List[str]
+
 
 class _Ga4ghIdentifiableObject(_ValueObject):
     """A contextual value object for which a GA4GH computed identifier can be created."""
 
     type: str
 
-    class ga4gh:
-        identifiable = True
+    class ga4gh(_ValueObject.ga4gh):
         prefix: str
-        keys: List[str]
 
 
 class Expression(BaseModel):
@@ -239,7 +240,7 @@ class SequenceReference(_ValueObject):
     )
     residueAlphabet: Optional[ResidueAlphabet] = None
 
-    class ga4gh(_Ga4ghIdentifiableObject.ga4gh):
+    class ga4gh(_ValueObject.ga4gh):
         assigned: bool = Field(
             True,
             description='This special property indicates that the `digest` field follows an alternate convention and is expected to have the value assigned following that convention. For SequenceReference, it is expected the digest will be the refget accession value without the `SQ.` prefix.'
@@ -262,7 +263,7 @@ class ReferenceLengthExpression(_ValueObject):
         None, description='The number of residues in the repeat subunit.'
     )
 
-    class ga4gh(_Ga4ghIdentifiableObject.ga4gh):
+    class ga4gh(_ValueObject.ga4gh):
         keys = [
             'length',
             'repeatSubunitLength',
@@ -278,8 +279,7 @@ class LiteralSequenceExpression(_ValueObject):
     )
     sequence: SequenceString = Field(..., description='the literal sequence')
 
-    class ga4gh(_Ga4ghIdentifiableObject.ga4gh):
-        identifiable = False
+    class ga4gh(_ValueObject.ga4gh):
         keys = [
             'sequence',
             'type'
@@ -421,7 +421,6 @@ class GenotypeMember(_ValueObject):
     )
 
     class ga4gh(_Ga4ghIdentifiableObject.ga4gh):
-        identifiable = False
         keys = [
             'type',
             'count',

@@ -28,7 +28,7 @@ from .digests import sha512t24u
 from .pydantic import (
     is_pydantic_instance,
     is_curie_type,
-    is_identifiable,
+    is_ga4gh_identifiable,
     getattr_in,
     get_pydantic_root,
     is_pydantic_custom_type
@@ -143,7 +143,7 @@ def ga4gh_identify(vro):
     'ga4gh:VSL.u5fspwVbQ79QkX6GHLF8tXPCAXFJqRPx'
 
     """
-    if is_identifiable(vro):
+    if is_ga4gh_identifiable(vro):
         when_rule = ga4gh_compute_identifier_when.get(GA4GHComputeIdentifierWhen.ALWAYS)
         do_compute = False
         ir = None
@@ -307,7 +307,7 @@ def identify_all(
             # Assumes any obj with 'digest' should be collapsed.
             collapsed_output_obj = collapse_identifiable_values(output_obj)
             # Add a digest to the output if it is identifiable
-            if is_identifiable(input_obj):
+            if is_ga4gh_identifiable(input_obj):
                 # Compute digest for updated object, not re-running compaction
                 output_obj["digest"] = ga4gh_digest(collapsed_output_obj, do_compact=False)
     else:
