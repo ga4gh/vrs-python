@@ -281,7 +281,7 @@ def identify_all(
 
     if is_pydantic_custom_type(input_obj):
         val = export_pydantic_model(input_obj)
-        if isinstance(val, str) and is_curie_type(val) and is_ga4gh_identifier(val):
+        if isinstance(val, str) and is_ga4gh_identifier(val):
             val = parse_ga4gh_identifier(val)["digest"]
         output_obj = val
     elif is_pydantic_instance(input_obj):
@@ -317,22 +317,22 @@ def identify_all(
     return output_obj
 
 
-def scrape_model_metadata(obj, meta={}) -> dict:
-    """
-    For a Pydantic object obj, pull out .ga4gh.identifiable
-    and .ga4gh.keys and put them in meta keyed by the class name of obj
-    """
-    assert isinstance(obj, BaseModel)
-    name = type(obj).__name__
-    if is_pydantic_custom_str_type(obj):
-        meta[name] = {"identifiable": False, "keys": None}
-    else:
-        meta[name] = {}
-        identifiable = getattr_in(obj, ["ga4gh", "identifiable"])
-        if identifiable:
-            meta[name]["identifiable"] = identifiable
-        keys = getattr_in(obj, ["ga4gh", "keys"])
-        if keys and len(keys) > 0:
-            meta[name]["keys"] = keys
-        # TODO recurse into fields
-    return meta
+# def scrape_model_metadata(obj, meta={}) -> dict:
+#     """
+#     For a Pydantic object obj, pull out .ga4gh.identifiable
+#     and .ga4gh.keys and put them in meta keyed by the class name of obj
+#     """
+#     assert isinstance(obj, BaseModel)
+#     name = type(obj).__name__
+#     if is_pydantic_custom_str_type(obj):
+#         meta[name] = {"identifiable": False, "keys": None}
+#     else:
+#         meta[name] = {}
+#         identifiable = getattr_in(obj, ["ga4gh", "identifiable"])
+#         if identifiable:
+#             meta[name]["identifiable"] = identifiable
+#         keys = getattr_in(obj, ["ga4gh", "keys"])
+#         if keys and len(keys) > 0:
+#             meta[name]["keys"] = keys
+#         # TODO recurse into fields
+#     return meta
