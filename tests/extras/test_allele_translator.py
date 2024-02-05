@@ -111,7 +111,7 @@ insertion_inputs = {
 insertion_output = {
     "location": {
         "end": 20003010,
-        "start":20003010,
+        "start": 20003010,
         "sequenceReference": {
             "refgetAccession": "SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT",
             "type": "SequenceReference"
@@ -265,6 +265,7 @@ def test_to_spdi(tlr):
     assert 1 == len(to_spdi)
     assert spdiexpr == to_spdi[0]
 
+
 hgvs_tests = (
     ("NC_000013.11:g.32936732=", {
         "id": "ga4gh:VA.GuDPEe-WojSx4b4DxupN3si1poaR61qL",
@@ -303,7 +304,7 @@ hgvs_tests = (
         "type": "Allele"
     }),
     ("NC_000007.14:g.55181220del", {
-        "id": "ga4gh:VA.BNV6SfAuqDYKTTRknLcS-QuTryF5rSBi",
+        "id": "ga4gh:VA.wlYnlMsWc0ZTPZb-nQv2dXHbFcXa6J9u",
         "location": {
             "id": "ga4gh:SL.hnIOG_kul0Lf3mO1ddTRFb0GbQhtQ19t",
             "end": 55181220,
@@ -341,7 +342,7 @@ hgvs_tests = (
         "type": "Allele"
     }),
     ("NC_000013.11:g.32331093_32331094dup", {
-        "id": "ga4gh:VA.g-q4OzcyYFC5eVQFSrbXwgJScSREvrY-",
+        "id": "ga4gh:VA.x5iNzjjXbb1-wWTBLMBcicYlCMwYoedq",
         "location": {
             "id": "ga4gh:SL.PJ8lHWhAMNRSrxHvkarfDjRWxF-GwaJ_",
             "end": 32331094,
@@ -361,7 +362,7 @@ hgvs_tests = (
         "type": "Allele"
     }),
     ("NC_000013.11:g.32316467dup", {
-        "id": "ga4gh:VA._KlbF6GZCbuLxbL9z4hZE3oZSLzBHstS",
+        "id": "ga4gh:VA.ZAyA7Mmd7ERWN6CEd6muxn2mk_gTvEvF",
         "location": {
             "id": "ga4gh:SL.LURTeRdwh5bQf_QqPBoaA--MECYmrY5U",
             "end": 32316467,
@@ -434,7 +435,7 @@ def test_hgvs(tlr, hgvsexpr, expected):
 
 def test_to_hgvs_invalid(tlr):
     # IRI is passed
-    iri_vo =  models.Allele(
+    iri_vo = models.Allele(
         **{
             "location": {
                 "end": 1263,

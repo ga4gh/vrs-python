@@ -28,7 +28,7 @@ from .digests import sha512t24u
 from .pydantic import (
     is_pydantic_instance,
     is_curie_type,
-    is_identifiable,
+    is_ga4gh_identifiable,
     getattr_in,
     get_pydantic_root,
     is_pydantic_custom_type
@@ -143,7 +143,7 @@ def ga4gh_identify(vro):
     'ga4gh:VSL.u5fspwVbQ79QkX6GHLF8tXPCAXFJqRPx'
 
     """
-    if is_identifiable(vro):
+    if is_ga4gh_identifiable(vro):
         when_rule = ga4gh_compute_identifier_when.get(GA4GHComputeIdentifierWhen.ALWAYS)
         do_compute = False
         ir = None
@@ -281,7 +281,7 @@ def identify_all(
 
     if is_pydantic_custom_type(input_obj):
         val = export_pydantic_model(input_obj)
-        if isinstance(val, str) and is_curie_type(val) and is_ga4gh_identifier(val):
+        if isinstance(val, str) and is_ga4gh_identifier(val):
             val = parse_ga4gh_identifier(val)["digest"]
         output_obj = val
     elif is_pydantic_instance(input_obj):
@@ -307,7 +307,7 @@ def identify_all(
             # Assumes any obj with 'digest' should be collapsed.
             collapsed_output_obj = collapse_identifiable_values(output_obj)
             # Add a digest to the output if it is identifiable
-            if is_identifiable(input_obj):
+            if is_ga4gh_identifiable(input_obj):
                 # Compute digest for updated object, not re-running compaction
                 output_obj["digest"] = ga4gh_digest(collapsed_output_obj, do_compact=False)
     else:
@@ -317,22 +317,22 @@ def identify_all(
     return output_obj
 
 
-def scrape_model_metadata(obj, meta={}) -> dict:
-    """
-    For a Pydantic object obj, pull out .ga4gh.identifiable
-    and .ga4gh.keys and put them in meta keyed by the class name of obj
-    """
-    assert isinstance(obj, BaseModel)
-    name = type(obj).__name__
-    if is_pydantic_custom_str_type(obj):
-        meta[name] = {"identifiable": False, "keys": None}
-    else:
-        meta[name] = {}
-        identifiable = getattr_in(obj, ["ga4gh", "identifiable"])
-        if identifiable:
-            meta[name]["identifiable"] = identifiable
-        keys = getattr_in(obj, ["ga4gh", "keys"])
-        if keys and len(keys) > 0:
-            meta[name]["keys"] = keys
-        # TODO recurse into fields
-    return meta
+# def scrape_model_metadata(obj, meta={}) -> dict:
+#     """
+#     For a Pydantic object obj, pull out .ga4gh.identifiable
+#     and .ga4gh.keys and put them in meta keyed by the class name of obj
+#     """
+#     assert isinstance(obj, BaseModel)
+#     name = type(obj).__name__
+#     if is_pydantic_custom_str_type(obj):
+#         meta[name] = {"identifiable": False, "keys": None}
+#     else:
+#         meta[name] = {}
+#         identifiable = getattr_in(obj, ["ga4gh", "identifiable"])
+#         if identifiable:
+#             meta[name]["identifiable"] = identifiable
+#         keys = getattr_in(obj, ["ga4gh", "keys"])
+#         if keys and len(keys) > 0:
+#             meta[name]["keys"] = keys
+#         # TODO recurse into fields
+#     return meta

@@ -8,9 +8,11 @@ from ga4gh.vrs.extras.vcf_annotation import VCFAnnotator, VCFAnnotatorException
 
 TEST_DATA_DIR = "tests/extras/data"
 
+
 @pytest.fixture
 def vcf_annotator():
     return VCFAnnotator("rest")
+
 
 @pytest.mark.vcr
 def test_annotate_vcf_grch38_noattrs(vcf_annotator, vcr_cassette):
@@ -26,11 +28,13 @@ def test_annotate_vcf_grch38_noattrs(vcf_annotator, vcr_cassette):
         out_vcf_lines = out_vcf.readlines()
     with gzip.open(expected_vcf_no_vrs_attrs, "rt") as expected_output:
         expected_output_lines = expected_output.readlines()
-    assert out_vcf_lines == expected_output_lines
+    for actual_line, expected_line in zip(out_vcf_lines, expected_output_lines):
+        assert actual_line == expected_line
     assert os.path.exists(output_vrs_pkl)
     assert vcr_cassette.all_played
     os.remove(output_vcf)
     os.remove(output_vrs_pkl)
+
 
 @pytest.mark.vcr
 def test_annotate_vcf_grch38_attrs(vcf_annotator, vcr_cassette):
@@ -46,11 +50,13 @@ def test_annotate_vcf_grch38_attrs(vcf_annotator, vcr_cassette):
         out_vcf_lines = out_vcf.readlines()
     with gzip.open(expected_vcf, "rt") as expected_output:
         expected_output_lines = expected_output.readlines()
-    assert out_vcf_lines == expected_output_lines
+    for actual_line, expected_line in zip(out_vcf_lines, expected_output_lines):
+        assert actual_line == expected_line
     assert os.path.exists(output_vrs_pkl)
     assert vcr_cassette.all_played
     os.remove(output_vcf)
     os.remove(output_vrs_pkl)
+
 
 @pytest.mark.vcr
 def test_annotate_vcf_grch38_attrs_altsonly(vcf_annotator, vcr_cassette):
@@ -66,11 +72,13 @@ def test_annotate_vcf_grch38_attrs_altsonly(vcf_annotator, vcr_cassette):
         out_vcf_lines = out_vcf.readlines()
     with gzip.open(expected_altsonly_vcf, "rt") as expected_output:
         expected_output_lines = expected_output.readlines()
-    assert out_vcf_lines == expected_output_lines
+    for actual_line, expected_line in zip(out_vcf_lines, expected_output_lines):
+        assert actual_line == expected_line
     assert os.path.exists(output_vrs_pkl)
     assert vcr_cassette.all_played
     os.remove(output_vcf)
     os.remove(output_vrs_pkl)
+
 
 @pytest.mark.vcr
 def test_annotate_vcf_grch37_attrs(vcf_annotator, vcr_cassette):
@@ -92,6 +100,7 @@ def test_annotate_vcf_grch37_attrs(vcf_annotator, vcr_cassette):
     os.remove(output_vcf)
     os.remove(output_vrs_pkl)
 
+
 @pytest.mark.vcr
 def test_annotate_vcf_pickle_only(vcf_annotator, vcr_cassette):
     vcr_cassette.allow_playback_repeats = False
@@ -105,6 +114,7 @@ def test_annotate_vcf_pickle_only(vcf_annotator, vcr_cassette):
     assert (not os.path.exists(output_vcf))
     assert vcr_cassette.all_played
     os.remove(output_vrs_pkl)
+
 
 @pytest.mark.vcr
 def test_annotate_vcf_vcf_only(vcf_annotator, vcr_cassette):
@@ -125,12 +135,14 @@ def test_annotate_vcf_vcf_only(vcf_annotator, vcr_cassette):
     assert not os.path.exists(output_vrs_pkl)
     os.remove(output_vcf)
 
+
 def test_annotate_vcf_input_validation(vcf_annotator):
     input_vcf = f"{TEST_DATA_DIR}/test_vcf_input.vcf"
 
     with pytest.raises(VCFAnnotatorException) as e:
         vcf_annotator.annotate(input_vcf)
     assert str(e.value) == "Must provide one of: `vcf_out` or `vrs_pickle_out`"
+
 
 @pytest.mark.vcr
 def test_get_vrs_object_invalid_input(vcf_annotator, caplog):

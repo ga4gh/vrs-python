@@ -21,15 +21,15 @@ def getattr_in(obj, names) -> Any:
     return v
 
 
-def is_identifiable(o: Any) -> bool:
+def is_ga4gh_identifiable(o: Any) -> bool:
     """
-    Determine if object is identifiable. An object is considered identifiable if
-    contains a `ga4gh_digest` attribute
+    Determine if object is GA4GH identifiable. An object is considered
+    GA4GH identifiable if it contains a `ga4gh_prefix` attribute
 
     :param o: Object
-    :return: `True` if `o` has `ga4gh_digest` attribute. `False` otherwise.
+    :return: `True` if `o` has `ga4gh_prefix` attribute. `False` otherwise.
     """
-    return getattr_in(o, ['ga4gh', 'identifiable'])
+    return bool(getattr_in(o, ['ga4gh', 'prefix']))
 
 
 def is_literal(o: Any) -> bool:
