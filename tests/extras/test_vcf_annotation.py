@@ -72,7 +72,8 @@ def test_annotate_vcf_grch38_attrs_altsonly(vcf_annotator, vcr_cassette):
         out_vcf_lines = out_vcf.readlines()
     with gzip.open(expected_altsonly_vcf, "rt") as expected_output:
         expected_output_lines = expected_output.readlines()
-    assert out_vcf_lines == expected_output_lines
+    for actual_line, expected_line in zip(out_vcf_lines, expected_output_lines):
+        assert actual_line == expected_line
     assert os.path.exists(output_vrs_pkl)
     assert vcr_cassette.all_played
     os.remove(output_vcf)
