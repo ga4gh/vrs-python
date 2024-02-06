@@ -13,7 +13,7 @@ from ._internal.identifiers import (
     parse_ga4gh_identifier, GA4GHComputeIdentifierWhen, use_ga4gh_compute_identifier_when
 )
 from ._internal.pydantic import (
-    is_pydantic_instance, is_curie_type, is_identifiable, is_literal, pydantic_copy
+    is_pydantic_instance, is_curie_type, is_ga4gh_identifiable, is_literal, pydantic_copy
 )
 from ._internal import models as core_models
 
