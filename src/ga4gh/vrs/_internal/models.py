@@ -162,24 +162,25 @@ class CopyChange(Enum):
 
 
 class _ValueObject(_Entity):
-    """A contextual value whose equality is based on value, not identity. All VRS Value
-    Objects may have computed digests from the VRS Computed Identifier algorithm.
+    """A contextual value whose equality is based on value, not identity.
     See https://en.wikipedia.org/wiki/Value_object for more on Value Objects.
     """
-
-    digest: Optional[constr(pattern=r'^[0-9A-Za-z_\-]{32}$')] = Field(
-        None,
-        description='A sha512t24u digest created using the VRS Computed Identifier algorithm.',
-    )
 
     class ga4gh:
         keys: List[str]
 
 
 class _Ga4ghIdentifiableObject(_ValueObject):
-    """A contextual value object for which a GA4GH computed identifier can be created."""
+    """A contextual value object for which a GA4GH computed identifier can be created.
+    All GA4GH Identifiable Objects may have computed digests from the VRS Computed
+    Identifier algorithm."""
 
     type: str
+
+    digest: Optional[constr(pattern=r'^[0-9A-Za-z_\-]{32}$')] = Field(
+        None,
+        description='A sha512t24u digest created using the VRS Computed Identifier algorithm.',
+    )
 
     class ga4gh(_ValueObject.ga4gh):
         prefix: str
