@@ -166,7 +166,7 @@ class CopyChange(Enum):
 
 def _recurse_ga4gh_serialize(obj):
     if isinstance(obj, _Ga4ghIdentifiableObject):
-        return obj.digest
+        return obj.get_or_create_digest()
     elif isinstance(obj, _ValueObject):
         return obj.ga4gh_serialize()
     elif isinstance(obj, RootModel):
@@ -203,16 +203,21 @@ class _Ga4ghIdentifiableObject(_ValueObject):
 
     type: str
 
-    @computed_field(repr=True)
-    @property
-    def digest(self) -> str:
+    digest: Optional[constr(pattern=r'^[0-9A-Za-z_\-]{32}$')] = Field(
+        None,
+        description='A sha512t24u digest created using the VRS Computed Identifier algorithm.',
+    )
+
+    def compute_digest(self) -> str:
         """A sha512t24u digest created using the VRS Computed Identifier algorithm."""
         return sha512t24u(self.model_dump_json().encode("utf-8"))
 
-    # digest: Optional[constr(pattern=r'^[0-9A-Za-z_\-]{32}$')] = Field(
-    #     None,
-    #     description='A sha512t24u digest created using the VRS Computed Identifier algorithm.',
-    # )
+    def get_or_create_digest(self) -> str:
+        """Returns a sha512t24u digest of the GA4GH Identifiable Object, or creates
+        the digest if it does not exist."""
+        if self.digest is None:
+            self.digest = self.compute_digest()
+        return self.digest
 
     class ga4gh(_ValueObject.ga4gh):
         prefix: str
@@ -275,7 +280,8 @@ class SequenceReference(_ValueObject):
 
     class ga4gh(_ValueObject.ga4gh):
         keys = [
-            'refgetAccession'
+            'refgetAccession',
+            'type'
         ]
 
 
