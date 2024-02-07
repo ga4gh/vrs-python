@@ -18,12 +18,15 @@ V2 pydantic: datamodel-codegen --input submodules/vrs/schema/merged.json --input
 """
 
 from typing import List, Literal, Optional, Union
+from functools import cached_property
 from enum import Enum
 import inspect
 import sys
 import typing
+from typing import Dict
+from ga4gh.core import sha512t24u
 
-from pydantic import BaseModel, ConfigDict, Field, RootModel, constr
+from pydantic import BaseModel, ConfigDict, Field, RootModel, constr, model_serializer, computed_field
 
 from ga4gh.core._internal.pydantic import (
     is_ga4gh_identifiable,
@@ -161,10 +164,33 @@ class CopyChange(Enum):
     EFO_0030072 = 'efo:0030072'
 
 
+def _recurse_ga4gh_serialize(obj):
+    if isinstance(obj, _Ga4ghIdentifiableObject):
+        return obj.digest
+    elif isinstance(obj, _ValueObject):
+        return obj.ga4gh_serialize()
+    elif isinstance(obj, RootModel):
+        return obj.model_dump()
+    elif isinstance(obj, str):
+        return obj
+    elif isinstance(obj, list):
+        return [_recurse_ga4gh_serialize(x) for x in obj]
+    else:
+        return obj
+
+
 class _ValueObject(_Entity):
     """A contextual value whose equality is based on value, not identity.
     See https://en.wikipedia.org/wiki/Value_object for more on Value Objects.
     """
+
+    @model_serializer(when_used='json')
+    def ga4gh_serialize(self) -> Dict:
+        out = dict()
+        for k in self.ga4gh.keys:   # assumes ga4gh.keys are lexicographically sorted TODO: test models for this
+            v = getattr(self, k)
+            out[k] = _recurse_ga4gh_serialize(v)
+        return out
 
     class ga4gh:
         keys: List[str]
@@ -177,10 +203,16 @@ class _Ga4ghIdentifiableObject(_ValueObject):
 
     type: str
 
-    digest: Optional[constr(pattern=r'^[0-9A-Za-z_\-]{32}$')] = Field(
-        None,
-        description='A sha512t24u digest created using the VRS Computed Identifier algorithm.',
-    )
+    @computed_field(repr=True)
+    @property
+    def digest(self) -> str:
+        """A sha512t24u digest created using the VRS Computed Identifier algorithm."""
+        return sha512t24u(self.model_dump_json().encode("utf-8"))
+
+    # digest: Optional[constr(pattern=r'^[0-9A-Za-z_\-]{32}$')] = Field(
+    #     None,
+    #     description='A sha512t24u digest created using the VRS Computed Identifier algorithm.',
+    # )
 
     class ga4gh(_ValueObject.ga4gh):
         prefix: str
@@ -242,10 +274,9 @@ class SequenceReference(_ValueObject):
     residueAlphabet: Optional[ResidueAlphabet] = None
 
     class ga4gh(_ValueObject.ga4gh):
-        assigned: bool = Field(
-            True,
-            description='This special property indicates that the `digest` field follows an alternate convention and is expected to have the value assigned following that convention. For SequenceReference, it is expected the digest will be the refget accession value without the `SQ.` prefix.'
-        )
+        keys = [
+            'refgetAccession'
+        ]
 
 
 class ReferenceLengthExpression(_ValueObject):
