@@ -17,13 +17,12 @@ V1 pydantic: datamodel-codegen --input submodules/vrs/schema/merged.json --input
 V2 pydantic: datamodel-codegen --input submodules/vrs/schema/merged.json --input-file-type jsonschema --output models.py --output-model-type pydantic_v2.BaseModel --allow-extra-fields
 """
 
-from typing import List, Literal, Optional, Union
-from functools import cached_property
+from typing import List, Literal, Optional, Union, Dict
+from collections import OrderedDict
 from enum import Enum
 import inspect
 import sys
 import typing
-from typing import Dict
 from ga4gh.core import sha512t24u
 
 from pydantic import BaseModel, ConfigDict, Field, RootModel, constr, model_serializer, computed_field
@@ -173,6 +172,17 @@ def _recurse_ga4gh_serialize(obj):
         return obj.model_dump()
     elif isinstance(obj, str):
         return obj
+    # # This is code that may be used to handle unordered lists (sets) as defined
+    # # by VRS. This functionality will be needed for Haplotype if we return to ordered: false.
+    # # No attempt is made to order arrays of strings containing objects. That will need
+    # # to be addressed before implementing the non-identifiable GenotypeMember class.
+    # elif isinstance(obj, set):
+    #     out = [_recurse_ga4gh_serialize(x) for x in list(obj)]
+    #     if all(isinstance(x, str) for x in out):
+    #         return sorted(out)
+    #     else:
+    #         return out
+    #                     #
     elif isinstance(obj, list):
         return [_recurse_ga4gh_serialize(x) for x in obj]
     else:
@@ -186,8 +196,8 @@ class _ValueObject(_Entity):
 
     @model_serializer(when_used='json')
     def ga4gh_serialize(self) -> Dict:
-        out = dict()
-        for k in self.ga4gh.keys:   # assumes ga4gh.keys are lexicographically sorted TODO: test models for this
+        out = OrderedDict()
+        for k in self.ga4gh.keys:
             v = getattr(self, k)
             out[k] = _recurse_ga4gh_serialize(v)
         return out
@@ -343,10 +353,10 @@ class SequenceLocation(_Ga4ghIdentifiableObject):
     class ga4gh(_Ga4ghIdentifiableObject.ga4gh):
         prefix = 'SL'
         keys = [
-            'type',
-            'start',
             'end',
-            'sequenceReference'
+            'sequenceReference',
+            'start',
+            'type'
         ]
 
 
