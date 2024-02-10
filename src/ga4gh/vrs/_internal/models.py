@@ -25,7 +25,7 @@ import sys
 import typing
 from ga4gh.core import sha512t24u
 
-from pydantic import BaseModel, ConfigDict, Field, RootModel, constr, model_serializer, computed_field
+from pydantic import BaseModel, ConfigDict, Field, RootModel, constr, model_serializer
 
 from ga4gh.core._internal.pydantic import (
     is_ga4gh_identifiable,
@@ -205,6 +205,10 @@ class _ValueObject(_Entity):
     class ga4gh:
         keys: List[str]
 
+    @staticmethod
+    def is_identifiable():
+        return False
+
 
 class _Ga4ghIdentifiableObject(_ValueObject):
     """A contextual value object for which a GA4GH computed identifier can be created.
@@ -217,6 +221,10 @@ class _Ga4ghIdentifiableObject(_ValueObject):
         None,
         description='A sha512t24u digest created using the VRS Computed Identifier algorithm.',
     )
+
+    @staticmethod
+    def is_identifiable():
+        return True
 
     def compute_digest(self) -> str:
         """A sha512t24u digest created using the VRS Computed Identifier algorithm."""
