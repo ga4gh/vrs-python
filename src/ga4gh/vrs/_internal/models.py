@@ -17,13 +17,13 @@ V1 pydantic: datamodel-codegen --input submodules/vrs/schema/merged.json --input
 V2 pydantic: datamodel-codegen --input submodules/vrs/schema/merged.json --input-file-type jsonschema --output models.py --output-model-type pydantic_v2.BaseModel --allow-extra-fields
 """
 
-from typing import List, Literal, Optional, Union, Dict
+from typing import List, Literal, Optional, Union, Dict, Set
 from collections import OrderedDict
 from enum import Enum
 import inspect
 import sys
 import typing
-from ga4gh.core import sha512t24u
+from ga4gh.core import sha512t24u, GA4GH_PREFIX_SEP, CURIE_SEP, CURIE_NAMESPACE, GA4GH_IR_REGEXP
 
 from pydantic import BaseModel, ConfigDict, Field, RootModel, constr, model_serializer
 
@@ -169,20 +169,21 @@ def _recurse_ga4gh_serialize(obj):
     elif isinstance(obj, _ValueObject):
         return obj.ga4gh_serialize()
     elif isinstance(obj, RootModel):
-        return obj.model_dump()
+        return _recurse_ga4gh_serialize(obj.model_dump())
     elif isinstance(obj, str):
+        if obj.startswith(f'{CURIE_NAMESPACE}{CURIE_SEP}'):
+            return obj.split(GA4GH_PREFIX_SEP)[-1]
         return obj
-    # # This is code that may be used to handle unordered lists (sets) as defined
-    # # by VRS. This functionality will be needed for Haplotype if we return to ordered: false.
-    # # No attempt is made to order arrays of strings containing objects. That will need
-    # # to be addressed before implementing the non-identifiable GenotypeMember class.
-    # elif isinstance(obj, set):
-    #     out = [_recurse_ga4gh_serialize(x) for x in list(obj)]
-    #     if all(isinstance(x, str) for x in out):
-    #         return sorted(out)
-    #     else:
-    #         return out
-    #                     #
+    # This is code that may be used to handle unordered lists (sets) as defined
+    # by VRS. This functionality will be needed for Haplotype if we return to ordered: false.
+    # No attempt is made to order arrays of strings containing objects. That will need
+    # to be addressed before implementing the non-identifiable GenotypeMember class.
+    elif isinstance(obj, set):
+        out = [_recurse_ga4gh_serialize(x) for x in list(obj)]
+        if all(isinstance(x, str) for x in out):
+            return sorted(out)
+        else:
+            return out
     elif isinstance(obj, list):
         return [_recurse_ga4gh_serialize(x) for x in obj]
     else:
@@ -193,6 +194,9 @@ class _ValueObject(_Entity):
     """A contextual value whose equality is based on value, not identity.
     See https://en.wikipedia.org/wiki/Value_object for more on Value Objects.
     """
+
+    def __hash__(self):
+        return self.model_dump_json().__hash__()
 
     @model_serializer(when_used='json')
     def ga4gh_serialize(self) -> Dict:
@@ -206,7 +210,7 @@ class _ValueObject(_Entity):
         keys: List[str]
 
     @staticmethod
-    def is_identifiable():
+    def is_ga4gh_identifiable():
         return False
 
 
@@ -223,18 +227,37 @@ class _Ga4ghIdentifiableObject(_ValueObject):
     )
 
     @staticmethod
-    def is_identifiable():
+    def is_ga4gh_identifiable():
         return True
 
-    def compute_digest(self) -> str:
-        """A sha512t24u digest created using the VRS Computed Identifier algorithm."""
-        return sha512t24u(self.model_dump_json().encode("utf-8"))
+    def has_valid_ga4gh_id(self):
+        return self.id and GA4GH_IR_REGEXP.match(self.id) is not None
 
-    def get_or_create_digest(self) -> str:
-        """Returns a sha512t24u digest of the GA4GH Identifiable Object, or creates
+    def has_valid_digest(self):
+        return bool(self.digest)  # Pydantic constraint ensures digest field value is valid
+
+    def compute_digest(self, store=True) -> str:
+        """A sha512t24u digest created using the VRS Computed Identifier algorithm.
+        Stores the digest in the object if store is True.
+        """
+        digest = sha512t24u(self.model_dump_json().encode("utf-8"))
+        if store:
+            self.digest = digest
+        return digest
+
+    def get_or_create_ga4gh_identifier(self, overwrite=False) -> str:
+        """Sets and returns a GA4GH Computed Identifier for the object.
+        Overwrites the existing identifier if overwrite is True."""
+        if self.id is None or overwrite:
+            self.get_or_create_digest()
+            self.id = f'{CURIE_NAMESPACE}{CURIE_SEP}{self.ga4gh.prefix}{GA4GH_PREFIX_SEP}{self.digest}'
+        return self.id
+
+    def get_or_create_digest(self, overwrite=False) -> str:
+        """Sets and returns a sha512t24u digest of the GA4GH Identifiable Object, or creates
         the digest if it does not exist."""
-        if self.digest is None:
-            self.digest = self.compute_digest()
+        if self.digest is None or overwrite:
+            return self.compute_digest()
         return self.digest
 
     class ga4gh(_ValueObject.ga4gh):
@@ -414,8 +437,8 @@ class Haplotype(_VariationBase):
     """A set of non-overlapping Allele members that co-occur on the same molecule."""
 
     type: Literal['Haplotype'] = Field('Haplotype', description='MUST be "Haplotype"')
-    # TODO members temporarily typed as List instead of Set
-    members: List[Union[Allele, IRI]] = Field(
+    # TODO members temporarily typed as Set instead of List
+    members: Set[Union[Allele, IRI]] = Field(
         ...,
         description='A list of Alleles (or IRI references to `Alleles`) that comprise a Haplotype. Since each `Haplotype` member MUST be an `Allele`, and all members MUST share a common `SequenceReference`, implementations MAY use a compact representation of Haplotype that omits type and `SequenceReference` information in individual Haplotype members. Implementations MUST transform compact `Allele` representations into an `Allele` when computing GA4GH identifiers.',
         min_length=2,

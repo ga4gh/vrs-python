@@ -28,7 +28,7 @@ def is_ga4gh_identifiable(o: Any) -> bool:
     :param o: Object
     :return: `True` if `o` is a GA4GH Identifiable Object. `False` otherwise.
     """
-    return o.is_identifiable()
+    return o.is_ga4gh_identifiable()
 
 
 def is_literal(o: Any) -> bool:

@@ -44,4 +44,4 @@ def flatten_tests(vts):
 def test_validation(cls, data, fn, exp):
     o = getattr(models, cls)(**data)
     fx = fxs[fn]
-    assert exp == fx(o)
+    assert fx(o) == exp
