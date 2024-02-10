@@ -39,9 +39,9 @@ GA4GH_DIGEST_REGEXP = re.compile(r"^[0-9A-Za-z_\-]{32}$")
 ns_w_sep = CURIE_NAMESPACE + CURIE_SEP
 
 
-class GA4GHComputeIdentifierWhen(IntEnum):
+class VrsObjectIdentifierIs(IntEnum):
     """
-    Defines the rule for when the `ga4gh_identify` method should compute
+    Defines the state for when the `ga4gh_identify` method should compute
     an identifier ('id' attribute) for the specified object.  The options are:
       ALWAYS - Always compute the identifier (this is the default behavior)
       INVALID - Compute the identifier if it is missing or is present but syntactically invalid
@@ -53,8 +53,8 @@ class GA4GHComputeIdentifierWhen(IntEnum):
     using `MISSING` can improve performance.
     """
 
-    ALWAYS = 0
-    INVALID = 1
+    ANY = 0
+    GA4GH_INVALID = 1
     MISSING = 2
 
 
@@ -66,16 +66,16 @@ class use_ga4gh_compute_identifier_when(ContextDecorator):
     Context manager that defines when to compute identifiers
     for all operations within the context.  For example:
 
-    with use_ga4gh_compute_identifier_when(GA4GHComputeIdentifierWhen.INVALID):
+    with use_ga4gh_compute_identifier_when(VrsObjectIdentifierIs.GA4GH_INVALID):
         VCFAnnotator(...).annotate(...)
 
     Or:
 
-    @use_ga4gh_compute_identifier_when(GA4GHComputeIdentifierWhen.INVALID)
+    @use_ga4gh_compute_identifier_when(VrsObjectIdentifierIs.GA4GH_INVALID)
     def my_method():
     """
 
-    def __init__(self, when: GA4GHComputeIdentifierWhen):
+    def __init__(self, when: VrsObjectIdentifierIs):
         self.when = when
         self.token = None
 
@@ -122,10 +122,20 @@ def parse_ga4gh_identifier(ir):
         raise ValueError(ir) from e
 
 
-def ga4gh_identify(vro):
+def ga4gh_identify(vro, in_place='default'):
     """
     Return the GA4GH digest-based id for the object, as a CURIE
     (string).  Returns None if object is not identifiable.
+
+    This function has three options for in_place editing of vro.id:
+    - 'default': the standard identifier update behavior for GA4GH
+        identifiable objects, this mode will update the vro.id
+        field if the field is empty
+    - 'always': this will update the vro.id field any time the
+        identifier is computed (compute behavior is controlled by the
+        use_ga4gh_compute_identifier_when context)
+    - 'never': the vro.id field will not be edited in-place,
+        even when empty
 
     TODO update example for VRS 2.0
     >>> import ga4gh.vrs
@@ -136,21 +146,21 @@ def ga4gh_identify(vro):
 
     """
     if vro.is_ga4gh_identifiable():
-        when_rule = ga4gh_compute_identifier_when.get(GA4GHComputeIdentifierWhen.ALWAYS)
-        ir = None
-        if when_rule == GA4GHComputeIdentifierWhen.ALWAYS:
+        when_rule = ga4gh_compute_identifier_when.get(VrsObjectIdentifierIs.ANY)
+        obj_id = None
+        if when_rule == VrsObjectIdentifierIs.ANY:
             do_compute = True
         else:
-            ir = getattr(vro, "id", None)
-            if when_rule == GA4GHComputeIdentifierWhen.MISSING:
-                do_compute = ir is None or ir == ""
-            else:  # INVALID
-                do_compute = ir is None or ir == "" or not vro.has_valid_ga4gh_id()
+            obj_id = getattr(vro, "id", None)
+            if when_rule == VrsObjectIdentifierIs.MISSING:
+                do_compute = obj_id is None or obj_id == ""
+            else:  # GA4GHComputeIdentifierIs.GA4GH_INVALID
+                do_compute = not vro.has_valid_ga4gh_id()
 
         if do_compute:
-            ir = vro.get_or_create_ga4gh_identifier(overwrite=True)
+            obj_id = vro.get_or_create_ga4gh_identifier(in_place)
 
-        return ir
+        return obj_id
 
     return None
 

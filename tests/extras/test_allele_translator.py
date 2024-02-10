@@ -426,7 +426,7 @@ def test_hgvs(tlr, hgvsexpr, expected):
     tlr.normalize = True
     tlr.identify = True
     allele = tlr.translate_from(hgvsexpr, "hgvs")
-    assert expected == allele.model_dump(exclude_none=True)
+    assert allele.model_dump(exclude_none=True) == expected
 
     to_hgvs = tlr.translate_to(allele, "hgvs")
     assert 1 == len(to_hgvs)

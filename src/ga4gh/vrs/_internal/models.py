@@ -17,7 +17,7 @@ V1 pydantic: datamodel-codegen --input submodules/vrs/schema/merged.json --input
 V2 pydantic: datamodel-codegen --input submodules/vrs/schema/merged.json --input-file-type jsonschema --output models.py --output-model-type pydantic_v2.BaseModel --allow-extra-fields
 """
 
-from typing import List, Literal, Optional, Union, Dict, Set
+from typing import List, Literal, Optional, Union, Dict
 from collections import OrderedDict
 from enum import Enum
 import inspect
@@ -236,18 +236,45 @@ class _Ga4ghIdentifiableObject(_ValueObject):
             self.digest = digest
         return digest
 
-    def get_or_create_ga4gh_identifier(self, overwrite=False) -> str:
+    def get_or_create_ga4gh_identifier(self, in_place='default', recompute=False) -> str:
         """Sets and returns a GA4GH Computed Identifier for the object.
-        Overwrites the existing identifier if overwrite is True."""
-        if self.id is None or overwrite:
-            self.get_or_create_digest()
-            self.id = f'{CURIE_NAMESPACE}{CURIE_SEP}{self.ga4gh.prefix}{GA4GH_PREFIX_SEP}{self.digest}'
-        return self.id
+        Overwrites the existing identifier if overwrite is True.
 
-    def get_or_create_digest(self, overwrite=False) -> str:
+        This function has three options for in_place editing of vro.id:
+        - 'default': the standard identifier update behavior for GA4GH
+            identifiable objects, this mode will update the vro.id
+            field if the field is empty
+        - 'always': this will update the vro.id field any time the
+            identifier is computed
+        - 'never': the vro.id field will not be edited in-place,
+            even when empty
+
+        Digests will be recalculated even if present if recompute is True.
+        """
+        if in_place == 'default':
+            if self.id is None:
+                self.id = self.compute_ga4gh_identifier(recompute)
+        elif in_place == 'always':
+            self.id = self.compute_ga4gh_identifier(recompute)
+        elif in_place == 'never':
+            return self.compute_ga4gh_identifier(recompute)
+        else:
+            raise ValueError("Expected 'in_place' to be one of 'default', 'always', or 'never'")
+
+        if self.has_valid_ga4gh_id():
+            return self.id
+        else:
+            return self.compute_ga4gh_identifier(recompute)
+
+    def compute_ga4gh_identifier(self, recompute=False):
+        """Returns a GA4GH Computed Identifier"""
+        self.get_or_create_digest(recompute)
+        return f'{CURIE_NAMESPACE}{CURIE_SEP}{self.ga4gh.prefix}{GA4GH_PREFIX_SEP}{self.digest}'
+
+    def get_or_create_digest(self, recompute=False) -> str:
         """Sets and returns a sha512t24u digest of the GA4GH Identifiable Object, or creates
         the digest if it does not exist."""
-        if self.digest is None or overwrite:
+        if self.digest is None or recompute:
             return self.compute_digest()
         return self.digest
 
