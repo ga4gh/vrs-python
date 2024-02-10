@@ -169,15 +169,9 @@ def _recurse_ga4gh_serialize(obj):
     elif isinstance(obj, _ValueObject):
         return obj.ga4gh_serialize()
     elif isinstance(obj, RootModel):
-        return _recurse_ga4gh_serialize(obj.model_dump())
+        return _recurse_ga4gh_serialize(obj.model_dump(mode='json'))
     elif isinstance(obj, str):
         return obj
-    elif isinstance(obj, set):
-        out = [_recurse_ga4gh_serialize(x) for x in list(obj)]
-        if all(isinstance(x, str) for x in out):
-            return sorted(out)
-        else:
-            return out
     elif isinstance(obj, list):
         return [_recurse_ga4gh_serialize(x) for x in obj]
     else:
@@ -219,6 +213,9 @@ class _Ga4ghIdentifiableObject(_ValueObject):
         None,
         description='A sha512t24u digest created using the VRS Computed Identifier algorithm.',
     )
+
+    def __lt__(self, other):
+        return self.get_or_create_digest() < other.get_or_create_digest()
 
     @staticmethod
     def is_ga4gh_identifiable():
@@ -431,12 +428,17 @@ class Haplotype(_VariationBase):
     """A set of non-overlapping Allele members that co-occur on the same molecule."""
 
     type: Literal['Haplotype'] = Field('Haplotype', description='MUST be "Haplotype"')
-    # TODO members temporarily typed as Set instead of List
-    members: Set[Union[Allele, IRI]] = Field(
+    members: List[Union[Allele, IRI]] = Field(
         ...,
         description='A list of Alleles (or IRI references to `Alleles`) that comprise a Haplotype. Since each `Haplotype` member MUST be an `Allele`, and all members MUST share a common `SequenceReference`, implementations MAY use a compact representation of Haplotype that omits type and `SequenceReference` information in individual Haplotype members. Implementations MUST transform compact `Allele` representations into an `Allele` when computing GA4GH identifiers.',
         min_length=2,
     )
+
+    @model_serializer(when_used='json')
+    def ga4gh_serialize(self) -> Dict:
+        out = _ValueObject.ga4gh_serialize(self)
+        out['members'] = sorted(out['members'])
+        return out
 
     class ga4gh(_Ga4ghIdentifiableObject.ga4gh):
         prefix = 'HT'

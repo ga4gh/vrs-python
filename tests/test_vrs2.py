@@ -85,11 +85,11 @@ allele_383650 = models.Allele(**allele_383650_dict)
 allele_417816 = models.Allele(**allele_417816_dict)
 allele_280320 = models.Allele(**allele_280320_dict)
 
-# haplotype_431012_dict = {
-#     "type": "Haplotype",
-#     "members": [allele_383650_dict, allele_417816_dict]
-# }
-# haplotype_431012 = models.Haplotype(**haplotype_431012_dict)
+haplotype_431012_dict = {
+    "type": "Haplotype",
+    "members": [allele_383650_dict, allele_417816_dict]
+}
+haplotype_431012 = models.Haplotype(**haplotype_431012_dict)
 
 # genotype_431013_dict = {
 #     "type": "Genotype",
@@ -188,15 +188,14 @@ def test_vr():
         })
 
 
-@pytest.mark.skip(reason="Waiting on resolution of ga4gh/vrs#461 before addressing this test")
 def test_haplotype():
     assert haplotype_431012.model_dump(exclude_none=True) == haplotype_431012_dict
     assert is_pydantic_instance(haplotype_431012)
     haplotype_serialized = ga4gh_serialize(haplotype_431012)
-    assert haplotype_serialized == b'{"members":["734G5mtNwe40do8F6GKuqQP4QxyjBqVp","bU3n0M2YQaV5C5ebODJYZ0GnbyCrOIHi"],"type":"Haplotype"}'
-    assert sha512t24u(haplotype_serialized) == 'fFR5oRpeD8Cuq2hfs3bXd1rgJUQrQA26'
-    assert ga4gh_digest(haplotype_431012) == 'fFR5oRpeD8Cuq2hfs3bXd1rgJUQrQA26'
-    assert ga4gh_identify(haplotype_431012) == 'ga4gh:HT.fFR5oRpeD8Cuq2hfs3bXd1rgJUQrQA26'
+    assert haplotype_serialized == b'{"members":["SZIS2ua7AL-0YgUTAqyBsFPYK3vE8h_d","TKhpDsfclpSXpn6BjTLViB_ceqRerOd2"],"type":"Haplotype"}'
+    assert sha512t24u(haplotype_serialized) == 'kAFlqAFWNj5xZIv5G_ePM7xepXe5p8TK'
+    assert ga4gh_digest(haplotype_431012) == 'kAFlqAFWNj5xZIv5G_ePM7xepXe5p8TK'
+    assert ga4gh_identify(haplotype_431012) == 'ga4gh:HT.kAFlqAFWNj5xZIv5G_ePM7xepXe5p8TK'
 
 
 @pytest.mark.skip(reason="Genotypes are not yet supported in 2.x")
