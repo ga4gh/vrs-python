@@ -85,29 +85,29 @@ allele_383650 = models.Allele(**allele_383650_dict)
 allele_417816 = models.Allele(**allele_417816_dict)
 allele_280320 = models.Allele(**allele_280320_dict)
 
-haplotype_431012_dict = {
-    "type": "Haplotype",
-    "members": [allele_383650_dict, allele_417816_dict]
-}
-haplotype_431012 = models.Haplotype(**haplotype_431012_dict)
+# haplotype_431012_dict = {
+#     "type": "Haplotype",
+#     "members": [allele_383650_dict, allele_417816_dict]
+# }
+# haplotype_431012 = models.Haplotype(**haplotype_431012_dict)
 
-genotype_431013_dict = {
-    "type": "Genotype",
-    "count": 1,
-    "members": [
-        {
-            "type": "GenotypeMember",
-            "variation": haplotype_431012_dict,
-            "count": 1
-        },
-        {
-            "type": "GenotypeMember",
-            "variation": allele_280320_dict,
-            "count": 1
-        }
-    ]
-}
-genotype_431013 = models.Genotype(**genotype_431013_dict)
+# genotype_431013_dict = {
+#     "type": "Genotype",
+#     "count": 1,
+#     "members": [
+#         {
+#             "type": "GenotypeMember",
+#             "variation": haplotype_431012_dict,
+#             "count": 1
+#         },
+#         {
+#             "type": "GenotypeMember",
+#             "variation": allele_280320_dict,
+#             "count": 1
+#         }
+#     ]
+# }
+# genotype_431013 = models.Genotype(**genotype_431013_dict)
 
 
 def test_vr():
@@ -119,24 +119,24 @@ def test_vr():
     # Sequence Reference
     seqref = a.location.sequenceReference
     seqref_serialized = ga4gh_serialize(seqref)
-    assert seqref_serialized is None
-    assert ga4gh_digest(seqref) == 'F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul'
+    assert seqref_serialized == b'{"refgetAccession":"SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul","type":"SequenceReference"}'
+    assert ga4gh_digest(seqref) is None
     assert ga4gh_identify(seqref) is None
 
     # Location
     loc = a.location
     loc_serialized = ga4gh_serialize(loc)
-    assert loc_serialized == b'{"end":55181320,"sequenceReference":"F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul","start":55181319,"type":"SequenceLocation"}'
-    assert sha512t24u(loc_serialized) == 'wbBBFBTTyBcJPyjkK7z_dCcHFm5pE-2K'
-    assert ga4gh_digest(loc) == 'wbBBFBTTyBcJPyjkK7z_dCcHFm5pE-2K'
-    assert ga4gh_identify(loc) == 'ga4gh:SL.wbBBFBTTyBcJPyjkK7z_dCcHFm5pE-2K'
+    assert loc_serialized == b'{"end":55181320,"sequenceReference":{"refgetAccession":"SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul","type":"SequenceReference"},"start":55181319,"type":"SequenceLocation"}'
+    assert sha512t24u(loc_serialized) == '_G2K0qSioM74l_u3OaKR0mgLYdeTL7Xd'
+    assert ga4gh_digest(loc) == '_G2K0qSioM74l_u3OaKR0mgLYdeTL7Xd'
+    assert ga4gh_identify(loc) == 'ga4gh:SL._G2K0qSioM74l_u3OaKR0mgLYdeTL7Xd'
 
     # Allele
     allele_serialized = ga4gh_serialize(a)
-    assert allele_serialized == b'{"location":"wbBBFBTTyBcJPyjkK7z_dCcHFm5pE-2K","state":{"sequence":"T","type":"LiteralSequenceExpression"},"type":"Allele"}'
-    assert sha512t24u(allele_serialized) == 'hOZr7drvRxkUT_srSFVq1NCzvAJdKJlw'
-    assert ga4gh_digest(a) == 'hOZr7drvRxkUT_srSFVq1NCzvAJdKJlw'
-    assert ga4gh_identify(a) == 'ga4gh:VA.hOZr7drvRxkUT_srSFVq1NCzvAJdKJlw'
+    assert allele_serialized == b'{"location":"_G2K0qSioM74l_u3OaKR0mgLYdeTL7Xd","state":{"sequence":"T","type":"LiteralSequenceExpression"},"type":"Allele"}'
+    assert sha512t24u(allele_serialized) == 'Hy2XU_-rp4IMh6I_1NXNecBo8Qx8n0oE'
+    assert ga4gh_digest(a) == 'Hy2XU_-rp4IMh6I_1NXNecBo8Qx8n0oE'
+    assert ga4gh_identify(a) == 'ga4gh:VA.Hy2XU_-rp4IMh6I_1NXNecBo8Qx8n0oE'
 
     # Commenting out enref/deref tests.
     # We are deciding whether this will continue to be included in this library.
@@ -188,7 +188,7 @@ def test_vr():
         })
 
 
-
+@pytest.mark.skip(reason="Waiting on resolution of ga4gh/vrs#461 before addressing this test")
 def test_haplotype():
     assert haplotype_431012.model_dump(exclude_none=True) == haplotype_431012_dict
     assert is_pydantic_instance(haplotype_431012)
@@ -199,6 +199,7 @@ def test_haplotype():
     assert ga4gh_identify(haplotype_431012) == 'ga4gh:HT.fFR5oRpeD8Cuq2hfs3bXd1rgJUQrQA26'
 
 
+@pytest.mark.skip(reason="Genotypes are not yet supported in 2.x")
 def test_genotype():
     assert genotype_431013.model_dump(exclude_none=True) == genotype_431013_dict
     assert is_pydantic_instance(genotype_431013)
@@ -209,11 +210,11 @@ def test_genotype():
     assert ga4gh_identify(genotype_431013) == 'ga4gh:GT.51J0mMryCGjdce3qBpqNt4n_hXUQmw83'
 
 
-def test_iri():
-    iri = models.IRI.model_construct("ga4gh:VA.asdf")
+def test_ga4gh_iri():
+    iri = models.IRI.model_construct("ga4gh:VA.Hy2XU_-rp4IMh6I_1NXNecBo8Qx8n0oE")
     assert is_curie_type(iri)
     assert iri.root == pydantic_copy(iri).root
-    assert ga4gh_serialize(iri) == b'asdf'
+    assert ga4gh_serialize(iri) == b'"Hy2XU_-rp4IMh6I_1NXNecBo8Qx8n0oE"'
 
 
 def test_enref():

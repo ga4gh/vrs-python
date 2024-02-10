@@ -29,16 +29,16 @@ def test_vr():
 
     assert ga4gh_serialize(
         a.location
-    ) == b'{"end":55181320,"sequenceReference":"F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul","start":55181319,"type":"SequenceLocation"}'
-    assert sha512t24u(ga4gh_serialize(a.location)) == 'wbBBFBTTyBcJPyjkK7z_dCcHFm5pE-2K'
-    assert ga4gh_digest(a.location) == 'wbBBFBTTyBcJPyjkK7z_dCcHFm5pE-2K'
-    assert ga4gh_identify(a.location) == 'ga4gh:SL.wbBBFBTTyBcJPyjkK7z_dCcHFm5pE-2K'
+    ) == b'{"end":55181320,"sequenceReference":{"refgetAccession":"SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul","type":"SequenceReference"},"start":55181319,"type":"SequenceLocation"}'
+    assert sha512t24u(ga4gh_serialize(a.location)) == '_G2K0qSioM74l_u3OaKR0mgLYdeTL7Xd'
+    assert ga4gh_digest(a.location) == '_G2K0qSioM74l_u3OaKR0mgLYdeTL7Xd'
+    assert ga4gh_identify(a.location) == 'ga4gh:SL._G2K0qSioM74l_u3OaKR0mgLYdeTL7Xd'
 
     assert ga4gh_serialize(
         a
-    ) == b'{"location":"wbBBFBTTyBcJPyjkK7z_dCcHFm5pE-2K","state":{"sequence":"T","type":"LiteralSequenceExpression"},"type":"Allele"}'
-    assert ga4gh_digest(a) == 'hOZr7drvRxkUT_srSFVq1NCzvAJdKJlw'
-    assert ga4gh_identify(a) == 'ga4gh:VA.hOZr7drvRxkUT_srSFVq1NCzvAJdKJlw'
+    ) == b'{"location":"_G2K0qSioM74l_u3OaKR0mgLYdeTL7Xd","state":{"sequence":"T","type":"LiteralSequenceExpression"},"type":"Allele"}'
+    assert ga4gh_digest(a) == 'Hy2XU_-rp4IMh6I_1NXNecBo8Qx8n0oE'
+    assert ga4gh_identify(a) == 'ga4gh:VA.Hy2XU_-rp4IMh6I_1NXNecBo8Qx8n0oE'
 
     # assert a.model_dump(exclude_none=True) == {
     #     'location': {

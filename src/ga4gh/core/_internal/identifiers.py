@@ -23,7 +23,7 @@ from enum import IntEnum
 from typing import Union, Optional
 from pydantic import BaseModel, RootModel
 
-from .pydantic import get_pydantic_root,
+from .pydantic import get_pydantic_root
 
 __all__ = "ga4gh_digest ga4gh_identify ga4gh_serialize is_ga4gh_identifier parse_ga4gh_identifier".split()
 

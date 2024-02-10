@@ -171,13 +171,7 @@ def _recurse_ga4gh_serialize(obj):
     elif isinstance(obj, RootModel):
         return _recurse_ga4gh_serialize(obj.model_dump())
     elif isinstance(obj, str):
-        if obj.startswith(f'{CURIE_NAMESPACE}{CURIE_SEP}'):
-            return obj.split(GA4GH_PREFIX_SEP)[-1]
         return obj
-    # This is code that may be used to handle unordered lists (sets) as defined
-    # by VRS. This functionality will be needed for Haplotype if we return to ordered: false.
-    # No attempt is made to order arrays of strings containing objects. That will need
-    # to be addressed before implementing the non-identifiable GenotypeMember class.
     elif isinstance(obj, set):
         out = [_recurse_ga4gh_serialize(x) for x in list(obj)]
         if all(isinstance(x, str) for x in out):
