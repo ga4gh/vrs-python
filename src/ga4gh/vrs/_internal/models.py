@@ -295,20 +295,37 @@ class SequenceReference(_ValueObject):
         ]
 
 
-class ReferenceLengthExpression(_ValueObject):
-    """An expression of a length of a sequence from a repeating reference."""
+class LengthExpression(_ValueObject):
+    """An expression of a DNA, RNA, or protein polymer of known length but unspecified sequence."""
 
     type: Literal['ReferenceLengthExpression'] = Field(
         'ReferenceLengthExpression', description='MUST be "ReferenceLengthExpression"'
     )
     length: Union[Range, int] = Field(
-        ..., description='The number of residues in the expressed sequence.'
+        ..., description='The number of residues of the expressed sequence.'
+    )
+
+    class ga4gh(_ValueObject.ga4gh):
+        keys = [
+            'length',
+            'type'
+        ]
+
+
+class ReferenceLengthExpression(_ValueObject):
+    """An expression sequence derived from a reference."""
+
+    type: Literal['ReferenceLengthExpression'] = Field(
+        'ReferenceLengthExpression', description='MUST be "ReferenceLengthExpression"'
+    )
+    length: Union[Range, int] = Field(
+        ..., description='The number of residues of the expressed sequence.'
     )
     sequence: Optional[SequenceString] = Field(
         None, description='the Sequence encoded by the Reference Length Expression.'
     )
     repeatSubunitLength: int = Field(
-        None, description='The number of residues in the repeat subunit.'
+        None, description='The number of residues of the repeat subunit.'
     )
 
     class ga4gh(_ValueObject.ga4gh):
@@ -455,25 +472,25 @@ class CopyNumberChange(_CopyNumber):
         ]
 
 
-class GenotypeMember(_ValueObject):
-    """A class for expressing the count of a specific `MolecularVariation` present
-    in-trans at a genomic locus represented by a `Genotype`.
-    """
-
-    type: Literal['GenotypeMember'] = Field('GenotypeMember', description='MUST be "GenotypeMember".')
-    count: Union[Range, int] = Field(
-        ..., description='The number of copies of the `variation` at a Genotype locus.'
-    )
-    variation: Union[Allele, Haplotype] = Field(
-        ..., description='A MolecularVariation at a Genotype locus.'
-    )
-
-    class ga4gh(_Ga4ghIdentifiableObject.ga4gh):
-        keys = [
-            'type',
-            'count',
-            'variation'
-        ]
+# class GenotypeMember(_ValueObject):
+#     """A class for expressing the count of a specific `MolecularVariation` present
+#     in-trans at a genomic locus represented by a `Genotype`.
+#     """
+#
+#     type: Literal['GenotypeMember'] = Field('GenotypeMember', description='MUST be "GenotypeMember".')
+#     count: Union[Range, int] = Field(
+#         ..., description='The number of copies of the `variation` at a Genotype locus.'
+#     )
+#     variation: Union[Allele, Haplotype] = Field(
+#         ..., description='A MolecularVariation at a Genotype locus.'
+#     )
+#
+#     class ga4gh(_Ga4ghIdentifiableObject.ga4gh):
+#         keys = [
+#             'type',
+#             'count',
+#             'variation'
+#         ]
 
 
 class MolecularVariation(RootModel):
@@ -488,31 +505,31 @@ class MolecularVariation(RootModel):
     )
 
 
-class Genotype(_VariationBase):
-    """A quantified set of _in-trans_ `MolecularVariation` at a genomic locus."""
-
-    type: Literal['Genotype'] = Field(
-        'Genotype',
-        description='MUST be "Genotype"'
-    )
-    # TODO members temporarily typed as List instead of Set + validate unique items
-    members: List[GenotypeMember] = Field(
-        ...,
-        description='Each GenotypeMember in `members` describes a MolecularVariation and the count of that variation at the locus.',
-        min_length=1,
-    )
-    count: Union[Range, int] = Field(
-        ...,
-        description='The total number of copies of all MolecularVariation at this locus, MUST be greater than or equal to the sum of GenotypeMember copy counts. If greater than the total counts, this implies additional MolecularVariation that are expected to exist but are not explicitly indicated.',
-    )
-
-    class ga4gh(_Ga4ghIdentifiableObject.ga4gh):
-        prefix = 'GT'
-        keys = [
-            'count',
-            'members',
-            'type'
-        ]
+# class Genotype(_VariationBase):
+#     """A quantified set of _in-trans_ `MolecularVariation` at a genomic locus."""
+#
+#     type: Literal['Genotype'] = Field(
+#         'Genotype',
+#         description='MUST be "Genotype"'
+#     )
+#     # TODO members temporarily typed as List instead of Set + validate unique items
+#     members: List[GenotypeMember] = Field(
+#         ...,
+#         description='Each GenotypeMember in `members` describes a MolecularVariation and the count of that variation at the locus.',
+#         min_length=1,
+#     )
+#     count: Union[Range, int] = Field(
+#         ...,
+#         description='The total number of copies of all MolecularVariation at this locus, MUST be greater than or equal to the sum of GenotypeMember copy counts. If greater than the total counts, this implies additional MolecularVariation that are expected to exist but are not explicitly indicated.',
+#     )
+#
+#     class ga4gh(_Ga4ghIdentifiableObject.ga4gh):
+#         prefix = 'GT'
+#         keys = [
+#             'count',
+#             'members',
+#             'type'
+#         ]
 
 
 class SequenceExpression(RootModel):
@@ -534,7 +551,7 @@ class Location(RootModel):
 
 
 class Variation(RootModel):
-    root: Union[Allele, CopyNumberChange, CopyNumberCount, Genotype, Haplotype] = Field(
+    root: Union[Allele, CopyNumberChange, CopyNumberCount, Haplotype] = Field(
         ...,
         json_schema_extra={
             'description': 'A representation of the state of one or more biomolecules.'
@@ -548,7 +565,7 @@ class SystemicVariation(RootModel):
     sample, or homologous chromosomes.
     """
 
-    root: Union[CopyNumberChange, CopyNumberCount, Genotype] = Field(
+    root: Union[CopyNumberChange, CopyNumberCount] = Field(
         ...,
         json_schema_extra={
             'description': 'A Variation of multiple molecules in the context of a system, e.g. a genome, sample, or homologous chromosomes.'
