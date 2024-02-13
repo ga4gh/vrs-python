@@ -125,7 +125,11 @@ def annotate_click(  # pylint: disable=too-many-arguments
     msg = f"Annotating {vcf_in} with the VCF Annotator..."
     _logger.info(msg)
     click.echo(msg)
-    annotator.annotate(vcf_in, vcf_out, vrs_pickle_out, vrs_attributes, assembly, (not skip_ref))
+    annotator.annotate(
+        vcf_in, vcf_out=vcf_out, vrs_pickle_out=vrs_pickle_out,
+        vrs_attributes=vrs_attributes, assembly=assembly,
+        compute_for_ref=(not skip_ref), require_validation=require_validation
+    )
     end = timer()
     msg = f"VCF Annotator finished in {(end - start):.5f} seconds"
     _logger.info(msg)
