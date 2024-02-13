@@ -102,10 +102,17 @@ class SeqRepoProxyType(str, Enum):
     show_default=True,
     help="Skip VRS computation for REF alleles."
 )
+@click.option(
+    "--require_validation",
+    is_flag=True,
+    default=True,
+    show_default=True,
+    help="Require validation checks to pass in order to return a VRS object"
+)
 def annotate_click(  # pylint: disable=too-many-arguments
     vcf_in: str, vcf_out: Optional[str], vrs_pickle_out: Optional[str],
     vrs_attributes: bool, seqrepo_dp_type: SeqRepoProxyType, seqrepo_root_dir: str,
-    seqrepo_base_url: str, assembly: str, skip_ref: bool
+    seqrepo_base_url: str, assembly: str, skip_ref: bool, require_validation: bool
 ) -> None:
     """Annotate VCF file via click
 
@@ -166,7 +173,8 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
     def annotate(  # pylint: disable=too-many-arguments,too-many-locals
         self, vcf_in: str, vcf_out: Optional[str] = None,
         vrs_pickle_out: Optional[str] = None, vrs_attributes: bool = False,
-        assembly: str = "GRCh38", compute_for_ref: bool = True
+        assembly: str = "GRCh38", compute_for_ref: bool = True,
+        require_validation: bool = True
     ) -> None:
         """Annotates an input VCF file with VRS Allele IDs & creates a pickle file
         containing the vrs object information.
@@ -179,6 +187,9 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
             Only used if `vcf_out` is provided.
         :param str assembly: The assembly used in `vcf_in` data
         :param compute_for_ref: If true, compute VRS IDs for the reference allele
+        :param bool require_validation: If `True` then validation checks must pass in
+            order to return a VRS object. If `False` then VRS object will be returned
+            even if validation checks fail.
         """
         if not any((vcf_out, vrs_pickle_out)):
             raise VCFAnnotatorException(
@@ -228,8 +239,10 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
                 additional_info_fields += [self.VRS_STARTS_FIELD, self.VRS_ENDS_FIELD, self.VRS_STATES_FIELD]
             try:
                 vrs_field_data = self._get_vrs_data(
-                    record, vrs_data, assembly, additional_info_fields, vrs_attributes,
-                    output_pickle, output_vcf, compute_for_ref
+                    record, vrs_data, assembly, additional_info_fields,
+                    vrs_attributes=vrs_attributes, output_pickle=output_pickle,
+                    output_vcf=output_vcf, compute_for_ref=compute_for_ref,
+                    require_validation=require_validation
                 )
             except Exception as ex:
                 _logger.exception("VRS error on %s-%s", record.chrom, record.pos)
@@ -258,7 +271,8 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
     def _get_vrs_object(  # pylint: disable=too-many-arguments,too-many-locals
         self, vcf_coords: str, vrs_data: Dict, vrs_field_data: Dict, assembly: str,
         vrs_data_key: Optional[str] = None, output_pickle: bool = True,
-        output_vcf: bool = False, vrs_attributes: bool = False
+        output_vcf: bool = False, vrs_attributes: bool = False,
+        require_validation: bool = True
     ) -> None:
         """Get VRS Object given `vcf_coords`. `vrs_data` and `vrs_field_data` will
         be mutated.
@@ -278,9 +292,16 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
         :param bool vrs_attributes: If `True` will include VRS_Start, VRS_End,
             VRS_State fields in the INFO field. If `False` will not include these fields.
             Only used if `output_vcf` set to `True`.
+        :param bool require_validation: If `True` then validation checks must pass in
+            order to return a VRS object. If `False` then VRS object will be returned
+            even if validation checks fail. Defaults to `True`.
         """
         try:
-            vrs_obj = self.tlr._from_gnomad(vcf_coords, assembly_name=assembly)
+            vrs_obj = self.tlr._from_gnomad(
+                vcf_coords,
+                assembly_name=assembly,
+                require_validation=require_validation
+            )
         except (ValidationError, TranslatorValidationError) as e:
             vrs_obj = None
             _logger.error("ValidationError when translating %s from gnomad: %s", vcf_coords, str(e))
@@ -330,7 +351,7 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
         self, record: pysam.VariantRecord, vrs_data: Dict, assembly: str,  # pylint: disable=no-member
         additional_info_fields: List[str], vrs_attributes: bool = False,
         output_pickle: bool = True, output_vcf: bool = True,
-        compute_for_ref: bool = True
+        compute_for_ref: bool = True, require_validation: bool = True
     ) -> Dict:
         """Get VRS data for record's reference and alt alleles.
 
@@ -351,6 +372,10 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
             of associated values. If `output_vcf = False`, an empty dictionary will be
             returned.
         :param compute_for_ref: If true, compute VRS IDs for the reference allele
+        :param bool require_validation: If `True` then validation checks must pass in
+            order to return a VRS object. A `ValidationError` will be raised if
+            validation checks fail. If `False` then VRS object will be returned even if
+            validation checks fail. Defaults to `True`.
         """
         vrs_field_data = {field: [] for field in additional_info_fields} if output_vcf else {}
 
@@ -361,7 +386,7 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
             self._get_vrs_object(
                 reference_allele, vrs_data, vrs_field_data, assembly,
                 output_pickle=output_pickle, output_vcf=output_vcf,
-                vrs_attributes=vrs_attributes
+                vrs_attributes=vrs_attributes, require_validation=require_validation
             )
 
         # Get VRS data for alts
@@ -378,7 +403,7 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
                 self._get_vrs_object(
                     allele, vrs_data, vrs_field_data, assembly, vrs_data_key=data,
                     output_pickle=output_pickle, output_vcf=output_vcf,
-                    vrs_attributes=vrs_attributes
+                    vrs_attributes=vrs_attributes, require_validation=require_validation
                 )
 
         return vrs_field_data
