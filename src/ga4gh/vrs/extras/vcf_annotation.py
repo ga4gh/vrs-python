@@ -105,7 +105,7 @@ class SeqRepoProxyType(str, Enum):
 @click.option(
     "--require_validation",
     is_flag=True,
-    default=True,
+    default=False,
     show_default=True,
     help="Require validation checks to pass in order to return a VRS object"
 )
