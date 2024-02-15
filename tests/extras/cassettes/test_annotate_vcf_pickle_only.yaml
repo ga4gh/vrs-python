@@ -1058,6 +1058,36 @@ interactions:
       User-Agent:
       - python-requests/2.31.0
     method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl?start=289464&end=289478
+  response:
+    body:
+      string: CAGCACTTTGGGAG
+    headers:
+      Connection:
+      - close
+      Content-Length:
+      - '2'
+      Content-Type:
+      - text/plain; charset=utf-8
+      Date:
+      - Tue, 19 Sep 2023 14:56:57 GMT
+      Server:
+      - Werkzeug/2.2.2 Python/3.10.4
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.31.0
+    method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/GRCh38:chr19?start=28946399&end=28946400
   response:
     body:
@@ -1423,7 +1453,7 @@ interactions:
     uri: http://localhost:5000/seqrepo/1/sequence/GRCh38:chr19?start=54221653&end=54221654
   response:
     body:
-      string: A
+      string: T
     headers:
       Connection:
       - close
@@ -1453,7 +1483,7 @@ interactions:
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl?start=54221653&end=54221654
   response:
     body:
-      string: C
+      string: T
     headers:
       Connection:
       - close
