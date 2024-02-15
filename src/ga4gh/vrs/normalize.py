@@ -5,6 +5,7 @@ See https://vrs.ga4gh.org/en/stable/impl-guide/normalization.html
 """
 import logging
 from enum import IntEnum
+from itertools import cycle
 from typing import NamedTuple, Optional, Union
 
 from bioutils.normalize import normalize as _normalize, NormalizationMode
@@ -176,27 +177,51 @@ def _normalize_allele(input_allele, data_proxy, rle_seq_limit=50):
         )
 
         new_ref_seq = ref_seq[new_ival[0]: new_ival[1]]
+        new_alt_seq = new_alleles[1]
 
-        if not new_ref_seq:
-            # If the reference sequence is empty this is an unambiguous insertion.
+        if not new_ref_seq or (
+            new_alt_seq
+            and _derive_seq_from_rle(
+                ref_seq,
+                new_allele.location.start,
+                len_ref_seq or len_alt_seq,
+                len(new_alt_seq),
+            )
+            != new_alt_seq
+        ):
+            # If the reference sequence is empty this is an unambiguous insertion or
+            # If the reference sequence is not empty, but the alt sequence cannot be derived
+            #   from the reference sequence
             # Return a new Allele with the trimmed alternate sequence as a Literal
             # Sequence Expression
             new_allele.state = models.LiteralSequenceExpression(
-                sequence=models.SequenceString(new_alleles[1])
+                sequence=models.SequenceString(new_alt_seq)
             )
         else:
             # Otherwise, return a new Allele using a RLE
-            len_sequence = len(new_alleles[1])
-
+            #  Use the ref/alt length from the trimmed allele, not the expanded form
             new_allele.state = models.ReferenceLengthExpression(
-                length=len_sequence,
-                repeatSubunitLength=len_ref_seq or len_alt_seq
+                length=len(new_alt_seq), repeatSubunitLength=len_ref_seq or len_alt_seq
             )
 
-            if (rle_seq_limit and len_sequence <= rle_seq_limit) or (rle_seq_limit is None):
-                new_allele.state.sequence = models.SequenceString(new_alleles[1])
+            if (rle_seq_limit and len(new_alt_seq) <= rle_seq_limit) or (
+                rle_seq_limit is None
+            ):
+                new_allele.state.sequence = models.SequenceString(new_alt_seq)
 
     return new_allele
+
+
+def _derive_seq_from_rle(
+    ref_seq: SequenceProxy, start: int, repeatSubunitLength: int, length: int
+):
+    end = start + repeatSubunitLength
+    subseq = ref_seq[start:end]
+    c = cycle(subseq)
+    derivedseq = ""
+    for i in range(length):
+        derivedseq += next(c)
+    return derivedseq
 
 
 # TODO _normalize_genotype?
