@@ -389,24 +389,19 @@ def test_rle_seq_limit(tlr):
     tlr.identify = True
 
     a_dict = {
-        "id": "ga4gh:VA.VfJkaAxTPjZAG_fWm_sB4m19R5p5WGSj",
-        "location": {
-            "id": "ga4gh:SL.0jECKVeKM2-s_uDWtUgW-qvkupO3COKr",
-            "end": 32331094,
-            "start": 32331042,
-            "sequenceReference": {
-                "refgetAccession": "SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT",
-                "type": "SequenceReference"
-            },
-            "type": "SequenceLocation"
-        },
-        "state": {
-            "length": 104,
-            "repeatSubunitLength": 52,
-            "type": "ReferenceLengthExpression"
-        },
-        "type": "Allele"
-    }
+        'digest': 'j7qUzb1uvmdxLAbtdCPiay4kIRQmyZNv',
+        'id': 'ga4gh:VA.j7qUzb1uvmdxLAbtdCPiay4kIRQmyZNv',
+        'location': {'digest': '88oOqkUgALP7fnN8P8lbvCosFhG8YpY0',
+                     'end': 32331094,
+                     'id': 'ga4gh:SL.88oOqkUgALP7fnN8P8lbvCosFhG8YpY0',
+                     'sequenceReference': {'refgetAccession': 'SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT',
+                                           'type': 'SequenceReference'},
+                     'start': 32331042,
+                     'type': 'SequenceLocation'},
+        'state': {'length': 104,
+                  'repeatSubunitLength': 52,
+                  'type': 'ReferenceLengthExpression'},
+        'type': 'Allele'}
     input_hgvs_expr = "NC_000013.11:g.32331043_32331094dup"
 
     # use default rle_seq_limit
@@ -419,7 +414,8 @@ def test_rle_seq_limit(tlr):
     # set rle_seq_limit to None
     allele_with_seq = tlr.translate_from(input_hgvs_expr, fmt="hgvs", rle_seq_limit=None)
     a_dict_with_seq = a_dict.copy()
-    a_dict_with_seq["state"]["sequence"] = "TTTAGTTGAACTACAGGTTTTTTTGTTGTTGTTGTTTTGATTTTTTTTTTTTTTTAGTTGAACTACAGGTTTTTTTGTTGTTGTTGTTTTGATTTTTTTTTTTT"
+    a_dict_with_seq["state"][
+        "sequence"] = "TTTAGTTGAACTACAGGTTTTTTTGTTGTTGTTGTTTTGATTTTTTTTTTTTTTTAGTTGAACTACAGGTTTTTTTGTTGTTGTTGTTTTGATTTTTTTTTTTT"
     assert allele_with_seq.model_dump(exclude_none=True) == a_dict_with_seq
 
     output_hgvs_expr = tlr.translate_to(allele_with_seq, "hgvs")
