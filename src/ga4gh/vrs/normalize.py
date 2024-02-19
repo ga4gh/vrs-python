@@ -196,6 +196,9 @@ def _normalize_allele(input_allele, data_proxy, rle_seq_limit=50):
         if len_extended_alt > len_extended_ref:
             repeat_sequence = itertools.cycle(extended_ref_seq[:repeat_subunit_length])
             ref_derived_alt = ''.join([next(repeat_sequence) for _ in range(len_extended_alt)])
+            # TODO: The space and time efficiency can be improved by iterating over the new_allele[1]
+            #   sequence and comparing to next(repeat_sequence) until there is a mismatch (LSE Allele)
+            #   or you get through the whole new_allele[1] sequence (RLE Allele).
             if ref_derived_alt != new_alleles[1]:
                 # if this is an ambiguous insertion of novel sequence
                 # create a new allele with a Literal Sequence Expression
