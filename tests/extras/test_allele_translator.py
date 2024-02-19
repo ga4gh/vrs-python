@@ -62,7 +62,6 @@ deletion_output = {
     "type": "Allele"
 }
 
-
 gnomad_deletion_output = {
     "location": {
         "end": 20003097,
@@ -79,7 +78,6 @@ gnomad_deletion_output = {
     },
     "type": "Allele"
 }
-
 
 deletion_output_normalized = {
     "location": {
@@ -99,7 +97,6 @@ deletion_output_normalized = {
     },
     "type": "Allele"
 }
-
 
 # https://www.ncbi.nlm.nih.gov/clinvar/variation/1687427/?new_evidence=true
 insertion_inputs = {
@@ -125,7 +122,6 @@ insertion_output = {
     "type": "Allele"
 }
 
-
 gnomad_insertion_output = {
     "location": {
         "end": 20003010,
@@ -142,7 +138,6 @@ gnomad_insertion_output = {
     },
     "type": "Allele"
 }
-
 
 # https://www.ncbi.nlm.nih.gov/clinvar/variation/1264314/?new_evidence=true
 duplication_inputs = {
@@ -167,7 +162,6 @@ duplication_output = {
     },
     "type": "Allele"
 }
-
 
 duplication_output_normalized = {
     "location": {
@@ -318,26 +312,22 @@ hgvs_tests = (
                    'type': 'SequenceLocation'},
       'state': {'sequence': 'GGCT', 'type': 'LiteralSequenceExpression'},
       'type': 'Allele'}),
-    ("NC_000013.11:g.32331093_32331094dup", {
-        "id": "ga4gh:VA.x5iNzjjXbb1-wWTBLMBcicYlCMwYoedq",
-        "location": {
-            "id": "ga4gh:SL.PJ8lHWhAMNRSrxHvkarfDjRWxF-GwaJ_",
-            "end": 32331094,
-            "start": 32331082,
-            "sequenceReference": {
-                "refgetAccession": "SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT",
-                "type": "SequenceReference"
-            },
-            "type": "SequenceLocation"
-        },
-        "state": {
-            "length": 14,
-            "repeatSubunitLength": 2,
-            "sequence": "TTTTTTTTTTTTTT",
-            "type": "ReferenceLengthExpression"
-        },
-        "type": "Allele"
-    }),
+    ("NC_000013.11:g.32331093_32331094dup",
+     {'digest': 'swY2caCgv1kP6YqKyPlcEzJqTvou15vC',
+      'id': 'ga4gh:VA.swY2caCgv1kP6YqKyPlcEzJqTvou15vC',
+      'location': {'digest': 'ikECYncPpE1xh6f_LiComrFGevocjDHQ',
+                   'end': 32331094,
+                   'id': 'ga4gh:SL.ikECYncPpE1xh6f_LiComrFGevocjDHQ',
+                   'sequenceReference': {
+                       'refgetAccession': 'SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT',
+                       'type': 'SequenceReference'},
+                   'start': 32331082,
+                   'type': 'SequenceLocation'},
+      'state': {'length': 14,
+                'repeatSubunitLength': 2,
+                'sequence': 'TTTTTTTTTTTTTT',
+                'type': 'ReferenceLengthExpression'},
+      'type': 'Allele'}),
     ("NC_000013.11:g.32316467dup",
      {'digest': '96ak7XdY3DNbp71aHEXw-NHSfeHGW-KT',
       'id': 'ga4gh:VA.96ak7XdY3DNbp71aHEXw-NHSfeHGW-KT',
@@ -413,7 +403,6 @@ def test_to_hgvs_invalid(tlr):
     with pytest.raises(TypeError) as e:
         tlr.translate_to(iri_vo, "hgvs")
     assert str(e.value) == "`vo.location.sequenceReference` expects a `SequenceReference`"
-
 
 # TODO: Readd these tests
 # @pytest.mark.vcr
