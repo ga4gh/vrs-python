@@ -4,6 +4,7 @@ See https://vrs.ga4gh.org/en/stable/impl-guide/normalization.html
 
 """
 import logging
+import math
 from enum import IntEnum
 from typing import NamedTuple, Optional, Union
 
@@ -182,15 +183,30 @@ def _normalize_allele(input_allele, data_proxy, rle_seq_limit=50):
             sequence=models.SequenceString(new_alleles[1])
         )
     else:
-        # Otherwise, return a new Allele using a RLE
-        len_sequence = len(new_alleles[1])
+        # Otherwise, calculate the repeat subunit length and determine if this is
+        # an RLE allele.
+        len_extended_alt = len(new_alleles[1])
+        len_extended_ref = len(new_ref_seq)
+        repeat_subunit_length = math.gcd(len_extended_ref, len_extended_alt)
 
+        if len_extended_alt > len_extended_ref:
+            repeat_sequence = new_ref_seq[:repeat_subunit_length]
+            x = len_extended_alt // repeat_subunit_length
+            if repeat_sequence * x != new_alleles[1]:
+                # if this is an ambiguous insertion of novel sequence
+                # create a new allele with a Literal Sequence Expression
+                new_allele.state = models.LiteralSequenceExpression(
+                    sequence=models.SequenceString(new_alleles[1])
+                )
+                return new_allele
+
+        # Otherwise, create the Allele as an RLE
         new_allele.state = models.ReferenceLengthExpression(
-            length=len_sequence,
-            repeatSubunitLength=len_ref_seq or len_alt_seq
+            length=len_extended_alt,
+            repeatSubunitLength=repeat_subunit_length
         )
 
-        if (rle_seq_limit and len_sequence <= rle_seq_limit) or (rle_seq_limit is None):
+        if (rle_seq_limit and len_extended_alt <= rle_seq_limit) or (rle_seq_limit is None):
             new_allele.state.sequence = models.SequenceString(new_alleles[1])
 
     return new_allele
