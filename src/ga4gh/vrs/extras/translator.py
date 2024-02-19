@@ -6,7 +6,7 @@ Output formats: VRS (serialized), hgvs, spdi, gnomad (vcf)
 """
 
 from collections.abc import Mapping
-from typing import Union, Tuple
+from typing import Optional, Union, Tuple
 import logging
 import re
 
@@ -50,15 +50,19 @@ class Translator:
     spdi_re = re.compile(r"(?P<ac>[^:]+):(?P<pos>\d+):(?P<del_len_or_seq>\w*):(?P<ins_seq>\w*)")
 
 
-    def __init__(self,
-                 data_proxy,
-                 default_assembly_name="GRCh38",
-                 normalize=True,
-                 identify=True):
+    def __init__(
+        self,
+        data_proxy,
+        default_assembly_name="GRCh38",
+        normalize=True,
+        identify=True,
+        rle_seq_limit: Optional[int] = 50
+    ):
         self.default_assembly_name = default_assembly_name
         self.data_proxy = data_proxy
         self.identify = identify
         self.normalize = normalize
+        self.rle_seq_limit = rle_seq_limit
         self.hgvs_tools = None
         self.from_translators = {}
         self.to_translators = {}
@@ -118,6 +122,11 @@ class Translator:
                     order to return a VRS object. A `ValidationError` will be raised if
                     validation checks fail. If `False` then VRS object will be returned
                     even if validation checks fail. Defaults to `True`.
+                rle_seq_limit Optional(int): If RLE is set as the new state after
+                    normalization, this sets the limit for the length of the `sequence`.
+                    To exclude `sequence` from the response, set to 0.
+                    For no limit, set to `None`.
+                    Defaults value set in instance variable, `rle_seq_limit`.
         """
         if fmt:
             try:
@@ -239,6 +248,11 @@ class AlleleTranslator(Translator):
 
         kwargs:
             assembly_name (str): Assembly used for `beacon_expr`.
+            rle_seq_limit Optional(int): If RLE is set as the new state after
+                normalization, this sets the limit for the length of the `sequence`.
+                To exclude `sequence` from the response, set to 0.
+                For no limit, set to `None`.
+                Defaults value set in instance variable, `rle_seq_limit`.
 
         #>>> a = tlr.from_beacon("19 : 44908822 C > T")
         #>>> a.model_dump()
@@ -284,7 +298,7 @@ class AlleleTranslator(Translator):
         location = models.SequenceLocation(sequenceReference=seq_ref, start=start, end=end)
         state = models.LiteralSequenceExpression(sequence=ins_seq)
         allele = models.Allele(location=location, state=state)
-        allele = self._post_process_imported_allele(allele)
+        allele = self._post_process_imported_allele(allele, **kwargs)
         return allele
 
 
@@ -297,6 +311,11 @@ class AlleleTranslator(Translator):
                 order to return a VRS object. A `ValidationError` will be raised if
                 validation checks fail. If `False` then VRS object will be returned even
                 if validation checks fail. Defaults to `True`.
+            rle_seq_limit Optional(int): If RLE is set as the new state after
+                normalization, this sets the limit for the length of the `sequence`.
+                To exclude `sequence` from the response, set to 0.
+                For no limit, set to `None`.
+                Defaults value set in instance variable, `rle_seq_limit`.
 
         #>>> a = tlr.from_gnomad("1-55516888-G-GA")
         #>>> a.model_dump()
@@ -347,11 +366,18 @@ class AlleleTranslator(Translator):
         location = models.SequenceLocation(sequenceReference=seq_ref, start=start, end=end)
         sstate = models.LiteralSequenceExpression(sequence=ins_seq)
         allele = models.Allele(location=location, state=sstate)
-        allele = self._post_process_imported_allele(allele)
+        allele = self._post_process_imported_allele(allele, **kwargs)
         return allele
 
     def _from_hgvs(self, hgvs_expr: str, **kwargs):
         """parse hgvs into a VRS Allele Object
+
+        kwargs:
+            rle_seq_limit Optional(int): If RLE is set as the new state after
+                normalization, this sets the limit for the length of the `sequence`.
+                To exclude `sequence` from the response, set to 0.
+                For no limit, set to `None`.
+                Defaults value set in instance variable, `rle_seq_limit`.
 
         #>>> a = tlr.from_hgvs("NC_000007.14:g.55181320A>T")
         #>>> a.model_dump()
@@ -412,13 +438,20 @@ class AlleleTranslator(Translator):
         location = models.SequenceLocation(sequenceReference=seq_ref, start=start, end=end)
         sstate = models.LiteralSequenceExpression(sequence=state)
         allele = models.Allele(location=location, state=sstate)
-        allele = self._post_process_imported_allele(allele)
+        allele = self._post_process_imported_allele(allele, **kwargs)
         return allele
 
 
     def _from_spdi(self, spdi_expr, **kwargs):
 
         """Parse SPDI expression in to a GA4GH Allele
+
+        kwargs:
+            rle_seq_limit Optional(int): If RLE is set as the new state after
+                normalization, this sets the limit for the length of the `sequence`.
+                To exclude `sequence` from the response, set to 0.
+                For no limit, set to `None`.
+                Defaults value set in instance variable, `rle_seq_limit`.
 
         #>>> a = tlr.from_spdi("NC_000013.11:32936731:1:C")
         #>>> a.model_dump()
@@ -464,7 +497,7 @@ class AlleleTranslator(Translator):
         location = models.SequenceLocation(sequenceReference=seq_ref, start=start, end=end)
         sstate = models.LiteralSequenceExpression(sequence=ins_seq)
         allele = models.Allele(location=location, state=sstate)
-        allele = self._post_process_imported_allele(allele)
+        allele = self._post_process_imported_allele(allele, **kwargs)
         return allele
 
     def _to_hgvs(self, vo, namespace="refseq"):
@@ -583,12 +616,23 @@ class AlleleTranslator(Translator):
         spdis = [a + spdi_tail for a in aliases]
         return spdis
 
-    def _post_process_imported_allele(self, allele):
-        """
-        Provide common post-processing for imported Alleles IN-PLACE.
+    def _post_process_imported_allele(self, allele, **kwargs):
+        """Provide common post-processing for imported Alleles IN-PLACE.
+
+        :param allele: VRS Allele object
+
+        kwargs:
+            rle_seq_limit Optional(int): If RLE is set as the new state after
+                normalization, this sets the limit for the length of the `sequence`.
+                To exclude `sequence` from the response, set to 0.
+                For no limit, set to `None`.
         """
         if self.normalize:
-            allele = normalize(allele, self.data_proxy)
+            allele = normalize(
+                allele,
+                self.data_proxy,
+                rle_seq_limit=kwargs.get("rle_seq_limit", self.rle_seq_limit)
+            )
 
         if self.identify:
             allele.id = ga4gh_identify(allele)

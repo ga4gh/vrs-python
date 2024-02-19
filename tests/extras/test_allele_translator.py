@@ -383,6 +383,49 @@ def test_hgvs(tlr, hgvsexpr, expected):
     assert hgvsexpr == to_hgvs[0]
 
 
+@pytest.mark.vcr
+def test_rle_seq_limit(tlr):
+    tlr.normalize = True
+    tlr.identify = True
+
+    a_dict = {
+        "id": "ga4gh:VA.VfJkaAxTPjZAG_fWm_sB4m19R5p5WGSj",
+        "location": {
+            "id": "ga4gh:SL.0jECKVeKM2-s_uDWtUgW-qvkupO3COKr",
+            "end": 32331094,
+            "start": 32331042,
+            "sequenceReference": {
+                "refgetAccession": "SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT",
+                "type": "SequenceReference"
+            },
+            "type": "SequenceLocation"
+        },
+        "state": {
+            "length": 104,
+            "repeatSubunitLength": 52,
+            "type": "ReferenceLengthExpression"
+        },
+        "type": "Allele"
+    }
+    input_hgvs_expr = "NC_000013.11:g.32331043_32331094dup"
+
+    # use default rle_seq_limit
+    allele_no_seq = tlr.translate_from(input_hgvs_expr, fmt="hgvs")
+    assert allele_no_seq.model_dump(exclude_none=True) == a_dict
+
+    with pytest.raises(AttributeError, match="'NoneType' object has no attribute 'root'"):
+        tlr.translate_to(allele_no_seq, "hgvs")
+
+    # set rle_seq_limit to None
+    allele_with_seq = tlr.translate_from(input_hgvs_expr, fmt="hgvs", rle_seq_limit=None)
+    a_dict_with_seq = a_dict.copy()
+    a_dict_with_seq["state"]["sequence"] = "TTTAGTTGAACTACAGGTTTTTTTGTTGTTGTTGTTTTGATTTTTTTTTTTTTTTAGTTGAACTACAGGTTTTTTTGTTGTTGTTGTTTTGATTTTTTTTTTTT"
+    assert allele_with_seq.model_dump(exclude_none=True) == a_dict_with_seq
+
+    output_hgvs_expr = tlr.translate_to(allele_with_seq, "hgvs")
+    assert output_hgvs_expr == [input_hgvs_expr]
+
+
 def test_to_hgvs_invalid(tlr):
     # IRI is passed
     iri_vo = models.Allele(
