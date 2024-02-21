@@ -1,5 +1,4 @@
 interactions:
-# Begin initialize data proxy metadata
 - request:
     body: null
     headers:
@@ -10,7 +9,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.31.0
+      - python-requests/2.28.2
     method: GET
     uri: http://localhost:5000/seqrepo/1/metadata/GRCh37:chr19
   response:
@@ -30,17 +29,16 @@ interactions:
       Connection:
       - close
       Content-Length:
-      - '1035'
+      - '820'
       Content-Type:
       - application/json
       Date:
-      - Tue, 19 Sep 2023 14:56:56 GMT
+      - Mon, 19 Feb 2024 07:31:47 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
       code: 200
       message: OK
-# Begin VCF row chr19 82664
 - request:
     body: null
     headers:
@@ -51,7 +49,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.31.0
+      - python-requests/2.28.2
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/GRCh37:chr19?start=82663&end=82664
   response:
@@ -65,7 +63,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Tue, 19 Sep 2023 14:56:59 GMT
+      - Mon, 19 Feb 2024 07:31:47 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -81,7 +79,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.31.0
+      - python-requests/2.28.2
     method: GET
     uri: http://localhost:5000/seqrepo/1/metadata/ga4gh:SQ.ItRDD47aMoioDCNW_occY5fWKZBKlxCX
   response:
@@ -105,7 +103,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 19 Sep 2023 14:56:59 GMT
+      - Mon, 19 Feb 2024 07:31:47 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -121,7 +119,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.31.0
+      - python-requests/2.28.2
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.ItRDD47aMoioDCNW_occY5fWKZBKlxCX?start=82663&end=82664
   response:
@@ -135,13 +133,12 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Tue, 19 Sep 2023 14:56:59 GMT
+      - Mon, 19 Feb 2024 07:31:47 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
       code: 200
       message: OK
-# Begin VCF row chr19 284350
 - request:
     body: null
     headers:
@@ -152,7 +149,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.31.0
+      - python-requests/2.28.2
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/GRCh37:chr19?start=284349&end=284351
   response:
@@ -166,7 +163,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Tue, 19 Sep 2023 14:56:59 GMT
+      - Mon, 19 Feb 2024 07:31:47 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -182,7 +179,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.31.0
+      - python-requests/2.28.2
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.ItRDD47aMoioDCNW_occY5fWKZBKlxCX?start=284349&end=284351
   response:
@@ -196,7 +193,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Tue, 19 Sep 2023 14:56:59 GMT
+      - Mon, 19 Feb 2024 07:31:47 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -212,7 +209,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.31.0
+      - python-requests/2.28.2
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.ItRDD47aMoioDCNW_occY5fWKZBKlxCX?start=284350&end=284351
   response:
@@ -226,7 +223,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Tue, 19 Sep 2023 14:57:00 GMT
+      - Mon, 19 Feb 2024 07:31:47 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -242,7 +239,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.31.0
+      - python-requests/2.28.2
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.ItRDD47aMoioDCNW_occY5fWKZBKlxCX?start=284349&end=284350
   response:
@@ -256,7 +253,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Tue, 19 Sep 2023 14:57:00 GMT
+      - Mon, 19 Feb 2024 07:31:47 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -272,7 +269,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.31.0
+      - python-requests/2.28.2
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.ItRDD47aMoioDCNW_occY5fWKZBKlxCX?start=284351&end=284352
   response:
@@ -286,7 +283,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Tue, 19 Sep 2023 14:57:00 GMT
+      - Mon, 19 Feb 2024 07:31:47 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -302,7 +299,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.31.0
+      - python-requests/2.28.2
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.ItRDD47aMoioDCNW_occY5fWKZBKlxCX?start=284352&end=284353
   response:
@@ -316,7 +313,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Tue, 19 Sep 2023 14:57:00 GMT
+      - Mon, 19 Feb 2024 07:31:47 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -332,7 +329,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.31.0
+      - python-requests/2.28.2
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.ItRDD47aMoioDCNW_occY5fWKZBKlxCX?start=284353&end=284354
   response:
@@ -346,7 +343,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Tue, 19 Sep 2023 14:57:00 GMT
+      - Mon, 19 Feb 2024 07:31:47 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -362,7 +359,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.31.0
+      - python-requests/2.28.2
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.ItRDD47aMoioDCNW_occY5fWKZBKlxCX?start=284354&end=284355
   response:
@@ -376,7 +373,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Tue, 19 Sep 2023 14:57:00 GMT
+      - Mon, 19 Feb 2024 07:31:47 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -392,7 +389,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.31.0
+      - python-requests/2.28.2
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.ItRDD47aMoioDCNW_occY5fWKZBKlxCX?start=284355&end=284356
   response:
@@ -406,7 +403,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Tue, 19 Sep 2023 14:57:00 GMT
+      - Mon, 19 Feb 2024 07:31:47 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -422,7 +419,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.31.0
+      - python-requests/2.28.2
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.ItRDD47aMoioDCNW_occY5fWKZBKlxCX?start=284356&end=284357
   response:
@@ -436,7 +433,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Tue, 19 Sep 2023 14:57:00 GMT
+      - Mon, 19 Feb 2024 07:31:47 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -452,7 +449,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.31.0
+      - python-requests/2.28.2
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.ItRDD47aMoioDCNW_occY5fWKZBKlxCX?start=284357&end=284358
   response:
@@ -466,7 +463,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Tue, 19 Sep 2023 14:57:00 GMT
+      - Mon, 19 Feb 2024 07:31:47 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -482,7 +479,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.31.0
+      - python-requests/2.28.2
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.ItRDD47aMoioDCNW_occY5fWKZBKlxCX?start=284358&end=284359
   response:
@@ -496,7 +493,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Tue, 19 Sep 2023 14:57:00 GMT
+      - Mon, 19 Feb 2024 07:31:47 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -512,7 +509,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.31.0
+      - python-requests/2.28.2
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.ItRDD47aMoioDCNW_occY5fWKZBKlxCX?start=284359&end=284360
   response:
@@ -526,7 +523,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Tue, 19 Sep 2023 14:57:00 GMT
+      - Mon, 19 Feb 2024 07:31:47 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -542,7 +539,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.31.0
+      - python-requests/2.28.2
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.ItRDD47aMoioDCNW_occY5fWKZBKlxCX?start=284360&end=284361
   response:
@@ -556,7 +553,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Tue, 19 Sep 2023 14:57:00 GMT
+      - Mon, 19 Feb 2024 07:31:47 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -572,7 +569,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.31.0
+      - python-requests/2.28.2
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.ItRDD47aMoioDCNW_occY5fWKZBKlxCX?start=284361&end=284362
   response:
@@ -586,7 +583,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Tue, 19 Sep 2023 14:57:00 GMT
+      - Mon, 19 Feb 2024 07:31:47 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -602,7 +599,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.31.0
+      - python-requests/2.28.2
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.ItRDD47aMoioDCNW_occY5fWKZBKlxCX?start=284362&end=284363
   response:
@@ -616,7 +613,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Tue, 19 Sep 2023 14:57:00 GMT
+      - Mon, 19 Feb 2024 07:31:47 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -632,7 +629,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.31.0
+      - python-requests/2.28.2
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.ItRDD47aMoioDCNW_occY5fWKZBKlxCX?start=284363&end=284364
   response:
@@ -646,7 +643,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Tue, 19 Sep 2023 14:57:00 GMT
+      - Mon, 19 Feb 2024 07:31:47 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -662,7 +659,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.31.0
+      - python-requests/2.28.2
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.ItRDD47aMoioDCNW_occY5fWKZBKlxCX?start=284364&end=284365
   response:
@@ -676,7 +673,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Tue, 19 Sep 2023 14:57:00 GMT
+      - Mon, 19 Feb 2024 07:31:47 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -692,7 +689,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.31.0
+      - python-requests/2.28.2
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.ItRDD47aMoioDCNW_occY5fWKZBKlxCX?start=284365&end=284366
   response:
@@ -706,7 +703,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Tue, 19 Sep 2023 14:57:00 GMT
+      - Mon, 19 Feb 2024 07:31:47 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -722,7 +719,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.31.0
+      - python-requests/2.28.2
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.ItRDD47aMoioDCNW_occY5fWKZBKlxCX?start=284366&end=284367
   response:
@@ -736,7 +733,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Tue, 19 Sep 2023 14:57:00 GMT
+      - Mon, 19 Feb 2024 07:31:47 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -752,7 +749,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.31.0
+      - python-requests/2.28.2
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.ItRDD47aMoioDCNW_occY5fWKZBKlxCX?start=284350&end=284350
   response:
@@ -766,7 +763,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Tue, 19 Sep 2023 14:57:00 GMT
+      - Mon, 19 Feb 2024 07:31:47 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -782,7 +779,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.31.0
+      - python-requests/2.28.2
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.ItRDD47aMoioDCNW_occY5fWKZBKlxCX?start=284351&end=284366
   response:
@@ -796,7 +793,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Tue, 19 Sep 2023 14:57:00 GMT
+      - Mon, 19 Feb 2024 07:31:47 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -812,7 +809,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.31.0
+      - python-requests/2.28.2
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.ItRDD47aMoioDCNW_occY5fWKZBKlxCX?start=284350&end=284366
   response:
@@ -826,13 +823,12 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Tue, 19 Sep 2023 14:57:00 GMT
+      - Mon, 19 Feb 2024 07:31:47 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
       code: 200
       message: OK
-# Begin VCF row chr19 289464
 - request:
     body: null
     headers:
@@ -843,7 +839,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.31.0
+      - python-requests/2.28.2
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/GRCh37:chr19?start=289463&end=289464
   response:
@@ -857,7 +853,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Tue, 19 Sep 2023 14:57:00 GMT
+      - Mon, 19 Feb 2024 07:31:47 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -873,7 +869,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.31.0
+      - python-requests/2.28.2
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.ItRDD47aMoioDCNW_occY5fWKZBKlxCX?start=289463&end=289464
   response:
@@ -887,7 +883,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Tue, 19 Sep 2023 14:57:00 GMT
+      - Mon, 19 Feb 2024 07:31:47 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -903,7 +899,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.31.0
+      - python-requests/2.28.2
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.ItRDD47aMoioDCNW_occY5fWKZBKlxCX?start=289464&end=289464
   response:
@@ -917,7 +913,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Tue, 19 Sep 2023 14:57:01 GMT
+      - Mon, 19 Feb 2024 07:31:47 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -933,7 +929,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.31.0
+      - python-requests/2.28.2
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.ItRDD47aMoioDCNW_occY5fWKZBKlxCX?start=289464&end=289465
   response:
@@ -947,7 +943,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Tue, 19 Sep 2023 14:57:01 GMT
+      - Mon, 19 Feb 2024 07:31:47 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -963,7 +959,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.31.0
+      - python-requests/2.28.2
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.ItRDD47aMoioDCNW_occY5fWKZBKlxCX?start=289465&end=289466
   response:
@@ -977,7 +973,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Tue, 19 Sep 2023 14:57:01 GMT
+      - Mon, 19 Feb 2024 07:31:47 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -993,7 +989,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.31.0
+      - python-requests/2.28.2
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.ItRDD47aMoioDCNW_occY5fWKZBKlxCX?start=289466&end=289467
   response:
@@ -1007,7 +1003,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Tue, 19 Sep 2023 14:57:01 GMT
+      - Mon, 19 Feb 2024 07:31:47 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -1023,7 +1019,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.31.0
+      - python-requests/2.28.2
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.ItRDD47aMoioDCNW_occY5fWKZBKlxCX?start=289464&end=289466
   response:
@@ -1037,13 +1033,12 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Tue, 19 Sep 2023 14:57:01 GMT
+      - Mon, 19 Feb 2024 07:31:47 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
       code: 200
       message: OK
-# Begin VCF row chr19 28946400
 - request:
     body: null
     headers:
@@ -1054,12 +1049,12 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.31.0
+      - python-requests/2.28.2
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/GRCh37:chr19?start=28946399&end=28946400
   response:
     body:
-      string: T
+      string: A
     headers:
       Connection:
       - close
@@ -1068,7 +1063,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Tue, 19 Sep 2023 14:56:59 GMT
+      - Mon, 19 Feb 2024 07:31:47 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -1084,38 +1079,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.31.0
-    method: GET
-    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.ItRDD47aMoioDCNW_occY5fWKZBKlxCX?start=28946399&end=28946400
-  response:
-    body:
-      string: T
-    headers:
-      Connection:
-      - close
-      Content-Length:
-      - '1'
-      Content-Type:
-      - text/plain; charset=utf-8
-      Date:
-      - Tue, 19 Sep 2023 14:56:59 GMT
-      Server:
-      - Werkzeug/2.2.2 Python/3.10.4
-    status:
-      code: 200
-      message: OK
-# Begin VCF row chr19 490414
-- request:
-    body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      User-Agent:
-      - python-requests/2.31.0
+      - python-requests/2.28.2
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/GRCh37:chr19?start=490413&end=490416
   response:
@@ -1129,7 +1093,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Tue, 19 Sep 2023 14:57:01 GMT
+      - Mon, 19 Feb 2024 07:31:47 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -1145,7 +1109,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.31.0
+      - python-requests/2.28.2
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.ItRDD47aMoioDCNW_occY5fWKZBKlxCX?start=490413&end=490416
   response:
@@ -1159,7 +1123,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Tue, 19 Sep 2023 14:57:01 GMT
+      - Mon, 19 Feb 2024 07:31:47 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -1175,7 +1139,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.31.0
+      - python-requests/2.28.2
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.ItRDD47aMoioDCNW_occY5fWKZBKlxCX?start=490414&end=490416
   response:
@@ -1189,7 +1153,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Tue, 19 Sep 2023 14:57:01 GMT
+      - Mon, 19 Feb 2024 07:31:47 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -1205,7 +1169,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.31.0
+      - python-requests/2.28.2
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.ItRDD47aMoioDCNW_occY5fWKZBKlxCX?start=490413&end=490414
   response:
@@ -1219,7 +1183,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Tue, 19 Sep 2023 14:57:01 GMT
+      - Mon, 19 Feb 2024 07:31:47 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -1235,7 +1199,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.31.0
+      - python-requests/2.28.2
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.ItRDD47aMoioDCNW_occY5fWKZBKlxCX?start=490416&end=490417
   response:
@@ -1249,7 +1213,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Tue, 19 Sep 2023 14:57:01 GMT
+      - Mon, 19 Feb 2024 07:31:47 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -1265,7 +1229,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.31.0
+      - python-requests/2.28.2
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.ItRDD47aMoioDCNW_occY5fWKZBKlxCX?start=490414&end=490414
   response:
@@ -1279,7 +1243,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Tue, 19 Sep 2023 14:57:01 GMT
+      - Mon, 19 Feb 2024 07:31:47 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -1295,7 +1259,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.31.0
+      - python-requests/2.28.2
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.ItRDD47aMoioDCNW_occY5fWKZBKlxCX?start=490416&end=490416
   response:
@@ -1309,13 +1273,12 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Tue, 19 Sep 2023 14:57:01 GMT
+      - Mon, 19 Feb 2024 07:31:47 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
       code: 200
       message: OK
-# Begin VCF row chr19 54220024
 - request:
     body: null
     headers:
@@ -1326,12 +1289,12 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.31.0
+      - python-requests/2.28.2
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/GRCh37:chr19?start=54220023&end=54220024
   response:
     body:
-      string: G
+      string: T
     headers:
       Connection:
       - close
@@ -1340,7 +1303,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Tue, 19 Sep 2023 14:56:59 GMT
+      - Mon, 19 Feb 2024 07:31:47 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -1356,43 +1319,12 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.31.0
-    method: GET
-    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.ItRDD47aMoioDCNW_occY5fWKZBKlxCX?start=54220023&end=54220024
-  response:
-    body:
-      string: G
-    headers:
-      Connection:
-      - close
-      Content-Length:
-      - '1'
-      Content-Type:
-      - text/plain; charset=utf-8
-      Date:
-      - Tue, 19 Sep 2023 14:56:59 GMT
-      Server:
-      - Werkzeug/2.2.2 Python/3.10.4
-    status:
-      code: 200
-      message: OK
-# Begin VCF row chr19 54220999
-- request:
-    body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      User-Agent:
-      - python-requests/2.31.0
+      - python-requests/2.28.2
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/GRCh37:chr19?start=54220998&end=54220999
   response:
     body:
-      string: C
+      string: G
     headers:
       Connection:
       - close
@@ -1401,13 +1333,12 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Tue, 19 Sep 2023 14:56:56 GMT
+      - Mon, 19 Feb 2024 07:31:47 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
       code: 200
       message: OK
-# Begin VCF row chr19 54221654
 - request:
     body: null
     headers:
@@ -1418,7 +1349,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.31.0
+      - python-requests/2.28.2
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/GRCh37:chr19?start=54221653&end=54221654
   response:
@@ -1432,39 +1363,10 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Tue, 19 Sep 2023 14:56:56 GMT
+      - Mon, 19 Feb 2024 07:31:47 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
       code: 200
       message: OK
-- request:
-    body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      User-Agent:
-      - python-requests/2.31.0
-    method: GET
-    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.ItRDD47aMoioDCNW_occY5fWKZBKlxCX?start=54221653&end=54221654
-  response:
-    body:
-      string: C
-    headers:
-      Connection:
-      - close
-      Content-Length:
-      - '1'
-      Content-Type:
-      - text/plain; charset=utf-8
-      Date:
-      - Tue, 19 Sep 2023 14:56:56 GMT
-      Server:
-      - Werkzeug/2.2.2 Python/3.10.4
-    status:
-      code: 200
-      message: OK
+version: 1

@@ -9,48 +9,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.31.0
-    method: GET
-    uri: http://localhost:5000/seqrepo/1/metadata/ga4gh:SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul
-  response:
-    body:
-      string: "{\n  \"added\": \"2016-08-27T21:23:35Z\",\n  \"aliases\": [\n    \"GRCh38:7\",\n
-        \   \"GRCh38:chr7\",\n    \"GRCh38.p1:7\",\n    \"GRCh38.p1:chr7\",\n    \"GRCh38.p10:7\",\n
-        \   \"GRCh38.p10:chr7\",\n    \"GRCh38.p11:7\",\n    \"GRCh38.p11:chr7\",\n
-        \   \"GRCh38.p12:7\",\n    \"GRCh38.p12:chr7\",\n    \"GRCh38.p2:7\",\n    \"GRCh38.p2:chr7\",\n
-        \   \"GRCh38.p3:7\",\n    \"GRCh38.p3:chr7\",\n    \"GRCh38.p4:7\",\n    \"GRCh38.p4:chr7\",\n
-        \   \"GRCh38.p5:7\",\n    \"GRCh38.p5:chr7\",\n    \"GRCh38.p6:7\",\n    \"GRCh38.p6:chr7\",\n
-        \   \"GRCh38.p7:7\",\n    \"GRCh38.p7:chr7\",\n    \"GRCh38.p8:7\",\n    \"GRCh38.p8:chr7\",\n
-        \   \"GRCh38.p9:7\",\n    \"GRCh38.p9:chr7\",\n    \"MD5:cc044cc2256a1141212660fb07b6171e\",\n
-        \   \"NCBI:NC_000007.14\",\n    \"refseq:NC_000007.14\",\n    \"SEGUID:4+JjCcBVhPCr8vdIhUKFycPv8bY\",\n
-        \   \"SHA1:e3e26309c05584f0abf2f748854285c9c3eff1b6\",\n    \"VMC:GS_F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul\",\n
-        \   \"sha512t24u:F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul\",\n    \"ga4gh:SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul\"\n
-        \ ],\n  \"alphabet\": \"ACGNRSTY\",\n  \"length\": 159345973\n}\n"
-    headers:
-      Connection:
-      - close
-      Content-Length:
-      - '977'
-      Content-Type:
-      - application/json
-      Date:
-      - Mon, 18 Sep 2023 20:50:45 GMT
-      Server:
-      - Werkzeug/2.2.2 Python/3.10.4
-    status:
-      code: 200
-      message: OK
-- request:
-    body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      User-Agent:
-      - python-requests/2.31.0
+      - python-requests/2.28.2
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul?start=55181230&end=55181230
   response:
@@ -64,7 +23,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Mon, 18 Sep 2023 20:50:45 GMT
+      - Mon, 19 Feb 2024 07:31:20 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -80,67 +39,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.31.0
-    method: GET
-    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul?start=55181230&end=55181230
-  response:
-    body:
-      string: ''
-    headers:
-      Connection:
-      - close
-      Content-Length:
-      - '0'
-      Content-Type:
-      - text/plain; charset=utf-8
-      Date:
-      - Mon, 18 Sep 2023 20:50:45 GMT
-      Server:
-      - Werkzeug/2.2.2 Python/3.10.4
-    status:
-      code: 200
-      message: OK
-- request:
-    body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      User-Agent:
-      - python-requests/2.31.0
-    method: GET
-    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul?start=55181230&end=55181230
-  response:
-    body:
-      string: ''
-    headers:
-      Connection:
-      - close
-      Content-Length:
-      - '0'
-      Content-Type:
-      - text/plain; charset=utf-8
-      Date:
-      - Mon, 18 Sep 2023 20:50:45 GMT
-      Server:
-      - Werkzeug/2.2.2 Python/3.10.4
-    status:
-      code: 200
-      message: OK
-- request:
-    body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      User-Agent:
-      - python-requests/2.31.0
+      - python-requests/2.28.2
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul?start=55181229&end=55181230
   response:
@@ -154,7 +53,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Mon, 18 Sep 2023 20:50:45 GMT
+      - Mon, 19 Feb 2024 07:31:20 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -170,7 +69,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.31.0
+      - python-requests/2.28.2
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul?start=55181230&end=55181231
   response:
@@ -184,7 +83,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Mon, 18 Sep 2023 20:50:45 GMT
+      - Mon, 19 Feb 2024 07:31:20 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -200,97 +99,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.31.0
-    method: GET
-    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul?start=55181230&end=55181230
-  response:
-    body:
-      string: ''
-    headers:
-      Connection:
-      - close
-      Content-Length:
-      - '0'
-      Content-Type:
-      - text/plain; charset=utf-8
-      Date:
-      - Mon, 18 Sep 2023 20:50:45 GMT
-      Server:
-      - Werkzeug/2.2.2 Python/3.10.4
-    status:
-      code: 200
-      message: OK
-- request:
-    body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      User-Agent:
-      - python-requests/2.31.0
-    method: GET
-    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul?start=55181230&end=55181230
-  response:
-    body:
-      string: ''
-    headers:
-      Connection:
-      - close
-      Content-Length:
-      - '0'
-      Content-Type:
-      - text/plain; charset=utf-8
-      Date:
-      - Mon, 18 Sep 2023 20:50:45 GMT
-      Server:
-      - Werkzeug/2.2.2 Python/3.10.4
-    status:
-      code: 200
-      message: OK
-- request:
-    body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      User-Agent:
-      - python-requests/2.31.0
-    method: GET
-    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul?start=55181230&end=55181230
-  response:
-    body:
-      string: ''
-    headers:
-      Connection:
-      - close
-      Content-Length:
-      - '0'
-      Content-Type:
-      - text/plain; charset=utf-8
-      Date:
-      - Mon, 18 Sep 2023 20:50:45 GMT
-      Server:
-      - Werkzeug/2.2.2 Python/3.10.4
-    status:
-      code: 200
-      message: OK
-- request:
-    body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      User-Agent:
-      - python-requests/2.31.0
+      - python-requests/2.28.2
     method: GET
     uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nucleotide&id=NC_000007.14&rettype=fasta&seq_start=55181231&seq_stop=55181231&tool=bioutils&email=biocommons-dev@googlegroups.com
   response:
@@ -314,20 +123,20 @@ interactions:
       Content-Type:
       - text/plain
       Date:
-      - Mon, 18 Sep 2023 20:50:46 GMT
+      - Mon, 19 Feb 2024 07:31:20 GMT
       Keep-Alive:
       - timeout=4, max=40
       NCBI-PHID:
-      - 939B3139A985810500005D2669ECFEB9.1.1.m_5
+      - D0BD5673E54A8BE5000063882725ADF6.1.1.m_5
       NCBI-SID:
-      - A05C5F884629FEA8_DFEFSID
+      - F7C03B5CCF0884C3_8C08SID
       Referrer-Policy:
       - origin-when-cross-origin
       Server:
       - Finatra
       Set-Cookie:
-      - ncbi_sid=A05C5F884629FEA8_DFEFSID; domain=.nih.gov; path=/; expires=Wed, 18
-        Sep 2024 20:50:45 GMT
+      - ncbi_sid=F7C03B5CCF0884C3_8C08SID; domain=.nih.gov; path=/; expires=Wed, 19
+        Feb 2025 07:31:19 GMT
       Strict-Transport-Security:
       - max-age=31536000; includeSubDomains; preload
       Transfer-Encoding:
@@ -355,7 +164,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.31.0
+      - python-requests/2.28.2
     method: GET
     uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nucleotide&id=NC_000007.14&rettype=fasta&seq_start=55181230&seq_stop=55181250&tool=bioutils&email=biocommons-dev@googlegroups.com
   response:
@@ -380,20 +189,20 @@ interactions:
       Content-Type:
       - text/plain
       Date:
-      - Mon, 18 Sep 2023 20:50:46 GMT
+      - Mon, 19 Feb 2024 07:31:20 GMT
       Keep-Alive:
       - timeout=4, max=40
       NCBI-PHID:
-      - D0BD351E52910B6500004426AF911D52.1.1.m_5
+      - 322CF705C067C1A500003C89622340FC.1.1.m_5
       NCBI-SID:
-      - 442B914E4343E033_6A3CSID
+      - BD11D769E840C2B7_657ESID
       Referrer-Policy:
       - origin-when-cross-origin
       Server:
       - Finatra
       Set-Cookie:
-      - ncbi_sid=442B914E4343E033_6A3CSID; domain=.nih.gov; path=/; expires=Wed, 18
-        Sep 2024 20:50:46 GMT
+      - ncbi_sid=BD11D769E840C2B7_657ESID; domain=.nih.gov; path=/; expires=Wed, 19
+        Feb 2025 07:31:20 GMT
       Strict-Transport-Security:
       - max-age=31536000; includeSubDomains; preload
       Transfer-Encoding:
@@ -401,7 +210,7 @@ interactions:
       X-RateLimit-Limit:
       - '3'
       X-RateLimit-Remaining:
-      - '2'
+      - '1'
       X-UA-Compatible:
       - IE=Edge
       X-XSS-Protection:
@@ -421,7 +230,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.31.0
+      - python-requests/2.28.2
     method: GET
     uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nucleotide&id=NC_000007.14&rettype=fasta&seq_start=55181227&seq_stop=55181230&tool=bioutils&email=biocommons-dev@googlegroups.com
   response:
@@ -445,20 +254,20 @@ interactions:
       Content-Type:
       - text/plain
       Date:
-      - Mon, 18 Sep 2023 20:50:46 GMT
+      - Mon, 19 Feb 2024 07:31:20 GMT
       Keep-Alive:
       - timeout=4, max=40
       NCBI-PHID:
-      - 322C0387F48EEF65000065F8E489DB09.1.1.m_5
+      - 322CF705C067C1A50000368965BD192F.1.1.m_5
       NCBI-SID:
-      - E2994073FC5FD3B3_4AA6SID
+      - BA7AA08372DBFA5B_13E4SID
       Referrer-Policy:
       - origin-when-cross-origin
       Server:
       - Finatra
       Set-Cookie:
-      - ncbi_sid=E2994073FC5FD3B3_4AA6SID; domain=.nih.gov; path=/; expires=Wed, 18
-        Sep 2024 20:50:47 GMT
+      - ncbi_sid=BA7AA08372DBFA5B_13E4SID; domain=.nih.gov; path=/; expires=Wed, 19
+        Feb 2025 07:31:21 GMT
       Strict-Transport-Security:
       - max-age=31536000; includeSubDomains; preload
       Transfer-Encoding:

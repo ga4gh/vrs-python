@@ -17,13 +17,15 @@ V1 pydantic: datamodel-codegen --input submodules/vrs/schema/merged.json --input
 V2 pydantic: datamodel-codegen --input submodules/vrs/schema/merged.json --input-file-type jsonschema --output models.py --output-model-type pydantic_v2.BaseModel --allow-extra-fields
 """
 
-from typing import List, Literal, Optional, Union
+from typing import List, Literal, Optional, Union, Dict
+from collections import OrderedDict
 from enum import Enum
 import inspect
 import sys
 import typing
+from ga4gh.core import sha512t24u, GA4GH_PREFIX_SEP, CURIE_SEP, CURIE_NAMESPACE, GA4GH_IR_REGEXP
 
-from pydantic import BaseModel, ConfigDict, Field, RootModel, constr
+from pydantic import BaseModel, ConfigDict, Field, RootModel, constr, model_serializer
 
 from ga4gh.core._internal.pydantic import (
     is_ga4gh_identifiable,
@@ -161,25 +163,120 @@ class CopyChange(Enum):
     EFO_0030072 = 'efo:0030072'
 
 
+def _recurse_ga4gh_serialize(obj):
+    if isinstance(obj, _Ga4ghIdentifiableObject):
+        return obj.get_or_create_digest()
+    elif isinstance(obj, _ValueObject):
+        return obj.ga4gh_serialize()
+    elif isinstance(obj, RootModel):
+        return _recurse_ga4gh_serialize(obj.model_dump(mode='json'))
+    elif isinstance(obj, str):
+        return obj
+    elif isinstance(obj, list):
+        return [_recurse_ga4gh_serialize(x) for x in obj]
+    else:
+        return obj
+
+
 class _ValueObject(_Entity):
-    """A contextual value whose equality is based on value, not identity. All VRS Value
-    Objects may have computed digests from the VRS Computed Identifier algorithm.
+    """A contextual value whose equality is based on value, not identity.
     See https://en.wikipedia.org/wiki/Value_object for more on Value Objects.
     """
+
+    def __hash__(self):
+        return self.model_dump_json().__hash__()
+
+    @model_serializer(when_used='json')
+    def ga4gh_serialize(self) -> Dict:
+        out = OrderedDict()
+        for k in self.ga4gh.keys:
+            v = getattr(self, k)
+            out[k] = _recurse_ga4gh_serialize(v)
+        return out
+
+    class ga4gh:
+        keys: List[str]
+
+    @staticmethod
+    def is_ga4gh_identifiable():
+        return False
+
+
+class _Ga4ghIdentifiableObject(_ValueObject):
+    """A contextual value object for which a GA4GH computed identifier can be created.
+    All GA4GH Identifiable Objects may have computed digests from the VRS Computed
+    Identifier algorithm."""
+
+    type: str
 
     digest: Optional[constr(pattern=r'^[0-9A-Za-z_\-]{32}$')] = Field(
         None,
         description='A sha512t24u digest created using the VRS Computed Identifier algorithm.',
     )
 
-    class ga4gh:
-        keys: List[str]
+    def __lt__(self, other):
+        return self.get_or_create_digest() < other.get_or_create_digest()
 
+    @staticmethod
+    def is_ga4gh_identifiable():
+        return True
 
-class _Ga4ghIdentifiableObject(_ValueObject):
-    """A contextual value object for which a GA4GH computed identifier can be created."""
+    def has_valid_ga4gh_id(self):
+        return self.id and GA4GH_IR_REGEXP.match(self.id) is not None
 
-    type: str
+    def has_valid_digest(self):
+        return bool(self.digest)  # Pydantic constraint ensures digest field value is valid
+
+    def compute_digest(self, store=True) -> str:
+        """A sha512t24u digest created using the VRS Computed Identifier algorithm.
+        Stores the digest in the object if store is True.
+        """
+        digest = sha512t24u(self.model_dump_json().encode("utf-8"))
+        if store:
+            self.digest = digest
+        return digest
+
+    def get_or_create_ga4gh_identifier(self, in_place='default', recompute=False) -> str:
+        """Sets and returns a GA4GH Computed Identifier for the object.
+        Overwrites the existing identifier if overwrite is True.
+
+        This function has three options for in_place editing of vro.id:
+        - 'default': the standard identifier update behavior for GA4GH
+            identifiable objects, this mode will update the vro.id
+            field if the field is empty
+        - 'always': this will update the vro.id field any time the
+            identifier is computed
+        - 'never': the vro.id field will not be edited in-place,
+            even when empty
+
+        Digests will be recalculated even if present if recompute is True.
+        """
+        if in_place == 'default':
+            if self.id is None:
+                self.id = self.compute_ga4gh_identifier(recompute)
+        elif in_place == 'always':
+            self.id = self.compute_ga4gh_identifier(recompute)
+        elif in_place == 'never':
+            return self.compute_ga4gh_identifier(recompute)
+        else:
+            raise ValueError("Expected 'in_place' to be one of 'default', 'always', or 'never'")
+
+        if self.has_valid_ga4gh_id():
+            return self.id
+        else:
+            return self.compute_ga4gh_identifier(recompute)
+
+    def compute_ga4gh_identifier(self, recompute=False):
+        """Returns a GA4GH Computed Identifier"""
+        self.get_or_create_digest(recompute)
+        return f'{CURIE_NAMESPACE}{CURIE_SEP}{self.ga4gh.prefix}{GA4GH_PREFIX_SEP}{self.digest}'
+
+    def get_or_create_digest(self, recompute=False) -> str:
+        """Sets and returns a sha512t24u digest of the GA4GH Identifiable Object, or creates
+        the digest if it does not exist."""
+        if self.digest is None or recompute:
+            return self.compute_digest()
+        return self.digest
 
     class ga4gh(_ValueObject.ga4gh):
         prefix: str
@@ -241,26 +338,43 @@ class SequenceReference(_ValueObject):
     residueAlphabet: Optional[ResidueAlphabet] = None
 
     class ga4gh(_ValueObject.ga4gh):
-        assigned: bool = Field(
-            True,
-            description='This special property indicates that the `digest` field follows an alternate convention and is expected to have the value assigned following that convention. For SequenceReference, it is expected the digest will be the refget accession value without the `SQ.` prefix.'
-        )
+        keys = [
+            'refgetAccession',
+            'type'
+        ]
 
 
-class ReferenceLengthExpression(_ValueObject):
-    """An expression of a length of a sequence from a repeating reference."""
+class LengthExpression(_ValueObject):
+    """An expression of a DNA, RNA, or protein polymer of known length but unspecified sequence."""
 
     type: Literal['ReferenceLengthExpression'] = Field(
         'ReferenceLengthExpression', description='MUST be "ReferenceLengthExpression"'
     )
     length: Union[Range, int] = Field(
-        ..., description='The number of residues in the expressed sequence.'
+        ..., description='The number of residues of the expressed sequence.'
+    )
+
+    class ga4gh(_ValueObject.ga4gh):
+        keys = [
+            'length',
+            'type'
+        ]
+
+
+class ReferenceLengthExpression(_ValueObject):
+    """An expression sequence derived from a reference."""
+
+    type: Literal['ReferenceLengthExpression'] = Field(
+        'ReferenceLengthExpression', description='MUST be "ReferenceLengthExpression"'
+    )
+    length: Union[Range, int] = Field(
+        ..., description='The number of residues of the expressed sequence.'
     )
     sequence: Optional[SequenceString] = Field(
         None, description='the Sequence encoded by the Reference Length Expression.'
     )
     repeatSubunitLength: int = Field(
-        None, description='The number of residues in the repeat subunit.'
+        None, description='The number of residues of the repeat subunit.'
     )
 
     class ga4gh(_ValueObject.ga4gh):
@@ -305,10 +419,10 @@ class SequenceLocation(_Ga4ghIdentifiableObject):
     class ga4gh(_Ga4ghIdentifiableObject.ga4gh):
         prefix = 'SL'
         keys = [
-            'type',
-            'start',
             'end',
-            'sequenceReference'
+            'sequenceReference',
+            'start',
+            'type'
         ]
 
 
@@ -341,12 +455,17 @@ class Haplotype(_VariationBase):
     """A set of non-overlapping Allele members that co-occur on the same molecule."""
 
     type: Literal['Haplotype'] = Field('Haplotype', description='MUST be "Haplotype"')
-    # TODO members temporarily typed as List instead of Set
     members: List[Union[Allele, IRI]] = Field(
         ...,
         description='A list of Alleles (or IRI references to `Alleles`) that comprise a Haplotype. Since each `Haplotype` member MUST be an `Allele`, and all members MUST share a common `SequenceReference`, implementations MAY use a compact representation of Haplotype that omits type and `SequenceReference` information in individual Haplotype members. Implementations MUST transform compact `Allele` representations into an `Allele` when computing GA4GH identifiers.',
         min_length=2,
     )
+
+    @model_serializer(when_used='json')
+    def ga4gh_serialize(self) -> Dict:
+        out = _ValueObject.ga4gh_serialize(self)
+        out['members'] = sorted(out['members'])
+        return out
 
     class ga4gh(_Ga4ghIdentifiableObject.ga4gh):
         prefix = 'HT'
@@ -407,25 +526,25 @@ class CopyNumberChange(_CopyNumber):
         ]
 
 
-class GenotypeMember(_ValueObject):
-    """A class for expressing the count of a specific `MolecularVariation` present
-    in-trans at a genomic locus represented by a `Genotype`.
-    """
-
-    type: Literal['GenotypeMember'] = Field('GenotypeMember', description='MUST be "GenotypeMember".')
-    count: Union[Range, int] = Field(
-        ..., description='The number of copies of the `variation` at a Genotype locus.'
-    )
-    variation: Union[Allele, Haplotype] = Field(
-        ..., description='A MolecularVariation at a Genotype locus.'
-    )
-
-    class ga4gh(_Ga4ghIdentifiableObject.ga4gh):
-        keys = [
-            'type',
-            'count',
-            'variation'
-        ]
+# class GenotypeMember(_ValueObject):
+#     """A class for expressing the count of a specific `MolecularVariation` present
+#     in-trans at a genomic locus represented by a `Genotype`.
+#     """
+#
+#     type: Literal['GenotypeMember'] = Field('GenotypeMember', description='MUST be "GenotypeMember".')
+#     count: Union[Range, int] = Field(
+#         ..., description='The number of copies of the `variation` at a Genotype locus.'
+#     )
+#     variation: Union[Allele, Haplotype] = Field(
+#         ..., description='A MolecularVariation at a Genotype locus.'
+#     )
+#
+#     class ga4gh(_Ga4ghIdentifiableObject.ga4gh):
+#         keys = [
+#             'type',
+#             'count',
+#             'variation'
+#         ]
 
 
 class MolecularVariation(RootModel):
@@ -440,31 +559,31 @@ class MolecularVariation(RootModel):
     )
 
 
-class Genotype(_VariationBase):
-    """A quantified set of _in-trans_ `MolecularVariation` at a genomic locus."""
-
-    type: Literal['Genotype'] = Field(
-        'Genotype',
-        description='MUST be "Genotype"'
-    )
-    # TODO members temporarily typed as List instead of Set + validate unique items
-    members: List[GenotypeMember] = Field(
-        ...,
-        description='Each GenotypeMember in `members` describes a MolecularVariation and the count of that variation at the locus.',
-        min_length=1,
-    )
-    count: Union[Range, int] = Field(
-        ...,
-        description='The total number of copies of all MolecularVariation at this locus, MUST be greater than or equal to the sum of GenotypeMember copy counts. If greater than the total counts, this implies additional MolecularVariation that are expected to exist but are not explicitly indicated.',
-    )
-
-    class ga4gh(_Ga4ghIdentifiableObject.ga4gh):
-        prefix = 'GT'
-        keys = [
-            'count',
-            'members',
-            'type'
-        ]
+# class Genotype(_VariationBase):
+#     """A quantified set of _in-trans_ `MolecularVariation` at a genomic locus."""
+#
+#     type: Literal['Genotype'] = Field(
+#         'Genotype',
+#         description='MUST be "Genotype"'
+#     )
+#     # TODO members temporarily typed as List instead of Set + validate unique items
+#     members: List[GenotypeMember] = Field(
+#         ...,
+#         description='Each GenotypeMember in `members` describes a MolecularVariation and the count of that variation at the locus.',
+#         min_length=1,
+#     )
+#     count: Union[Range, int] = Field(
+#         ...,
+#         description='The total number of copies of all MolecularVariation at this locus, MUST be greater than or equal to the sum of GenotypeMember copy counts. If greater than the total counts, this implies additional MolecularVariation that are expected to exist but are not explicitly indicated.',
+#     )
+#
+#     class ga4gh(_Ga4ghIdentifiableObject.ga4gh):
+#         prefix = 'GT'
+#         keys = [
+#             'count',
+#             'members',
+#             'type'
+#         ]
 
 
 class SequenceExpression(RootModel):
@@ -486,7 +605,7 @@ class Location(RootModel):
 
 
 class Variation(RootModel):
-    root: Union[Allele, CopyNumberChange, CopyNumberCount, Genotype, Haplotype] = Field(
+    root: Union[Allele, CopyNumberChange, CopyNumberCount, Haplotype] = Field(
         ...,
         json_schema_extra={
             'description': 'A representation of the state of one or more biomolecules.'
@@ -500,7 +619,7 @@ class SystemicVariation(RootModel):
     sample, or homologous chromosomes.
     """
 
-    root: Union[CopyNumberChange, CopyNumberCount, Genotype] = Field(
+    root: Union[CopyNumberChange, CopyNumberCount] = Field(
         ...,
         json_schema_extra={
             'description': 'A Variation of multiple molecules in the context of a system, e.g. a genome, sample, or homologous chromosomes.'

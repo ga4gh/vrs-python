@@ -22,34 +22,26 @@ from contextlib import ContextDecorator
 from enum import IntEnum
 from typing import Union, Optional
 from pydantic import BaseModel, RootModel
-from canonicaljson import encode_canonical_json
 
-from .digests import sha512t24u
-from .pydantic import (
-    is_pydantic_instance,
-    is_curie_type,
-    is_ga4gh_identifiable,
-    getattr_in,
-    get_pydantic_root,
-    is_pydantic_custom_type
-)
+from .pydantic import get_pydantic_root
 
 __all__ = "ga4gh_digest ga4gh_identify ga4gh_serialize is_ga4gh_identifier parse_ga4gh_identifier".split()
 
 _logger = logging.getLogger(__name__)
 
-namespace = "ga4gh"
-curie_sep = ":"
-ref_sep = "."
+CURIE_NAMESPACE = "ga4gh"
+CURIE_SEP = ":"
+GA4GH_PREFIX_SEP = "."
 
-ga4gh_ir_regexp = re.compile(r"^ga4gh:(?P<type>[^.]+)\.(?P<digest>.+)$")
+GA4GH_IR_REGEXP = re.compile(r"^ga4gh:(?P<type>[^.]+)\.(?P<digest>[0-9A-Za-z_\-]{32})$")
+GA4GH_DIGEST_REGEXP = re.compile(r"^[0-9A-Za-z_\-]{32}$")
 
-ns_w_sep = namespace + curie_sep
+ns_w_sep = CURIE_NAMESPACE + CURIE_SEP
 
 
-class GA4GHComputeIdentifierWhen(IntEnum):
+class VrsObjectIdentifierIs(IntEnum):
     """
-    Defines the rule for when the `ga4gh_identify` method should compute
+    Defines the state for when the `ga4gh_identify` method should compute
     an identifier ('id' attribute) for the specified object.  The options are:
       ALWAYS - Always compute the identifier (this is the default behavior)
       INVALID - Compute the identifier if it is missing or is present but syntactically invalid
@@ -61,8 +53,8 @@ class GA4GHComputeIdentifierWhen(IntEnum):
     using `MISSING` can improve performance.
     """
 
-    ALWAYS = 0
-    INVALID = 1
+    ANY = 0
+    GA4GH_INVALID = 1
     MISSING = 2
 
 
@@ -74,16 +66,16 @@ class use_ga4gh_compute_identifier_when(ContextDecorator):
     Context manager that defines when to compute identifiers
     for all operations within the context.  For example:
 
-    with use_ga4gh_compute_identifier_when(GA4GHComputeIdentifierWhen.INVALID):
+    with use_ga4gh_compute_identifier_when(VrsObjectIdentifierIs.GA4GH_INVALID):
         VCFAnnotator(...).annotate(...)
 
     Or:
 
-    @use_ga4gh_compute_identifier_when(GA4GHComputeIdentifierWhen.INVALID)
+    @use_ga4gh_compute_identifier_when(VrsObjectIdentifierIs.GA4GH_INVALID)
     def my_method():
     """
 
-    def __init__(self, when: GA4GHComputeIdentifierWhen):
+    def __init__(self, when: VrsObjectIdentifierIs):
         self.when = when
         self.token = None
 
@@ -125,15 +117,25 @@ def parse_ga4gh_identifier(ir):
     """
 
     try:
-        return ga4gh_ir_regexp.match(str(ir)).groupdict()
+        return GA4GH_IR_REGEXP.match(str(ir)).groupdict()
     except AttributeError as e:
         raise ValueError(ir) from e
 
 
-def ga4gh_identify(vro):
+def ga4gh_identify(vro, in_place='default'):
     """
     Return the GA4GH digest-based id for the object, as a CURIE
     (string).  Returns None if object is not identifiable.
+
+    This function has three options for in_place editing of vro.id:
+    - 'default': the standard identifier update behavior for GA4GH
+        identifiable objects, this mode will update the vro.id
+        field if the field is empty
+    - 'always': this will update the vro.id field any time the
+        identifier is computed (compute behavior is controlled by the
+        use_ga4gh_compute_identifier_when context)
+    - 'never': the vro.id field will not be edited in-place,
+        even when empty
 
     TODO update example for VRS 2.0
     >>> import ga4gh.vrs
@@ -143,36 +145,27 @@ def ga4gh_identify(vro):
     'ga4gh:VSL.u5fspwVbQ79QkX6GHLF8tXPCAXFJqRPx'
 
     """
-    if is_ga4gh_identifiable(vro):
-        when_rule = ga4gh_compute_identifier_when.get(GA4GHComputeIdentifierWhen.ALWAYS)
-        do_compute = False
-        ir = None
-        if when_rule == GA4GHComputeIdentifierWhen.ALWAYS:
+    if vro.is_ga4gh_identifiable():
+        when_rule = ga4gh_compute_identifier_when.get(VrsObjectIdentifierIs.ANY)
+        obj_id = None
+        if when_rule == VrsObjectIdentifierIs.ANY:
             do_compute = True
         else:
-            ir = getattr(vro, "id", None)
-            if when_rule == GA4GHComputeIdentifierWhen.MISSING:
-                do_compute = ir is None or ir == ""
-            else:  # INVALID
-                do_compute = ir is None or ir == "" or ga4gh_ir_regexp.match(ir) is None
+            obj_id = getattr(vro, "id", None)
+            if when_rule == VrsObjectIdentifierIs.MISSING:
+                do_compute = obj_id is None or obj_id == ""
+            else:  # GA4GHComputeIdentifierIs.GA4GH_INVALID
+                do_compute = not vro.has_valid_ga4gh_id()
 
         if do_compute:
-            digest = ga4gh_digest(vro)
-            pfx = vro.ga4gh.prefix
-            ir = f"{namespace}{curie_sep}{pfx}{ref_sep}{digest}"
+            obj_id = vro.get_or_create_ga4gh_identifier(in_place)
 
-        return ir
+        return obj_id
 
     return None
 
 
-def _is_sequence_reference(input_obj) -> bool:
-    """Determine if `input_obj` is a Sequence Reference"""
-
-    return getattr_in(input_obj, ["ga4gh", "assigned", "default"]) and input_obj.type == "SequenceReference"
-
-
-def ga4gh_digest(vro: BaseModel, do_compact=True):
+def ga4gh_digest(vro: BaseModel, overwrite=False):
     """
     Return the GA4GH digest for the object.
 
@@ -187,12 +180,10 @@ def ga4gh_digest(vro: BaseModel, do_compact=True):
     'u5fspwVbQ79QkX6GHLF8tXPCAXFJqRPx'
 
     """
-    if _is_sequence_reference(vro):
-        digest = vro.refgetAccession.split("SQ.")[-1]
+    if vro.is_ga4gh_identifiable():  # Only GA4GH identifiable objects are GA4GH digestible
+        return vro.get_or_create_digest(overwrite)
     else:
-        s = ga4gh_serialize(vro)
-        digest = sha512t24u(s)
-    return digest
+        return None
 
 
 def replace_with_digest(val: dict) -> Union[str, dict]:
@@ -224,18 +215,7 @@ def ga4gh_serialize(obj: BaseModel) -> Optional[bytes]:
     TODO find a way to output identify_all without the 'digest' fields on subobjects,
     without traversing the whole tree again in collapse_identifiable_values.
     """
-    if _is_sequence_reference(obj):
-        return None
-
-    identified = identify_all(obj)
-    if isinstance(identified, dict):
-        # Replace identifiable subobjects with their digests
-        collapsed = collapse_identifiable_values(identified)
-        if "digest" in collapsed:
-            del collapsed["digest"]
-        return encode_canonical_json(collapsed)
-    else:
-        return identified.encode("utf-8")
+    return obj.model_dump_json().encode("utf-8")
 
 
 def export_pydantic_model(obj, exclude_none=True):
@@ -250,71 +230,6 @@ def export_pydantic_model(obj, exclude_none=True):
         else:
             obj = obj.model_dump(exclude_none=exclude_none)
     return obj
-
-
-"""
-TODO: discussed making all objects digestible. If no digest keys defined,
-include all fields. We first need to define keys for all model objects.
-"""
-
-
-def identify_all(
-    input_obj: Union[BaseModel, dict, str]
-) -> Union[str, dict]:
-    """
-    Adds digests to an identifiable Pydantic object and any identifiable Pydantic
-    objects in its fields, at any depth. Assumes IRIs are dereferenced.
-
-    Returns the identified object tree, and the tree with identified objects
-    replaced with their digests.
-
-    TODO It would be nice to have a pydantic-agnostic version of this that just takes
-    a dict for input_object, and another dict that has the identifiable+keys metadata.
-    Something like scrape_model_metadata can be used to generate that metadata.
-    """
-    if input_obj is None:
-        return None
-    output_obj = input_obj
-    if isinstance(input_obj, str):
-        if input_obj.startswith("ga4gh:") and not input_obj.startswith("ga4gh:SQ"):
-            return input_obj.split(".")[-1]
-
-    if is_pydantic_custom_type(input_obj):
-        val = export_pydantic_model(input_obj)
-        if isinstance(val, str) and is_ga4gh_identifier(val):
-            val = parse_ga4gh_identifier(val)["digest"]
-        output_obj = val
-    elif is_pydantic_instance(input_obj):
-        exported_obj = export_pydantic_model(input_obj)
-        if "digest" in exported_obj and exported_obj["digest"] is not None:
-            output_obj = exported_obj
-        elif _is_sequence_reference(input_obj):
-            output_obj = exported_obj["refgetAccession"].split("SQ.")[-1]
-        else:
-            # Take static key set from the object, or use all fields
-            include_keys = getattr_in(input_obj, ["ga4gh", "keys"])
-            # TODO Add keys to each Model class
-            if include_keys is None or len(include_keys) == 0:
-                include_keys = exported_obj.keys()
-            if "digest" in include_keys:
-                include_keys.remove("digest")
-            # Serialize each field value
-            output_obj = {
-                k: identify_all(getattr(input_obj, k))
-                for k in include_keys
-                if hasattr(input_obj, k)  # check if None?
-            }
-            # Assumes any obj with 'digest' should be collapsed.
-            collapsed_output_obj = collapse_identifiable_values(output_obj)
-            # Add a digest to the output if it is identifiable
-            if is_ga4gh_identifiable(input_obj):
-                # Compute digest for updated object, not re-running compaction
-                output_obj["digest"] = ga4gh_digest(collapsed_output_obj, do_compact=False)
-    else:
-        exported_obj = export_pydantic_model(input_obj)
-        if type(exported_obj) in [list, set]:
-            output_obj = [identify_all(elem) for elem in exported_obj]
-    return output_obj
 
 
 # def scrape_model_metadata(obj, meta={}) -> dict:

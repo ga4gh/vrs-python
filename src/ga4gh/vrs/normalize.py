@@ -3,7 +3,9 @@
 See https://vrs.ga4gh.org/en/stable/impl-guide/normalization.html
 
 """
+import itertools
 import logging
+import math
 from enum import IntEnum
 from typing import NamedTuple, Optional, Union
 
@@ -133,20 +135,21 @@ def _normalize_allele(input_allele, data_proxy, rle_seq_limit=50):
         trim_ival, trim_alleles = _normalize(ref_seq, ival, alleles, mode=None, trim=True)
     except ValueError:
         # Occurs for ref agree Alleles (when alt = ref)
-        len_ref_seq = len_alt_seq = 0
+        len_trimmed_ref = len_trimmed_alt = 0
+        # TODO: Return RLE for ref agree Alleles
     else:
         trim_ref_seq = ref_seq[trim_ival[0]: trim_ival[1]]
         trim_alt_seq = trim_alleles[1]
-        len_ref_seq = len(trim_ref_seq)
-        len_alt_seq = len(trim_alt_seq)
+        len_trimmed_ref = len(trim_ref_seq)
+        len_trimmed_alt = len(trim_alt_seq)
 
     # Compare the two allele sequences
-    if not len_ref_seq and not len_alt_seq:
+    if not len_trimmed_ref and not len_trimmed_alt:
         return input_allele
 
     new_allele = pydantic_copy(input_allele)
 
-    if len_ref_seq and len_alt_seq:
+    if len_trimmed_ref and len_trimmed_alt:
         new_allele.location.start = _get_new_allele_location_pos(
             trim_ival[0], start.pos_type
         )
@@ -155,46 +158,63 @@ def _normalize_allele(input_allele, data_proxy, rle_seq_limit=50):
         )
         new_allele.state.sequence = models.SequenceString(trim_alleles[1])
         return new_allele
+    elif len_trimmed_ref:
+        repeat_subunit_length = len_trimmed_ref
+    else:
+        repeat_subunit_length = len_trimmed_alt
 
     # Determine bounds of ambiguity
-    try:
-        new_ival, new_alleles = _normalize(
-            ref_seq,
-            trim_ival,
-            (None, trim_alleles[1]),
-            mode=NormalizationMode.EXPAND
+    new_ival, new_alleles = _normalize(
+        ref_seq,
+        trim_ival,
+        (None, trim_alleles[1]),
+        mode=NormalizationMode.EXPAND
+    )
+
+    new_allele.location.start = _get_new_allele_location_pos(
+        new_ival[0], start.pos_type
+    )
+    new_allele.location.end = _get_new_allele_location_pos(
+        new_ival[1], end.pos_type
+    )
+
+    extended_ref_seq = ref_seq[new_ival[0]: new_ival[1]]
+
+    if not extended_ref_seq:
+        # If the reference sequence is empty this is an unambiguous insertion.
+        # Return a new Allele with the trimmed alternate sequence as a Literal
+        # Sequence Expression
+        new_allele.state = models.LiteralSequenceExpression(
+            sequence=models.SequenceString(new_alleles[1])
         )
-    except ValueError:
-        # Occurs for ref agree Alleles (when alt = ref)
-        pass
     else:
-        new_allele.location.start = _get_new_allele_location_pos(
-            new_ival[0], start.pos_type
+        # Otherwise, calculate the repeat subunit length and determine if this is
+        # an RLE allele.
+        len_extended_alt = len(new_alleles[1])
+        len_extended_ref = len(extended_ref_seq)
+
+        if len_extended_alt > len_extended_ref:
+            repeat_sequence = itertools.cycle(extended_ref_seq[:repeat_subunit_length])
+            ref_derived_alt = ''.join([next(repeat_sequence) for _ in range(len_extended_alt)])
+            # TODO: The space and time efficiency can be improved by iterating over the new_allele[1]
+            #   sequence and comparing to next(repeat_sequence) until there is a mismatch (LSE Allele)
+            #   or you get through the whole new_allele[1] sequence (RLE Allele).
+            if ref_derived_alt != new_alleles[1]:
+                # if this is an ambiguous insertion of novel sequence
+                # create a new allele with a Literal Sequence Expression
+                new_allele.state = models.LiteralSequenceExpression(
+                    sequence=models.SequenceString(new_alleles[1])
+                )
+                return new_allele
+
+        # Otherwise, create the Allele as an RLE
+        new_allele.state = models.ReferenceLengthExpression(
+            length=len_extended_alt,
+            repeatSubunitLength=repeat_subunit_length
         )
-        new_allele.location.end = _get_new_allele_location_pos(
-            new_ival[1], end.pos_type
-        )
 
-        new_ref_seq = ref_seq[new_ival[0]: new_ival[1]]
-
-        if not new_ref_seq:
-            # If the reference sequence is empty this is an unambiguous insertion.
-            # Return a new Allele with the trimmed alternate sequence as a Literal
-            # Sequence Expression
-            new_allele.state = models.LiteralSequenceExpression(
-                sequence=models.SequenceString(new_alleles[1])
-            )
-        else:
-            # Otherwise, return a new Allele using a RLE
-            len_sequence = len(new_alleles[1])
-
-            new_allele.state = models.ReferenceLengthExpression(
-                length=len_sequence,
-                repeatSubunitLength=len_ref_seq or len_alt_seq
-            )
-
-            if (rle_seq_limit and len_sequence <= rle_seq_limit) or (rle_seq_limit is None):
-                new_allele.state.sequence = models.SequenceString(new_alleles[1])
+        if (rle_seq_limit and len_extended_alt <= rle_seq_limit) or (rle_seq_limit is None):
+            new_allele.state.sequence = models.SequenceString(new_alleles[1])
 
     return new_allele
 

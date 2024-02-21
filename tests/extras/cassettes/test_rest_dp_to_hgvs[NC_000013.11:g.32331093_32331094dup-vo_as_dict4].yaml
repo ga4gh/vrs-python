@@ -1,11 +1,12 @@
 interactions:
 - request:
-    body: '{"variation": {"id": "ga4gh:VA.g-q4OzcyYFC5eVQFSrbXwgJScSREvrY-", "type":
-      "Allele", "location": {"id": "ga4gh:SL.PJ8lHWhAMNRSrxHvkarfDjRWxF-GwaJ_", "type":
-      "SequenceLocation", "sequenceReference": {"type": "SequenceReference", "refgetAccession":
-      "SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT"}, "start": 32331082, "end": 32331094},
-      "state": {"type": "ReferenceLengthExpression", "length": 14, "sequence": "TTTTTTTTTTTTTT",
-      "repeatSubunitLength": 2}}, "namespace": "refseq"}'
+    body: '{"variation": {"id": "ga4gh:VA.swY2caCgv1kP6YqKyPlcEzJqTvou15vC", "type":
+      "Allele", "digest": "swY2caCgv1kP6YqKyPlcEzJqTvou15vC", "location": {"id": "ga4gh:SL.ikECYncPpE1xh6f_LiComrFGevocjDHQ",
+      "type": "SequenceLocation", "digest": "ikECYncPpE1xh6f_LiComrFGevocjDHQ", "sequenceReference":
+      {"type": "SequenceReference", "refgetAccession": "SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT"},
+      "start": 32331082, "end": 32331094}, "state": {"type": "ReferenceLengthExpression",
+      "length": 14, "sequence": "TTTTTTTTTTTTTT", "repeatSubunitLength": 2}}, "namespace":
+      "refseq"}'
     headers:
       Accept:
       - '*/*'
@@ -14,27 +15,47 @@ interactions:
       Connection:
       - keep-alive
       Content-Length:
-      - '464'
+      - '556'
       Content-Type:
       - application/json; charset=utf-8
       User-Agent:
-      - python-requests/2.31.0
+      - python-requests/2.28.2
     method: POST
     uri: https://normalize.cancervariants.org/variation/vrs_allele_to_hgvs
   response:
     body:
-      string: '{"query":{"variation":{"id":"ga4gh:VA.g-q4OzcyYFC5eVQFSrbXwgJScSREvrY-","type":"Allele","location":{"id":"ga4gh:SL.PJ8lHWhAMNRSrxHvkarfDjRWxF-GwaJ_","type":"SequenceLocation","sequenceReference":{"type":"SequenceReference","refgetAccession":"SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT"},"start":32331082,"end":32331094},"state":{"type":"ReferenceLengthExpression","length":14,"sequence":"TTTTTTTTTTTTTT","repeatSubunitLength":2}},"namespace":"refseq"},"warnings":[],"service_meta_":{"name":"variation-normalizer","version":"0.8.0-dev0","response_datetime":"2023-09-18T20:51:04.591003","url":"https://github.com/cancervariants/variation-normalization"},"vrs_python_meta_":{"name":"vrs-python","version":"2.0.0.dev1","url":"https://github.com/ga4gh/vrs-python"},"variations":["NC_000013.11:g.32331093_32331094dup"]}'
+      string: '{"query":{"variation":{"id":"ga4gh:VA.swY2caCgv1kP6YqKyPlcEzJqTvou15vC","digest":"swY2caCgv1kP6YqKyPlcEzJqTvou15vC","type":"Allele","location":{"id":"ga4gh:SL.ikECYncPpE1xh6f_LiComrFGevocjDHQ","digest":"ikECYncPpE1xh6f_LiComrFGevocjDHQ","type":"SequenceLocation","sequenceReference":{"type":"SequenceReference","refgetAccession":"SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT"},"start":32331082,"end":32331094},"state":{"type":"ReferenceLengthExpression","length":14,"sequence":"TTTTTTTTTTTTTT","repeatSubunitLength":2}},"namespace":"refseq"},"warnings":[],"service_meta_":{"name":"variation-normalizer","version":"0.8.1-dev0","response_datetime":"2024-02-19T07:31:41.517714","url":"https://github.com/cancervariants/variation-normalization"},"vrs_python_meta_":{"name":"vrs-python","version":"2.0.0a2","url":"https://github.com/ga4gh/vrs-python"},"variations":["NC_000013.11:g.32331093_32331094dup"]}'
     headers:
       Connection:
       - keep-alive
       Content-Length:
-      - '806'
+      - '891'
       Content-Type:
       - application/json
       Date:
-      - Mon, 18 Sep 2023 20:51:04 GMT
-      Server:
+      - Mon, 19 Feb 2024 07:31:41 GMT
+      Via:
+      - 1.1 68de14c306a725869b138a409e9694b4.cloudfront.net (CloudFront)
+      X-Amz-Cf-Id:
+      - lhqf0UaKiVfXMgW1SE1h-bFqdgHv-JGQSzkfFhwAD4knjPklpZXfoQ==
+      X-Amz-Cf-Pop:
+      - CMH68-P5
+      X-Amzn-Trace-Id:
+      - Root=1-65d303db-34b3ef910f707a344807a20c
+      X-Cache:
+      - Miss from cloudfront
+      x-amz-apigw-id:
+      - TX2KSHnmiYcEBUA=
+      x-amzn-Remapped-Connection:
+      - keep-alive
+      x-amzn-Remapped-Content-Length:
+      - '891'
+      x-amzn-Remapped-Date:
+      - Mon, 19 Feb 2024 07:31:41 GMT
+      x-amzn-Remapped-Server:
       - nginx
+      x-amzn-RequestId:
+      - 6cb6d748-5c31-4920-b0e7-1d300759cc99
     status:
       code: 200
       message: OK

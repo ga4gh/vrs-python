@@ -62,7 +62,6 @@ deletion_output = {
     "type": "Allele"
 }
 
-
 gnomad_deletion_output = {
     "location": {
         "end": 20003097,
@@ -79,7 +78,6 @@ gnomad_deletion_output = {
     },
     "type": "Allele"
 }
-
 
 deletion_output_normalized = {
     "location": {
@@ -99,7 +97,6 @@ deletion_output_normalized = {
     },
     "type": "Allele"
 }
-
 
 # https://www.ncbi.nlm.nih.gov/clinvar/variation/1687427/?new_evidence=true
 insertion_inputs = {
@@ -125,7 +122,6 @@ insertion_output = {
     "type": "Allele"
 }
 
-
 gnomad_insertion_output = {
     "location": {
         "end": 20003010,
@@ -142,7 +138,6 @@ gnomad_insertion_output = {
     },
     "type": "Allele"
 }
-
 
 # https://www.ncbi.nlm.nih.gov/clinvar/variation/1264314/?new_evidence=true
 duplication_inputs = {
@@ -167,7 +162,6 @@ duplication_output = {
     },
     "type": "Allele"
 }
-
 
 duplication_output_normalized = {
     "location": {
@@ -267,156 +261,112 @@ def test_to_spdi(tlr):
 
 
 hgvs_tests = (
-    ("NC_000013.11:g.32936732=", {
-        "id": "ga4gh:VA.GuDPEe-WojSx4b4DxupN3si1poaR61qL",
-        "location": {
-            "id": "ga4gh:SL.jnDT8dINDpAXO35MdLK-8KzLSDL-N3LI",
-            "end": 32936732,
-            "start": 32936731,
-            "sequenceReference": {
-                "refgetAccession": "SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT",
-                "type": "SequenceReference"
-            },
-            "type": "SequenceLocation"
-        },
-        "state": {
-            "sequence": "C",
-            "type": "LiteralSequenceExpression"
-        },
-        "type": "Allele"
-    }),
-    ("NC_000007.14:g.55181320A>T", {
-        "id": "ga4gh:VA.hOZr7drvRxkUT_srSFVq1NCzvAJdKJlw",
-        "location": {
-            "id": "ga4gh:SL.wbBBFBTTyBcJPyjkK7z_dCcHFm5pE-2K",
-            "end": 55181320,
-            "start": 55181319,
-            "sequenceReference": {
-                "refgetAccession": "SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul",
-                "type": "SequenceReference"
-            },
-            "type": "SequenceLocation"
-        },
-        "state": {
-            "sequence": "T",
-            "type": "LiteralSequenceExpression"
-        },
-        "type": "Allele"
-    }),
-    ("NC_000007.14:g.55181220del", {
-        "id": "ga4gh:VA.wlYnlMsWc0ZTPZb-nQv2dXHbFcXa6J9u",
-        "location": {
-            "id": "ga4gh:SL.hnIOG_kul0Lf3mO1ddTRFb0GbQhtQ19t",
-            "end": 55181220,
-            "start": 55181219,
-            "sequenceReference": {
-                "refgetAccession": "SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul",
-                "type": "SequenceReference"
-            },
-            "type": "SequenceLocation"
-        },
-        "state": {
-            "length": 0,
-            "repeatSubunitLength": 1,
-            "sequence": "",
-            "type": "ReferenceLengthExpression"
-        },
-        "type": "Allele"
-    }),
-    ("NC_000007.14:g.55181230_55181231insGGCT", {
-        "id": "ga4gh:VA.lgVw2ZR6UnCLa3sjIMh2D72hQnn6Ksmk",
-        "location": {
-            "id": "ga4gh:SL.1lu5HsEX4eCQhhoJj_79fjr8H-i98wV3",
-            "end": 55181230,
-            "start": 55181230,
-            "sequenceReference": {
-                "refgetAccession": "SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul",
-                "type": "SequenceReference"
-            },
-            "type": "SequenceLocation"
-        },
-        "state": {
-            "sequence": "GGCT",
-            "type": "LiteralSequenceExpression"
-        },
-        "type": "Allele"
-    }),
-    ("NC_000013.11:g.32331093_32331094dup", {
-        "id": "ga4gh:VA.x5iNzjjXbb1-wWTBLMBcicYlCMwYoedq",
-        "location": {
-            "id": "ga4gh:SL.PJ8lHWhAMNRSrxHvkarfDjRWxF-GwaJ_",
-            "end": 32331094,
-            "start": 32331082,
-            "sequenceReference": {
-                "refgetAccession": "SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT",
-                "type": "SequenceReference"
-            },
-            "type": "SequenceLocation"
-        },
-        "state": {
-            "length": 14,
-            "repeatSubunitLength": 2,
-            "sequence": "TTTTTTTTTTTTTT",
-            "type": "ReferenceLengthExpression"
-        },
-        "type": "Allele"
-    }),
-    ("NC_000013.11:g.32316467dup", {
-        "id": "ga4gh:VA.ZAyA7Mmd7ERWN6CEd6muxn2mk_gTvEvF",
-        "location": {
-            "id": "ga4gh:SL.LURTeRdwh5bQf_QqPBoaA--MECYmrY5U",
-            "end": 32316467,
-            "start": 32316466,
-            "sequenceReference": {
-                "refgetAccession": "SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT",
-                "type": "SequenceReference"
-            },
-            "type": "SequenceLocation"
-        },
-        "state": {
-            "length": 2,
-            "repeatSubunitLength": 1,
-            "sequence": "AA",
-            "type": "ReferenceLengthExpression"
-        },
-        "type": "Allele"
-    }),
-    ("NM_001331029.1:n.872A>G", {
-        "id": "ga4gh:VA.OKiSoD8f-I0VYwvn9xVGjLxrZ09WWQqK",
-        "location": {
-            "id": "ga4gh:SL.3flYcxCjrFFW3ex7GqcHLNH8agsKnz49",
-            "end": 872,
-            "start": 871,
-            "sequenceReference": {
-                "refgetAccession": "SQ.MBIgVnoHFw34aFqNUVGM0zgjC3d-v8dK",
-                "type": "SequenceReference"
-            },
-            "type": "SequenceLocation"
-        },
-        "state": {
-            "sequence": "G",
-            "type": "LiteralSequenceExpression"
-        },
-        "type": "Allele"
-    }),
-    ("NM_181798.1:n.1263G>T", {
-        "id": "ga4gh:VA.wEet5lX0qWJAPuya4MNZsw6ghNYJBSvi",
-        "location": {
-            "id": "ga4gh:SL.nAdMOa2ccNYPU-DEzzSzN1BaaKvEjYdX",
-            "end": 1263,
-            "start": 1262,
-            "sequenceReference": {
-                "refgetAccession": "SQ.KN07u-RFqd1dTyOWOG98HnOq87Nq-ZIg",
-                "type": "SequenceReference"
-            },
-            "type": "SequenceLocation"
-        },
-        "state": {
-            "sequence": "T",
-            "type": "LiteralSequenceExpression"
-        },
-        "type": "Allele"
-    }),
+    ("NC_000013.11:g.32936732=",
+     {'digest': 'GJ2JySBMXePcV2yItyvCfbGBUoawOBON',
+      'id': 'ga4gh:VA.GJ2JySBMXePcV2yItyvCfbGBUoawOBON',
+      'location': {'digest': '28YsnRvD40gKu1x3nev0gRzRz-5OTlpS',
+                   'end': 32936732,
+                   'id': 'ga4gh:SL.28YsnRvD40gKu1x3nev0gRzRz-5OTlpS',
+                   'sequenceReference': {'refgetAccession': 'SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT',
+                                         'type': 'SequenceReference'},
+                   'start': 32936731,
+                   'type': 'SequenceLocation'},
+      'state': {'sequence': 'C', 'type': 'LiteralSequenceExpression'},
+      'type': 'Allele'}),
+    ("NC_000007.14:g.55181320A>T",
+     {'digest': 'Hy2XU_-rp4IMh6I_1NXNecBo8Qx8n0oE',
+      'id': 'ga4gh:VA.Hy2XU_-rp4IMh6I_1NXNecBo8Qx8n0oE',
+      'location': {'digest': '_G2K0qSioM74l_u3OaKR0mgLYdeTL7Xd',
+                   'end': 55181320,
+                   'id': 'ga4gh:SL._G2K0qSioM74l_u3OaKR0mgLYdeTL7Xd',
+                   'sequenceReference': {'refgetAccession': 'SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul',
+                                         'type': 'SequenceReference'},
+                   'start': 55181319,
+                   'type': 'SequenceLocation'},
+      'state': {'sequence': 'T', 'type': 'LiteralSequenceExpression'},
+      'type': 'Allele'}),
+    ("NC_000007.14:g.55181220del",
+     {'digest': 'klRMVChjvV73ZxS9Ajq1Rb8WU-p_HbLu',
+      'id': 'ga4gh:VA.klRMVChjvV73ZxS9Ajq1Rb8WU-p_HbLu',
+      'location': {'digest': 'ljan7F0ePe9uiD6f2u80ZG5gDtx9Mr0V',
+                   'end': 55181220,
+                   'id': 'ga4gh:SL.ljan7F0ePe9uiD6f2u80ZG5gDtx9Mr0V',
+                   'sequenceReference': {'refgetAccession': 'SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul',
+                                         'type': 'SequenceReference'},
+                   'start': 55181219,
+                   'type': 'SequenceLocation'},
+      'state': {'length': 0,
+                'repeatSubunitLength': 1,
+                'sequence': '',
+                'type': 'ReferenceLengthExpression'},
+      'type': 'Allele'}),
+    ("NC_000007.14:g.55181230_55181231insGGCT",
+     {'digest': 'CLOvnFRJXGNRB9aTuNbvsLqc7syRYb55',
+      'id': 'ga4gh:VA.CLOvnFRJXGNRB9aTuNbvsLqc7syRYb55',
+      'location': {'digest': 'lh4dRt_xWPi3wrubcfomi5DkD7fu6wd2',
+                   'end': 55181230,
+                   'id': 'ga4gh:SL.lh4dRt_xWPi3wrubcfomi5DkD7fu6wd2',
+                   'sequenceReference': {'refgetAccession': 'SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul',
+                                         'type': 'SequenceReference'},
+                   'start': 55181230,
+                   'type': 'SequenceLocation'},
+      'state': {'sequence': 'GGCT', 'type': 'LiteralSequenceExpression'},
+      'type': 'Allele'}),
+    ("NC_000013.11:g.32331093_32331094dup",
+     {'digest': 'swY2caCgv1kP6YqKyPlcEzJqTvou15vC',
+      'id': 'ga4gh:VA.swY2caCgv1kP6YqKyPlcEzJqTvou15vC',
+      'location': {'digest': 'ikECYncPpE1xh6f_LiComrFGevocjDHQ',
+                   'end': 32331094,
+                   'id': 'ga4gh:SL.ikECYncPpE1xh6f_LiComrFGevocjDHQ',
+                   'sequenceReference': {
+                       'refgetAccession': 'SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT',
+                       'type': 'SequenceReference'},
+                   'start': 32331082,
+                   'type': 'SequenceLocation'},
+      'state': {'length': 14,
+                'repeatSubunitLength': 2,
+                'sequence': 'TTTTTTTTTTTTTT',
+                'type': 'ReferenceLengthExpression'},
+      'type': 'Allele'}),
+    ("NC_000013.11:g.32316467dup",
+     {'digest': '96ak7XdY3DNbp71aHEXw-NHSfeHGW-KT',
+      'id': 'ga4gh:VA.96ak7XdY3DNbp71aHEXw-NHSfeHGW-KT',
+      'location': {'digest': 'fwfHu8VaD2-6Qvay9MJSINXPS767RYSw',
+                   'end': 32316467,
+                   'id': 'ga4gh:SL.fwfHu8VaD2-6Qvay9MJSINXPS767RYSw',
+                   'sequenceReference': {'refgetAccession': 'SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT',
+                                         'type': 'SequenceReference'},
+                   'start': 32316466,
+                   'type': 'SequenceLocation'},
+      'state': {'length': 2,
+                'repeatSubunitLength': 1,
+                'sequence': 'AA',
+                'type': 'ReferenceLengthExpression'},
+      'type': 'Allele'}),
+    ("NM_001331029.1:n.872A>G",
+     {'digest': 'DPe4AO-S0Yu4wzSCmys7eGn4p4sO0zaC',
+      'id': 'ga4gh:VA.DPe4AO-S0Yu4wzSCmys7eGn4p4sO0zaC',
+      'location': {'digest': '7hcVmPnIspQNDfZKBzRJFc8K9GaJuAlY',
+                   'end': 872,
+                   'id': 'ga4gh:SL.7hcVmPnIspQNDfZKBzRJFc8K9GaJuAlY',
+                   'sequenceReference': {'refgetAccession': 'SQ.MBIgVnoHFw34aFqNUVGM0zgjC3d-v8dK',
+                                         'type': 'SequenceReference'},
+                   'start': 871,
+                   'type': 'SequenceLocation'},
+      'state': {'sequence': 'G', 'type': 'LiteralSequenceExpression'},
+      'type': 'Allele'}),
+    ("NM_181798.1:n.1263G>T",
+     {'digest': 'vSL4aV7mPQKQLX7Jk-PmXN0APs0cBIr9',
+      'id': 'ga4gh:VA.vSL4aV7mPQKQLX7Jk-PmXN0APs0cBIr9',
+      'location': {'digest': 'EtvHvoj1Lsq-RruzIzWbKOIAW-bt193w',
+                   'end': 1263,
+                   'id': 'ga4gh:SL.EtvHvoj1Lsq-RruzIzWbKOIAW-bt193w',
+                   'sequenceReference': {'refgetAccession': 'SQ.KN07u-RFqd1dTyOWOG98HnOq87Nq-ZIg',
+                                         'type': 'SequenceReference'},
+                   'start': 1262,
+                   'type': 'SequenceLocation'},
+      'state': {'sequence': 'T', 'type': 'LiteralSequenceExpression'},
+      'type': 'Allele'}),
 )
 
 
@@ -426,7 +376,7 @@ def test_hgvs(tlr, hgvsexpr, expected):
     tlr.normalize = True
     tlr.identify = True
     allele = tlr.translate_from(hgvsexpr, "hgvs")
-    assert expected == allele.model_dump(exclude_none=True)
+    assert allele.model_dump(exclude_none=True) == expected
 
     to_hgvs = tlr.translate_to(allele, "hgvs")
     assert 1 == len(to_hgvs)
@@ -439,24 +389,19 @@ def test_rle_seq_limit(tlr):
     tlr.identify = True
 
     a_dict = {
-        "id": "ga4gh:VA.VfJkaAxTPjZAG_fWm_sB4m19R5p5WGSj",
-        "location": {
-            "id": "ga4gh:SL.0jECKVeKM2-s_uDWtUgW-qvkupO3COKr",
-            "end": 32331094,
-            "start": 32331042,
-            "sequenceReference": {
-                "refgetAccession": "SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT",
-                "type": "SequenceReference"
-            },
-            "type": "SequenceLocation"
-        },
-        "state": {
-            "length": 104,
-            "repeatSubunitLength": 52,
-            "type": "ReferenceLengthExpression"
-        },
-        "type": "Allele"
-    }
+        'digest': 'j7qUzb1uvmdxLAbtdCPiay4kIRQmyZNv',
+        'id': 'ga4gh:VA.j7qUzb1uvmdxLAbtdCPiay4kIRQmyZNv',
+        'location': {'digest': '88oOqkUgALP7fnN8P8lbvCosFhG8YpY0',
+                     'end': 32331094,
+                     'id': 'ga4gh:SL.88oOqkUgALP7fnN8P8lbvCosFhG8YpY0',
+                     'sequenceReference': {'refgetAccession': 'SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT',
+                                           'type': 'SequenceReference'},
+                     'start': 32331042,
+                     'type': 'SequenceLocation'},
+        'state': {'length': 104,
+                  'repeatSubunitLength': 52,
+                  'type': 'ReferenceLengthExpression'},
+        'type': 'Allele'}
     input_hgvs_expr = "NC_000013.11:g.32331043_32331094dup"
 
     # use default rle_seq_limit
@@ -469,7 +414,8 @@ def test_rle_seq_limit(tlr):
     # set rle_seq_limit to None
     allele_with_seq = tlr.translate_from(input_hgvs_expr, fmt="hgvs", rle_seq_limit=None)
     a_dict_with_seq = a_dict.copy()
-    a_dict_with_seq["state"]["sequence"] = "TTTAGTTGAACTACAGGTTTTTTTGTTGTTGTTGTTTTGATTTTTTTTTTTTTTTAGTTGAACTACAGGTTTTTTTGTTGTTGTTGTTTTGATTTTTTTTTTTT"
+    a_dict_with_seq["state"][
+        "sequence"] = "TTTAGTTGAACTACAGGTTTTTTTGTTGTTGTTGTTTTGATTTTTTTTTTTTTTTAGTTGAACTACAGGTTTTTTTGTTGTTGTTGTTTTGATTTTTTTTTTTT"
     assert allele_with_seq.model_dump(exclude_none=True) == a_dict_with_seq
 
     output_hgvs_expr = tlr.translate_to(allele_with_seq, "hgvs")
@@ -496,7 +442,6 @@ def test_to_hgvs_invalid(tlr):
     with pytest.raises(TypeError) as e:
         tlr.translate_to(iri_vo, "hgvs")
     assert str(e.value) == "`vo.location.sequenceReference` expects a `SequenceReference`"
-
 
 # TODO: Readd these tests
 # @pytest.mark.vcr

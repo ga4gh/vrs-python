@@ -12,7 +12,8 @@ Instead, users should use one of the following:
 from typing import Any, Dict, List, Literal, Optional, Union
 from enum import Enum
 
-from pydantic import BaseModel, ConfigDict, Field, RootModel, constr
+from pydantic import BaseModel, ConfigDict, Field, RootModel, constr, model_serializer
+from ga4gh.core import GA4GH_IR_REGEXP
 
 
 class Relation(Enum):
@@ -43,6 +44,17 @@ class Code(RootModel):
 
 
 class IRI(RootModel):
+
+    def __hash__(self):
+        return self.root.__hash__()
+
+    @model_serializer(when_used='json')
+    def ga4gh_serialize(self):
+        m = GA4GH_IR_REGEXP.match(self.root)
+        if m is not None:
+            return m['digest']
+        return self.root
+
     root: str = Field(
         ...,
         json_schema_extra={'description': 'An IRI Reference (either an IRI or a relative-reference), according to `RFC3986 section 4.1  <https://datatracker.ietf.org/doc/html/rfc3986#section-4.1>` and `RFC3987 section 2.1 <https://datatracker.ietf.org/doc/html/rfc3987#section-2.1>`. MAY be a JSON Pointer as an IRI fragment, as  described by `RFC6901 section 6 <https://datatracker.ietf.org/doc/html/rfc6901#section-6>`.',

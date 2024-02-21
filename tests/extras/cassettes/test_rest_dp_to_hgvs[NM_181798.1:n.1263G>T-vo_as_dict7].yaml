@@ -1,10 +1,11 @@
 interactions:
 - request:
-    body: '{"variation": {"id": "ga4gh:VA.wEet5lX0qWJAPuya4MNZsw6ghNYJBSvi", "type":
-      "Allele", "location": {"id": "ga4gh:SL.nAdMOa2ccNYPU-DEzzSzN1BaaKvEjYdX", "type":
-      "SequenceLocation", "sequenceReference": {"type": "SequenceReference", "refgetAccession":
-      "SQ.KN07u-RFqd1dTyOWOG98HnOq87Nq-ZIg"}, "start": 1262, "end": 1263}, "state":
-      {"type": "LiteralSequenceExpression", "sequence": "T"}}, "namespace": "refseq"}'
+    body: '{"variation": {"id": "ga4gh:VA.vSL4aV7mPQKQLX7Jk-PmXN0APs0cBIr9", "type":
+      "Allele", "digest": "vSL4aV7mPQKQLX7Jk-PmXN0APs0cBIr9", "location": {"id": "ga4gh:SL.EtvHvoj1Lsq-RruzIzWbKOIAW-bt193w",
+      "type": "SequenceLocation", "digest": "EtvHvoj1Lsq-RruzIzWbKOIAW-bt193w", "sequenceReference":
+      {"type": "SequenceReference", "refgetAccession": "SQ.KN07u-RFqd1dTyOWOG98HnOq87Nq-ZIg"},
+      "start": 1262, "end": 1263}, "state": {"type": "LiteralSequenceExpression",
+      "sequence": "T"}}, "namespace": "refseq"}'
     headers:
       Accept:
       - '*/*'
@@ -13,27 +14,47 @@ interactions:
       Connection:
       - keep-alive
       Content-Length:
-      - '403'
+      - '495'
       Content-Type:
       - application/json; charset=utf-8
       User-Agent:
-      - python-requests/2.31.0
+      - python-requests/2.28.2
     method: POST
     uri: https://normalize.cancervariants.org/variation/vrs_allele_to_hgvs
   response:
     body:
-      string: '{"query":{"variation":{"id":"ga4gh:VA.wEet5lX0qWJAPuya4MNZsw6ghNYJBSvi","type":"Allele","location":{"id":"ga4gh:SL.nAdMOa2ccNYPU-DEzzSzN1BaaKvEjYdX","type":"SequenceLocation","sequenceReference":{"type":"SequenceReference","refgetAccession":"SQ.KN07u-RFqd1dTyOWOG98HnOq87Nq-ZIg"},"start":1262,"end":1263},"state":{"type":"LiteralSequenceExpression","sequence":"T"}},"namespace":"refseq"},"warnings":[],"service_meta_":{"name":"variation-normalizer","version":"0.8.0-dev0","response_datetime":"2023-09-18T20:51:05.049653","url":"https://github.com/cancervariants/variation-normalization"},"vrs_python_meta_":{"name":"vrs-python","version":"2.0.0.dev1","url":"https://github.com/ga4gh/vrs-python"},"variations":["NM_181798.1:n.1263G>T"]}'
+      string: '{"query":{"variation":{"id":"ga4gh:VA.vSL4aV7mPQKQLX7Jk-PmXN0APs0cBIr9","digest":"vSL4aV7mPQKQLX7Jk-PmXN0APs0cBIr9","type":"Allele","location":{"id":"ga4gh:SL.EtvHvoj1Lsq-RruzIzWbKOIAW-bt193w","digest":"EtvHvoj1Lsq-RruzIzWbKOIAW-bt193w","type":"SequenceLocation","sequenceReference":{"type":"SequenceReference","refgetAccession":"SQ.KN07u-RFqd1dTyOWOG98HnOq87Nq-ZIg"},"start":1262,"end":1263},"state":{"type":"LiteralSequenceExpression","sequence":"T"}},"namespace":"refseq"},"warnings":[],"service_meta_":{"name":"variation-normalizer","version":"0.8.1-dev0","response_datetime":"2024-02-19T07:31:45.043414","url":"https://github.com/cancervariants/variation-normalization"},"vrs_python_meta_":{"name":"vrs-python","version":"2.0.0a2","url":"https://github.com/ga4gh/vrs-python"},"variations":["NM_181798.1:n.1263G>T"]}'
     headers:
       Connection:
       - keep-alive
       Content-Length:
-      - '735'
+      - '820'
       Content-Type:
       - application/json
       Date:
-      - Mon, 18 Sep 2023 20:51:05 GMT
-      Server:
+      - Mon, 19 Feb 2024 07:31:45 GMT
+      Via:
+      - 1.1 8558d1ba2a2dab6b2b795204a93d7f80.cloudfront.net (CloudFront)
+      X-Amz-Cf-Id:
+      - pI7KKipnUN5mb8K82X-xJMfdpB-nCBSnh9UdgGNgnLzqxPOGV7xPdA==
+      X-Amz-Cf-Pop:
+      - CMH68-P5
+      X-Amzn-Trace-Id:
+      - Root=1-65d303df-0981cd1e0bcb5ef17f8f44c6
+      X-Cache:
+      - Miss from cloudfront
+      x-amz-apigw-id:
+      - TX2LCF50iYcEOfg=
+      x-amzn-Remapped-Connection:
+      - keep-alive
+      x-amzn-Remapped-Content-Length:
+      - '820'
+      x-amzn-Remapped-Date:
+      - Mon, 19 Feb 2024 07:31:45 GMT
+      x-amzn-Remapped-Server:
       - nginx
+      x-amzn-RequestId:
+      - 72526368-e8aa-4065-ae96-9841ab70c269
     status:
       code: 200
       message: OK
