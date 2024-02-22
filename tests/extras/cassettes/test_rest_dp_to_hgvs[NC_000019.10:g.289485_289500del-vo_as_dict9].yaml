@@ -1,0 +1,62 @@
+interactions:
+- request:
+    body: '{"variation": {"id": "ga4gh:VA.Djc_SwVDFunsArqwUM00PciVaF70VTcU", "type":
+      "Allele", "digest": "Djc_SwVDFunsArqwUM00PciVaF70VTcU", "location": {"id": "ga4gh:SL.WTE7jyihK4qvRRzEqM7u5nSD4iS2k3xp",
+      "type": "SequenceLocation", "digest": "WTE7jyihK4qvRRzEqM7u5nSD4iS2k3xp", "sequenceReference":
+      {"type": "SequenceReference", "refgetAccession": "SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl"},
+      "start": 289480, "end": 289501}, "state": {"type": "ReferenceLengthExpression",
+      "length": 5, "sequence": "CGAGG", "repeatSubunitLength": 16}}, "namespace":
+      "refseq"}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '543'
+      Content-Type:
+      - application/json; charset=utf-8
+      User-Agent:
+      - python-requests/2.31.0
+    method: POST
+    uri: https://normalize.cancervariants.org/variation/vrs_allele_to_hgvs
+  response:
+    body:
+      string: '{"query":{"variation":{"id":"ga4gh:VA.Djc_SwVDFunsArqwUM00PciVaF70VTcU","digest":"Djc_SwVDFunsArqwUM00PciVaF70VTcU","type":"Allele","location":{"id":"ga4gh:SL.WTE7jyihK4qvRRzEqM7u5nSD4iS2k3xp","digest":"WTE7jyihK4qvRRzEqM7u5nSD4iS2k3xp","type":"SequenceLocation","sequenceReference":{"type":"SequenceReference","refgetAccession":"SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl"},"start":289480,"end":289501},"state":{"type":"ReferenceLengthExpression","length":5,"sequence":"CGAGG","repeatSubunitLength":16}},"namespace":"refseq"},"warnings":[],"service_meta_":{"name":"variation-normalizer","version":"0.8.1-dev0","response_datetime":"2024-02-22T19:18:10.026968","url":"https://github.com/cancervariants/variation-normalization"},"vrs_python_meta_":{"name":"vrs-python","version":"2.0.0a2","url":"https://github.com/ga4gh/vrs-python"},"variations":["NC_000019.10:g.289486_289501del"]}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '874'
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 22 Feb 2024 19:18:10 GMT
+      Via:
+      - 1.1 00fd85d5c5d5bd788f272591be9ecbca.cloudfront.net (CloudFront)
+      X-Amz-Cf-Id:
+      - Dt6V2mzb1NcFUMK7T5rPjs3C2mQcCbnSjBhSUI_DANbFmmLGhAtcFA==
+      X-Amz-Cf-Pop:
+      - EWR50-C1
+      X-Amzn-Trace-Id:
+      - Root=1-65d79df0-0604cab30d4f7c3d564e442b
+      X-Cache:
+      - Miss from cloudfront
+      x-amz-apigw-id:
+      - TjWdoEw_iYcEORQ=
+      x-amzn-Remapped-Connection:
+      - keep-alive
+      x-amzn-Remapped-Content-Length:
+      - '874'
+      x-amzn-Remapped-Date:
+      - Thu, 22 Feb 2024 19:18:10 GMT
+      x-amzn-Remapped-Server:
+      - nginx
+      x-amzn-RequestId:
+      - 049b99c8-0266-43a9-a5cb-0d312f09b260
+    status:
+      code: 200
+      message: OK
+version: 1

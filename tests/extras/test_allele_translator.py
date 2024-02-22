@@ -382,10 +382,26 @@ hgvs_tests = (
                   'repeatSubunitLength': 2, 
                   'sequence': 'CACACA', 
                   'type': 'ReferenceLengthExpression'}}),
+    ("NC_000019.10:g.289485_289500del",
+     {'digest': 'Djc_SwVDFunsArqwUM00PciVaF70VTcU',
+      'id': 'ga4gh:VA.Djc_SwVDFunsArqwUM00PciVaF70VTcU', 
+      'type': 'Allele', 
+      'location': {'digest': 'WTE7jyihK4qvRRzEqM7u5nSD4iS2k3xp', 
+                   'end': 289501, 
+                   'id': 'ga4gh:SL.WTE7jyihK4qvRRzEqM7u5nSD4iS2k3xp', 
+                   'sequenceReference': {'refgetAccession': 'SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl', 
+                                         'type': 'SequenceReference'}, 
+                   'start': 289480, 
+                   'type': 'SequenceLocation'}, 
+        'state': {'length': 5, 
+                  'repeatSubunitLength': 16, 
+                  'sequence': 'CGAGG', 
+                  'type': 'ReferenceLengthExpression'}}),
 )
 
 hgvs_tests_to_hgvs_map = {
-    "NC_000019.10:g.289464_289465insCACA": "NC_000019.10:g.289466_289467insCACA"
+    "NC_000019.10:g.289464_289465insCACA": "NC_000019.10:g.289466_289467insCACA",
+    "NC_000019.10:g.289485_289500del": "NC_000019.10:g.289486_289501del"
 }
 
 
