@@ -192,6 +192,7 @@ def _normalize_allele(input_allele, data_proxy, rle_seq_limit=50):
         # an RLE allele.
         len_extended_alt = len(new_alleles[1])
         len_extended_ref = len(extended_ref_seq)
+        repeat_subunit_length = math.gcd(len_extended_ref, len_extended_alt)
 
         if len_extended_alt > len_extended_ref:
             repeat_sequence = itertools.cycle(extended_ref_seq[:repeat_subunit_length])
