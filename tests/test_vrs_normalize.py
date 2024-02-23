@@ -116,6 +116,35 @@ allele_dict4_normalized = {
     }
 }
 
+allele_dict5 = {
+    'location': {
+        'end': 289464,
+        'start': 289464,
+        'sequenceReference': {
+            'type': 'SequenceReference',
+            'refgetAccession': 'SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl'
+        },
+        'type': 'SequenceLocation'
+    },
+    'state': {
+        'sequence': 'CAGCAG',
+        'type': 'LiteralSequenceExpression'
+    },
+    'type': 'Allele'
+}
+
+allele_dict5_normalized = {
+    'type': 'Allele',
+    'location': {'type': 'SequenceLocation',
+                 'sequenceReference': {'type': 'SequenceReference',
+                                       'refgetAccession': 'SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl'},
+                 'start': 289464,
+                 'end': 289469},
+    'state': {'type': 'ReferenceLengthExpression',
+              'length': 11,
+              'sequence': 'CAGCAGCAGCA',
+              'repeatSubunitLength': 3}
+}
 
 @pytest.mark.vcr
 def test_normalize_allele(rest_dataproxy):
@@ -137,3 +166,8 @@ def test_normalize_allele(rest_dataproxy):
     allele4 = models.Allele(**allele_dict4)
     allele4_after_norm = normalize(allele4, rest_dataproxy)
     assert allele4_after_norm == models.Allele(**allele_dict4_normalized)
+
+    # Duplication in non-integer-repeat ambiguous region
+    allele5 = models.Allele(**allele_dict5)
+    allele5_after_norm = normalize(allele5, rest_dataproxy)
+    assert allele5_after_norm == models.Allele(**allele_dict5_normalized)
