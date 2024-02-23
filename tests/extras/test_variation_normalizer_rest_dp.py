@@ -2,7 +2,7 @@ import pytest
 
 from ga4gh.vrs import models
 from ga4gh.vrs.extras.variation_normalizer_rest_dp import VariationNormalizerRESTDataProxy
-from tests.extras.test_allele_translator import hgvs_tests
+from tests.extras.test_allele_translator import hgvs_tests, hgvs_tests_to_hgvs_map
 
 
 @pytest.fixture(scope="module")
@@ -15,4 +15,4 @@ def variation_norm_rest_dp():
 def test_rest_dp_to_hgvs(variation_norm_rest_dp, expected, vo_as_dict):
     vo = models.Allele(**vo_as_dict)
     resp = variation_norm_rest_dp.to_hgvs(vo)
-    assert resp == [expected]
+    assert resp == [hgvs_tests_to_hgvs_map.get(expected, expected)]

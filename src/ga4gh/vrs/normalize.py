@@ -194,6 +194,7 @@ def _normalize_allele(input_allele, data_proxy, rle_seq_limit=50):
         len_extended_ref = len(extended_ref_seq)
 
         if len_extended_alt > len_extended_ref:
+            repeat_subunit_length = math.gcd(len_extended_ref, len_extended_alt)
             repeat_sequence = itertools.cycle(extended_ref_seq[:repeat_subunit_length])
             ref_derived_alt = ''.join([next(repeat_sequence) for _ in range(len_extended_alt)])
             # TODO: The space and time efficiency can be improved by iterating over the new_allele[1]
