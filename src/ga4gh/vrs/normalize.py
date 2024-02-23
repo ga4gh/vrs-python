@@ -159,9 +159,9 @@ def _normalize_allele(input_allele, data_proxy, rle_seq_limit=50):
         new_allele.state.sequence = models.SequenceString(trim_alleles[1])
         return new_allele
     elif len_trimmed_ref:
-        repeat_subunit_length = len_trimmed_ref
+        seed_length = len_trimmed_ref
     else:
-        repeat_subunit_length = len_trimmed_alt
+        seed_length = len_trimmed_alt
 
     # Determine bounds of ambiguity
     new_ival, new_alleles = _normalize(
@@ -179,46 +179,70 @@ def _normalize_allele(input_allele, data_proxy, rle_seq_limit=50):
     )
 
     extended_ref_seq = ref_seq[new_ival[0]: new_ival[1]]
+    extended_alt_seq = new_alleles[1]
 
     if not extended_ref_seq:
         # If the reference sequence is empty this is an unambiguous insertion.
         # Return a new Allele with the trimmed alternate sequence as a Literal
         # Sequence Expression
         new_allele.state = models.LiteralSequenceExpression(
-            sequence=models.SequenceString(new_alleles[1])
+            sequence=models.SequenceString(extended_alt_seq)
         )
+        return new_allele
+
+    # Otherwise, calculate the repeat subunit length and determine if this is
+    # an RLE allele.
+    len_extended_alt = len(extended_alt_seq)
+    len_extended_ref = len(extended_ref_seq)
+
+    if len_extended_alt > len_extended_ref:
+        # If this is an insertion, it may or may not be reference-derived
+        if seed_length > len_extended_ref:
+            # If the VOCA seed length is greater than the ambiguous reference space,
+            # a valid RLE has the repeat subunit length that is the greatest divisor of the
+            # seed length such that the repeat subunit reconstitutes the Allele state
+            for cycle_start in range(len_extended_ref):
+                cycle_length = len_extended_ref - cycle_start
+                if seed_length % cycle_length != 0:
+                    continue
+                if _is_valid_cycle(cycle_start, extended_ref_seq, extended_alt_seq):
+                    return _define_rle_allele(
+                        new_allele, len_extended_alt, cycle_length, rle_seq_limit, extended_alt_seq)
+        else:
+            # If the VOCA seed length is less than or equal to the ambiguous reference
+            # space, a valid RLE repeat subunit reconstitutes the Allele state
+            if _is_valid_cycle(0, extended_ref_seq[:seed_length], extended_alt_seq):
+                return _define_rle_allele(
+                    new_allele, len_extended_alt, seed_length, rle_seq_limit, extended_alt_seq)
     else:
-        # Otherwise, calculate the repeat subunit length and determine if this is
-        # an RLE allele.
-        len_extended_alt = len(new_alleles[1])
-        len_extended_ref = len(extended_ref_seq)
+        # If this is a deletion, it is reference-derived
+        return _define_rle_allele(new_allele, len_extended_alt, seed_length, rle_seq_limit, extended_alt_seq)
 
-        if len_extended_alt > len_extended_ref:
-            repeat_subunit_length = math.gcd(len_extended_ref, len_extended_alt)
-            repeat_sequence = itertools.cycle(extended_ref_seq[:repeat_subunit_length])
-            ref_derived_alt = ''.join([next(repeat_sequence) for _ in range(len_extended_alt)])
-            # TODO: The space and time efficiency can be improved by iterating over the new_allele[1]
-            #   sequence and comparing to next(repeat_sequence) until there is a mismatch (LSE Allele)
-            #   or you get through the whole new_allele[1] sequence (RLE Allele).
-            if ref_derived_alt != new_alleles[1]:
-                # if this is an ambiguous insertion of novel sequence
-                # create a new allele with a Literal Sequence Expression
-                new_allele.state = models.LiteralSequenceExpression(
-                    sequence=models.SequenceString(new_alleles[1])
-                )
-                return new_allele
-
-        # Otherwise, create the Allele as an RLE
-        new_allele.state = models.ReferenceLengthExpression(
-            length=len_extended_alt,
-            repeatSubunitLength=repeat_subunit_length
-        )
-
-        if (rle_seq_limit and len_extended_alt <= rle_seq_limit) or (rle_seq_limit is None):
-            new_allele.state.sequence = models.SequenceString(new_alleles[1])
-
+    new_allele.state = models.LiteralSequenceExpression(
+        sequence=models.SequenceString(extended_alt_seq)
+    )
     return new_allele
 
+
+def _define_rle_allele(allele, length, repeat_subunit_length, rle_seq_limit, extended_alt_seq):
+    # Otherwise, create the Allele as an RLE
+    allele.state = models.ReferenceLengthExpression(
+        length=length,
+        repeatSubunitLength=repeat_subunit_length
+    )
+
+    if (rle_seq_limit and length <= rle_seq_limit) or (rle_seq_limit is None):
+        allele.state.sequence = models.SequenceString(extended_alt_seq)
+
+    return allele
+
+
+def _is_valid_cycle(template_start, template, target):
+    cycle = itertools.cycle(template[template_start:])
+    for char in target[len(template):]:
+        if char != next(cycle):
+            return False
+    return True
 
 # TODO _normalize_genotype?
 
