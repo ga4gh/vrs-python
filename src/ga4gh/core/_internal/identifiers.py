@@ -43,7 +43,7 @@ class VrsObjectIdentifierIs(IntEnum):
     """
     Defines the state for when the `ga4gh_identify` method should compute
     an identifier ('id' attribute) for the specified object.  The options are:
-      ALWAYS - Always compute the identifier (this is the default behavior)
+      ANY - Always compute the identifier (this is the default behavior)
       INVALID - Compute the identifier if it is missing or is present but syntactically invalid
       MISSING - Only compute the identifier if missing
 
