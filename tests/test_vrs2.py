@@ -35,7 +35,11 @@ a = models.Allele(**allele_dict)
 
 allele_383650_dict = {
     "type": "Allele",
+    "digest": "SZIS2ua7AL-0YgUTAqyBsFPYK3vE8h_d",
+    "id": "ga4gh:VA.SZIS2ua7AL-0YgUTAqyBsFPYK3vE8h_d",
     "location": {
+        "id": "ga4gh:SL.TaoXEhpHvA6SdilBUO-AX00YDARv9Uoe",
+        "digest": "TaoXEhpHvA6SdilBUO-AX00YDARv9Uoe",
         "type": "SequenceLocation",
         "sequenceReference": {
             "type": "SequenceReference",
@@ -216,7 +220,6 @@ def test_ga4gh_iri():
     assert ga4gh_serialize(iri) == b'"Hy2XU_-rp4IMh6I_1NXNecBo8Qx8n0oE"'
 
 
-@pytest.mark.skip(reason="Need to refactor enref / deref")
 def test_enref():
     object_store = {}
     allele_383650.get_or_create_ga4gh_identifier()
@@ -252,12 +255,15 @@ def test_enref():
     assert dereffed.model_dump() == allele_383650.model_dump()
 
 
-@pytest.mark.skip(reason="Need to refactor enref / deref")
 def test_enref2():
     object_store = {}
     a = {
         "type": "Allele",
+        "id": "ga4gh:VA.LDzK5JahEZG2Ua_5itDtVV8v3O1ptTgI",
+        "digest": "LDzK5JahEZG2Ua_5itDtVV8v3O1ptTgI",
         "location": {
+            "id": "ga4gh:SL.wIlaGykfwHIpPY2Fcxtbx4TINbbODFVz",
+            "digest": "wIlaGykfwHIpPY2Fcxtbx4TINbbODFVz",
             "type": "SequenceLocation",
             "sequenceReference": {
                 "type": "SequenceReference",
@@ -278,10 +284,12 @@ def test_enref2():
     actual_no_loc = a_enreffed.model_dump().copy()
     actual_no_loc.pop("location")
     assert orig_no_loc == actual_no_loc, "Original and enreffed match except for enreffed field"
-    assert a_enreffed.location == 'ga4gh:SL.m4B7OEJ6J3q6gPakM8mSEqKZeQkj1KYC'
+    assert a_enreffed.location == 'ga4gh:SL.wIlaGykfwHIpPY2Fcxtbx4TINbbODFVz'
     assert a_enreffed.model_dump(exclude_none=True) == {
+        'id': 'ga4gh:VA.LDzK5JahEZG2Ua_5itDtVV8v3O1ptTgI',
+        'digest': 'LDzK5JahEZG2Ua_5itDtVV8v3O1ptTgI',
         'type': 'Allele',
-        'location': 'ga4gh:SL.m4B7OEJ6J3q6gPakM8mSEqKZeQkj1KYC',
+        'location': 'ga4gh:SL.wIlaGykfwHIpPY2Fcxtbx4TINbbODFVz',
         'state': {
             'type': 'LiteralSequenceExpression',
             'sequence': 'T'
@@ -289,7 +297,6 @@ def test_enref2():
     }
 
 
-@pytest.mark.skip(reason="Need to refactor enref / deref")
 def test_class_refatt_map():
     class_refatt_map_expected = {
         'Allele': ['location'],
@@ -297,7 +304,6 @@ def test_class_refatt_map():
         '_CopyNumber': ['location'],
         'CopyNumberCount': ['location'],
         'CopyNumberChange': ['location'],
-        'GenotypeMember': ['variation']
     }
     assert class_refatt_map_expected == models.class_refatt_map
 
