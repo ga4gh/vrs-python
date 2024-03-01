@@ -100,7 +100,7 @@ def ga4gh_deref(o, cra_map, object_store):
         return o
 
     if not is_pydantic_instance(o):
-        raise ValueError("Called ga4gh_deref() with non-non-pydantic instance")
+        raise ValueError("Called ga4gh_deref() with non-pydantic instance")
     if not is_ga4gh_identifiable(o):
         raise ValueError("Called ga4gh_deref() with non-identifiable object")
 
