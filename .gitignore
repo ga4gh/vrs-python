@@ -15,6 +15,7 @@ build
 dist
 doc
 misc/clinvar
+notebooks/scratch/
 notes
 venv
 .vscode/launch.json
