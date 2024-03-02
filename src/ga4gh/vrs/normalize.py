@@ -5,7 +5,6 @@ See https://vrs.ga4gh.org/en/stable/impl-guide/normalization.html
 """
 import itertools
 import logging
-import math
 from enum import IntEnum
 from typing import NamedTuple, Optional, Union
 
