@@ -190,38 +190,49 @@ def _normalize_allele(input_allele, data_proxy, rle_seq_limit=50):
         )
         return new_allele
 
-    # Otherwise, calculate the repeat subunit length and determine if this is
-    # an RLE allele.
+    # Otherwise, determine if this is reference-derived (an RLE allele).
     len_extended_alt = len(extended_alt_seq)
     len_extended_ref = len(extended_ref_seq)
 
-    if len_extended_alt > len_extended_ref:
-        # If this is an insertion, it may or may not be reference-derived
-        if seed_length > len_extended_ref:
-            # If the VOCA seed length is greater than the ambiguous reference space,
-            # a valid RLE has the repeat subunit length that is the greatest divisor of the
-            # seed length such that the repeat subunit reconstitutes the Allele state
-            for cycle_start in range(len_extended_ref):
-                cycle_length = len_extended_ref - cycle_start
-                if seed_length % cycle_length != 0:
-                    continue
-                if _is_valid_cycle(cycle_start, extended_ref_seq, extended_alt_seq):
-                    return _define_rle_allele(
-                        new_allele, len_extended_alt, cycle_length, rle_seq_limit, extended_alt_seq)
-        else:
-            # If the VOCA seed length is less than or equal to the ambiguous reference
-            # space, a valid RLE repeat subunit reconstitutes the Allele state
-            if _is_valid_cycle(0, extended_ref_seq[:seed_length], extended_alt_seq):
-                return _define_rle_allele(
-                    new_allele, len_extended_alt, seed_length, rle_seq_limit, extended_alt_seq)
-    else:
+    if len_extended_alt < len_extended_ref:
         # If this is a deletion, it is reference-derived
         return _define_rle_allele(new_allele, len_extended_alt, seed_length, rle_seq_limit, extended_alt_seq)
+
+    if len_extended_alt > len_extended_ref:
+        # If this is an insertion, it may or may not be reference-derived.
+        #
+        # Determine the greatest factor `d` of the `seed length` such that `d`
+        # is less than or equal to the length of the modified `reference sequence`,
+        # and there exists a subsequence of length `d` derived from the modified
+        # `reference sequence` that can be circularly expanded to recreate
+        # the modified `alternate sequence`.
+        factors = _factor_gen(seed_length)
+        for cycle_length in factors:
+            if cycle_length > len_extended_ref:
+                continue
+            cycle_start = len_extended_ref - cycle_length
+            if _is_valid_cycle(cycle_start, extended_ref_seq, extended_alt_seq):
+                return _define_rle_allele(
+                    new_allele, len_extended_alt, cycle_length, rle_seq_limit, extended_alt_seq)
 
     new_allele.state = models.LiteralSequenceExpression(
         sequence=models.SequenceString(extended_alt_seq)
     )
     return new_allele
+
+
+def _factor_gen(n):
+    """Yields all factors of an integer `n`, in descending order"""
+    lower_factors = []
+    i = 1
+    while i * i <= n:
+        if n % i == 0:
+            yield n//i
+            if n//i != i:
+                lower_factors.append(i)
+        i += 1
+    for factor in reversed(lower_factors):
+        yield factor
 
 
 def _define_rle_allele(allele, length, repeat_subunit_length, rle_seq_limit, extended_alt_seq):
