@@ -10,7 +10,6 @@ def tlr(rest_dataproxy):
         data_proxy=rest_dataproxy,
         default_assembly_name="GRCh38",
         identify=True,
-        normalize=False,
     )
 
 
