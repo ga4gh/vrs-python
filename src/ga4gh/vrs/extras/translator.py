@@ -46,7 +46,7 @@ class Translator:
         r"(?P<chr>[^-]+)-(?P<pos>\d+)-(?P<ref>[ACGTURYKMSWBDHVN]+)-(?P<alt>[ACGTURYKMSWBDHVN]+)",
         re.IGNORECASE
     )
-    hgvs_re = re.compile(r"[^:]+:[cgnpr]\.")
+    hgvs_re = re.compile(r"[^:]+:[cgmnpr]\.")
     spdi_re = re.compile(r"(?P<ac>[^:]+):(?P<pos>\d+):(?P<del_len_or_seq>\w*):(?P<ins_seq>\w*)")
 
 
@@ -93,9 +93,15 @@ class Translator:
             return "n"
         if a.startswith("refseq:NP_"):
             return "p"
+        if a.startswith("refseq:NR_"):
+            return "r"
+        if a.startswith("refseq:NC_012920"):
+            return "m"
+        if a.startswith("refseq:NW_"):
+            return "g"
         if a.startswith("refseq:NG_"):
             return "g"
-        if a.startswith("refseq:NC_"):
+        if a.startswith("refseq:NC_00"):
             return "g"
         if a.startswith("GRCh"):
             return "g"
@@ -572,7 +578,7 @@ class AlleleTranslator(Translator):
             if ns.startswith("GRC") and namespace is None:
                 continue
 
-            if not (any(a.startswith(pfx) for pfx in ("NM", "NP", "NC", "NG"))):
+            if not (any(a.startswith(pfx) for pfx in ("NM", "NP", "NC", "NG", "NR", "NW"))):
                 continue
 
             var.ac = a
