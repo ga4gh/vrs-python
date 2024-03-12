@@ -91,10 +91,10 @@ class Translator:
         """Get accession's sequence type"""
         if a.startswith("refseq:NM_"):
             return "n"
+        if a.startswith("refseq:NR_"):
+            return "n"
         if a.startswith("refseq:NP_"):
             return "p"
-        if a.startswith("refseq:NR_"):
-            return "r"
         if a.startswith("refseq:NC_012920"):
             return "m"
         if a.startswith("refseq:NW_"):
