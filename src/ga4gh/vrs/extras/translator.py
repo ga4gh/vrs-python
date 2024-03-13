@@ -54,14 +54,12 @@ class Translator:
         self,
         data_proxy,
         default_assembly_name="GRCh38",
-        normalize=True,
         identify=True,
         rle_seq_limit: Optional[int] = 50
     ):
         self.default_assembly_name = default_assembly_name
         self.data_proxy = data_proxy
         self.identify = identify
-        self.normalize = normalize
         self.rle_seq_limit = rle_seq_limit
         self.hgvs_tools = None
         self.from_translators = {}
@@ -127,6 +125,8 @@ class Translator:
                     To exclude `sequence` from the response, set to 0.
                     For no limit, set to `None`.
                     Defaults value set in instance variable, `rle_seq_limit`.
+                do_normalize (bool): `True` if fully justified normalization should be
+                    performed. `False` otherwise. Defaults to `True`
         """
         if fmt:
             try:
@@ -225,10 +225,10 @@ class AlleleTranslator(Translator):
     """Class for translating formats to and from VRS Alleles"""
 
     def __init__(
-        self, data_proxy, default_assembly_name="GRCh38", normalize=True, identify=True
+        self, data_proxy, default_assembly_name="GRCh38", identify=True
     ):
         """Initialize AlleleTranslator class"""
-        super().__init__(data_proxy, default_assembly_name, normalize, identify)
+        super().__init__(data_proxy, default_assembly_name, identify)
 
         self.from_translators = {
             "beacon": self._from_beacon,
@@ -253,6 +253,8 @@ class AlleleTranslator(Translator):
                 To exclude `sequence` from the response, set to 0.
                 For no limit, set to `None`.
                 Defaults value set in instance variable, `rle_seq_limit`.
+            do_normalize (bool): `True` if fully justified normalization should be
+                performed. `False` otherwise. Defaults to `True`
 
         #>>> a = tlr.from_beacon("19 : 44908822 C > T")
         #>>> a.model_dump()
@@ -316,6 +318,8 @@ class AlleleTranslator(Translator):
                 To exclude `sequence` from the response, set to 0.
                 For no limit, set to `None`.
                 Defaults value set in instance variable, `rle_seq_limit`.
+            do_normalize (bool): `True` if fully justified normalization should be
+                performed. `False` otherwise. Defaults to `True`
 
         #>>> a = tlr.from_gnomad("1-55516888-G-GA")
         #>>> a.model_dump()
@@ -378,6 +382,8 @@ class AlleleTranslator(Translator):
                 To exclude `sequence` from the response, set to 0.
                 For no limit, set to `None`.
                 Defaults value set in instance variable, `rle_seq_limit`.
+            do_normalize (bool): `True` if fully justified normalization should be
+                performed. `False` otherwise. Defaults to `True`
 
         #>>> a = tlr.from_hgvs("NC_000007.14:g.55181320A>T")
         #>>> a.model_dump()
@@ -452,6 +458,8 @@ class AlleleTranslator(Translator):
                 To exclude `sequence` from the response, set to 0.
                 For no limit, set to `None`.
                 Defaults value set in instance variable, `rle_seq_limit`.
+            do_normalize (bool): `True` if fully justified normalization should be
+                performed. `False` otherwise. Defaults to `True`
 
         #>>> a = tlr.from_spdi("NC_000013.11:32936731:1:C")
         #>>> a.model_dump()
@@ -626,8 +634,10 @@ class AlleleTranslator(Translator):
                 normalization, this sets the limit for the length of the `sequence`.
                 To exclude `sequence` from the response, set to 0.
                 For no limit, set to `None`.
+            do_normalize (bool): `True` if fully justified normalization should be
+                performed. `False` otherwise. Defaults to `True`
         """
-        if self.normalize:
+        if kwargs.get("do_normalize", True):
             allele = normalize(
                 allele,
                 self.data_proxy,
@@ -654,10 +664,10 @@ class CnvTranslator(Translator):
     """Class for translating formats from format to VRS Copy Number"""
 
     def __init__(
-        self, data_proxy, default_assembly_name="GRCh38", normalize=True, identify=True
+        self, data_proxy, default_assembly_name="GRCh38", identify=True
     ):
         """Initialize CnvTranslator class"""
-        super().__init__(data_proxy, default_assembly_name, normalize, identify)
+        super().__init__(data_proxy, default_assembly_name, identify)
         self.from_translators = {
             "hgvs": self._from_hgvs,
         }

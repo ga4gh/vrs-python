@@ -10,7 +10,6 @@ def tlr(rest_dataproxy):
         data_proxy=rest_dataproxy,
         default_assembly_name="GRCh38",
         identify=False,
-        normalize=False,
     )
 
 
@@ -185,19 +184,18 @@ duplication_output_normalized = {
 
 @pytest.mark.vcr
 def test_from_beacon(tlr):
-    tlr.normalize = False
-    assert tlr._from_beacon(snv_inputs["beacon"]).model_dump(exclude_none=True) == snv_output
+    assert tlr._from_beacon(snv_inputs["beacon"], do_normalize=False).model_dump(exclude_none=True) == snv_output
 
 
 @pytest.mark.vcr
 def test_from_gnomad(tlr):
-    tlr.normalize = False
-    assert tlr._from_gnomad(snv_inputs["gnomad"]).model_dump(exclude_none=True) == snv_output
-    assert tlr._from_gnomad(deletion_inputs["gnomad"]).model_dump(exclude_none=True) == gnomad_deletion_output
-    assert tlr._from_gnomad(insertion_inputs["gnomad"]).model_dump(exclude_none=True) == gnomad_insertion_output
-    assert tlr._from_gnomad(duplication_inputs["gnomad"]).model_dump(exclude_none=True) == duplication_output
+    do_normalize = False
+    assert tlr._from_gnomad(snv_inputs["gnomad"], do_normalize=do_normalize).model_dump(exclude_none=True) == snv_output
+    assert tlr._from_gnomad(deletion_inputs["gnomad"], do_normalize=do_normalize).model_dump(exclude_none=True) == gnomad_deletion_output
+    assert tlr._from_gnomad(insertion_inputs["gnomad"], do_normalize=do_normalize).model_dump(exclude_none=True) == gnomad_insertion_output
+    assert tlr._from_gnomad(duplication_inputs["gnomad"], do_normalize=do_normalize).model_dump(exclude_none=True) == duplication_output
 
-    tlr.normalize = True
+    # do_normalize defaults to true
     assert tlr._from_gnomad(snv_inputs["gnomad"]).model_dump(exclude_none=True) == snv_output
     assert tlr._from_gnomad(deletion_inputs["gnomad"]).model_dump(exclude_none=True) == deletion_output_normalized
     assert tlr._from_gnomad(insertion_inputs["gnomad"]).model_dump(exclude_none=True) == insertion_output
@@ -232,27 +230,27 @@ def test_from_gnomad(tlr):
 
 @pytest.mark.vcr
 def test_from_hgvs(tlr):
-    tlr.normalize = False
-    assert tlr._from_hgvs(snv_inputs["hgvs"]).model_dump(exclude_none=True) == snv_output
-    assert tlr._from_hgvs(deletion_inputs["hgvs"]).model_dump(exclude_none=True) == deletion_output
-    assert tlr._from_hgvs(insertion_inputs["hgvs"]).model_dump(exclude_none=True) == insertion_output
-    assert tlr._from_hgvs(duplication_inputs["hgvs"]).model_dump(exclude_none=True) == duplication_output
+    do_normalize = False
+    assert tlr._from_hgvs(snv_inputs["hgvs"], do_normalize=do_normalize).model_dump(exclude_none=True) == snv_output
+    assert tlr._from_hgvs(deletion_inputs["hgvs"], do_normalize=do_normalize).model_dump(exclude_none=True) == deletion_output
+    assert tlr._from_hgvs(insertion_inputs["hgvs"], do_normalize=do_normalize).model_dump(exclude_none=True) == insertion_output
+    assert tlr._from_hgvs(duplication_inputs["hgvs"], do_normalize=do_normalize).model_dump(exclude_none=True) == duplication_output
 
 
 @pytest.mark.vcr
 def test_from_spdi(tlr):
-    tlr.normalize = False
-    assert tlr._from_spdi(snv_inputs["spdi"]).model_dump(exclude_none=True) == snv_output
+    do_normalize = False
+    assert tlr._from_spdi(snv_inputs["spdi"], do_normalize=do_normalize).model_dump(exclude_none=True) == snv_output
     for spdi_del_expr in deletion_inputs["spdi"]:
-        assert tlr._from_spdi(spdi_del_expr).model_dump(exclude_none=True) == deletion_output, spdi_del_expr
+        assert tlr._from_spdi(spdi_del_expr, do_normalize=do_normalize).model_dump(exclude_none=True) == deletion_output, spdi_del_expr
     for spdi_ins_expr in insertion_inputs["spdi"]:
-        assert tlr._from_spdi(spdi_ins_expr).model_dump(exclude_none=True) == insertion_output, spdi_ins_expr
-    assert tlr._from_spdi(duplication_inputs["spdi"]).model_dump(exclude_none=True) == duplication_output
+        assert tlr._from_spdi(spdi_ins_expr, do_normalize=do_normalize).model_dump(exclude_none=True) == insertion_output, spdi_ins_expr
+    assert tlr._from_spdi(duplication_inputs["spdi"], do_normalize=do_normalize).model_dump(exclude_none=True) == duplication_output
 
 
 @pytest.mark.vcr
 def test_to_spdi(tlr):
-    tlr.normalize = True
+    # do_normalize defaults to true
     spdiexpr = snv_inputs["spdi"]
     allele = tlr.translate_from(spdiexpr, "spdi")
     to_spdi = tlr.translate_to(allele, "spdi")
@@ -369,33 +367,33 @@ hgvs_tests = (
       'type': 'Allele'}),
     ("NC_000019.10:g.289464_289465insCACA",
      {'digest': 'YFUR4oR_84b-rRFf0UzOjfI4eE5FTKAP',
-      'id': 'ga4gh:VA.YFUR4oR_84b-rRFf0UzOjfI4eE5FTKAP', 
-      'type': 'Allele', 
-      'location': {'digest': 'L145KFLJeJ334YnOVm59pPlbdqfHhgXZ', 
-                   'end': 289466, 
-                   'id': 'ga4gh:SL.L145KFLJeJ334YnOVm59pPlbdqfHhgXZ', 
-                   'sequenceReference': {'refgetAccession': 'SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl', 
-                                         'type': 'SequenceReference'}, 
-                   'start': 289464, 
-                   'type': 'SequenceLocation'}, 
-        'state': {'length': 6, 
-                  'repeatSubunitLength': 2, 
-                  'sequence': 'CACACA', 
+      'id': 'ga4gh:VA.YFUR4oR_84b-rRFf0UzOjfI4eE5FTKAP',
+      'type': 'Allele',
+      'location': {'digest': 'L145KFLJeJ334YnOVm59pPlbdqfHhgXZ',
+                   'end': 289466,
+                   'id': 'ga4gh:SL.L145KFLJeJ334YnOVm59pPlbdqfHhgXZ',
+                   'sequenceReference': {'refgetAccession': 'SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl',
+                                         'type': 'SequenceReference'},
+                   'start': 289464,
+                   'type': 'SequenceLocation'},
+        'state': {'length': 6,
+                  'repeatSubunitLength': 2,
+                  'sequence': 'CACACA',
                   'type': 'ReferenceLengthExpression'}}),
     ("NC_000019.10:g.289485_289500del",
      {'digest': 'Djc_SwVDFunsArqwUM00PciVaF70VTcU',
-      'id': 'ga4gh:VA.Djc_SwVDFunsArqwUM00PciVaF70VTcU', 
-      'type': 'Allele', 
-      'location': {'digest': 'WTE7jyihK4qvRRzEqM7u5nSD4iS2k3xp', 
-                   'end': 289501, 
-                   'id': 'ga4gh:SL.WTE7jyihK4qvRRzEqM7u5nSD4iS2k3xp', 
-                   'sequenceReference': {'refgetAccession': 'SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl', 
-                                         'type': 'SequenceReference'}, 
-                   'start': 289480, 
-                   'type': 'SequenceLocation'}, 
-        'state': {'length': 5, 
-                  'repeatSubunitLength': 16, 
-                  'sequence': 'CGAGG', 
+      'id': 'ga4gh:VA.Djc_SwVDFunsArqwUM00PciVaF70VTcU',
+      'type': 'Allele',
+      'location': {'digest': 'WTE7jyihK4qvRRzEqM7u5nSD4iS2k3xp',
+                   'end': 289501,
+                   'id': 'ga4gh:SL.WTE7jyihK4qvRRzEqM7u5nSD4iS2k3xp',
+                   'sequenceReference': {'refgetAccession': 'SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl',
+                                         'type': 'SequenceReference'},
+                   'start': 289480,
+                   'type': 'SequenceLocation'},
+        'state': {'length': 5,
+                  'repeatSubunitLength': 16,
+                  'sequence': 'CGAGG',
                   'type': 'ReferenceLengthExpression'}}),
 )
 
@@ -408,7 +406,7 @@ hgvs_tests_to_hgvs_map = {
 @pytest.mark.parametrize("hgvsexpr,expected", hgvs_tests)
 @pytest.mark.vcr
 def test_hgvs(tlr, hgvsexpr, expected):
-    tlr.normalize = True
+    # do_normalize defaults to true
     tlr.identify = True
     allele = tlr.translate_from(hgvsexpr, "hgvs")
     assert allele.model_dump(exclude_none=True) == expected
@@ -420,7 +418,7 @@ def test_hgvs(tlr, hgvsexpr, expected):
 
 @pytest.mark.vcr
 def test_rle_seq_limit(tlr):
-    tlr.normalize = True
+    # do_normalize defaults to true
     tlr.identify = True
 
     a_dict = {
