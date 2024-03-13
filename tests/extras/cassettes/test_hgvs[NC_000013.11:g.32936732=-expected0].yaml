@@ -9,7 +9,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.28.2
+      - python-requests/2.31.0
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/NC_000013.11?start=32936731&end=32936732
   response:
@@ -23,7 +23,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Mon, 19 Feb 2024 07:31:14 GMT
+      - Wed, 13 Mar 2024 11:34:16 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -39,7 +39,79 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.28.2
+      - python-requests/2.31.0
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/metadata/ga4gh:SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT
+  response:
+    body:
+      string: "{\n  \"added\": \"2016-08-27T23:50:14Z\",\n  \"aliases\": [\n    \"GRCh38:13\",\n
+        \   \"GRCh38:chr13\",\n    \"GRCh38.p1:13\",\n    \"GRCh38.p1:chr13\",\n    \"GRCh38.p10:13\",\n
+        \   \"GRCh38.p10:chr13\",\n    \"GRCh38.p11:13\",\n    \"GRCh38.p11:chr13\",\n
+        \   \"GRCh38.p12:13\",\n    \"GRCh38.p12:chr13\",\n    \"GRCh38.p2:13\",\n
+        \   \"GRCh38.p2:chr13\",\n    \"GRCh38.p3:13\",\n    \"GRCh38.p3:chr13\",\n
+        \   \"GRCh38.p4:13\",\n    \"GRCh38.p4:chr13\",\n    \"GRCh38.p5:13\",\n    \"GRCh38.p5:chr13\",\n
+        \   \"GRCh38.p6:13\",\n    \"GRCh38.p6:chr13\",\n    \"GRCh38.p7:13\",\n    \"GRCh38.p7:chr13\",\n
+        \   \"GRCh38.p8:13\",\n    \"GRCh38.p8:chr13\",\n    \"GRCh38.p9:13\",\n    \"GRCh38.p9:chr13\",\n
+        \   \"MD5:a5437debe2ef9c9ef8f3ea2874ae1d82\",\n    \"NCBI:NC_000013.11\",\n
+        \   \"refseq:NC_000013.11\",\n    \"SEGUID:2oDBty0yKV9wHo7gg+Bt+fPgi5o\",\n
+        \   \"SHA1:da80c1b72d32295f701e8ee083e06df9f3e08b9a\",\n    \"VMC:GS__0wi-qoDrvram155UmcSC-zA5ZK4fpLT\",\n
+        \   \"sha512t24u:_0wi-qoDrvram155UmcSC-zA5ZK4fpLT\",\n    \"ga4gh:SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT\"\n
+        \ ],\n  \"alphabet\": \"ACGKNTY\",\n  \"length\": 114364328\n}\n"
+    headers:
+      Connection:
+      - close
+      Content-Length:
+      - '1002'
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 13 Mar 2024 11:34:16 GMT
+      Server:
+      - Werkzeug/2.2.2 Python/3.10.4
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.31.0
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT?start=32936731&end=32936732
+  response:
+    body:
+      string: C
+    headers:
+      Connection:
+      - close
+      Content-Length:
+      - '1'
+      Content-Type:
+      - text/plain; charset=utf-8
+      Date:
+      - Wed, 13 Mar 2024 11:34:16 GMT
+      Server:
+      - Werkzeug/2.2.2 Python/3.10.4
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.31.0
     method: GET
     uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nucleotide&id=NC_000013.11&rettype=fasta&seq_start=32936732&seq_stop=32936732&tool=bioutils&email=biocommons-dev@googlegroups.com
   response:
@@ -63,20 +135,20 @@ interactions:
       Content-Type:
       - text/plain
       Date:
-      - Mon, 19 Feb 2024 07:31:16 GMT
+      - Wed, 13 Mar 2024 11:34:20 GMT
       Keep-Alive:
       - timeout=4, max=40
       NCBI-PHID:
-      - 322CF705C067C1A50000158944465C93.1.1.m_5
+      - 939B2EEA04BEA4E50000218E194ABC7A.1.1.m_5
       NCBI-SID:
-      - 04E0C48AA9C209F7_3DDESID
+      - 0AF7B2B7D73584F1_4FF4SID
       Referrer-Policy:
       - origin-when-cross-origin
       Server:
       - Finatra
       Set-Cookie:
-      - ncbi_sid=04E0C48AA9C209F7_3DDESID; domain=.nih.gov; path=/; expires=Wed, 19
-        Feb 2025 07:31:16 GMT
+      - ncbi_sid=0AF7B2B7D73584F1_4FF4SID; domain=.nih.gov; path=/; expires=Thu, 13
+        Mar 2025 11:34:20 GMT
       Strict-Transport-Security:
       - max-age=31536000; includeSubDomains; preload
       Transfer-Encoding:
