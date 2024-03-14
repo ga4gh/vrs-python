@@ -10,7 +10,6 @@ def tlr(rest_dataproxy):
         data_proxy=rest_dataproxy,
         default_assembly_name="GRCh38",
         identify=False,
-        normalize=False,
     )
 
 
@@ -211,21 +210,21 @@ duplication_output_normalized = {
 
 @pytest.mark.vcr
 def test_from_beacon(tlr):
-    tlr.normalize = False
-    assert tlr._from_beacon(snv_inputs["beacon"]).model_dump(exclude_none=True) == snv_output
-    assert tlr._from_beacon(mito_inputs["beacon"]).model_dump(exclude_none=True) == mito_output
+    do_normalize = False
+    assert tlr._from_beacon(snv_inputs["beacon"], do_normalize=do_normalize).model_dump(exclude_none=True) == snv_output
+    assert tlr._from_beacon(mito_inputs["beacon"], do_normalize=do_normalize).model_dump(exclude_none=True) == mito_output
 
 
 @pytest.mark.vcr
 def test_from_gnomad(tlr):
-    tlr.normalize = False
-    assert tlr._from_gnomad(snv_inputs["gnomad"]).model_dump(exclude_none=True) == snv_output
-    assert tlr._from_gnomad(mito_inputs["gnomad"]).model_dump(exclude_none=True) == mito_output
-    assert tlr._from_gnomad(deletion_inputs["gnomad"]).model_dump(exclude_none=True) == gnomad_deletion_output
-    assert tlr._from_gnomad(insertion_inputs["gnomad"]).model_dump(exclude_none=True) == gnomad_insertion_output
-    assert tlr._from_gnomad(duplication_inputs["gnomad"]).model_dump(exclude_none=True) == duplication_output
+    do_normalize = False
+    assert tlr._from_gnomad(snv_inputs["gnomad"], do_normalize=do_normalize).model_dump(exclude_none=True) == snv_output
+    assert tlr._from_gnomad(mito_inputs["gnomad"], do_normalize=do_normalize).model_dump(exclude_none=True) == mito_output
+    assert tlr._from_gnomad(deletion_inputs["gnomad"], do_normalize=do_normalize).model_dump(exclude_none=True) == gnomad_deletion_output
+    assert tlr._from_gnomad(insertion_inputs["gnomad"], do_normalize=do_normalize).model_dump(exclude_none=True) == gnomad_insertion_output
+    assert tlr._from_gnomad(duplication_inputs["gnomad"], do_normalize=do_normalize).model_dump(exclude_none=True) == duplication_output
 
-    tlr.normalize = True
+    # do_normalize defaults to true
     assert tlr._from_gnomad(snv_inputs["gnomad"]).model_dump(exclude_none=True) == snv_output
     assert tlr._from_gnomad(mito_inputs["gnomad"]).model_dump(exclude_none=True) == mito_output
     assert tlr._from_gnomad(deletion_inputs["gnomad"]).model_dump(exclude_none=True) == deletion_output_normalized
@@ -261,29 +260,29 @@ def test_from_gnomad(tlr):
 
 @pytest.mark.vcr
 def test_from_hgvs(tlr):
-    tlr.normalize = False
-    assert tlr._from_hgvs(snv_inputs["hgvs"]).model_dump(exclude_none=True) == snv_output
-    assert tlr._from_hgvs(mito_inputs["hgvs"]).model_dump(exclude_none=True) == mito_output
-    assert tlr._from_hgvs(deletion_inputs["hgvs"]).model_dump(exclude_none=True) == deletion_output
-    assert tlr._from_hgvs(insertion_inputs["hgvs"]).model_dump(exclude_none=True) == insertion_output
-    assert tlr._from_hgvs(duplication_inputs["hgvs"]).model_dump(exclude_none=True) == duplication_output
+    do_normalize = False
+    assert tlr._from_hgvs(snv_inputs["hgvs"], do_normalize=do_normalize).model_dump(exclude_none=True) == snv_output
+    assert tlr._from_hgvs(mito_inputs["hgvs"], do_normalize=do_normalize).model_dump(exclude_none=True) == mito_output
+    assert tlr._from_hgvs(deletion_inputs["hgvs"], do_normalize=do_normalize).model_dump(exclude_none=True) == deletion_output
+    assert tlr._from_hgvs(insertion_inputs["hgvs"], do_normalize=do_normalize).model_dump(exclude_none=True) == insertion_output
+    assert tlr._from_hgvs(duplication_inputs["hgvs"], do_normalize=do_normalize).model_dump(exclude_none=True) == duplication_output
 
 
 @pytest.mark.vcr
 def test_from_spdi(tlr):
-    tlr.normalize = False
-    assert tlr._from_spdi(snv_inputs["spdi"]).model_dump(exclude_none=True) == snv_output
-    assert tlr._from_spdi(mito_inputs["spdi"]).model_dump(exclude_none=True) == mito_output
+    do_normalize = False
+    assert tlr._from_spdi(snv_inputs["spdi"], do_normalize=do_normalize).model_dump(exclude_none=True) == snv_output
+    assert tlr._from_spdi(mito_inputs["spdi"], do_normalize=do_normalize).model_dump(exclude_none=True) == mito_output
     for spdi_del_expr in deletion_inputs["spdi"]:
-        assert tlr._from_spdi(spdi_del_expr).model_dump(exclude_none=True) == deletion_output, spdi_del_expr
+        assert tlr._from_spdi(spdi_del_expr, do_normalize=do_normalize).model_dump(exclude_none=True) == deletion_output, spdi_del_expr
     for spdi_ins_expr in insertion_inputs["spdi"]:
-        assert tlr._from_spdi(spdi_ins_expr).model_dump(exclude_none=True) == insertion_output, spdi_ins_expr
-    assert tlr._from_spdi(duplication_inputs["spdi"]).model_dump(exclude_none=True) == duplication_output
+        assert tlr._from_spdi(spdi_ins_expr, do_normalize=do_normalize).model_dump(exclude_none=True) == insertion_output, spdi_ins_expr
+    assert tlr._from_spdi(duplication_inputs["spdi"], do_normalize=do_normalize).model_dump(exclude_none=True) == duplication_output
 
 
 @pytest.mark.vcr
 def test_to_spdi(tlr):
-    tlr.normalize = True
+    # do_normalize defaults to true
     spdiexpr = snv_inputs["spdi"]
     allele = tlr.translate_from(spdiexpr, "spdi")
     to_spdi = tlr.translate_to(allele, "spdi")
@@ -439,7 +438,7 @@ hgvs_tests_to_hgvs_map = {
 @pytest.mark.parametrize("hgvsexpr,expected", hgvs_tests)
 @pytest.mark.vcr
 def test_hgvs(tlr, hgvsexpr, expected):
-    tlr.normalize = True
+    # do_normalize defaults to true
     tlr.identify = True
     allele = tlr.translate_from(hgvsexpr, "hgvs")
     assert allele.model_dump(exclude_none=True) == expected
@@ -451,7 +450,7 @@ def test_hgvs(tlr, hgvsexpr, expected):
 
 @pytest.mark.vcr
 def test_rle_seq_limit(tlr):
-    tlr.normalize = True
+    # do_normalize defaults to true
     tlr.identify = True
 
     a_dict = {
