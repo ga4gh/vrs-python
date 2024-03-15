@@ -49,7 +49,6 @@ class Translator:
     hgvs_re = re.compile(r"[^:]+:[cgmnpr]\.")
     spdi_re = re.compile(r"(?P<ac>[^:]+):(?P<pos>\d+):(?P<del_len_or_seq>\w*):(?P<ins_seq>\w*)")
 
-
     def __init__(
         self,
         data_proxy,
@@ -86,23 +85,33 @@ class Translator:
 
     @staticmethod
     def _ir_stype(a):
-        """Get accession's sequence type"""
-        if a.startswith("refseq:NM_"):
-            return "n"
-        if a.startswith("refseq:NR_"):
-            return "n"
-        if a.startswith("refseq:NP_"):
-            return "p"
-        if a.startswith("refseq:NC_012920"):
-            return "m"
-        if a.startswith("refseq:NW_"):
-            return "g"
-        if a.startswith("refseq:NG_"):
-            return "g"
-        if a.startswith("refseq:NC_00"):
-            return "g"
-        if a.startswith("GRCh"):
-            return "g"
+        """
+        The purpose of this function is to provide a convenient way to extract the sequence type from an accession by matching its prefix to a known set of prefixes.
+
+        Args:
+        a (str): The accession string.
+
+        Returns:
+        str or None: The sequence type associated with the accession string, or None if no matching prefix is found.
+        """
+
+        prefix_dict = {
+            "refseq:NM_": "c",
+            "refseq:NC_012920": "m",
+            "refseq:NG_": "g",
+            "refseq:NC_00": "g",
+            "refseq:NW_": "g",
+            "refseq:NR_": "n",
+            "refseq:NP_": "p",
+            "refseq:XM_": "c",
+            "refseq:XR_": "n",
+            "refseq:XP_": "p",
+            "GRCh": "g",
+        }
+
+        for prefix, stype in prefix_dict.items():
+            if a.startswith(prefix):
+                return stype
         return None
 
     def translate_from(self, var, fmt=None, **kwargs):
@@ -157,7 +166,6 @@ class Translator:
         """translate vrs object `vo` to named format `fmt`"""
         t = self.to_translators[fmt]
         return t(vo)
-
 
     ############################################################################
     # INTERNAL
@@ -586,7 +594,7 @@ class AlleleTranslator(Translator):
             if ns.startswith("GRC") and namespace is None:
                 continue
 
-            if not (any(a.startswith(pfx) for pfx in ("NM", "NP", "NC", "NG", "NR", "NW"))):
+            if not (any(a.startswith(pfx) for pfx in ("NM", "NP", "NC", "NG", "NR", "NW", "XM", "XR", "XP"))):
                 continue
 
             var.ac = a
