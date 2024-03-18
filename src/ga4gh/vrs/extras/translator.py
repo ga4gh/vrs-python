@@ -96,14 +96,14 @@ class Translator:
         """
 
         prefix_dict = {
-            "refseq:NM_": "c",
+            "refseq:NM_": "n",
             "refseq:NC_012920": "m",
             "refseq:NG_": "g",
             "refseq:NC_00": "g",
             "refseq:NW_": "g",
             "refseq:NR_": "n",
             "refseq:NP_": "p",
-            "refseq:XM_": "c",
+            "refseq:XM_": "n",
             "refseq:XR_": "n",
             "refseq:XP_": "p",
             "GRCh": "g",
@@ -741,7 +741,7 @@ if __name__ == "__main__":
 
     from ga4gh.vrs.dataproxy import create_dataproxy
     # dp = create_dataproxy("seqrepo+file:///usr/local/share/seqrepo/latest")
-    dp = create_dataproxy("seqrepo + http://localhost:5555/seqrepo")
+    dp = create_dataproxy("seqrepo + http://localhost:5000/seqrepo")
     tlr = Translator(data_proxy=dp)
 
     expressions = [
