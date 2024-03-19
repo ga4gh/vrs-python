@@ -18,9 +18,6 @@ jobs:
       SEQREPO_ROOT_DIR: ./tests/data/seqrepo/latest
 
     steps:
-    - uses: actions/checkout@v3
-      with:
-        submodules: recursive
     - uses: actions/cache@v2
       with:
         path: ~/.cache/pip
