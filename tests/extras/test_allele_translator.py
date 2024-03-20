@@ -13,6 +13,7 @@ def tlr(rest_dataproxy):
     )
 
 
+# https://www.ncbi.nlm.nih.gov/clinvar/variation/17848/?new_evidence=true
 snv_inputs = {
     "hgvs": "NC_000019.10:g.44908822C>T",
     "beacon": "19 : 44908822 C > T",
@@ -33,6 +34,31 @@ snv_output = {
     "state": {
         "sequence": "T",
         "type": "LiteralSequenceExpression"
+    },
+    "type": "Allele"
+}
+
+# https://www.ncbi.nlm.nih.gov/clinvar/variation/693259/?new_evidence=true
+mito_inputs = {
+    "hgvs": "NC_012920.1:m.10083A>G",
+    "beacon": "MT : 10083 A > G",
+    "spdi": "NC_012920.1:10082:A:G",
+    "gnomad": "MT-10083-A-G"
+}
+
+mito_output = {
+    "location": {
+      "start": 10082,
+      "end": 10083,
+      "sequenceReference": {
+        "refgetAccession": "SQ.k3grVkjY-hoWcCUojHw6VU6GE3MZ8Sct",
+        "type": "SequenceReference"
+      },
+      "type": "SequenceLocation"
+    },
+    "state": {
+      "sequence": "G",
+      "type": "LiteralSequenceExpression"
     },
     "type": "Allele"
 }
@@ -184,19 +210,23 @@ duplication_output_normalized = {
 
 @pytest.mark.vcr
 def test_from_beacon(tlr):
-    assert tlr._from_beacon(snv_inputs["beacon"], do_normalize=False).model_dump(exclude_none=True) == snv_output
+    do_normalize = False
+    assert tlr._from_beacon(snv_inputs["beacon"], do_normalize=do_normalize).model_dump(exclude_none=True) == snv_output
+    assert tlr._from_beacon(mito_inputs["beacon"], do_normalize=do_normalize).model_dump(exclude_none=True) == mito_output
 
 
 @pytest.mark.vcr
 def test_from_gnomad(tlr):
     do_normalize = False
     assert tlr._from_gnomad(snv_inputs["gnomad"], do_normalize=do_normalize).model_dump(exclude_none=True) == snv_output
+    assert tlr._from_gnomad(mito_inputs["gnomad"], do_normalize=do_normalize).model_dump(exclude_none=True) == mito_output
     assert tlr._from_gnomad(deletion_inputs["gnomad"], do_normalize=do_normalize).model_dump(exclude_none=True) == gnomad_deletion_output
     assert tlr._from_gnomad(insertion_inputs["gnomad"], do_normalize=do_normalize).model_dump(exclude_none=True) == gnomad_insertion_output
     assert tlr._from_gnomad(duplication_inputs["gnomad"], do_normalize=do_normalize).model_dump(exclude_none=True) == duplication_output
 
     # do_normalize defaults to true
     assert tlr._from_gnomad(snv_inputs["gnomad"]).model_dump(exclude_none=True) == snv_output
+    assert tlr._from_gnomad(mito_inputs["gnomad"]).model_dump(exclude_none=True) == mito_output
     assert tlr._from_gnomad(deletion_inputs["gnomad"]).model_dump(exclude_none=True) == deletion_output_normalized
     assert tlr._from_gnomad(insertion_inputs["gnomad"]).model_dump(exclude_none=True) == insertion_output
     assert tlr._from_gnomad(duplication_inputs["gnomad"]).model_dump(exclude_none=True) == duplication_output_normalized
@@ -232,6 +262,7 @@ def test_from_gnomad(tlr):
 def test_from_hgvs(tlr):
     do_normalize = False
     assert tlr._from_hgvs(snv_inputs["hgvs"], do_normalize=do_normalize).model_dump(exclude_none=True) == snv_output
+    assert tlr._from_hgvs(mito_inputs["hgvs"], do_normalize=do_normalize).model_dump(exclude_none=True) == mito_output
     assert tlr._from_hgvs(deletion_inputs["hgvs"], do_normalize=do_normalize).model_dump(exclude_none=True) == deletion_output
     assert tlr._from_hgvs(insertion_inputs["hgvs"], do_normalize=do_normalize).model_dump(exclude_none=True) == insertion_output
     assert tlr._from_hgvs(duplication_inputs["hgvs"], do_normalize=do_normalize).model_dump(exclude_none=True) == duplication_output
@@ -241,6 +272,7 @@ def test_from_hgvs(tlr):
 def test_from_spdi(tlr):
     do_normalize = False
     assert tlr._from_spdi(snv_inputs["spdi"], do_normalize=do_normalize).model_dump(exclude_none=True) == snv_output
+    assert tlr._from_spdi(mito_inputs["spdi"], do_normalize=do_normalize).model_dump(exclude_none=True) == mito_output
     for spdi_del_expr in deletion_inputs["spdi"]:
         assert tlr._from_spdi(spdi_del_expr, do_normalize=do_normalize).model_dump(exclude_none=True) == deletion_output, spdi_del_expr
     for spdi_ins_expr in insertion_inputs["spdi"]:

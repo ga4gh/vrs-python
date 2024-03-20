@@ -28,7 +28,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Mon, 11 Mar 2024 21:21:34 GMT
+      - Mon, 18 Mar 2024 19:06:56 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -63,7 +63,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Mon, 11 Mar 2024 21:21:34 GMT
+      - Mon, 18 Mar 2024 19:06:56 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -93,9 +93,75 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Mon, 11 Mar 2024 21:21:34 GMT
+      - Mon, 18 Mar 2024 19:06:56 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.31.0
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nucleotide&id=NR_040711.1&rettype=fasta&seq_start=1263&seq_stop=1263&tool=bioutils&email=biocommons-dev@googlegroups.com
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAABTEsQrCMBQF0L1fcUeFRJoqCg6COCgUCi3u8lqfNZi8lCQt+PfiGc6p6R7lrjwY
+        szFHU+23+h9uwQckmixLwhQypWRnjyW4TCPrkTI/MbxJhJ1C3d61sx9GmvsXeeu+Cp59zxEGq/rS
+        tGatkCNJGqKdMhaKliSjUpAgeghPKyO65lxci+IHAAD//wMAKt9ZTJMAAAA=
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      Access-Control-Expose-Headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining
+      Cache-Control:
+      - private
+      Connection:
+      - Keep-Alive
+      Content-Disposition:
+      - attachment; filename="sequence.fasta"
+      Content-Security-Policy:
+      - upgrade-insecure-requests
+      Content-Type:
+      - text/plain
+      Date:
+      - Mon, 18 Mar 2024 19:06:56 GMT
+      Keep-Alive:
+      - timeout=4, max=40
+      NCBI-PHID:
+      - 939B9567B1550155000060AB1993A7DC.1.1.m_5
+      NCBI-SID:
+      - 84183BA9B6A0E43C_B36ASID
+      Referrer-Policy:
+      - origin-when-cross-origin
+      Server:
+      - Finatra
+      Set-Cookie:
+      - ncbi_sid=84183BA9B6A0E43C_B36ASID; domain=.nih.gov; path=/; expires=Tue, 18
+        Mar 2025 19:06:56 GMT
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubDomains; preload
+      Transfer-Encoding:
+      - chunked
+      X-RateLimit-Limit:
+      - '3'
+      X-RateLimit-Remaining:
+      - '1'
+      X-UA-Compatible:
+      - IE=Edge
+      X-XSS-Protection:
+      - 1; mode=block
+      content-encoding:
+      - gzip
     status:
       code: 200
       message: OK
@@ -134,20 +200,20 @@ interactions:
       Content-Type:
       - text/plain
       Date:
-      - Mon, 11 Mar 2024 21:21:35 GMT
+      - Mon, 18 Mar 2024 19:06:57 GMT
       Keep-Alive:
       - timeout=4, max=40
       NCBI-PHID:
-      - 322CFCD26EC09885000061495C099120.1.1.m_5
+      - 939B9567B1550155000025AB1F377BE9.1.1.m_5
       NCBI-SID:
-      - 88C31025885ED05C_C4B9SID
+      - D4BF93F25467B52E_DD34SID
       Referrer-Policy:
       - origin-when-cross-origin
       Server:
       - Finatra
       Set-Cookie:
-      - ncbi_sid=88C31025885ED05C_C4B9SID; domain=.nih.gov; path=/; expires=Tue, 11
-        Mar 2025 21:21:34 GMT
+      - ncbi_sid=D4BF93F25467B52E_DD34SID; domain=.nih.gov; path=/; expires=Tue, 18
+        Mar 2025 19:06:57 GMT
       Strict-Transport-Security:
       - max-age=31536000; includeSubDomains; preload
       Transfer-Encoding:
@@ -155,7 +221,7 @@ interactions:
       X-RateLimit-Limit:
       - '3'
       X-RateLimit-Remaining:
-      - '2'
+      - '1'
       X-UA-Compatible:
       - IE=Edge
       X-XSS-Protection:
@@ -200,20 +266,20 @@ interactions:
       Content-Type:
       - text/plain
       Date:
-      - Mon, 11 Mar 2024 21:21:35 GMT
+      - Mon, 18 Mar 2024 19:06:58 GMT
       Keep-Alive:
       - timeout=4, max=40
       NCBI-PHID:
-      - D0BD851AC14C1895000049315F660E1D.1.1.m_5
+      - 939B9567B1550155000036AB2791143A.1.1.m_5
       NCBI-SID:
-      - 997B8D068DC9D474_33F1SID
+      - 6B1458251BDB0438_D139SID
       Referrer-Policy:
       - origin-when-cross-origin
       Server:
       - Finatra
       Set-Cookie:
-      - ncbi_sid=997B8D068DC9D474_33F1SID; domain=.nih.gov; path=/; expires=Tue, 11
-        Mar 2025 21:21:35 GMT
+      - ncbi_sid=6B1458251BDB0438_D139SID; domain=.nih.gov; path=/; expires=Tue, 18
+        Mar 2025 19:06:58 GMT
       Strict-Transport-Security:
       - max-age=31536000; includeSubDomains; preload
       Transfer-Encoding:
