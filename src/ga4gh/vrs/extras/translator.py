@@ -101,6 +101,7 @@ class Translator:
             "refseq:NG_": "g",
             "refseq:NC_00": "g",
             "refseq:NW_": "g",
+            "refseq:NT_": "g",
             "refseq:NR_": "n",
             "refseq:NP_": "p",
             "refseq:XM_": "n",
