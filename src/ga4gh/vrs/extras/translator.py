@@ -595,7 +595,7 @@ class AlleleTranslator(Translator):
             if ns.startswith("GRC") and namespace is None:
                 continue
 
-            if not (any(a.startswith(pfx) for pfx in ("NM", "NP", "NC", "NG", "NR", "NW", "XM", "XR", "XP"))):
+            if not (any(a.startswith(pfx) for pfx in ("NM", "NP", "NC", "NG", "NR", "NW", "NT", "XM", "XR", "XP"))):
                 continue
 
             var.ac = a
