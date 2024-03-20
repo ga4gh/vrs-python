@@ -88,6 +88,56 @@ class _DataProxy(ABC):
             nsd = namespace + ":"
             aliases = [a for a in aliases if a.startswith(nsd)]
         return aliases
+        
+    def derive_refget_accession(self, ac: str):
+        """Derive the refget accession from a public accession identifier
+
+        :param ac: public accession in simple or curie form from which to derive the refget accession
+        :return: Refget Accession if found
+        """
+
+        if ac == None:
+            return None
+        
+        if ":" not in ac[1:]:
+            # always coerce the namespace if none provided 
+            ac = coerce_namespace(ac)
+
+        refget_accession = None
+        try:
+            aliases = self.translate_sequence_identifier(ac, namespace="ga4gh")
+        except KeyError:
+            _logger.error("KeyError when getting refget accession: %s", ac)
+        else:
+            if aliases:
+                refget_accession = aliases[0].split("ga4gh:")[-1]
+
+        return refget_accession
+    
+    def is_valid_ref_seq(
+        self, sequence_id: str, start_pos: int, end_pos: int, ref: str
+    ) -> Tuple[bool, str]:
+        """Return wether or not the expected reference sequence matches the actual
+        reference sequence
+
+        :param sequence_id: Sequence ID to use
+        :param start_pos: Start pos (inter-residue) on the sequence_id
+        :param end_pos: End pos (inter-residue) on the sequence_id
+        :param ref: The expected reference sequence on the sequence_id given the
+            start_pos and end_pos
+        :return: Tuple containing whether or not actual reference sequence matches
+            the expected reference sequence and error message if mismatch
+        """
+        actual_ref = self.get_sequence(sequence_id, start_pos, end_pos)
+        is_valid = actual_ref == ref
+        err_msg = ""
+        if not is_valid:
+            err_msg = (
+                f"Expected reference sequence {ref} on {sequence_id} at positions "
+                f"({start_pos}, {end_pos}) but found {actual_ref}"
+            )
+            _logger.warning(err_msg)
+        return is_valid, err_msg
 
 
 class _SeqRepoDataProxyBase(_DataProxy):

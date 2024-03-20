@@ -5,9 +5,9 @@ from ga4gh.vrs.extras.translator import AlleleTranslator, ValidationError
 
 
 @pytest.fixture(scope="module")
-def tlr(rest_dataproxy):
+def tlr(dataproxy):
     return AlleleTranslator(
-        data_proxy=rest_dataproxy,
+        data_proxy=dataproxy,
         default_assembly_name="GRCh38",
         identify=False,
     )

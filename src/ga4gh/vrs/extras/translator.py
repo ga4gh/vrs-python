@@ -7,16 +7,9 @@ Output formats: VRS (serialized), hgvs, spdi, gnomad (vcf)
 
 from collections.abc import Mapping
 from typing import Optional, Union, Tuple
+from vrs import _DataProxy
 import logging
 import re
-
-from bioutils.accessions import coerce_namespace
-import hgvs.parser
-import hgvs.location
-import hgvs.posedit
-import hgvs.edit
-import hgvs.sequencevariant
-import hgvs.dataproviders.uta
 
 from ga4gh.core import ga4gh_identify
 from ga4gh.vrs import models, normalize
@@ -51,7 +44,7 @@ class Translator:
 
     def __init__(
         self,
-        data_proxy,
+        data_proxy: _DataProxy,
         default_assembly_name="GRCh38",
         identify=True,
         rle_seq_limit: Optional[int] = 50
@@ -63,25 +56,19 @@ class Translator:
         self.hgvs_tools = None
         self.from_translators = {}
         self.to_translators = {}
+    
+    # def _is_intronic(self, sv: hgvs.sequencevariant.SequenceVariant):
+    #     """Check if HGVS sequence variant is intronic"""
+    #     if isinstance(sv.posedit.pos, hgvs.location.BaseOffsetInterval):
+    #         if sv.posedit.pos.start.is_intronic or sv.posedit.pos.end.is_intronic:
+    #             return True
+    #     return False
 
-    @lazy_property
-    def _hgvs_parser(self):
-        """instantiates and returns an hgvs parser instance"""
-        _logger.info("Creating parser")
-        return hgvs.parser.Parser()
-
-    def _get_parsed_hgvs(self, hgvs_expr: str):
-        """Get parsed HGVS expression"""
-        if not self.hgvs_re.match(hgvs_expr):
-            return None
-
-        return self._hgvs_parser.parse_hgvs_variant(hgvs_expr)
-
-    def _get_hgvs_refget_ac(self, sv: hgvs.sequencevariant.SequenceVariant):
-        """Get refget accession for hgvs sequence variant"""
-        # prefix accession with namespace
-        sequence = coerce_namespace(sv.ac)
-        return self._get_refget_accession(sequence)
+    # def _get_hgvs_refget_ac(self, sv: hgvs.sequencevariant.SequenceVariant):
+    #     """Get refget accession for hgvs sequence variant"""
+    #     # prefix accession with namespace
+    #     sequence = coerce_namespace(sv.ac)
+    #     return self._get_refget_accession(sequence)
 
     @staticmethod
     def _ir_stype(a):
@@ -170,32 +157,12 @@ class Translator:
     ############################################################################
     # INTERNAL
 
-    def _get_refget_accession(self, alias):
-        """Get refget accession given alias
-
-        :param alias: Alias to get accession for
-        :return: Refget Accession if found
-        """
-        refget_accession = None
-        try:
-            aliases = self.data_proxy.translate_sequence_identifier(
-                alias, namespace="ga4gh"
-            )
-        except KeyError:
-            _logger.error("KeyError when getting refget accession: %s", alias)
-        else:
-            if aliases:
-                refget_accession = aliases[0].split("ga4gh:")[-1]
-
-        return refget_accession
-
     def _get_hgvs_tools(self):
         """ Only create UTA db connection if needed. There will be one connection per
         translator.
         """
         if self.hgvs_tools is None:
-            uta_conn = hgvs.dataproviders.uta.connect()
-            self.hgvs_tools = HgvsTools(uta_conn)
+            self.hgvs_tools = HgvsTools(self.data_proxy)
         return self.hgvs_tools
 
     def _from_vrs(self, var):
@@ -209,31 +176,6 @@ class Translator:
         except KeyError:
             return None
         return model(**var)
-
-    def _is_valid_ref_seq(
-        self, sequence_id: str, start_pos: int, end_pos: int, ref: str
-    ) -> Tuple[bool, str]:
-        """Return wether or not the expected reference sequence matches the actual
-        reference sequence
-
-        :param sequence_id: Sequence ID to use
-        :param start_pos: Start pos (inter-residue) on the sequence_id
-        :param end_pos: End pos (inter-residue) on the sequence_id
-        :param ref: The expected reference sequence on the sequence_id given the
-            start_pos and end_pos
-        :return: Tuple containing whether or not actual reference sequence matches
-            the expected reference sequence and error message if mismatch
-        """
-        actual_ref = self.data_proxy.get_sequence(sequence_id, start_pos, end_pos)
-        is_valid = actual_ref == ref
-        err_msg = ""
-        if not is_valid:
-            err_msg = (
-                f"Expected reference sequence {ref} on {sequence_id} at positions "
-                f"({start_pos}, {end_pos}) but found {actual_ref}"
-            )
-            _logger.warning(err_msg)
-        return is_valid, err_msg
 
 class AlleleTranslator(Translator):
     """Class for translating formats to and from VRS Alleles"""
@@ -256,6 +198,27 @@ class AlleleTranslator(Translator):
             "hgvs": self._to_hgvs,
             "spdi": self._to_spdi,
         }
+
+    def _create_allele(self, refget_accession, start, end, ins_seq, **kwargs):
+        """
+        Create an allele object with the given parameters.
+
+        Args:
+            refget_accession (str): The accession ID of the reference genome.
+            start (int): The start position of the allele.
+            end (int): The end position of the allele.
+            ins_seq (str): The inserted sequence for the allele.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            models.Allele: The created allele object.
+        """
+        seq_ref = models.SequenceReference(refgetAccession=refget_accession)
+        location = models.SequenceLocation(sequenceReference=seq_ref, start=start, end=end)
+        state = models.LiteralSequenceExpression(sequence=ins_seq)
+        allele = models.Allele(location=location, state=state)
+        allele = self._post_process_imported_allele(allele, **kwargs)
+        return allele
 
     def _from_beacon(self, beacon_expr, **kwargs):
         """Parse beacon expression into VRS Allele
@@ -293,6 +256,7 @@ class AlleleTranslator(Translator):
 
         if not isinstance(beacon_expr, str):
             return None
+        
         m = self.beacon_re.match(beacon_expr.replace(" ", ""))
         if not m:
             return None
@@ -300,7 +264,7 @@ class AlleleTranslator(Translator):
         g = m.groupdict()
         assembly_name = kwargs.get("assembly_name", self.default_assembly_name)
         sequence = assembly_name + ":" + g["chr"]
-        refget_accession = self._get_refget_accession(sequence)
+        refget_accession = self.data_proxy.get_refget_accession(sequence)
         if not refget_accession:
             return None
 
@@ -310,11 +274,8 @@ class AlleleTranslator(Translator):
         end = start + len(ref)
         ins_seq = alt
 
-        seq_ref = models.SequenceReference(refgetAccession=refget_accession)
-        location = models.SequenceLocation(sequenceReference=seq_ref, start=start, end=end)
-        state = models.LiteralSequenceExpression(sequence=ins_seq)
-        allele = models.Allele(location=location, state=state)
-        allele = self._post_process_imported_allele(allele, **kwargs)
+        allele = self._create_allele(refget_accession, start, end, ins_seq, **kwargs)
+
         return allele
 
 
@@ -365,7 +326,8 @@ class AlleleTranslator(Translator):
         g = m.groupdict()
         assembly_name = kwargs.get("assembly_name", self.default_assembly_name)
         sequence = assembly_name + ":" + g["chr"]
-        refget_accession = self._get_refget_accession(sequence)
+        refget_accession = self.data_proxy.get_refget_accession(sequence)
+        # refget_accession = self._get_refget_accession(sequence)
         if not refget_accession:
             return None
 
@@ -375,16 +337,14 @@ class AlleleTranslator(Translator):
         end = start + len(ref)
         ins_seq = alt
 
-        # validation checks
-        valid_ref_seq, err_msg = self._is_valid_ref_seq(sequence, start, end, ref)
-        if kwargs.get("require_validation", True) and not valid_ref_seq:
-            raise ValidationError(err_msg)
+        # TODO: ask other devs if this should be down on all _from_...  methods?
+        if kwargs.get("require_validation", True):
+            # validation check for matching reference sequence bases
+            valid_ref_seq, err_msg = self.data_proxy.is_valid_ref_seq(sequence, start, end, ref)
+            if not valid_ref_seq:
+                raise ValidationError(err_msg)
 
-        seq_ref = models.SequenceReference(refgetAccession=refget_accession)
-        location = models.SequenceLocation(sequenceReference=seq_ref, start=start, end=end)
-        sstate = models.LiteralSequenceExpression(sequence=ins_seq)
-        allele = models.Allele(location=location, state=sstate)
-        allele = self._post_process_imported_allele(allele, **kwargs)
+        allele = self._create_allele(refget_accession, start, end, ins_seq, **kwargs)
         return allele
 
     def _from_hgvs(self, hgvs_expr: str, **kwargs):
@@ -419,51 +379,29 @@ class AlleleTranslator(Translator):
         }
 
         """
-        sv = self._get_parsed_hgvs(hgvs_expr)
+        sv = self._get_hgvs_tools().parse(hgvs_expr)
         if not sv:
             return None
+        
+        if self._get_hgvs_tools().is_intronic(sv):
+            raise ValueError("Intronic HGVS variants are not supported")
 
-        refget_accession = self._get_hgvs_refget_ac(sv)
+        refget_accession = self.data_proxy.derive_refget_accession(sv.ac)
         if not refget_accession:
             return None
+        
+        # translate coding coordinates to positional coordinates, if necessary
+        if sv.type == "c":
+            sv = self._get_hgvs_tools().c_to_n(sv)
 
-        if isinstance(sv.posedit.pos, hgvs.location.BaseOffsetInterval):
-            if sv.posedit.pos.start.is_intronic or sv.posedit.pos.end.is_intronic:
-                raise ValueError("Intronic HGVS variants are not supported ({sv.posedit})")
+        # TODO: shouldn't we be validating the "ref" sequence here? if the kwargs "require_validation" value is set to True
 
-        if sv.posedit.edit.type == "ins":
-            start = sv.posedit.pos.start.base
-            end = sv.posedit.pos.start.base
-            state = sv.posedit.edit.alt
-        elif sv.posedit.edit.type in ("sub", "del", "delins", "identity"):
-            start = sv.posedit.pos.start.base - 1
-            end = sv.posedit.pos.end.base
-            if sv.posedit.edit.type == "identity":
-                state = self.data_proxy.get_sequence(sv.ac,
-                                                     sv.posedit.pos.start.base - 1,
-                                                     sv.posedit.pos.end.base)
-            else:
-                state = sv.posedit.edit.alt or ""
-        elif sv.posedit.edit.type == "dup":
-            start = sv.posedit.pos.start.base - 1
-            end = sv.posedit.pos.end.base
-            ref = self.data_proxy.get_sequence(sv.ac,
-                                               sv.posedit.pos.start.base - 1,
-                                               sv.posedit.pos.end.base)
-            state = ref + ref
-        else:
-            raise ValueError(f"HGVS variant type {sv.posedit.edit.type} is unsupported")
+        (start,end,state) = self._get_hgvs_tools().get_position_and_state(sv)
 
-        seq_ref = models.SequenceReference(refgetAccession=refget_accession)
-        location = models.SequenceLocation(sequenceReference=seq_ref, start=start, end=end)
-        sstate = models.LiteralSequenceExpression(sequence=state)
-        allele = models.Allele(location=location, state=sstate)
-        allele = self._post_process_imported_allele(allele, **kwargs)
+        allele = self._create_allele(refget_accession, start, end, state, **kwargs)
         return allele
 
-
     def _from_spdi(self, spdi_expr, **kwargs):
-
         """Parse SPDI expression in to a GA4GH Allele
 
         kwargs:
@@ -497,13 +435,17 @@ class AlleleTranslator(Translator):
 
         if not isinstance(spdi_expr, str):
             return None
+        
         m = self.spdi_re.match(spdi_expr)
         if not m:
             return None
 
         g = m.groupdict()
-        sequence = coerce_namespace(g["ac"])
-        refget_accession = self._get_refget_accession(sequence)
+        refget_accession = self.data_proxy.get_refget_accession(g["ac"])
+        # # TODO #1: move the coerce_namespace into the _get_refget_accession function to consolidate the logic
+        # # TODO #2: move _get_refget_accession into data_proxy
+        # sequence = coerce_namespace(g["ac"])
+        # refget_accession = self._get_refget_accession(sequence)
         if not refget_accession:
             return None
 
@@ -515,11 +457,7 @@ class AlleleTranslator(Translator):
         end = start + del_len
         ins_seq = g["ins_seq"]
 
-        seq_ref = models.SequenceReference(refgetAccession=refget_accession)
-        location = models.SequenceLocation(sequenceReference=seq_ref, start=start, end=end)
-        sstate = models.LiteralSequenceExpression(sequence=ins_seq)
-        allele = models.Allele(location=location, state=sstate)
-        allele = self._post_process_imported_allele(allele, **kwargs)
+        allele = self._create_allele(refget_accession, start, end, ins_seq, **kwargs)
         return allele
 
     def _to_hgvs(self, vo, namespace="refseq"):
@@ -541,76 +479,84 @@ class AlleleTranslator(Translator):
         provided, raises TypeError
         """
 
-        if not isinstance(vo.location.sequenceReference, models.SequenceReference):
-            raise TypeError(
-                "`vo.location.sequenceReference` expects a `SequenceReference`"
-            )
 
-        sequence = f"ga4gh:{export_sequencelocation_sequence_id(vo.location.sequenceReference)}"
-        aliases = self.data_proxy.translate_sequence_identifier(sequence, namespace)
+        # # TODO: this method should extract the VRS elements needed to build the HGVS expression 
+        # # and pass them to a method in the hgvs_tools class to build the final result
+        return None
+    
+        # if not isinstance(vo.location.sequenceReference, models.SequenceReference):
+        #     raise TypeError(
+        #         "`vo.location.sequenceReference` expects a `SequenceReference`"
+        #     )
 
-        # infer type of sequence based on accession
-        # TODO: move to bioutils
-        stypes = list(set(t for t in (self._ir_stype(a) for a in aliases) if t))
-        if len(stypes) != 1:
-            raise ValueError(f"Couldn't infer sequence type for {sequence} ({stypes})")
-        stype = stypes[0]
+        # sequence = f"ga4gh:{export_sequencelocation_sequence_id(vo.location.sequenceReference)}"
+        # aliases = self.data_proxy.translate_sequence_identifier(sequence, namespace)
 
-        # build interval and edit depending on sequence type
-        if stype == "p":
-            raise ValueError("Only nucleic acid variation is currently supported")
-            # ival = hgvs.location.Interval(start=start, end=end)
-            # edit = hgvs.edit.AARefAlt(ref=None, alt=vo.state.sequence)
-        else:                   # pylint: disable=no-else-raise
-            start, end = vo.location.start, vo.location.end
-            # ib: 0 1 2 3 4 5
-            #  h:  1 2 3 4 5
-            if start == end:    # insert: hgvs uses *exclusive coords*
-                ref = None
-                end += 1
-            else:               # else: hgvs uses *inclusive coords*
-                ref = self.data_proxy.get_sequence(sequence, start, end)
-                start += 1
-            ival = hgvs.location.Interval(
-                start=hgvs.location.SimplePosition(start),
-                end=hgvs.location.SimplePosition(end)
-            )
-            alt = str(vo.state.sequence.root) or None  # "" => None
-            edit = hgvs.edit.NARefAlt(ref=ref, alt=alt)
+        # # infer type of sequence based on accession
+        # # TODO: move to bioutils
+        # stypes = list(set(t for t in (self._ir_stype(a) for a in aliases) if t))
+        # if len(stypes) != 1:
+        #     # TODO: consider returning all stypes if more than one alias type is returned
+        #     raise ValueError(f"Couldn't infer sequence type for {sequence} ({stypes})")
+        # stype = stypes[0]
 
-        posedit = hgvs.posedit.PosEdit(pos=ival, edit=edit)
-        var = hgvs.sequencevariant.SequenceVariant(
-            ac=None,
-            type=stype,
-            posedit=posedit)
+        # # build interval and edit depending on sequence type
+        # if stype == "p":
+        #     raise ValueError("Only nucleic acid variation is currently supported")
+        #     # ival = hgvs.location.Interval(start=start, end=end)
+        #     # edit = hgvs.edit.AARefAlt(ref=None, alt=vo.state.sequence)
+        # else:                   # pylint: disable=no-else-raise
+        #     start, end = vo.location.start, vo.location.end
+        #     # ib: 0 1 2 3 4 5
+        #     #  h:  1 2 3 4 5
+        #     if start == end:    # insert: hgvs uses *exclusive coords*
+        #         ref = None
+        #         end += 1
+        #     else:               # else: hgvs uses *inclusive coords*
+        #         ref = self.data_proxy.get_sequence(sequence, start, end)
+        #         start += 1
 
-        hgvs_exprs = []
-        for alias in aliases:
-            ns, a = alias.split(":")
-            # skip GRCh accessions unless specifically requested
-            # because they are ambiguous without their namespace,
-            # which can't be included in HGVS expressions
-            # TODO: use default_assembly_name here
-            if ns.startswith("GRC") and namespace is None:
-                continue
+        #     ival = hgvs.location.Interval(
+        #         start=hgvs.location.SimplePosition(start),
+        #         end=hgvs.location.SimplePosition(end)
+        #     )
+        #     alt = str(vo.state.sequence.root) or None  # "" => None
+        #     edit = hgvs.edit.NARefAlt(ref=ref, alt=alt)
 
-            if not (any(a.startswith(pfx) for pfx in ("NM", "NP", "NC", "NG", "NR", "NW", "XM", "XR", "XP"))):
-                continue
+        # posedit = hgvs.posedit.PosEdit(pos=ival, edit=edit)
+        # var = hgvs.sequencevariant.SequenceVariant(
+        #     ac=None,
+        #     type=stype,
+        #     posedit=posedit)
 
-            var.ac = a
+        # hgvs_exprs = []
+        # for alias in aliases:
+        #     ns, a = alias.split(":")
+        #     # skip GRCh accessions unless specifically requested
+        #     # because they are ambiguous without their namespace,
+        #     # which can't be included in HGVS expressions
+        #     # TODO: use default_assembly_name here
+        #     if ns.startswith("GRC") and namespace is None:
+        #         continue
 
-            try:
-                if not namespace.startswith("GRC"):
-                    # if the namespace is GRC, can't normalize, since hgvs can't deal with it
-                    hgvs_tools = self._get_hgvs_tools()
-                    parsed = hgvs_tools.parse(str(var))
-                    var = hgvs_tools.normalize(parsed)
+        #     if not (any(a.startswith(pfx) for pfx in ("NM", "NP", "NC", "NG", "NR", "NW", "XM", "XR", "XP"))):
+        #         continue
 
-                hgvs_exprs += [str(var)]
-            except hgvs.exceptions.HGVSDataNotAvailableError:
-                _logger.warning(f"No data found for accession {a}")
+        #     var.ac = a
 
-        return list(set(hgvs_exprs))
+        #     try:
+        #         if not namespace.startswith("GRC"):
+        #             # if the namespace is GRC, can't normalize, since hgvs can't deal with it
+        #             hgvs_tools = self._get_hgvs_tools()
+        #             parsed = hgvs_tools.parse(str(var))
+        #             var = hgvs_tools.normalize(parsed)
+
+        #         hgvs_exprs += [str(var)]
+                
+        #     except hgvs.exceptions.HGVSDataNotAvailableError:
+        #         _logger.warning(f"No data found for accession {a}")
+
+        # return list(set(hgvs_exprs))
 
     def _to_spdi(self, vo, namespace="refseq"):
         """generates a *list* of SPDI expressions for VRS Allele.
@@ -695,15 +641,18 @@ class CnvTranslator(Translator):
             copy_change: Copy change. If not provided, default is efo:0030067 for
                 deletions and efo:0030070 for duplications
         """
-        sv = self._get_parsed_hgvs(hgvs_dup_del_expr)
+        # sv = self._get_parsed_hgvs(hgvs_dup_del_expr)
+        sv = self._get_hgvs_tools().parse(hgvs_dup_del_expr)
         if not sv:
             return None
-
-        sv_type = sv.posedit.edit.type
-        if sv_type not in {"del", "dup"}:
+        
+        if self._get_hgvs_tools().get_edit_type(sv) not in {"del", "dup"}:
             raise ValueError("Must provide a 'del' or 'dup'")
+       
+        if self._get_hgvs_tools().is_intronic(sv):
+            raise ValueError("Intronic HGVS variants are not supported")
 
-        refget_accession = self._get_hgvs_refget_ac(sv)
+        refget_accession = self.data_proxy.derive (sv)
         if not refget_accession:
             return None
 
@@ -740,6 +689,7 @@ if __name__ == "__main__":
     coloredlogs.install(level="INFO")
 
     from ga4gh.vrs.dataproxy import create_dataproxy
+from dataproxy import _DataProxy
     # dp = create_dataproxy("seqrepo+file:///usr/local/share/seqrepo/latest")
     dp = create_dataproxy("seqrepo + http://localhost:5000/seqrepo")
     tlr = Translator(data_proxy=dp)
