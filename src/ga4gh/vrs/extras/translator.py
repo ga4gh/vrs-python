@@ -6,8 +6,8 @@ Output formats: VRS (serialized), hgvs, spdi, gnomad (vcf)
 """
 
 from collections.abc import Mapping
-from typing import Optional, Union, Tuple
-from vrs import _DataProxy
+from typing import Optional, Union
+from ga4gh.vrs.dataproxy import create_dataproxy, _DataProxy
 import logging
 import re
 
@@ -478,85 +478,82 @@ class AlleleTranslator(Translator):
         as the `vo.location.sequenceReference`. If a `SequenceReference` is not
         provided, raises TypeError
         """
-
-
         # # TODO: this method should extract the VRS elements needed to build the HGVS expression 
         # # and pass them to a method in the hgvs_tools class to build the final result
-        return None
     
-        # if not isinstance(vo.location.sequenceReference, models.SequenceReference):
-        #     raise TypeError(
-        #         "`vo.location.sequenceReference` expects a `SequenceReference`"
-        #     )
+        if not isinstance(vo.location.sequenceReference, models.SequenceReference):
+            raise TypeError(
+                "`vo.location.sequenceReference` expects a `SequenceReference`"
+            )
 
-        # sequence = f"ga4gh:{export_sequencelocation_sequence_id(vo.location.sequenceReference)}"
-        # aliases = self.data_proxy.translate_sequence_identifier(sequence, namespace)
+        sequence = f"ga4gh:{export_sequencelocation_sequence_id(vo.location.sequenceReference)}"
+        aliases = self.data_proxy.translate_sequence_identifier(sequence, namespace)
 
-        # # infer type of sequence based on accession
-        # # TODO: move to bioutils
-        # stypes = list(set(t for t in (self._ir_stype(a) for a in aliases) if t))
-        # if len(stypes) != 1:
-        #     # TODO: consider returning all stypes if more than one alias type is returned
-        #     raise ValueError(f"Couldn't infer sequence type for {sequence} ({stypes})")
-        # stype = stypes[0]
+        # infer type of sequence based on accession
+        # TODO: move to bioutils
+        stypes = list(set(t for t in (self._ir_stype(a) for a in aliases) if t))
+        if len(stypes) != 1:
+            # TODO: consider returning all stypes if more than one alias type is returned
+            raise ValueError(f"Couldn't infer sequence type for {sequence} ({stypes})")
+        stype = stypes[0]
 
-        # # build interval and edit depending on sequence type
-        # if stype == "p":
-        #     raise ValueError("Only nucleic acid variation is currently supported")
-        #     # ival = hgvs.location.Interval(start=start, end=end)
-        #     # edit = hgvs.edit.AARefAlt(ref=None, alt=vo.state.sequence)
-        # else:                   # pylint: disable=no-else-raise
-        #     start, end = vo.location.start, vo.location.end
-        #     # ib: 0 1 2 3 4 5
-        #     #  h:  1 2 3 4 5
-        #     if start == end:    # insert: hgvs uses *exclusive coords*
-        #         ref = None
-        #         end += 1
-        #     else:               # else: hgvs uses *inclusive coords*
-        #         ref = self.data_proxy.get_sequence(sequence, start, end)
-        #         start += 1
+        # build interval and edit depending on sequence type
+        if stype == "p":
+            raise ValueError("Only nucleic acid variation is currently supported")
+            # ival = hgvs.location.Interval(start=start, end=end)
+            # edit = hgvs.edit.AARefAlt(ref=None, alt=vo.state.sequence)
+        else:                   # pylint: disable=no-else-raise
+            start, end = vo.location.start, vo.location.end
+            # ib: 0 1 2 3 4 5
+            #  h:  1 2 3 4 5
+            if start == end:    # insert: hgvs uses *exclusive coords*
+                ref = None
+                end += 1
+            else:               # else: hgvs uses *inclusive coords*
+                ref = self.data_proxy.get_sequence(sequence, start, end)
+                start += 1
 
-        #     ival = hgvs.location.Interval(
-        #         start=hgvs.location.SimplePosition(start),
-        #         end=hgvs.location.SimplePosition(end)
-        #     )
-        #     alt = str(vo.state.sequence.root) or None  # "" => None
-        #     edit = hgvs.edit.NARefAlt(ref=ref, alt=alt)
+            ival = hgvs.location.Interval(
+                start=hgvs.location.SimplePosition(start),
+                end=hgvs.location.SimplePosition(end)
+            )
+            alt = str(vo.state.sequence.root) or None  # "" => None
+            edit = hgvs.edit.NARefAlt(ref=ref, alt=alt)
 
-        # posedit = hgvs.posedit.PosEdit(pos=ival, edit=edit)
-        # var = hgvs.sequencevariant.SequenceVariant(
-        #     ac=None,
-        #     type=stype,
-        #     posedit=posedit)
+        posedit = hgvs.posedit.PosEdit(pos=ival, edit=edit)
+        var = hgvs.sequencevariant.SequenceVariant(
+            ac=None,
+            type=stype,
+            posedit=posedit)
 
-        # hgvs_exprs = []
-        # for alias in aliases:
-        #     ns, a = alias.split(":")
-        #     # skip GRCh accessions unless specifically requested
-        #     # because they are ambiguous without their namespace,
-        #     # which can't be included in HGVS expressions
-        #     # TODO: use default_assembly_name here
-        #     if ns.startswith("GRC") and namespace is None:
-        #         continue
+        hgvs_exprs = []
+        for alias in aliases:
+            ns, a = alias.split(":")
+            # skip GRCh accessions unless specifically requested
+            # because they are ambiguous without their namespace,
+            # which can't be included in HGVS expressions
+            # TODO: use default_assembly_name here
+            if ns.startswith("GRC") and namespace is None:
+                continue
 
-        #     if not (any(a.startswith(pfx) for pfx in ("NM", "NP", "NC", "NG", "NR", "NW", "XM", "XR", "XP"))):
-        #         continue
+            if not (any(a.startswith(pfx) for pfx in ("NM", "NP", "NC", "NG", "NR", "NW", "XM", "XR", "XP"))):
+                continue
 
-        #     var.ac = a
+            var.ac = a
 
-        #     try:
-        #         if not namespace.startswith("GRC"):
-        #             # if the namespace is GRC, can't normalize, since hgvs can't deal with it
-        #             hgvs_tools = self._get_hgvs_tools()
-        #             parsed = hgvs_tools.parse(str(var))
-        #             var = hgvs_tools.normalize(parsed)
+            try:
+                if not namespace.startswith("GRC"):
+                    # if the namespace is GRC, can't normalize, since hgvs can't deal with it
+                    hgvs_tools = self._get_hgvs_tools()
+                    parsed = hgvs_tools.parse(str(var))
+                    var = hgvs_tools.normalize(parsed)
 
-        #         hgvs_exprs += [str(var)]
+                hgvs_exprs += [str(var)]
                 
-        #     except hgvs.exceptions.HGVSDataNotAvailableError:
-        #         _logger.warning(f"No data found for accession {a}")
+            except hgvs.exceptions.HGVSDataNotAvailableError:
+                _logger.warning(f"No data found for accession {a}")
 
-        # return list(set(hgvs_exprs))
+        return list(set(hgvs_exprs))
 
     def _to_spdi(self, vo, namespace="refseq"):
         """generates a *list* of SPDI expressions for VRS Allele.
@@ -688,8 +685,6 @@ if __name__ == "__main__":
     import coloredlogs
     coloredlogs.install(level="INFO")
 
-    from ga4gh.vrs.dataproxy import create_dataproxy
-from dataproxy import _DataProxy
     # dp = create_dataproxy("seqrepo+file:///usr/local/share/seqrepo/latest")
     dp = create_dataproxy("seqrepo + http://localhost:5000/seqrepo")
     tlr = Translator(data_proxy=dp)

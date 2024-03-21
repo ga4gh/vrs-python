@@ -7,7 +7,7 @@ import hgvs.variantmapper
 import hgvs.sequencevariant
 
 from bioutils.accessions import coerce_namespace
-from dataproxy import _DataProxy
+from ga4gh.vrs.dataproxy import _DataProxy
 
 class HgvsTools():
     """
@@ -112,14 +112,14 @@ class HgvsTools():
             start = sv.posedit.pos.start.base - 1
             end = sv.posedit.pos.end.base
             if sv.posedit.edit.type == "identity":
-                state = self.dp.get_sequence(sv.ac, start_i=sv.posedit.pos.start.base - 1, end_i=sv.posedit.pos.end.base)
+                state = self.dp.get_sequence(sv.ac, start=sv.posedit.pos.start.base - 1, end=sv.posedit.pos.end.base)
             else:
                 state = sv.posedit.edit.alt or ""
 
         elif sv.posedit.edit.type == "dup":
             start = sv.posedit.pos.start.base - 1
             end = sv.posedit.pos.end.base
-            ref = self.dp.get_sequence(sv.ac, start_i=sv.posedit.pos.start.base - 1, end_i=sv.posedit.pos.end.base)
+            ref = self.dp.get_sequence(sv.ac, start=sv.posedit.pos.start.base - 1, end=sv.posedit.pos.end.base)
             state = ref + ref
 
         else:

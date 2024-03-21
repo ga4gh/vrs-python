@@ -6,6 +6,7 @@ See https://vr-spec.readthedocs.io/en/1.1/impl-guide/required_data.html
 """
 
 from abc import ABC, abstractmethod
+from typing import Tuple
 from collections.abc import Sequence
 import datetime
 import functools
