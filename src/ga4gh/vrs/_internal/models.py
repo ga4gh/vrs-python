@@ -424,6 +424,15 @@ class SequenceLocation(_Ga4ghIdentifiableObject):
             'start',
             'type'
         ]
+    
+    def get_sequence_refget_accession(self):
+        if isinstance(self.sequenceReference, SequenceReference):
+            return self.sequenceReference.refgetAccession
+        elif isinstance(self.sequenceReference, IRI):
+            return self.sequenceReference.root
+        else:
+            return None
+
 
 
 class _VariationBase(_Ga4ghIdentifiableObject):
@@ -526,27 +535,6 @@ class CopyNumberChange(_CopyNumber):
         ]
 
 
-# class GenotypeMember(_ValueObject):
-#     """A class for expressing the count of a specific `MolecularVariation` present
-#     in-trans at a genomic locus represented by a `Genotype`.
-#     """
-#
-#     type: Literal['GenotypeMember'] = Field('GenotypeMember', description='MUST be "GenotypeMember".')
-#     count: Union[Range, int] = Field(
-#         ..., description='The number of copies of the `variation` at a Genotype locus.'
-#     )
-#     variation: Union[Allele, Haplotype] = Field(
-#         ..., description='A MolecularVariation at a Genotype locus.'
-#     )
-#
-#     class ga4gh(_Ga4ghIdentifiableObject.ga4gh):
-#         keys = [
-#             'type',
-#             'count',
-#             'variation'
-#         ]
-
-
 class MolecularVariation(RootModel):
     """A variation on a contiguous molecule."""
 
@@ -557,34 +545,6 @@ class MolecularVariation(RootModel):
         },
         discriminator='type'
     )
-
-
-# class Genotype(_VariationBase):
-#     """A quantified set of _in-trans_ `MolecularVariation` at a genomic locus."""
-#
-#     type: Literal['Genotype'] = Field(
-#         'Genotype',
-#         description='MUST be "Genotype"'
-#     )
-#     # TODO members temporarily typed as List instead of Set + validate unique items
-#     members: List[GenotypeMember] = Field(
-#         ...,
-#         description='Each GenotypeMember in `members` describes a MolecularVariation and the count of that variation at the locus.',
-#         min_length=1,
-#     )
-#     count: Union[Range, int] = Field(
-#         ...,
-#         description='The total number of copies of all MolecularVariation at this locus, MUST be greater than or equal to the sum of GenotypeMember copy counts. If greater than the total counts, this implies additional MolecularVariation that are expected to exist but are not explicitly indicated.',
-#     )
-#
-#     class ga4gh(_Ga4ghIdentifiableObject.ga4gh):
-#         prefix = 'GT'
-#         keys = [
-#             'count',
-#             'members',
-#             'type'
-#         ]
-
 
 class SequenceExpression(RootModel):
     root: Union[LiteralSequenceExpression, ReferenceLengthExpression] = Field(

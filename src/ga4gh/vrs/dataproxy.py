@@ -66,6 +66,36 @@ class _DataProxy(ABC):
 
         """
 
+    @staticmethod
+    def extract_sequence_type(alias: str) -> str:
+        """
+        The purpose of this function is to provide a convenient way to extract the sequence type from an accession by matching its prefix to a known set of prefixes.
+
+        Args:
+        alias (str): The accession string.
+
+        Returns:
+        str or None: The sequence type associated with the accession string, or None if no matching prefix is found.
+        """
+
+        prefix_dict = {
+            "refseq:NM_": "c",
+            "refseq:NC_012920": "m",
+            "refseq:NG_": "g",
+            "refseq:NC_00": "g",
+            "refseq:NW_": "g",
+            "refseq:NR_": "n",
+            "refseq:NP_": "p",
+            "refseq:XM_": "c",
+            "refseq:XR_": "n",
+            "refseq:XP_": "p",
+            "GRCh": "g",
+        }
+
+        for prefix, seq_type in prefix_dict.items():
+            if alias.startswith(prefix):
+                return seq_type
+        return None
 
     @functools.lru_cache()
     def translate_sequence_identifier(self, identifier, namespace=None):
@@ -275,15 +305,12 @@ def _isoformat(o):
     # eg: '2015-09-25T23:14:42.588601Z'
     return o.isoformat("T") + "Z"
 
-
 # Future implementations
 # * The RefGetDataProxy is waiting on support for sequence lookup by alias
 # class RefGetDataProxy(_DataProxy):
 #     def __init__(self, base_url):
 #         super().__init__()
 #         self.base_url = base_url
-
-
 
 def create_dataproxy(uri: str = None) -> _DataProxy:
     """Create a dataproxy from uri or GA4GH_VRS_DATAPROXY_URI
