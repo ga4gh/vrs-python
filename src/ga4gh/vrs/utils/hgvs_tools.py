@@ -19,7 +19,7 @@ class HgvsTools():
 
     Attributes:
         parser (hgvs.parser.Parser): The HGVS parser object.
-        uta_conn: The UTA (Unified Transcriptome and Annotation) connection object.
+        uta_conn: The UTA (Universal Transcript Archive) connection object.
         normalizer: The HGVS normalizer object.
         variantMapper: The HGVS variant mapper object.
     """
