@@ -40,6 +40,7 @@ class _Translator(ABC):
         re.IGNORECASE
     )
     hgvs_re = re.compile(r"[^:]+:[cgmnpr]\.")
+    hgvs_re = re.compile(r"[^:]+:[cgmnpr]\.")
     spdi_re = re.compile(r"(?P<ac>[^:]+):(?P<pos>\d+):(?P<del_len_or_seq>\w*):(?P<ins_seq>\w*)")
 
     def __init__(
