@@ -211,10 +211,11 @@ class Translator:
             return None
         return model(**var)
 
-    def _is_valid_ref_seq(
-        self, sequence_id: str, start_pos: int, end_pos: int, ref: str
-    ) -> Tuple[bool, str]:
-        """Return wether or not the expected reference sequence matches the actual
+    def _validate_ref_seq(
+        self, sequence_id: str, start_pos: int, end_pos: int, ref: str,
+        require_validation: bool = True
+    ) -> None:
+        """Determine wether or not the expected reference sequence matches the actual
         reference sequence
 
         :param sequence_id: Sequence ID to use
@@ -222,19 +223,20 @@ class Translator:
         :param end_pos: End pos (inter-residue) on the sequence_id
         :param ref: The expected reference sequence on the sequence_id given the
             start_pos and end_pos
-        :return: Tuple containing whether or not actual reference sequence matches
-            the expected reference sequence and error message if mismatch
+        :param require_validation: If `True` and if validation checks fail, a
+            `ValidationError` will be raised. Error message will always be logged.
         """
         actual_ref = self.data_proxy.get_sequence(sequence_id, start_pos, end_pos)
-        is_valid = actual_ref == ref
-        err_msg = ""
-        if not is_valid:
+
+        if actual_ref != ref:
             err_msg = (
                 f"Expected reference sequence {ref} on {sequence_id} at positions "
                 f"({start_pos}, {end_pos}) but found {actual_ref}"
             )
             _logger.warning(err_msg)
-        return is_valid, err_msg
+
+            if require_validation:
+                raise ValidationError(err_msg)
 
 class AlleleTranslator(Translator):
     """Class for translating formats to and from VRS Alleles"""
@@ -377,9 +379,13 @@ class AlleleTranslator(Translator):
         ins_seq = alt
 
         # validation checks
-        valid_ref_seq, err_msg = self._is_valid_ref_seq(sequence, start, end, ref)
-        if kwargs.get("require_validation", True) and not valid_ref_seq:
-            raise ValidationError(err_msg)
+        self._validate_ref_seq(
+            sequence,
+            start,
+            end,
+            ref,
+            require_validation=kwargs.get("require_validation", True)
+        )
 
         seq_ref = models.SequenceReference(refgetAccession=refget_accession)
         location = models.SequenceLocation(sequenceReference=seq_ref, start=start, end=end)
