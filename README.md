@@ -23,8 +23,8 @@ This repository contains several related components:
 
 # VRS-Python and VRS Version Correspondence
 
-The ga4gh/vrs-python repo embeds the ga4gh/vrs repo as a git submodule, and
-therefore each ga4gh.vrs package on PyPI embeds a particular version of VRS. The
+The ga4gh/vrs-python repo embeds the ga4gh/vrs repo as a git submodule for testing purposes.
+Each ga4gh.vrs package on PyPI embeds a particular version of VRS. The
 correspondences between the packages that are **currently maintained** may be summarized as:
 
 | vrs-python branch | vrs-python tag/version | vrs branch | vrs version |
