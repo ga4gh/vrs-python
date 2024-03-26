@@ -147,27 +147,27 @@ allele_dict5_normalized = {
 }
 
 @pytest.mark.vcr
-def test_normalize_allele(dataproxy):
+def test_normalize_allele(rest_dataproxy):
     allele1 = models.Allele(**allele_dict)
-    allele2 = normalize(allele1, dataproxy)
+    allele2 = normalize(allele1, rest_dataproxy)
     assert allele1 == allele2
 
     allele1 = models.Allele(**allele_dict2)
-    allele2 = normalize(allele1, dataproxy, rle_seq_limit=0)
+    allele2 = normalize(allele1, rest_dataproxy, rle_seq_limit=0)
     assert allele1 != allele2
     assert allele2 == models.Allele(**allele_dict2_normalized)
 
     # Definite ranges are not normalized
     allele3 = models.Allele(**allele_dict3)
-    allele3_after_norm = normalize(allele3, dataproxy)
+    allele3_after_norm = normalize(allele3, rest_dataproxy)
     assert allele3_after_norm == allele3
 
     # Duplication
     allele4 = models.Allele(**allele_dict4)
-    allele4_after_norm = normalize(allele4, dataproxy)
+    allele4_after_norm = normalize(allele4, rest_dataproxy)
     assert allele4_after_norm == models.Allele(**allele_dict4_normalized)
 
     # Duplication in non-integer-repeat ambiguous region
     allele5 = models.Allele(**allele_dict5)
-    allele5_after_norm = normalize(allele5, dataproxy)
+    allele5_after_norm = normalize(allele5, rest_dataproxy)
     assert allele5_after_norm == models.Allele(**allele_dict5_normalized)
