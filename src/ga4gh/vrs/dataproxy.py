@@ -275,25 +275,3 @@ def create_dataproxy(uri: str = None) -> _DataProxy:
         raise ValueError(f"DataProxy provider {provider} not implemented")
 
     return dp
-
-
-
-
-if __name__ == "__main__":
-    # Before running, do something like this:
-    # snafu$ docker run \
-    # >   --name seqrepo-rest-service \
-    # >   --detach --rm -p 5000:5000 \
-    # >   -v /usr/local/share/seqrepo/:/usr/local/share/seqrepo/ \
-    # >   biocommons/seqrepo-rest-service
-
-    dp1 = create_dataproxy("seqrepo+http://localhost:5000/seqrepo")
-    dp2 = create_dataproxy("seqrepo+file:///usr/local/share/seqrepo/latest")
-
-    ir = "refseq:NM_000551.3"
-
-    print(f"dp1 = {dp1}")
-    print(f"dp2 = {dp2}")
-
-    assert dp1.get_metadata(ir) == dp2.get_metadata(ir)
-    assert dp1.get_sequence(ir) == dp2.get_sequence(ir)

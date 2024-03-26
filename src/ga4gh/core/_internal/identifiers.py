@@ -216,38 +216,3 @@ def ga4gh_serialize(obj: BaseModel) -> Optional[bytes]:
     without traversing the whole tree again in collapse_identifiable_values.
     """
     return obj.model_dump_json().encode("utf-8")
-
-
-def export_pydantic_model(obj, exclude_none=True):
-    # Export Pydantic model to raw Python object. If a custom root object,
-    # return that. If a Model with fields, exports to a dict.
-    # TODO maybe just call export_pydantic_model on the .root instead of
-    # get_pydantic_root, taking whatever it is. Recursion should terminate fine.
-    if isinstance(obj, BaseModel):
-        # try custom root type first, if not, assume it's a normal class
-        if isinstance(obj, RootModel):
-            obj = get_pydantic_root(obj)
-        else:
-            obj = obj.model_dump(exclude_none=exclude_none)
-    return obj
-
-
-# def scrape_model_metadata(obj, meta={}) -> dict:
-#     """
-#     For a Pydantic object obj, pull out .ga4gh.identifiable
-#     and .ga4gh.keys and put them in meta keyed by the class name of obj
-#     """
-#     assert isinstance(obj, BaseModel)
-#     name = type(obj).__name__
-#     if is_pydantic_custom_str_type(obj):
-#         meta[name] = {"identifiable": False, "keys": None}
-#     else:
-#         meta[name] = {}
-#         identifiable = getattr_in(obj, ["ga4gh", "identifiable"])
-#         if identifiable:
-#             meta[name]["identifiable"] = identifiable
-#         keys = getattr_in(obj, ["ga4gh", "keys"])
-#         if keys and len(keys) > 0:
-#             meta[name]["keys"] = keys
-#         # TODO recurse into fields
-#     return meta
