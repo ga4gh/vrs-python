@@ -23,7 +23,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Mon, 19 Feb 2024 12:32:32 GMT
+      - Tue, 26 Mar 2024 15:58:39 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -64,37 +64,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Mon, 19 Feb 2024 12:32:32 GMT
-      Server:
-      - Werkzeug/2.2.2 Python/3.10.4
-    status:
-      code: 200
-      message: OK
-- request:
-    body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      User-Agent:
-      - python-requests/2.31.0
-    method: GET
-    uri: http://localhost:5000/seqrepo/1/sequence/GRCh38:7?start=140753335&end=140753336
-  response:
-    body:
-      string: A
-    headers:
-      Connection:
-      - close
-      Content-Length:
-      - '1'
-      Content-Type:
-      - text/plain; charset=utf-8
-      Date:
-      - Mon, 19 Feb 2024 12:32:32 GMT
+      - Tue, 26 Mar 2024 15:58:39 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -135,7 +105,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Mon, 19 Feb 2024 12:32:32 GMT
+      - Tue, 26 Mar 2024 15:58:39 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -165,7 +135,37 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Mon, 19 Feb 2024 12:32:32 GMT
+      - Tue, 26 Mar 2024 15:58:39 GMT
+      Server:
+      - Werkzeug/2.2.2 Python/3.10.4
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.31.0
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/GRCh38:7?start=140753335&end=140753336
+  response:
+    body:
+      string: A
+    headers:
+      Connection:
+      - close
+      Content-Length:
+      - '1'
+      Content-Type:
+      - text/plain; charset=utf-8
+      Date:
+      - Tue, 26 Mar 2024 15:58:39 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:

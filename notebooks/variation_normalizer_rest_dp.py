@@ -1,5 +1,7 @@
 import requests
 
+""" TODO convert this to a jupyter notebook """
+
 class VariationNormalizerRESTDataProxy:
     """
     Rest data proxy for Variation Normalizer API

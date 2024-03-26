@@ -414,7 +414,15 @@ class SequenceLocation(_Ga4ghIdentifiableObject):
     end: Union[Range, int] = Field(
         ...,
         description='The end coordinate or range of the SequenceLocation. The minimum value of this coordinate or range is 0. MUST represent a coordinate or range greater than the value of `start`.',
+    
     )
+    def get_refget_accession(self):
+        if isinstance(self.sequenceReference, SequenceReference):
+            return self.sequenceReference.refgetAccession
+        elif isinstance(self.sequenceReference, IRI):
+            return self.sequenceReference.root
+        else:
+            return None
 
     class ga4gh(_Ga4ghIdentifiableObject.ga4gh):
         prefix = 'SL'
@@ -424,14 +432,6 @@ class SequenceLocation(_Ga4ghIdentifiableObject):
             'start',
             'type'
         ]
-    
-    def get_sequence_refget_accession(self):
-        if isinstance(self.sequenceReference, SequenceReference):
-            return self.sequenceReference.refgetAccession
-        elif isinstance(self.sequenceReference, IRI):
-            return self.sequenceReference.root
-        else:
-            return None
 
 
 

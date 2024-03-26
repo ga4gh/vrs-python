@@ -207,7 +207,7 @@ class SeqRepoDataProxy(_SeqRepoDataProxyBase):
 
     def _get_metadata(self, identifier):
         ns, a = coerce_namespace(identifier).split(":", 2)
-        r = list(self.sr.aliases.find_aliases(namespace=ns, alias=a))
+        r = list(self.sr.aliases.find_aliases(namespace=ns, alias=a))        
         if len(r) == 0:
             raise KeyError(identifier)
         seq_id = r[0]["seq_id"]

@@ -11,90 +11,6 @@ interactions:
       User-Agent:
       - python-requests/2.31.0
     method: GET
-    uri: http://localhost:5000/seqrepo/1/metadata/refseq:NC_000019.10
-  response:
-    body:
-      string: "{\n  \"added\": \"2016-08-24T08:19:02Z\",\n  \"aliases\": [\n    \"Ensembl:19\",\n
-        \   \"ensembl:19\",\n    \"GRCh38:19\",\n    \"GRCh38:chr19\",\n    \"GRCh38.p1:19\",\n
-        \   \"GRCh38.p1:chr19\",\n    \"GRCh38.p10:19\",\n    \"GRCh38.p10:chr19\",\n
-        \   \"GRCh38.p11:19\",\n    \"GRCh38.p11:chr19\",\n    \"GRCh38.p12:19\",\n
-        \   \"GRCh38.p12:chr19\",\n    \"GRCh38.p2:19\",\n    \"GRCh38.p2:chr19\",\n
-        \   \"GRCh38.p3:19\",\n    \"GRCh38.p3:chr19\",\n    \"GRCh38.p4:19\",\n    \"GRCh38.p4:chr19\",\n
-        \   \"GRCh38.p5:19\",\n    \"GRCh38.p5:chr19\",\n    \"GRCh38.p6:19\",\n    \"GRCh38.p6:chr19\",\n
-        \   \"GRCh38.p7:19\",\n    \"GRCh38.p7:chr19\",\n    \"GRCh38.p8:19\",\n    \"GRCh38.p8:chr19\",\n
-        \   \"GRCh38.p9:19\",\n    \"GRCh38.p9:chr19\",\n    \"MD5:b0eba2c7bb5c953d1e06a508b5e487de\",\n
-        \   \"NCBI:NC_000019.10\",\n    \"refseq:NC_000019.10\",\n    \"SEGUID:AHxM5/L8jIX08UhBBkKXkiO5rhY\",\n
-        \   \"SHA1:007c4ce7f2fc8c85f4f148410642979223b9ae16\",\n    \"VMC:GS_IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl\",\n
-        \   \"sha512t24u:IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl\",\n    \"ga4gh:SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl\"\n
-        \ ],\n  \"alphabet\": \"ACGNT\",\n  \"length\": 58617616\n}\n"
-    headers:
-      Connection:
-      - close
-      Content-Length:
-      - '1035'
-      Content-Type:
-      - application/json
-      Date:
-      - Mon, 18 Mar 2024 19:06:58 GMT
-      Server:
-      - Werkzeug/2.2.2 Python/3.10.4
-    status:
-      code: 200
-      message: OK
-- request:
-    body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      User-Agent:
-      - python-requests/2.31.0
-    method: GET
-    uri: http://localhost:5000/seqrepo/1/metadata/ga4gh:SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl
-  response:
-    body:
-      string: "{\n  \"added\": \"2016-08-24T08:19:02Z\",\n  \"aliases\": [\n    \"Ensembl:19\",\n
-        \   \"ensembl:19\",\n    \"GRCh38:19\",\n    \"GRCh38:chr19\",\n    \"GRCh38.p1:19\",\n
-        \   \"GRCh38.p1:chr19\",\n    \"GRCh38.p10:19\",\n    \"GRCh38.p10:chr19\",\n
-        \   \"GRCh38.p11:19\",\n    \"GRCh38.p11:chr19\",\n    \"GRCh38.p12:19\",\n
-        \   \"GRCh38.p12:chr19\",\n    \"GRCh38.p2:19\",\n    \"GRCh38.p2:chr19\",\n
-        \   \"GRCh38.p3:19\",\n    \"GRCh38.p3:chr19\",\n    \"GRCh38.p4:19\",\n    \"GRCh38.p4:chr19\",\n
-        \   \"GRCh38.p5:19\",\n    \"GRCh38.p5:chr19\",\n    \"GRCh38.p6:19\",\n    \"GRCh38.p6:chr19\",\n
-        \   \"GRCh38.p7:19\",\n    \"GRCh38.p7:chr19\",\n    \"GRCh38.p8:19\",\n    \"GRCh38.p8:chr19\",\n
-        \   \"GRCh38.p9:19\",\n    \"GRCh38.p9:chr19\",\n    \"MD5:b0eba2c7bb5c953d1e06a508b5e487de\",\n
-        \   \"NCBI:NC_000019.10\",\n    \"refseq:NC_000019.10\",\n    \"SEGUID:AHxM5/L8jIX08UhBBkKXkiO5rhY\",\n
-        \   \"SHA1:007c4ce7f2fc8c85f4f148410642979223b9ae16\",\n    \"VMC:GS_IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl\",\n
-        \   \"sha512t24u:IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl\",\n    \"ga4gh:SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl\"\n
-        \ ],\n  \"alphabet\": \"ACGNT\",\n  \"length\": 58617616\n}\n"
-    headers:
-      Connection:
-      - close
-      Content-Length:
-      - '1035'
-      Content-Type:
-      - application/json
-      Date:
-      - Mon, 18 Mar 2024 19:06:58 GMT
-      Server:
-      - Werkzeug/2.2.2 Python/3.10.4
-    status:
-      code: 200
-      message: OK
-- request:
-    body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      User-Agent:
-      - python-requests/2.31.0
-    method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl?start=289464&end=289464
   response:
     body:
@@ -107,7 +23,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Mon, 18 Mar 2024 19:06:58 GMT
+      - Tue, 26 Mar 2024 15:21:52 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -137,7 +53,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Mon, 18 Mar 2024 19:06:58 GMT
+      - Tue, 26 Mar 2024 15:21:52 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -167,7 +83,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Mon, 18 Mar 2024 19:06:58 GMT
+      - Tue, 26 Mar 2024 15:21:52 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -197,7 +113,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Mon, 18 Mar 2024 19:06:58 GMT
+      - Tue, 26 Mar 2024 15:21:52 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -227,7 +143,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Mon, 18 Mar 2024 19:06:58 GMT
+      - Tue, 26 Mar 2024 15:21:52 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -257,7 +173,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Mon, 18 Mar 2024 19:06:58 GMT
+      - Tue, 26 Mar 2024 15:21:52 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -297,20 +213,20 @@ interactions:
       Content-Type:
       - text/plain
       Date:
-      - Mon, 18 Mar 2024 19:06:58 GMT
+      - Tue, 26 Mar 2024 15:21:53 GMT
       Keep-Alive:
       - timeout=4, max=40
       NCBI-PHID:
-      - D0BDE05998BAF2D500002ADFC6219C7E.1.1.m_5
+      - 322C87E474B568E500005BBC49E73BD9.1.1.m_5
       NCBI-SID:
-      - 512040FAFC73B5C4_0448SID
+      - 3EC9BCFA77EBCC69_2A6CSID
       Referrer-Policy:
       - origin-when-cross-origin
       Server:
       - Finatra
       Set-Cookie:
-      - ncbi_sid=512040FAFC73B5C4_0448SID; domain=.nih.gov; path=/; expires=Tue, 18
-        Mar 2025 19:06:58 GMT
+      - ncbi_sid=3EC9BCFA77EBCC69_2A6CSID; domain=.nih.gov; path=/; expires=Wed, 26
+        Mar 2025 15:21:53 GMT
       Strict-Transport-Security:
       - max-age=31536000; includeSubDomains; preload
       Transfer-Encoding:
@@ -362,20 +278,20 @@ interactions:
       Content-Type:
       - text/plain
       Date:
-      - Mon, 18 Mar 2024 19:06:59 GMT
+      - Tue, 26 Mar 2024 15:21:53 GMT
       Keep-Alive:
       - timeout=4, max=40
       NCBI-PHID:
-      - 939B9567B1550155000033AB3391F66A.1.1.m_5
+      - D0BDBF1F4546BFE5000034BC3DD61467.1.1.m_5
       NCBI-SID:
-      - F942FFBC786625AA_1A04SID
+      - 58579BEBADB5CA9A_BC70SID
       Referrer-Policy:
       - origin-when-cross-origin
       Server:
       - Finatra
       Set-Cookie:
-      - ncbi_sid=F942FFBC786625AA_1A04SID; domain=.nih.gov; path=/; expires=Tue, 18
-        Mar 2025 19:06:59 GMT
+      - ncbi_sid=58579BEBADB5CA9A_BC70SID; domain=.nih.gov; path=/; expires=Wed, 26
+        Mar 2025 15:21:53 GMT
       Strict-Transport-Security:
       - max-age=31536000; includeSubDomains; preload
       Transfer-Encoding:
@@ -428,20 +344,20 @@ interactions:
       Content-Type:
       - text/plain
       Date:
-      - Mon, 18 Mar 2024 19:07:00 GMT
+      - Tue, 26 Mar 2024 15:21:53 GMT
       Keep-Alive:
       - timeout=4, max=40
       NCBI-PHID:
-      - 322C913F0F1E0135000077E990F16BB9.1.1.m_5
+      - 939B0CF92DC73635000042804456F27A.1.1.m_5
       NCBI-SID:
-      - D9FD3B008F9918D7_4FA6SID
+      - C628551F1909BD15_ABE5SID
       Referrer-Policy:
       - origin-when-cross-origin
       Server:
       - Finatra
       Set-Cookie:
-      - ncbi_sid=D9FD3B008F9918D7_4FA6SID; domain=.nih.gov; path=/; expires=Tue, 18
-        Mar 2025 19:07:00 GMT
+      - ncbi_sid=C628551F1909BD15_ABE5SID; domain=.nih.gov; path=/; expires=Wed, 26
+        Mar 2025 15:21:54 GMT
       Strict-Transport-Security:
       - max-age=31536000; includeSubDomains; preload
       Transfer-Encoding:
@@ -493,20 +409,20 @@ interactions:
       Content-Type:
       - text/plain
       Date:
-      - Mon, 18 Mar 2024 19:07:01 GMT
+      - Tue, 26 Mar 2024 15:21:54 GMT
       Keep-Alive:
       - timeout=4, max=40
       NCBI-PHID:
-      - 939B9567B155015500004EAB3D68A885.1.1.m_5
+      - 939B0CF92DC736350000418049ADB695.1.1.m_5
       NCBI-SID:
-      - C47092B3FBA371A3_12DASID
+      - 6D4478DABA667714_77CASID
       Referrer-Policy:
       - origin-when-cross-origin
       Server:
       - Finatra
       Set-Cookie:
-      - ncbi_sid=C47092B3FBA371A3_12DASID; domain=.nih.gov; path=/; expires=Tue, 18
-        Mar 2025 19:07:00 GMT
+      - ncbi_sid=6D4478DABA667714_77CASID; domain=.nih.gov; path=/; expires=Wed, 26
+        Mar 2025 15:21:54 GMT
       Strict-Transport-Security:
       - max-age=31536000; includeSubDomains; preload
       Transfer-Encoding:

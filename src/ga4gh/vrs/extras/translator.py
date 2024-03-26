@@ -222,7 +222,7 @@ class AlleleTranslator(_Translator):
         g = m.groupdict()
         assembly_name = kwargs.get("assembly_name", self.default_assembly_name)
         sequence = assembly_name + ":" + g["chr"]
-        refget_accession = self.data_proxy.get_refget_accession(sequence)
+        refget_accession = self.data_proxy.derive_refget_accession(sequence)
         if not refget_accession:
             return None
 
@@ -274,7 +274,8 @@ class AlleleTranslator(_Translator):
         }
 
         """
-
+        
+        print("gnomad_expr: ", gnomad_expr)
         if not isinstance(gnomad_expr, str):
             return None
         m = self.gnomad_re.match(gnomad_expr)
@@ -284,10 +285,11 @@ class AlleleTranslator(_Translator):
         g = m.groupdict()
         assembly_name = kwargs.get("assembly_name", self.default_assembly_name)
         sequence = assembly_name + ":" + g["chr"]
-        refget_accession = self.data_proxy.get_refget_accession(sequence)
-        # refget_accession = self._get_refget_accession(sequence)
+        refget_accession = self.data_proxy.derive_refget_accession(sequence)
         if not refget_accession:
             return None
+        
+        print("refget_accession: ", refget_accession)
 
         start = int(g["pos"]) - 1
         ref = g["ref"].upper()
@@ -297,12 +299,14 @@ class AlleleTranslator(_Translator):
 
         # TODO: ask other devs if this should be down on all _from_...  methods?
         if kwargs.get("require_validation", True):
+            print("validation check for matching reference sequence bases")
             # validation check for matching reference sequence bases
             valid_ref_seq, err_msg = self.data_proxy.is_valid_ref_seq(sequence, start, end, ref)
             if not valid_ref_seq:
                 raise ValidationError(err_msg)
             
         values = {"refget_accession": refget_accession, "start": start, "end": end, "literal_sequence": ins_seq}
+        print("values: ", values)
         allele = self._create_allele(values, **kwargs)
         return allele
 
@@ -350,11 +354,7 @@ class AlleleTranslator(_Translator):
             return None
 
         g = m.groupdict()
-        refget_accession = self.data_proxy.get_refget_accession(g["ac"])
-        # # TODO #1: move the coerce_namespace into the _get_refget_accession function to consolidate the logic
-        # # TODO #2: move _get_refget_accession into data_proxy
-        # sequence = coerce_namespace(g["ac"])
-        # refget_accession = self._get_refget_accession(sequence)
+        refget_accession = self.data_proxy.derive_refget_accession(g["ac"])
         if not refget_accession:
             return None
 
@@ -392,7 +392,7 @@ class AlleleTranslator(_Translator):
         is expected to be normalized per VRS spec.
 
         """
-        sequence = f"ga4gh:{vo.location.get_sequence_reference()}"
+        sequence = f"ga4gh:{vo.location.get_refget_accession()}"
         aliases = self.data_proxy.translate_sequence_identifier(sequence, namespace)
         aliases = [a.split(":")[1] for a in aliases]
         start, end = vo.location.start, vo.location.end
@@ -453,13 +453,14 @@ class CnvTranslator(_Translator):
         if not sv:
             return None
         
-        if self._get_hgvs_tools().get_edit_type(sv) not in {"del", "dup"}:
+        sv_type = self._get_hgvs_tools().get_edit_type(sv)
+        if sv_type not in {"del", "dup"}:
             raise ValueError("Must provide a 'del' or 'dup'")
        
         if self._get_hgvs_tools().is_intronic(sv):
             raise ValueError("Intronic HGVS variants are not supported")
 
-        refget_accession = self.data_proxy.derive (sv)
+        refget_accession = self.data_proxy.derive_refget_accession(sv.ac)
         if not refget_accession:
             return None
 

@@ -211,7 +211,7 @@ class HgvsTools():
         if vo.location is None:
             raise ValueError("VRS allele must have a location")
         
-        refget_accession = vo.location.get_sequence_refget_accession()
+        refget_accession = vo.location.get_refget_accession()
         if refget_accession is None:
             raise ValueError("VRS allele location must have a sequence reference")
         
