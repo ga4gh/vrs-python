@@ -484,7 +484,7 @@ def test_rle_seq_limit(tlr):
     output_hgvs_expr = tlr.translate_to(allele_with_seq, "hgvs")
     assert output_hgvs_expr == [input_hgvs_expr]
 
-
+@pytest.mark.vcr
 def test_to_hgvs_iri_ref_keyerror(tlr):
     # IRI is passed
     iri_vo = models.Allele(
