@@ -23,8 +23,8 @@ This repository contains several related components:
 
 # VRS-Python and VRS Version Correspondence
 
-The ga4gh/vrs-python repo embeds the ga4gh/vrs repo as a git submodule, and
-therefore each ga4gh.vrs package on PyPI embeds a particular version of VRS. The
+The ga4gh/vrs-python repo embeds the ga4gh/vrs repo as a git submodule for testing purposes.
+Each ga4gh.vrs package on PyPI embeds a particular version of VRS. The
 correspondences between the packages that are **currently maintained** may be summarized as:
 
 | vrs-python branch | vrs-python tag/version | vrs branch | vrs version |
@@ -55,7 +55,7 @@ The correspondences between the packages that are **no longer maintained** may b
 
 ## Submodules!
 
-vrs-python embeds vrs as a submodule. When checking out vrs-python and switching
+vrs-python embeds vrs as a submodule, only for testing purposes. When checking out vrs-python and switching
 branches, it is important to make sure that the submodule tracks vrs-python
 correctly. The recommended way to do this is `git config --global submodule.recurse true`. **If you don't set submodule.recurse, developers and
 reviewers must be extremely careful to not accidentally upgrade or downgrade
