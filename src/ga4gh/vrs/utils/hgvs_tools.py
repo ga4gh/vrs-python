@@ -21,43 +21,27 @@ class HgvsTools():
         parser (hgvs.parser.Parser): The HGVS parser object.
         uta_conn: The UTA (Universal Transcript Archive) connection object.
         normalizer: The HGVS normalizer object.
-        variantMapper: The HGVS variant mapper object.
+        variant_mapper: The HGVS variant mapper object.
+        data_proxy (_DataProxy): The data proxy object.
     """
     hgvs_re = re.compile(r"[^:]+:[cgmnpr]\.")
 
-    def __init__(self,dp: _DataProxy = None):
+    def __init__(self,data_proxy: _DataProxy = None):
         self.parser = hgvs.parser.Parser()
-        self.uta_conn = None
-        self.normalizer = None
-        self.variantMapper = None
-        self.dp = dp
+        self.uta_conn = hgvs.dataproviders.uta.connect()
+        self.normalizer = hgvs.normalizer.Normalizer(self.uta_conn, validate=True)
+        self.variant_mapper = hgvs.variantmapper.VariantMapper(self.uta_conn)
+        self.data_proxy = data_proxy
 
-    def _fetch_uta_conn(self):
-        # just in time instantiation of the UTA connection
-        if self.uta_conn is None:
-            self.uta_conn = hgvs.dataproviders.uta.connect()
-        return self.uta_conn
-    
-    def _fetch_normalizer(self):
-        # just in time instantiation of the normalizer service, with validation set to True
-        if self.normalizer is None:
-            self.normalizer = hgvs.normalizer.Normalizer(self._fetch_uta_conn(), validate=True)
-        return self.normalizer
-    
-    def _fetch_variantMapper(self):
-        # just in time instantiation of the variantMapper service
-        if self.variantMapper is None:
-            self.variantMapper = hgvs.variantmapper.VariantMapper(self._fetch_uta_conn())
-        return self.variantMapper
     
 
     def close(self):
         # TODO These should only be closed if they are owned by this instance
         self.normalizer = None
-        self.variantMapper = None
-        self.dp = None
-        if self._get_uta_conn is not None:
-            self._get_uta_conn.close()
+        self.variant_mapper = None
+        self.data_proxy = None
+        if self.uta_conn is not None:
+            self.uta_conn.close()
 
     # convenience methods for hgvs parsing, normalization, and some mappings
     def parse(self, hgvs_str):
@@ -90,7 +74,7 @@ class HgvsTools():
     
 
     def get_edit_type(self, sv: hgvs.sequencevariant.SequenceVariant):
-        if sv == None or sv.posedit == None or sv.posedit.edit == None:
+        if sv is None or sv.posedit is None or sv.posedit.edit is None:
             return None
         return sv.posedit.edit.type
     
@@ -117,14 +101,14 @@ class HgvsTools():
             start = sv.posedit.pos.start.base - 1
             end = sv.posedit.pos.end.base
             if sv.posedit.edit.type == "identity":
-                state = self.dp.get_sequence(sv.ac, start=sv.posedit.pos.start.base - 1, end=sv.posedit.pos.end.base)
+                state = self.data_proxy.get_sequence(sv.ac, start=sv.posedit.pos.start.base - 1, end=sv.posedit.pos.end.base)
             else:
                 state = sv.posedit.edit.alt or ""
 
         elif sv.posedit.edit.type == "dup":
             start = sv.posedit.pos.start.base - 1
             end = sv.posedit.pos.end.base
-            ref = self.dp.get_sequence(sv.ac, start=sv.posedit.pos.start.base - 1, end=sv.posedit.pos.end.base)
+            ref = self.data_proxy.get_sequence(sv.ac, start=sv.posedit.pos.start.base - 1, end=sv.posedit.pos.end.base)
             state = ref + ref
 
         else:
@@ -170,15 +154,13 @@ class HgvsTools():
         if self.is_intronic(sv):
             raise ValueError("Intronic HGVS variants are not supported")
 
-        refget_accession = self.dp.derive_refget_accession(sv.ac)
+        refget_accession = self.data_proxy.derive_refget_accession(sv.ac)
         if not refget_accession:
             return None
         
         # translate coding coordinates to positional coordinates, if necessary
         if sv.type == "c":
             sv = self.c_to_n(sv)
-
-        # TODO: shouldn't we be validating the "ref" sequence here? if the kwargs "require_validation" value is set to True
 
         (start,end,state) = self.get_position_and_state(sv)
 
@@ -216,7 +198,7 @@ class HgvsTools():
             raise ValueError("VRS allele location must have a sequence reference")
         
         sequence = f"ga4gh:{refget_accession}"
-        aliases = self.dp.translate_sequence_identifier(sequence, namespace)
+        aliases = self.data_proxy.translate_sequence_identifier(sequence, namespace)
 
         hgvs_exprs = []
         for alias in aliases:
@@ -231,7 +213,7 @@ class HgvsTools():
             if not (any(accession.startswith(pfx) for pfx in ("NM", "NP", "NC", "NG", "NR", "NW", "XM", "XR", "XP"))):
                 continue
 
-            sequence_type = self.dp.extract_sequence_type(alias)
+            sequence_type = self.data_proxy.extract_sequence_type(alias)
 
             # create the hgvs expression object
             var = self._to_sequence_variant(vo, sequence_type, sequence, accession)
@@ -254,7 +236,7 @@ class HgvsTools():
                 ref = None
                 end += 1
             else:               # else: hgvs uses *inclusive coords*
-                ref = self.dp.get_sequence(sequence, start, end)
+                ref = self.data_proxy.get_sequence(sequence, start, end)
                 start += 1
 
             ival = hgvs.location.Interval(
@@ -287,13 +269,13 @@ class HgvsTools():
         return var
 
     def normalize(self, hgvs):
-        return self._fetch_normalizer().normalize(hgvs)
+        return self.normalizer.normalize(hgvs)
     
     def n_to_c(self, hgvs):
-        return self._fetch_variantMapper().n_to_c(hgvs)
+        return self.variant_mapper.n_to_c(hgvs)
 
     def c_to_n(self, hgvs):
-        return self._fetch_variantMapper().c_to_n(hgvs)
+        return self.variant_mapper.c_to_n(hgvs)
 
 if __name__ == "__main__":
 

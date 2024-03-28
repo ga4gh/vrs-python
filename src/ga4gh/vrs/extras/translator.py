@@ -9,6 +9,7 @@ from abc import ABC
 from collections.abc import Mapping
 from typing import Optional, Union
 from ga4gh.vrs.dataproxy import create_dataproxy, _DataProxy
+from ga4gh.vrs.extras.decorators import lazy_property  
 import logging
 import re
 
@@ -39,8 +40,6 @@ class _Translator(ABC):
         r"(?P<chr>[^-]+)-(?P<pos>\d+)-(?P<ref>[ACGTURYKMSWBDHVN]+)-(?P<alt>[ACGTURYKMSWBDHVN]+)",
         re.IGNORECASE
     )
-    hgvs_re = re.compile(r"[^:]+:[cgmnpr]\.")
-    hgvs_re = re.compile(r"[^:]+:[cgmnpr]\.")
     spdi_re = re.compile(r"(?P<ac>[^:]+):(?P<pos>\d+):(?P<del_len_or_seq>\w*):(?P<ins_seq>\w*)")
 
     def __init__(
@@ -115,13 +114,10 @@ class _Translator(ABC):
     ############################################################################
     # INTERNAL
 
-    def _get_hgvs_tools(self):
-        """ Only create UTA db connection if needed. There will be one connection per
-        translator.
-        """
-        if self.hgvs_tools is None:
-            self.hgvs_tools = HgvsTools(self.data_proxy)
-        return self.hgvs_tools
+    @lazy_property  
+    def hgvs_tools(self):  
+        """instantiates and returns an HgvsTools instance"""  
+        return HgvsTools(self.data_proxy) 
 
     def _from_vrs(self, var):
         """convert from dict representation of VRS JSON to VRS object"""
@@ -276,7 +272,6 @@ class AlleleTranslator(_Translator):
 
         """
         
-        print("gnomad_expr: ", gnomad_expr)
         if not isinstance(gnomad_expr, str):
             return None
         m = self.gnomad_re.match(gnomad_expr)
@@ -289,8 +284,6 @@ class AlleleTranslator(_Translator):
         refget_accession = self.data_proxy.derive_refget_accession(sequence)
         if not refget_accession:
             return None
-        
-        print("refget_accession: ", refget_accession)
 
         start = int(g["pos"]) - 1
         ref = g["ref"].upper()
@@ -300,19 +293,17 @@ class AlleleTranslator(_Translator):
 
         # TODO: ask other devs if this should be down on all _from_...  methods?
         if kwargs.get("require_validation", True):
-            print("validation check for matching reference sequence bases")
             # validation check for matching reference sequence bases
             valid_ref_seq, err_msg = self.data_proxy.is_valid_ref_seq(sequence, start, end, ref)
             if not valid_ref_seq:
                 raise ValidationError(err_msg)
             
         values = {"refget_accession": refget_accession, "start": start, "end": end, "literal_sequence": ins_seq}
-        print("values: ", values)
         allele = self._create_allele(values, **kwargs)
         return allele
 
     def _from_hgvs(self, hgvs_expr: str, **kwargs):
-        allele_values = self._get_hgvs_tools().extract_allele_values(hgvs_expr)
+        allele_values = self.hgvs_tools.extract_allele_values(hgvs_expr)
         return self._create_allele(allele_values, **kwargs)
 
     def _from_spdi(self, spdi_expr, **kwargs):
@@ -373,7 +364,7 @@ class AlleleTranslator(_Translator):
         return allele
 
     def _to_hgvs(self, vo, namespace="refseq"):
-        return self._get_hgvs_tools().from_allele(vo, namespace)
+        return self.hgvs_tools.from_allele(vo, namespace)
 
     def _to_spdi(self, vo, namespace="refseq"):
         """generates a *list* of SPDI expressions for VRS Allele.
@@ -450,15 +441,15 @@ class CnvTranslator(_Translator):
                 deletions and efo:0030070 for duplications
         """
         # sv = self._get_parsed_hgvs(hgvs_dup_del_expr)
-        sv = self._get_hgvs_tools().parse(hgvs_dup_del_expr)
+        sv = self.hgvs_tools.parse(hgvs_dup_del_expr)
         if not sv:
             return None
         
-        sv_type = self._get_hgvs_tools().get_edit_type(sv)
+        sv_type = self.hgvs_tools.get_edit_type(sv)
         if sv_type not in {"del", "dup"}:
             raise ValueError("Must provide a 'del' or 'dup'")
        
-        if self._get_hgvs_tools().is_intronic(sv):
+        if self.hgvs_tools.is_intronic(sv):
             raise ValueError("Intronic HGVS variants are not supported")
 
         refget_accession = self.data_proxy.derive_refget_accession(sv.ac)
