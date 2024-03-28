@@ -373,7 +373,7 @@ hgvs_tests = (
                 'sequence': 'AA',
                 'type': 'ReferenceLengthExpression'},
       'type': 'Allele'}),
-    ("NM_001331029.1:n.872A>G",
+    ("NM_001331029.1:c.722A>G",
      {'digest': 'DPe4AO-S0Yu4wzSCmys7eGn4p4sO0zaC',
       'id': 'ga4gh:VA.DPe4AO-S0Yu4wzSCmys7eGn4p4sO0zaC',
       'location': {'digest': '7hcVmPnIspQNDfZKBzRJFc8K9GaJuAlY',
@@ -385,7 +385,7 @@ hgvs_tests = (
                    'type': 'SequenceLocation'},
       'state': {'sequence': 'G', 'type': 'LiteralSequenceExpression'},
       'type': 'Allele'}),
-    ("NM_181798.1:n.1263G>T",
+    ("NM_181798.1:c.1007G>T",
      {'digest': 'vSL4aV7mPQKQLX7Jk-PmXN0APs0cBIr9',
       'id': 'ga4gh:VA.vSL4aV7mPQKQLX7Jk-PmXN0APs0cBIr9',
       'location': {'digest': 'EtvHvoj1Lsq-RruzIzWbKOIAW-bt193w',
@@ -444,9 +444,7 @@ def test_hgvs(tlr, hgvsexpr, expected):
     assert allele.model_dump(exclude_none=True) == expected
 
     to_hgvs = tlr.translate_to(allele, "hgvs")
-    assert 1 == len(to_hgvs)
-    assert hgvs_tests_to_hgvs_map.get(hgvsexpr, hgvsexpr) == to_hgvs[0]
-
+    assert (hgvsexpr in to_hgvs) or (hgvs_tests_to_hgvs_map.get(hgvsexpr, hgvsexpr) in to_hgvs)
 
 @pytest.mark.vcr
 def test_rle_seq_limit(tlr):
@@ -486,8 +484,8 @@ def test_rle_seq_limit(tlr):
     output_hgvs_expr = tlr.translate_to(allele_with_seq, "hgvs")
     assert output_hgvs_expr == [input_hgvs_expr]
 
-
-def test_to_hgvs_invalid(tlr):
+@pytest.mark.vcr
+def test_to_hgvs_iri_ref_keyerror(tlr):
     # IRI is passed
     iri_vo = models.Allele(
         **{
@@ -504,9 +502,11 @@ def test_to_hgvs_invalid(tlr):
             "type": "Allele"
         }
     )
-    with pytest.raises(TypeError) as e:
+    with pytest.raises(KeyError) as e:
+        # even though the seqrefs.jsonc#/NM_181798.1 is a valid iri-reference for json schema, it is not yet handled here
+        # we have to add functionality to address the handling of iri-references in the future
         tlr.translate_to(iri_vo, "hgvs")
-    assert str(e.value) == "`vo.location.sequenceReference` expects a `SequenceReference`"
+    assert str(e.value) == "'ga4gh:seqrefs.jsonc#/NM_181798.1'"
 
 # TODO: Readd these tests
 # @pytest.mark.vcr

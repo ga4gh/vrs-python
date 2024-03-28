@@ -34,48 +34,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Mon, 18 Mar 2024 19:06:46 GMT
-      Server:
-      - Werkzeug/2.2.2 Python/3.10.4
-    status:
-      code: 200
-      message: OK
-- request:
-    body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      User-Agent:
-      - python-requests/2.31.0
-    method: GET
-    uri: http://localhost:5000/seqrepo/1/metadata/ga4gh:SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul
-  response:
-    body:
-      string: "{\n  \"added\": \"2016-08-27T21:23:35Z\",\n  \"aliases\": [\n    \"GRCh38:7\",\n
-        \   \"GRCh38:chr7\",\n    \"GRCh38.p1:7\",\n    \"GRCh38.p1:chr7\",\n    \"GRCh38.p10:7\",\n
-        \   \"GRCh38.p10:chr7\",\n    \"GRCh38.p11:7\",\n    \"GRCh38.p11:chr7\",\n
-        \   \"GRCh38.p12:7\",\n    \"GRCh38.p12:chr7\",\n    \"GRCh38.p2:7\",\n    \"GRCh38.p2:chr7\",\n
-        \   \"GRCh38.p3:7\",\n    \"GRCh38.p3:chr7\",\n    \"GRCh38.p4:7\",\n    \"GRCh38.p4:chr7\",\n
-        \   \"GRCh38.p5:7\",\n    \"GRCh38.p5:chr7\",\n    \"GRCh38.p6:7\",\n    \"GRCh38.p6:chr7\",\n
-        \   \"GRCh38.p7:7\",\n    \"GRCh38.p7:chr7\",\n    \"GRCh38.p8:7\",\n    \"GRCh38.p8:chr7\",\n
-        \   \"GRCh38.p9:7\",\n    \"GRCh38.p9:chr7\",\n    \"MD5:cc044cc2256a1141212660fb07b6171e\",\n
-        \   \"NCBI:NC_000007.14\",\n    \"refseq:NC_000007.14\",\n    \"SEGUID:4+JjCcBVhPCr8vdIhUKFycPv8bY\",\n
-        \   \"SHA1:e3e26309c05584f0abf2f748854285c9c3eff1b6\",\n    \"VMC:GS_F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul\",\n
-        \   \"sha512t24u:F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul\",\n    \"ga4gh:SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul\"\n
-        \ ],\n  \"alphabet\": \"ACGNRSTY\",\n  \"length\": 159345973\n}\n"
-    headers:
-      Connection:
-      - close
-      Content-Length:
-      - '977'
-      Content-Type:
-      - application/json
-      Date:
-      - Mon, 18 Mar 2024 19:06:46 GMT
+      - Tue, 26 Mar 2024 16:28:20 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -105,7 +64,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Mon, 18 Mar 2024 19:06:46 GMT
+      - Tue, 26 Mar 2024 16:28:20 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -145,20 +104,20 @@ interactions:
       Content-Type:
       - text/plain
       Date:
-      - Mon, 18 Mar 2024 19:06:46 GMT
+      - Tue, 26 Mar 2024 16:28:21 GMT
       Keep-Alive:
       - timeout=4, max=40
       NCBI-PHID:
-      - D0BDE05998BAF2D5000044DF8B4E9E37.1.1.m_5
+      - 322C87E474B568E500002E0CEAE70D07.1.1.m_5
       NCBI-SID:
-      - 3370159224064C72_15B6SID
+      - 7DC076DBAEAC9F26_EA72SID
       Referrer-Policy:
       - origin-when-cross-origin
       Server:
       - Finatra
       Set-Cookie:
-      - ncbi_sid=3370159224064C72_15B6SID; domain=.nih.gov; path=/; expires=Tue, 18
-        Mar 2025 19:06:46 GMT
+      - ncbi_sid=7DC076DBAEAC9F26_EA72SID; domain=.nih.gov; path=/; expires=Wed, 26
+        Mar 2025 16:28:20 GMT
       Strict-Transport-Security:
       - max-age=31536000; includeSubDomains; preload
       Transfer-Encoding:
@@ -211,20 +170,20 @@ interactions:
       Content-Type:
       - text/plain
       Date:
-      - Mon, 18 Mar 2024 19:06:47 GMT
+      - Tue, 26 Mar 2024 16:28:21 GMT
       Keep-Alive:
       - timeout=4, max=40
       NCBI-PHID:
-      - D0BDE05998BAF2D5000047DF91F692FF.1.1.m_5
+      - 939B0CF92DC73635000056D082C3DD0B.1.1.m_5
       NCBI-SID:
-      - 2410A44F14D5993A_7383SID
+      - 31494E6B0300111E_3FADSID
       Referrer-Policy:
       - origin-when-cross-origin
       Server:
       - Finatra
       Set-Cookie:
-      - ncbi_sid=2410A44F14D5993A_7383SID; domain=.nih.gov; path=/; expires=Tue, 18
-        Mar 2025 19:06:47 GMT
+      - ncbi_sid=31494E6B0300111E_3FADSID; domain=.nih.gov; path=/; expires=Wed, 26
+        Mar 2025 16:28:21 GMT
       Strict-Transport-Security:
       - max-age=31536000; includeSubDomains; preload
       Transfer-Encoding:
