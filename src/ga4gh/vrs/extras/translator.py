@@ -53,7 +53,6 @@ class _Translator(ABC):
         self.data_proxy = data_proxy
         self.identify = identify
         self.rle_seq_limit = rle_seq_limit
-        self.hgvs_tools = None
         self.from_translators = {}
         self.to_translators = {}
         return 
