@@ -106,11 +106,3 @@ class Localizer:
                 start=ga4gh.vrs.models.start,
                 end=ga4gh.vrs.models.end)
             )
-
-
-
-
-
-if __name__ == "__main__":
-    cbl = ga4gh.vrs.models.ChromosomeLocation(chr="11", start="q22.3", end="q23.1") # TODO non-existent ChromosomeLocation
-    lr = Localizer()
