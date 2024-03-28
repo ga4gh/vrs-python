@@ -130,6 +130,33 @@ class _Translator(ABC):
             return None
         return model(**var)
 
+    def _validate_ref_seq(
+        self, sequence_id: str, start_pos: int, end_pos: int, ref: str,
+        require_validation: bool = True
+    ) -> None:
+        """Determine wether or not the expected reference sequence matches the actual
+        reference sequence
+
+        :param sequence_id: Sequence ID to use
+        :param start_pos: Start pos (inter-residue) on the sequence_id
+        :param end_pos: End pos (inter-residue) on the sequence_id
+        :param ref: The expected reference sequence on the sequence_id given the
+            start_pos and end_pos
+        :param require_validation: If `True` and if validation checks fail, a
+            `ValidationError` will be raised. Error message will always be logged.
+        """
+        actual_ref = self.data_proxy.get_sequence(sequence_id, start_pos, end_pos)
+
+        if actual_ref != ref:
+            err_msg = (
+                f"Expected reference sequence {ref} on {sequence_id} at positions "
+                f"({start_pos}, {end_pos}) but found {actual_ref}"
+            )
+            _logger.warning(err_msg)
+
+            if require_validation:
+                raise ValidationError(err_msg)
+
 class AlleleTranslator(_Translator):
     """Class for translating formats to and from VRS Alleles"""
 
@@ -290,12 +317,14 @@ class AlleleTranslator(_Translator):
         end = start + len(ref)
         ins_seq = alt
 
-        # TODO: ask other devs if this should be down on all _from_...  methods?
-        if kwargs.get("require_validation", True):
-            # validation check for matching reference sequence bases
-            valid_ref_seq, err_msg = self.data_proxy.is_valid_ref_seq(sequence, start, end, ref)
-            if not valid_ref_seq:
-                raise ValidationError(err_msg)
+        # validation checks
+        self._validate_ref_seq(
+            sequence,
+            start,
+            end,
+            ref,
+            require_validation=kwargs.get("require_validation", True)
+        )
 
         values = {"refget_accession": refget_accession, "start": start, "end": end, "literal_sequence": ins_seq}
         allele = self._create_allele(values, **kwargs)
