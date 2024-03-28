@@ -65,14 +65,6 @@ def get_pydantic_root(obj: Union[Any, RootModel]) -> Any:
     return obj
 
 
-def is_pydantic_custom_type(obj: RootModel) -> bool:
-    return isinstance(obj, RootModel)
-
-
-def is_pydantic_custom_str_type(obj: RootModel) -> bool:
-    return isinstance(obj, RootModel) and isinstance(obj.root, str)
-
-
 def pydantic_copy(obj: BaseModel) -> BaseModel:
     pydantic_class = type(obj)
     if not issubclass(pydantic_class, BaseModel):

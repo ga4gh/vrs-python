@@ -9,7 +9,7 @@ from abc import ABC
 from collections.abc import Mapping
 from typing import Optional, Union
 from ga4gh.vrs.dataproxy import create_dataproxy, _DataProxy
-from ga4gh.vrs.extras.decorators import lazy_property  
+from ga4gh.vrs.extras.decorators import lazy_property
 import logging
 import re
 
@@ -24,7 +24,7 @@ class ValidationError(Exception):
 
 class _Translator(ABC):
     """abstract class / interface for VRS to/from translation needs
-     
+
      Translates various variation formats to and from GA4GH VRS models
 
     All `from_` methods follow this pattern:
@@ -55,7 +55,7 @@ class _Translator(ABC):
         self.rle_seq_limit = rle_seq_limit
         self.from_translators = {}
         self.to_translators = {}
-        return 
+        return
 
     def translate_from(self, var, fmt=None, **kwargs):
         """Translate variation `var` to VRS object
@@ -113,10 +113,10 @@ class _Translator(ABC):
     ############################################################################
     # INTERNAL
 
-    @lazy_property  
-    def hgvs_tools(self):  
-        """instantiates and returns an HgvsTools instance"""  
-        return HgvsTools(self.data_proxy) 
+    @lazy_property
+    def hgvs_tools(self):
+        """instantiates and returns an HgvsTools instance"""
+        return HgvsTools(self.data_proxy)
 
     def _from_vrs(self, var):
         """convert from dict representation of VRS JSON to VRS object"""
@@ -210,7 +210,7 @@ class AlleleTranslator(_Translator):
 
         if not isinstance(beacon_expr, str):
             return None
-        
+
         m = self.beacon_re.match(beacon_expr.replace(" ", ""))
         if not m:
             return None
@@ -270,7 +270,7 @@ class AlleleTranslator(_Translator):
         }
 
         """
-        
+
         if not isinstance(gnomad_expr, str):
             return None
         m = self.gnomad_re.match(gnomad_expr)
@@ -296,7 +296,7 @@ class AlleleTranslator(_Translator):
             valid_ref_seq, err_msg = self.data_proxy.is_valid_ref_seq(sequence, start, end, ref)
             if not valid_ref_seq:
                 raise ValidationError(err_msg)
-            
+
         values = {"refget_accession": refget_accession, "start": start, "end": end, "literal_sequence": ins_seq}
         allele = self._create_allele(values, **kwargs)
         return allele
@@ -339,7 +339,7 @@ class AlleleTranslator(_Translator):
 
         if not isinstance(spdi_expr, str):
             return None
-        
+
         m = self.spdi_re.match(spdi_expr)
         if not m:
             return None
@@ -443,11 +443,11 @@ class CnvTranslator(_Translator):
         sv = self.hgvs_tools.parse(hgvs_dup_del_expr)
         if not sv:
             return None
-        
+
         sv_type = self.hgvs_tools.get_edit_type(sv)
         if sv_type not in {"del", "dup"}:
             raise ValueError("Must provide a 'del' or 'dup'")
-       
+
         if self.hgvs_tools.is_intronic(sv):
             raise ValueError("Intronic HGVS variants are not supported")
 
@@ -480,85 +480,3 @@ class CnvTranslator(_Translator):
             copy_number.location.id = ga4gh_identify(copy_number.location)
 
         return copy_number
-
-if __name__ == "__main__":
-    # pylint: disable=ungrouped-imports
-
-    # import coloredlogs
-    # coloredlogs.install(level="INFO")
-
-    import os
-    import json
-    seqrepo_uri = os.environ.get("SEQREPO_URI", "seqrepo+file:///usr/local/share/seqrepo/latest")
-    if seqrepo_uri is None:
-        raise ValueError("SEQREPO_URI environment variable must be set to a valid seqrepo URI")
-
-    dp = create_dataproxy(seqrepo_uri)
-    tlr = AlleleTranslator(data_proxy=dp)
-
-    # some test cases for local dev testing
-    hgvs_expressions = ["NC_000019.10:g.289485_289500del",
-                        "NC_000019.10:g.44908822C>T",
-                        "NC_012920.1:m.10083A>G",
-                        "NC_000013.11:g.20003097del",
-                        "NC_000013.11:g.20003010_20003011insG",
-                        "NC_000013.11:g.19993838_19993839dup",
-                        "NC_000013.11:g.32316467dup",
-                        "NM_001331029.2:c.722A>G",
-                        "NM_181798.1:c.1007G>T",
-                        "NC_000019.10:g.289464_289465insCACA"]
-    for hgvs_expr in hgvs_expressions:
-        print("="*80)
-        print(f"--- input: {hgvs_expr} ---")
-        allele_vrs = tlr.translate_from(hgvs_expr, "hgvs")
-        print(f"--- vrs allele output ---")
-        print(json.dumps(allele_vrs.model_dump(exclude_none=True), indent=4))
-        out_hgvs_expr = tlr.translate_to(allele_vrs, "hgvs")
-        print(f"--- input: {hgvs_expr} ---")
-        print(f"--- output: {out_hgvs_expr} ---")
-        print(f"--- input is in output: {hgvs_expr in out_hgvs_expr} ---")
-        print("="*80)
-        print("\n"*3)
-    
-
-    # expressions = [
-    #     "bogus",
-    #     "1-55516888-G-GA",
-    #     "19 : 44908822 C > T",
-    #     "NC_000019.10:g.44908822C>T",
-    #     "NM_000551.3:21:1:T", {
-    #         "location": {
-    #             "end": 22,
-    #             "start": 21,
-    #             "sequenceReference": {
-    #                 "refgetAccession": "SQ.v_QTc1p-MUYdgrRv4LMT6ByXIOsdw3C_",
-    #                 "type": "SequenceReference"
-    #             },
-    #             "type": "SequenceLocation"
-    #         },
-    #         "state": {
-    #             "sequence": "T",
-    #             "type": "LiteralSequenceExpression"
-    #         },
-    #         "type": "Allele"
-    #     }, {
-    #         "end": 22,
-    #         "start": 21,
-    #     }
-    # ]
-    # formats = ["hgvs", "gnomad", "beacon", "spdi", "vrs", None]
-
-    # for e in expressions:
-    #     print(f"* {e}")
-    #     for f in formats:
-    #         try:
-    #             o = tlr.translate_from(e, f)
-    #             r = o.type
-    #         except ValueError:
-    #             r = "-"
-    #         except Exception as ex:
-    #             r = ex.__class__.__name__
-    #         print(f"  {f}: {r}")
-
-
-
