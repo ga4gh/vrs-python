@@ -153,8 +153,10 @@ class _DataProxy(ABC):
         self, sequence_id: str, start_pos: int, end_pos: int, ref: str,
         require_validation: bool = True
     ) -> None:
-        """Determine wether or not the expected reference sequence matches the actual
-        reference sequence
+        """Determine whether or not the expected reference sequence matches the actual
+        reference sequence. Returns ``None``, but invalid results are logged at level WARN
+        by default. If ``require_validation`` is ``True``, then invalid data will cause a 
+        ``DataProxyValidationError`` to be raised.
         :param sequence_id: Sequence ID to use
         :param start_pos: Start pos (inter-residue) on the sequence_id
         :param end_pos: End pos (inter-residue) on the sequence_id
