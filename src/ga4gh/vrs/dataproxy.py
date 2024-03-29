@@ -163,9 +163,11 @@ class _DataProxy(ABC):
         :param end_pos: End pos (inter-residue) on the sequence_id
         :param ref: The expected reference sequence on the sequence_id given the
             start_pos and end_pos
-        :param require_validation: If `True` and if validation checks fail, a
-            `DataProxyValidationError` will be raised. Error message will always be
+        :param require_validation: If ``True`` and if validation checks fail, a
+            ``DataProxyValidationError`` will be raised. Error message will always be
             logged.
+        :raises DataProxyValidationError: If excepted reference sequence does not match
+            the actual reference sequence and ``require_validation`` is ``True``.
         """
         actual_ref = self.get_sequence(sequence_id, start_pos, end_pos)
 
