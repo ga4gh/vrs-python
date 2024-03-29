@@ -123,7 +123,7 @@ class _DataProxy(ABC):
             nsd = namespace + ":"
             aliases = [a for a in aliases if a.startswith(nsd)]
         return aliases
-        
+
     def derive_refget_accession(self, ac: str):
         """Derive the refget accession from a public accession identifier
 
@@ -133,9 +133,9 @@ class _DataProxy(ABC):
 
         if ac is None:
             return None
-        
+
         if ":" not in ac[1:]:
-            # always coerce the namespace if none provided 
+            # always coerce the namespace if none provided
             ac = coerce_namespace(ac)
 
         refget_accession = None
@@ -154,9 +154,10 @@ class _DataProxy(ABC):
         require_validation: bool = True
     ) -> None:
         """Determine whether or not the expected reference sequence matches the actual
-        reference sequence. Returns ``None``, but invalid results are logged at level WARN
-        by default. If ``require_validation`` is ``True``, then invalid data will cause a 
-        ``DataProxyValidationError`` to be raised.
+        reference sequence. Returns ``None``, but invalid results are logged at level
+        WARN by default. If ``require_validation`` is ``True``, then invalid data will
+        cause a ``DataProxyValidationError`` to be raised.
+
         :param sequence_id: Sequence ID to use
         :param start_pos: Start pos (inter-residue) on the sequence_id
         :param end_pos: End pos (inter-residue) on the sequence_id
