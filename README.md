@@ -33,7 +33,7 @@ Representation Specification
 - **Jupyter notebooks** Demonstrations of the functionality of `ga4gh.vrs` and
   `ga4gh.vrs.extras` in the form of easy-to-read notebooks.
 
-## Important Note
+## Known Issues
 
 **You are encouraged to** [browse issues](https://github.com/ga4gh/vrs-python/issues).
 All known issues are listed there. Please report any issues you find.
