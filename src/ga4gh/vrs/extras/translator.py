@@ -19,9 +19,6 @@ from ga4gh.vrs.utils.hgvs_tools import HgvsTools
 
 _logger = logging.getLogger(__name__)
 
-class ValidationError(Exception):
-    """Class for validation errors during translation"""
-
 class _Translator(ABC):
     """abstract class / interface for VRS to/from translation needs
 
@@ -75,9 +72,9 @@ class _Translator(ABC):
                 assembly_name (str): Assembly used for `var`. Defaults to the
                     `default_assembly_name`. Only used for beacon and gnomad.
                 require_validation (bool): If `True` then validation checks must pass in
-                    order to return a VRS object. A `ValidationError` will be raised if
-                    validation checks fail. If `False` then VRS object will be returned
-                    even if validation checks fail. Defaults to `True`.
+                    order to return a VRS object. A `DataProxyValidationError` will be
+                    raised if validation checks fail. If `False` then VRS object will be
+                    returned even if validation checks fail. Defaults to `True`.
                 rle_seq_limit Optional(int): If RLE is set as the new state after
                     normalization, this sets the limit for the length of the `sequence`.
                     To exclude `sequence` from the response, set to 0.
@@ -129,33 +126,6 @@ class _Translator(ABC):
         except KeyError:
             return None
         return model(**var)
-
-    def _validate_ref_seq(
-        self, sequence_id: str, start_pos: int, end_pos: int, ref: str,
-        require_validation: bool = True
-    ) -> None:
-        """Determine wether or not the expected reference sequence matches the actual
-        reference sequence
-
-        :param sequence_id: Sequence ID to use
-        :param start_pos: Start pos (inter-residue) on the sequence_id
-        :param end_pos: End pos (inter-residue) on the sequence_id
-        :param ref: The expected reference sequence on the sequence_id given the
-            start_pos and end_pos
-        :param require_validation: If `True` and if validation checks fail, a
-            `ValidationError` will be raised. Error message will always be logged.
-        """
-        actual_ref = self.data_proxy.get_sequence(sequence_id, start_pos, end_pos)
-
-        if actual_ref != ref:
-            err_msg = (
-                f"Expected reference sequence {ref} on {sequence_id} at positions "
-                f"({start_pos}, {end_pos}) but found {actual_ref}"
-            )
-            _logger.warning(err_msg)
-
-            if require_validation:
-                raise ValidationError(err_msg)
 
 class AlleleTranslator(_Translator):
     """Class for translating formats to and from VRS Alleles"""
@@ -266,9 +236,9 @@ class AlleleTranslator(_Translator):
         kwargs:
             assembly_name (str): Assembly used for `gnomad_expr`.
             require_validation (bool): If `True` then validation checks must pass in
-                order to return a VRS object. A `ValidationError` will be raised if
-                validation checks fail. If `False` then VRS object will be returned even
-                if validation checks fail. Defaults to `True`.
+                order to return a VRS object. A `DataProxyValidationError` will be
+                raised if validation checks fail. If `False` then VRS object will be
+                returned even if validation checks fail. Defaults to `True`.
             rle_seq_limit Optional(int): If RLE is set as the new state after
                 normalization, this sets the limit for the length of the `sequence`.
                 To exclude `sequence` from the response, set to 0.
@@ -318,7 +288,7 @@ class AlleleTranslator(_Translator):
         ins_seq = alt
 
         # validation checks
-        self._validate_ref_seq(
+        self.data_proxy.validate_ref_seq(
             sequence,
             start,
             end,
