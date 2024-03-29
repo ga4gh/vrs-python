@@ -232,6 +232,9 @@ make test
 
 ## Running the Notebooks
 
+The notebooks **do not** require you to setup SeqRepo or UTA from
+[Install External Data Sources](#2-install-external-data-sources).
+
 ### Running the Notebooks on Binder
 
 [Binder](https://mybinder.org/) allows you to create custom computing environments that can be shared and used by many remote users.
