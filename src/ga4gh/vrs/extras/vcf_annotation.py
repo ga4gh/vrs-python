@@ -16,8 +16,8 @@ from biocommons.seqrepo import SeqRepo
 from pydantic import ValidationError
 
 from ga4gh.core import VrsObjectIdentifierIs, use_ga4gh_compute_identifier_when
-from ga4gh.vrs.dataproxy import SeqRepoDataProxy, SeqRepoRESTDataProxy
-from ga4gh.vrs.extras.translator import AlleleTranslator, ValidationError as TranslatorValidationError
+from ga4gh.vrs.dataproxy import SeqRepoDataProxy, SeqRepoRESTDataProxy, DataProxyValidationError
+from ga4gh.vrs.extras.translator import AlleleTranslator
 
 
 _logger = logging.getLogger(__name__)
@@ -306,7 +306,7 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
                 assembly_name=assembly,
                 require_validation=require_validation
             )
-        except (ValidationError, TranslatorValidationError) as e:
+        except (ValidationError, DataProxyValidationError) as e:
             vrs_obj = None
             _logger.error("ValidationError when translating %s from gnomad: %s", vcf_coords, str(e))
             raise
@@ -377,7 +377,7 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
             returned.
         :param compute_for_ref: If true, compute VRS IDs for the reference allele
         :param bool require_validation: If `True` then validation checks must pass in
-            order to return a VRS object. A `ValidationError` will be raised if
+            order to return a VRS object. A `DataProxyValidationError` will be raised if
             validation checks fail. If `False` then VRS object will be returned even if
             validation checks fail. Defaults to `True`.
         """

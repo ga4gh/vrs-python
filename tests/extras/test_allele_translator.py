@@ -1,7 +1,8 @@
 import pytest
 
 from ga4gh.vrs import models
-from ga4gh.vrs.extras.translator import AlleleTranslator, ValidationError
+from ga4gh.vrs.dataproxy import DataProxyValidationError
+from ga4gh.vrs.extras.translator import AlleleTranslator
 
 
 @pytest.fixture(scope="module")
@@ -246,11 +247,11 @@ def test_from_gnomad(tlr):
     invalid_var = "13-32936732-G-C"
     error_msg = "Expected reference sequence G on GRCh38:13 at positions (32936731, 32936732) but found C"
 
-    with pytest.raises(ValidationError) as e:
+    with pytest.raises(DataProxyValidationError) as e:
         tlr._from_gnomad(invalid_var)
     assert str(e.value) == error_msg
 
-    with pytest.raises(ValidationError) as e:
+    with pytest.raises(DataProxyValidationError) as e:
         tlr.translate_from(invalid_var, fmt="gnomad")
     assert str(e.value) == error_msg
 
