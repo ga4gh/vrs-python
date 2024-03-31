@@ -19,9 +19,6 @@ from ga4gh.vrs.utils.hgvs_tools import HgvsTools
 
 _logger = logging.getLogger(__name__)
 
-class ValidationError(Exception):
-    """Class for validation errors during translation"""
-
 class _Translator(ABC):
     """abstract class / interface for VRS to/from translation needs
 
@@ -75,9 +72,9 @@ class _Translator(ABC):
                 assembly_name (str): Assembly used for `var`. Defaults to the
                     `default_assembly_name`. Only used for beacon and gnomad.
                 require_validation (bool): If `True` then validation checks must pass in
-                    order to return a VRS object. A `ValidationError` will be raised if
-                    validation checks fail. If `False` then VRS object will be returned
-                    even if validation checks fail. Defaults to `True`.
+                    order to return a VRS object. A `DataProxyValidationError` will be
+                    raised if validation checks fail. If `False` then VRS object will be
+                    returned even if validation checks fail. Defaults to `True`.
                 rle_seq_limit Optional(int): If RLE is set as the new state after
                     normalization, this sets the limit for the length of the `sequence`.
                     To exclude `sequence` from the response, set to 0.
@@ -239,9 +236,9 @@ class AlleleTranslator(_Translator):
         kwargs:
             assembly_name (str): Assembly used for `gnomad_expr`.
             require_validation (bool): If `True` then validation checks must pass in
-                order to return a VRS object. A `ValidationError` will be raised if
-                validation checks fail. If `False` then VRS object will be returned even
-                if validation checks fail. Defaults to `True`.
+                order to return a VRS object. A `DataProxyValidationError` will be
+                raised if validation checks fail. If `False` then VRS object will be
+                returned even if validation checks fail. Defaults to `True`.
             rle_seq_limit Optional(int): If RLE is set as the new state after
                 normalization, this sets the limit for the length of the `sequence`.
                 To exclude `sequence` from the response, set to 0.
@@ -290,12 +287,14 @@ class AlleleTranslator(_Translator):
         end = start + len(ref)
         ins_seq = alt
 
-        # TODO: ask other devs if this should be down on all _from_...  methods?
-        if kwargs.get("require_validation", True):
-            # validation check for matching reference sequence bases
-            valid_ref_seq, err_msg = self.data_proxy.is_valid_ref_seq(sequence, start, end, ref)
-            if not valid_ref_seq:
-                raise ValidationError(err_msg)
+        # validation checks
+        self.data_proxy.validate_ref_seq(
+            sequence,
+            start,
+            end,
+            ref,
+            require_validation=kwargs.get("require_validation", True)
+        )
 
         values = {"refget_accession": refget_accession, "start": start, "end": end, "literal_sequence": ins_seq}
         allele = self._create_allele(values, **kwargs)

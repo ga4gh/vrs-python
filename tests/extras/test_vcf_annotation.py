@@ -4,8 +4,8 @@ import os
 import re
 
 import pytest
-from ga4gh.vrs.extras.translator import ValidationError
 
+from ga4gh.vrs.dataproxy import DataProxyValidationError
 from ga4gh.vrs.extras.vcf_annotation import VCFAnnotator, VCFAnnotatorException
 
 TEST_DATA_DIR = "tests/extras/data"
@@ -173,7 +173,7 @@ def test_get_vrs_object_invalid_input(vcf_annotator, caplog):
 
     # Invalid ref, but requiring validation checks so an error is raised
     invalid_ref_seq_msg = "Expected reference sequence C on GRCh38:7 at positions (140753335, 140753336) but found A"
-    with pytest.raises(ValidationError, match=re.escape(invalid_ref_seq_msg)):
+    with pytest.raises(DataProxyValidationError, match=re.escape(invalid_ref_seq_msg)):
         vcf_annotator._get_vrs_object(
             "7-140753336-C-T", {}, [], "GRCh38", require_validation=True
         )

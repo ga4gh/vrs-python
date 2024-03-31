@@ -22,6 +22,10 @@ import requests
 _logger = logging.getLogger(__name__)
 
 
+class DataProxyValidationError(Exception):
+    """Class for validation errors during data proxy methods"""
+
+
 class _DataProxy(ABC):
     """abstract class / interface for VRS data needs
 
@@ -119,7 +123,7 @@ class _DataProxy(ABC):
             nsd = namespace + ":"
             aliases = [a for a in aliases if a.startswith(nsd)]
         return aliases
-        
+
     def derive_refget_accession(self, ac: str):
         """Derive the refget accession from a public accession identifier
 
@@ -129,9 +133,9 @@ class _DataProxy(ABC):
 
         if ac is None:
             return None
-        
+
         if ":" not in ac[1:]:
-            # always coerce the namespace if none provided 
+            # always coerce the namespace if none provided
             ac = coerce_namespace(ac)
 
         refget_accession = None
@@ -144,32 +148,38 @@ class _DataProxy(ABC):
                 refget_accession = aliases[0].split("ga4gh:")[-1]
 
         return refget_accession
-    
-    def is_valid_ref_seq(
-        self, sequence_id: str, start_pos: int, end_pos: int, ref: str
-    ) -> Tuple[bool, str]:
-        """Return wether or not the expected reference sequence matches the actual
-        reference sequence
+
+    def validate_ref_seq(
+        self, sequence_id: str, start_pos: int, end_pos: int, ref: str,
+        require_validation: bool = True
+    ) -> None:
+        """Determine whether or not the expected reference sequence matches the actual
+        reference sequence. Returns ``None``, but invalid results are logged at level
+        WARN by default. If ``require_validation`` is ``True``, then invalid data will
+        cause a ``DataProxyValidationError`` to be raised.
 
         :param sequence_id: Sequence ID to use
         :param start_pos: Start pos (inter-residue) on the sequence_id
         :param end_pos: End pos (inter-residue) on the sequence_id
         :param ref: The expected reference sequence on the sequence_id given the
             start_pos and end_pos
-        :return: Tuple containing whether or not actual reference sequence matches
-            the expected reference sequence and error message if mismatch
+        :param require_validation: If ``True`` and if validation checks fail, a
+            ``DataProxyValidationError`` will be raised. Error message will always be
+            logged.
+        :raises DataProxyValidationError: If excepted reference sequence does not match
+            the actual reference sequence and ``require_validation`` is ``True``.
         """
         actual_ref = self.get_sequence(sequence_id, start_pos, end_pos)
-        is_valid = actual_ref == ref
-        err_msg = ""
-        if not is_valid:
+
+        if actual_ref != ref:
             err_msg = (
                 f"Expected reference sequence {ref} on {sequence_id} at positions "
                 f"({start_pos}, {end_pos}) but found {actual_ref}"
             )
             _logger.warning(err_msg)
-        return is_valid, err_msg
 
+            if require_validation:
+                raise DataProxyValidationError(err_msg)
 
 class _SeqRepoDataProxyBase(_DataProxy):
     # wraps seqreqpo classes in order to provide translation to/from
