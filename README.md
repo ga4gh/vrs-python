@@ -175,7 +175,7 @@ correspondences between the packages that are **currently maintained** may be su
 
 | vrs-python branch | vrs-python tag/version | vrs branch | vrs version |
 | --- | --- | --- | --- |
-| [main](https://github.com/ga4gh/vrs-python/tree/main) _(default branch)_ | 2.x | [2.0-alpha](https://github.com/ga4gh/vrs/tree/2.0-alpha) | 2.x |
+| [main](https://github.com/ga4gh/vrs-python/tree/main) _(default branch)_ | 2.x | [2.x](https://github.com/ga4gh/vrs/tree/2.x) | 2.x |
 | [1.x](https://github.com/ga4gh/vrs-python/tree/1.x) | 0.8.x | [1.x](https://github.com/ga4gh/vrs/tree/1.x) | 1.x |
 
 ⚠ **Note: Only 2.x branch is being actively maintained. The 1.x branch will only be maintained for bug fixes.**
@@ -189,9 +189,9 @@ The correspondences between the packages that are **no longer maintained** may b
 
 | vrs-python branch | vrs-python tag/version | vrs branch | vrs version |
 | --- | --- | --- | --- |
-| [0.6](https://github.com/ga4gh/vrs-python/tree/0.6) | 0.6.x | [1.1](https://github.com/ga4gh/vrs/tree/1.1) | 1.1.x |
-| [0.7](https://github.com/ga4gh/vrs-python/tree/0.7) | 0.7.x | [1.2](https://github.com/ga4gh/vrs/tree/1.2) | 1.2.x |
 | [0.9](https://github.com/ga4gh/vrs-python/tree/0.9) | 0.9.x | [metaschema-update](https://github.com/ga4gh/vrs/tree/metaschema-update) | N/A |
+| [0.7](https://github.com/ga4gh/vrs-python/tree/0.7) | 0.7.x | [1.2](https://github.com/ga4gh/vrs/tree/1.2) | 1.2.x |
+| [0.6](https://github.com/ga4gh/vrs-python/tree/0.6) | 0.6.x | [1.1](https://github.com/ga4gh/vrs/tree/1.1) | 1.1.x |
 
 ## Developers
 
