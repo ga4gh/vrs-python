@@ -19,19 +19,12 @@ Representation Specification
 
 ## Features
 
-- **ga4gh.core:** Python language support for common classes and schemas used by all
-  GKS specifications. Provides an algorithm for generating consistent, globally unique
-  identifiers for variation without a central authority.
-
-- **ga4gh.vrs:** Python language support for classes and schemas used in VRS. Provides an
-  algorithm for performing fully justified allele normalization.
-
-- **ga4gh.vrs.extras:** Python language support for additional functionality, including
-  translating from and to other variant formats. `ga4gh.vrs.extras` requires access to
-  supporting data, as described [below](#2-install-external-data-sources).
-
-- **Jupyter notebooks** Demonstrations of the functionality of `ga4gh.vrs` and
-  `ga4gh.vrs.extras` in the form of easy-to-read notebooks.
+- Pydantic implementation of GKS core models and VRS models
+- Algorithm for generating consistent, globally unique identifiers for variation without a central authority
+- Algorithm for performing fully justified allele normalization
+- Translating from and to other variant formats
+- Annotate VCFs with VRS
+- Convert GA4GH objects between inlined and referenced forms
 
 ## Known Issues
 
