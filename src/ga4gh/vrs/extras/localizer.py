@@ -40,7 +40,7 @@ class Localizer:
 
     def localize_named_feature(
         self, chromosome: str, start: str, end: str, assembly_name: str = "GRCh38"
-    ):
+    ) -> models.SequenceLocation:
         """converts named features to sequence locations
 
         :param chromosome: Chromosome
