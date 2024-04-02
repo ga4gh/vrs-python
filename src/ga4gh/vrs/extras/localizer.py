@@ -52,12 +52,6 @@ class Localizer:
         :raise ValueError: If ``start``, ``end``, or ``chromosome`` not in maps
         :return: Sequence Location representation
         """
-        def _get_coords(m, cb):
-            """return (start,end) of band `cb` in map `m`"""
-            if cb is None:
-                return None
-            return m[cb][0:2]
-
         try:
             map_name = assy_name_to_map_name[assembly_name]
         except KeyError as e:
@@ -72,15 +66,12 @@ class Localizer:
                            f" map ({assembly_name}/{map_name})") from e
 
         coords = []
-        for pos in (start, end):
+        for cb in (start, end):
             try:
-                coords += _get_coords(chr_cb_map, pos)
+                coords += chr_cb_map[cb][0:2]
             except (KeyError, ValueError) as e:
-                err_msg = f"{pos} not in map for {assembly_name}, chromosome {chromosome}"
+                err_msg = f"{cb} not in map for {assembly_name}, chromosome {chromosome}"
                 raise ValueError(err_msg) from e
-
-        # the following works regardless of orientation of bands and number of bands
-        start, end = min(coords), max(coords)
 
         try:
             ac = self._ana_maps[assembly_name][chromosome]
@@ -91,6 +82,6 @@ class Localizer:
             sequenceReference=models.SequenceReference(
                 refgetAccession=self.data_proxy.derive_refget_accession(ac)
             ),
-            start=start,
-            end=end
+            start=min(coords),  # works regardless of orientation of bands and # of bands
+            end=max(coords)  # works regardless of orientation of bands and # of bands
         )
