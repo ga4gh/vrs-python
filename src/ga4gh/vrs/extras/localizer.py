@@ -1,30 +1,24 @@
 """convert named locations into SequenceLocations ("localize") by
 reference to external data
-
 """
-
-import copy
-
-from bioutils.accessions import coerce_namespace
 from bioutils.assemblies import make_name_ac_map
 from bioutils.cytobands import get_cytoband_maps
 
-import ga4gh.vrs
+from ga4gh.vrs import models
+from ga4gh.vrs.dataproxy import _DataProxy
 
 
 assy_name_to_map_name = {
     "GRCh37": "ucsc-hg19",
     "GRCh38": "ucsc-hg38",
-    }
+}
 
 
 class Localizer:
-    """provides conversion of ChromosomeLocation objects to
-    SequenceLocation objects
+    """provides conversion of cytoband objects to SequenceLocation objects"""
 
-    """
-
-    def __init__(self):
+    def __init__(self, data_proxy: _DataProxy) -> None:
+        self.data_proxy = data_proxy
         # _cb_maps: maps bands to chromosomal locations
         # {'ucsc-hg19': {'1': {'p11.1': [121500000, 125000000, 'acen'],
         #              'p11.2': [120600000, 121500000, 'gneg'],
@@ -44,28 +38,25 @@ class Localizer:
         # }
         self._ana_maps = {k: make_name_ac_map(k) for k in assy_name_to_map_name}
 
-
-    def localize_allele(self, allele):
-        # copy input variant and replace location
-        # N.B. deepcopy leads to recursion errors
-        allele_sl = ga4gh.vrs.models.Variation(**allele.model_dump())
-        del allele_sl.id
-        allele_sl.location = self.localize(allele.location)
-        return allele_sl
-
-
-    def localize_named_feature(self, loc, assembly_name):
+    def localize_named_feature(
+        self, chromosome: str, start: str, end: str, assembly_name: str = "GRCh38"
+    ):
         """converts named features to sequence locations
 
+        :param chromosome: Chromosome
+        :param start: Start cytoband location
+        :param end: End cytoband location
+        :param assembly: Assembly name
+        :raise KeyError: If assembly name has no mapped cytoband or chromosome doesn't
+            exit in cytoband
+        :raise ValueError: If ``start``, ``end``, or ``chromosome`` not in maps
+        :return: Sequence Location representation
         """
-
-        assert loc.type == "ChromosomeLocation", "Expected a ChromosomeLocation object"
-
         def _get_coords(m, cb):
             """return (start,end) of band `cb` in map `m`"""
             if cb is None:
                 return None
-            return chr_cb_map[cb][0:2]
+            return m[cb][0:2]
 
         try:
             map_name = assy_name_to_map_name[assembly_name]
@@ -75,34 +66,31 @@ class Localizer:
         cb_map = self._cb_maps[map_name]
 
         try:
-            chr_cb_map = cb_map[loc.chr]
+            chr_cb_map = cb_map[chromosome]
         except KeyError as e:
-            raise KeyError(f"{loc.chr}: Chromosome name doesn't exist in cytoband"
-                           " map ({assembly_name}/{map_name})") from e
+            raise KeyError(f"{chromosome}: Chromosome name doesn't exist in cytoband"
+                           f" map ({assembly_name}/{map_name})") from e
 
         coords = []
-        try:
-            coords += _get_coords(chr_cb_map, loc.interval.start)
-        except (KeyError, ValueError) as e:
-            raise ValueError(f"{loc.interval.start}: ChromosomeLocation not in"
-                             " map for {assembly_name}, chr {loc.chr}") from e
-        try:
-            coords += _get_coords(chr_cb_map, loc.interval.end)
-        except (KeyError, ValueError) as e:
-            raise ValueError(f"{loc.interval.end}: ChromosomeLocation not in"
-                             " map for {assembly_name}, chr {loc.chr}") from e
+        for pos in (start, end):
+            try:
+                coords += _get_coords(chr_cb_map, pos)
+            except (KeyError, ValueError) as e:
+                err_msg = f"{pos} not in map for {assembly_name}, chromosome {chromosome}"
+                raise ValueError(err_msg) from e
 
         # the following works regardless of orientation of bands and number of bands
         start, end = min(coords), max(coords)
 
         try:
-            ac = self._ana_maps[assembly_name][loc.chr]
+            ac = self._ana_maps[assembly_name][chromosome]
         except KeyError as e:
-            raise ValueError(f"No accssion for {loc.chr} in assembly {assembly_name}") from e
+            raise ValueError(f"No accession for {chromosome} in assembly {assembly_name}") from e
 
-        return ga4gh.vrs.models.SequenceLocation(
-            sequence_id=coerce_namespace(ac),
-            interval=ga4gh.vrs.models.SequenceInterval(
-                start=ga4gh.vrs.models.start,
-                end=ga4gh.vrs.models.end)
-            )
+        return models.SequenceLocation(
+            sequenceReference=models.SequenceReference(
+                refgetAccession=self.data_proxy.derive_refget_accession(ac)
+            ),
+            start=start,
+            end=end
+        )
