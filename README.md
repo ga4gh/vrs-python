@@ -1,8 +1,7 @@
 # vrs-python
 
-**VRS-Python** provides Python language support for the [GA4GH Variation
-Representation Specification
-(VRS)](https://github.com/ga4gh/vrs).
+**VRS-Python** provides Python language support and a reference implementation for the
+[GA4GH Variation Representation Specification(VRS)](https://github.com/ga4gh/vrs).
 
 ## Information
 
