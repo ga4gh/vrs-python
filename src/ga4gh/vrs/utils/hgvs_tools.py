@@ -210,7 +210,7 @@ class HgvsTools():
             if ns.startswith("GRC") and namespace is None:
                 continue
 
-            if not (any(accession.startswith(pfx) for pfx in ("NM", "NP", "NC", "NG", "NR", "NW", "XM", "XR", "XP"))):
+            if not (any(accession.startswith(pfx) for pfx in ("NM", "NP", "NC", "NG", "NR", "NW", "NT", "XM", "XR", "XP"))):
                 continue
 
             sequence_type = self.data_proxy.extract_sequence_type(alias)
