@@ -16,8 +16,8 @@ jobs:
         id: get_branch_name
         run: |
           raw=$(git branch -r --contains ${{ github.ref }})
-          branch=${raw##*/}
-          echo "::set-output name=name::$branch"
+          branch=$(echo "$raw" | grep "origin/main" | sed "s|origin/||" | xargs)
+          echo "name=$branch" >> "$GITHUB_OUTPUT"
   build:
     name: Build distribution
     runs-on: ubuntu-latest
