@@ -505,16 +505,16 @@ class CnvTranslator(_Translator):
             return position - 1 if do_subtract_1 else position
 
         if isinstance(pos, (SimplePosition, AAPosition, BaseOffsetInterval)):
-            vrs_loc_val = _get_pos_value(pos.base, is_start)
+            vrs_loc_pos_val = _get_pos_value(pos.base, is_start)
         elif isinstance(pos, Interval):
             start_val = _get_pos_value(pos.start.base, is_start and pos.start.base is not None)
             end_val = _get_pos_value(pos.end.base, is_start and pos.end.base is not None)
-            vrs_loc_val = start_val if start_val == end_val else models.Range([start_val, end_val])
+            vrs_loc_pos_val = start_val if start_val == end_val else models.Range([start_val, end_val])
         else:
             err_msg = f"HGVS Location is not supported: {type(pos)}"
             raise ValueError(err_msg)
 
-        return vrs_loc_val
+        return vrs_loc_pos_val
 
     def _post_process_imported_cnv(self, copy_number):
         """Provide common post-processing for imported Copy Numbers IN-PLACE."""
