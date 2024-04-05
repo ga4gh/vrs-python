@@ -54,17 +54,17 @@ python3 -m src.ga4gh.vrs.extras.vcf_annotation --vcf_in input.vcf.gz --vcf_out o
 ```
 
 ### Other Options
---vrs_attribute
+`--vrs_attribute`
 >Will include VRS_Start, VRS_End, VRS_State fields in the INFO field.
 
---assembly [TEXT]
+`--assembly` [TEXT]
 >The assembly that the `vcf_in` data uses. [default: GRCh38]
 
---skip_ref
+`--skip_ref`
 >Skip VRS computation for REF alleles.
 
---require_validation
+`--require_validation`
 >Require validation checks to pass in order to return a VRS object
 
---help
+`--help`
 >Show the options available
