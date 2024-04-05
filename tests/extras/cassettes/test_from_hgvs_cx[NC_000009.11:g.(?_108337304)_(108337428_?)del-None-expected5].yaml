@@ -1,0 +1,42 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.31.0
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/metadata/refseq:NC_000009.11
+  response:
+    body:
+      string: "{\n  \"added\": \"2016-08-24T05:18:51Z\",\n  \"aliases\": [\n    \"GRCh37:9\",\n
+        \   \"GRCh37:chr9\",\n    \"GRCh37.p10:9\",\n    \"GRCh37.p10:chr9\",\n    \"GRCh37.p11:9\",\n
+        \   \"GRCh37.p11:chr9\",\n    \"GRCh37.p12:9\",\n    \"GRCh37.p12:chr9\",\n
+        \   \"GRCh37.p13:9\",\n    \"GRCh37.p13:chr9\",\n    \"GRCh37.p2:9\",\n    \"GRCh37.p2:chr9\",\n
+        \   \"GRCh37.p5:9\",\n    \"GRCh37.p5:chr9\",\n    \"GRCh37.p9:9\",\n    \"GRCh37.p9:chr9\",\n
+        \   \"MD5:3e273117f15e0a400f01055d9f393768\",\n    \"NCBI:NC_000009.11\",\n
+        \   \"refseq:NC_000009.11\",\n    \"SEGUID:06BhLSlH1xeVNSYu0zRK9qIVmFg\",\n
+        \   \"SHA1:d3a0612d2947d7179535262ed3344af6a2159858\",\n    \"VMC:GS_HBckYGQ4wYG9APHLpjoQ9UUe9v7NxExt\",\n
+        \   \"sha512t24u:HBckYGQ4wYG9APHLpjoQ9UUe9v7NxExt\",\n    \"ga4gh:SQ.HBckYGQ4wYG9APHLpjoQ9UUe9v7NxExt\",\n
+        \   \"hs37-1kg:9\",\n    \"hs37d5:9\"\n  ],\n  \"alphabet\": \"ACGNT\",\n
+        \ \"length\": 141213431\n}\n"
+    headers:
+      Connection:
+      - close
+      Content-Length:
+      - '805'
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 05 Apr 2024 19:12:51 GMT
+      Server:
+      - Werkzeug/2.2.2 Python/3.10.4
+    status:
+      code: 200
+      message: OK
+version: 1
