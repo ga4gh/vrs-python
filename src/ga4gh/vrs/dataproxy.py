@@ -6,7 +6,7 @@ See https://vr-spec.readthedocs.io/en/1.1/impl-guide/required_data.html
 """
 
 from abc import ABC, abstractmethod
-from typing import Tuple
+from typing import Optional, Dict, Union, List
 from collections.abc import Sequence
 import datetime
 import functools
@@ -20,6 +20,9 @@ import requests
 
 
 _logger = logging.getLogger(__name__)
+
+
+MetadataReturnType = Dict[str, Union[str, int, List[str]]]
 
 
 class DataProxyValidationError(Exception):
@@ -38,7 +41,9 @@ class _DataProxy(ABC):
     """
 
     @abstractmethod
-    def get_sequence(self, identifier, start=None, end=None):
+    def get_sequence(
+        self, identifier: str, start: Optional[int] = None, end: Optional[int] = None
+    ) -> str:
         """return the specified sequence or subsequence
 
         start and end are optional
@@ -51,7 +56,7 @@ class _DataProxy(ABC):
         """
 
     @abstractmethod
-    def get_metadata(self, identifier):
+    def get_metadata(self, identifier: str) -> MetadataReturnType:
         """for a given identifier, return a structure (dict) containing
         sequence length, aliases, and other optional info
 
@@ -103,7 +108,7 @@ class _DataProxy(ABC):
         return None
 
     @functools.lru_cache()
-    def translate_sequence_identifier(self, identifier, namespace=None):
+    def translate_sequence_identifier(self, identifier: str, namespace: Optional[str] = None) -> List[str]:
         """Translate given identifier to a list of identifiers in the
         specified namespace.
 
@@ -125,7 +130,7 @@ class _DataProxy(ABC):
             aliases = [a for a in aliases if a.startswith(nsd)]
         return aliases
 
-    def derive_refget_accession(self, ac: str):
+    def derive_refget_accession(self, ac: str) -> Optional[str]:
         """Derive the refget accession from a public accession identifier
 
         :param ac: public accession in simple or curie form from which to derive the refget accession
@@ -187,36 +192,36 @@ class _SeqRepoDataProxyBase(_DataProxy):
     # `ga4gh` identifiers.
 
     @functools.lru_cache()
-    def get_metadata(self, identifier):
+    def get_metadata(self, identifier: str) -> MetadataReturnType:
         md = self._get_metadata(identifier)
         md["aliases"] = list(a for a in md["aliases"])
         return md
 
     @functools.lru_cache()
-    def get_sequence(self, identifier, start=None, end=None):
+    def get_sequence(self, identifier: str, start: Optional[int] = None, end: Optional[int] = None) -> str:
         return self._get_sequence(identifier, start=start, end=end)
 
     @abstractmethod
-    def _get_metadata(self, identifier):  # pragma: no cover
+    def _get_metadata(self, identifier: str) -> MetadataReturnType:  # pragma: no cover
         pass
 
     @abstractmethod
-    def _get_sequence(self, identifier, start=None, end=None):  # pragma: no cover
+    def _get_sequence(self, identifier: str, start: Optional[int] = None, end: Optional[int] = None) -> str:  # pragma: no cover
         pass
 
 
 class SeqRepoDataProxy(_SeqRepoDataProxyBase):
     """DataProxy based on a local instance of SeqRepo"""
 
-    def __init__(self, sr):
+    def __init__(self, sr):  # TODO technically we can't import SeqRepo for this annotation because it's in extra dependencies. that is annoying
         super().__init__()
         self.sr = sr
 
-    def _get_sequence(self, identifier, start=None, end=None):
+    def _get_sequence(self, identifier: str, start: Optional[int] = None, end: Optional[int] = None) -> str:
         # fetch raises KeyError if not found
         return self.sr.fetch_uri(coerce_namespace(identifier), start, end)
 
-    def _get_metadata(self, identifier):
+    def _get_metadata(self, identifier: str) -> MetadataReturnType:
         ns, a = coerce_namespace(identifier).split(":", 2)
         r = list(self.sr.aliases.find_aliases(namespace=ns, alias=a))
         if len(r) == 0:
@@ -238,11 +243,11 @@ class SeqRepoRESTDataProxy(_SeqRepoDataProxyBase):
 
     rest_version = "1"
 
-    def __init__(self, base_url):
+    def __init__(self, base_url: str):
         super().__init__()
         self.base_url = f"{base_url}/{self.rest_version}/"
 
-    def _get_sequence(self, identifier, start=None, end=None):
+    def _get_sequence(self, identifier: str, start: Optional[int] = None, end: Optional[int] = None) -> str:
         url = self.base_url + f"sequence/{identifier}"
         _logger.info("Fetching %s", url)
         params = {"start": start, "end": end}
@@ -252,7 +257,7 @@ class SeqRepoRESTDataProxy(_SeqRepoDataProxyBase):
         resp.raise_for_status()
         return resp.text
 
-    def _get_metadata(self, identifier):
+    def _get_metadata(self, identifier: str) -> MetadataReturnType:
         url = self.base_url + f"metadata/{identifier}"
         _logger.info("Fetching %s", url)
         resp = requests.get(url)
@@ -270,21 +275,21 @@ class SequenceProxy(Sequence):
 
     """
 
-    def __init__(self, dp, alias):
+    def __init__(self, dp: _DataProxy, alias: str):
         self.dp = dp
         self.alias = alias
         self._md = self.dp.get_metadata(self.alias)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.dp.get_sequence(self.alias)
 
-    def __len__(self):
+    def __len__(self) -> int:
         return self._md["length"]
 
     def __reversed__(self):
         raise NotImplementedError("Reversed iteration of a SequenceProxy is not implemented")
 
-    def __getitem__(self, key):
+    def __getitem__(self, key: Union[int, slice]) -> str:
         """return sequence for key (slice), fetching if necessary
 
         """
@@ -298,7 +303,7 @@ class SequenceProxy(Sequence):
 
 
 
-def _isoformat(o):
+def _isoformat(o: datetime.datetime) -> str:
     """convert datetime.datetime to iso formatted timestamp
 
     >>> dt = datetime.datetime(2019, 10, 15, 10, 23, 41, 115927)
@@ -323,7 +328,7 @@ def _isoformat(o):
 #         super().__init__()
 #         self.base_url = base_url
 
-def create_dataproxy(uri: str = None) -> _DataProxy:
+def create_dataproxy(uri: Optional[str] = None) -> _DataProxy:
     """Create a dataproxy from uri or GA4GH_VRS_DATAPROXY_URI
 
     Currently accepted URI schemes:

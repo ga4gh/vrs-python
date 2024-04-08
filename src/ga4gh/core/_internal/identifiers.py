@@ -20,7 +20,7 @@ import logging
 import re
 from contextlib import ContextDecorator
 from enum import IntEnum
-from typing import Union, Optional
+from typing import Union, Optional, Any
 from pydantic import BaseModel, RootModel
 
 from .pydantic import get_pydantic_root
@@ -47,9 +47,9 @@ class VrsObjectIdentifierIs(IntEnum):
       GA4GH_INVALID - Compute the identifier if it is missing or is present but syntactically invalid
       MISSING - Only compute the identifier if missing
 
-    The default behavior is safe and ensures that the identifiers are correct, 
-    but at a performance cost. Where the source of inputs to `ga4gh_identify` 
-    are well controlled, for example when annotating a VCF file with VRS IDs, 
+    The default behavior is safe and ensures that the identifiers are correct,
+    but at a performance cost. Where the source of inputs to `ga4gh_identify`
+    are well controlled, for example when annotating a VCF file with VRS IDs,
     using `MISSING` can improve performance.
     """
 
@@ -86,7 +86,7 @@ class use_ga4gh_compute_identifier_when(ContextDecorator):
         ga4gh_compute_identifier_when.reset(self.token)
 
 
-def is_ga4gh_identifier(ir):
+def is_ga4gh_identifier(ir: Any) -> bool:
     """
 
     >>> is_ga4gh_identifier("ga4gh:SQ.0123abcd")
@@ -102,7 +102,7 @@ def is_ga4gh_identifier(ir):
     return str(get_pydantic_root(ir)).startswith(ns_w_sep)
 
 
-def parse_ga4gh_identifier(ir):
+def parse_ga4gh_identifier(ir: str):
     """
     Parses a GA4GH identifier, returning a dict with type and digest components
 

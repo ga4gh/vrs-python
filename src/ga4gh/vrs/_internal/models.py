@@ -66,7 +66,7 @@ def flatten_type(t):
     return [t]
 
 
-def overlaps(a: list, b: list):
+def overlaps(a: List, b: List) -> bool:
     """
     Returns true if there are any elements in common between a and b
     """
@@ -414,7 +414,7 @@ class SequenceLocation(_Ga4ghIdentifiableObject):
     end: Union[Range, int] = Field(
         ...,
         description='The end coordinate or range of the SequenceLocation. The minimum value of this coordinate or range is 0. MUST represent a coordinate or range greater than the value of `start`.',
-    
+
     )
     def get_refget_accession(self):
         if isinstance(self.sequenceReference, SequenceReference):

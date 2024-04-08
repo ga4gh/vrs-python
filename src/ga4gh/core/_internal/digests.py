@@ -9,7 +9,7 @@ import base64
 import hashlib
 
 
-def sha512t24u(blob):
+def sha512t24u(blob: bytes) -> str:
     """generate a base64url-encode, truncated SHA-512 digest for given
     binary data
 

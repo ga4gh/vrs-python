@@ -12,7 +12,7 @@ from bioutils.normalize import normalize as _normalize, NormalizationMode
 from ga4gh.core import is_pydantic_instance, ga4gh_digest, pydantic_copy
 
 from ._internal import models
-from .dataproxy import SequenceProxy
+from .dataproxy import _DataProxy, SequenceProxy
 
 
 _logger = logging.getLogger(__name__)
@@ -83,7 +83,7 @@ def _get_new_allele_location_pos(
     return val
 
 
-def _normalize_allele(input_allele, data_proxy, rle_seq_limit=50):
+def _normalize_allele(input_allele: models.Allele, data_proxy: _DataProxy, rle_seq_limit: int = 50):
     """Normalize Allele using "fully-justified" normalization adapted from NCBI's
     VOCA. Fully-justified normalization expands such ambiguous representation over the
     entire region of ambiguity, resulting in an unambiguous representation that may be
@@ -220,7 +220,7 @@ def _normalize_allele(input_allele, data_proxy, rle_seq_limit=50):
     return new_allele
 
 
-def _factor_gen(n):
+def _factor_gen(n: int):
     """Yields all factors of an integer `n`, in descending order"""
     lower_factors = []
     i = 1
@@ -234,7 +234,7 @@ def _factor_gen(n):
         yield factor
 
 
-def _define_rle_allele(allele, length, repeat_subunit_length, rle_seq_limit, extended_alt_seq):
+def _define_rle_allele(allele: models.Allele, length: int, repeat_subunit_length: int, rle_seq_limit: int, extended_alt_seq: str) -> models.Allele:
     # Otherwise, create the Allele as an RLE
     allele.state = models.ReferenceLengthExpression(
         length=length,
@@ -247,7 +247,7 @@ def _define_rle_allele(allele, length, repeat_subunit_length, rle_seq_limit, ext
     return allele
 
 
-def _is_valid_cycle(template_start, template, target):
+def _is_valid_cycle(template_start: int, template, target):
     cycle = itertools.cycle(template[template_start:])
     for char in target[len(template):]:
         if char != next(cycle):
@@ -257,7 +257,7 @@ def _is_valid_cycle(template_start, template, target):
 # TODO _normalize_genotype?
 
 
-def _normalize_haplotype(o, data_proxy=None):
+def _normalize_haplotype(o, data_proxy: Optional[_DataProxy] = None):
 
     o.members = sorted(o.members, key=ga4gh_digest)
     return o
