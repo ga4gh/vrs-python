@@ -35,6 +35,7 @@ keywords = [
     "variation"
 ]
 requires-python = ">=3.8"
+dynamic = ["version"]
 dependencies = [
     "bioutils",
     "canonicaljson",
@@ -92,6 +93,8 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools_scm]
 
 [tool.pytest.ini_options]
 addopts = "--cov-config=setup.cfg --cov-report=term-missing --cov=ga4gh"
