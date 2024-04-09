@@ -1,4 +1,11 @@
-.. _install:
+.. _quick_install:
+
+..
+   notes:
+   * describe Python3 installation at all? Not sure if any prospective VRS user needs their hand held through this, and I worry that we contribute to `this problem <https://xkcd.com/1987/>`_ if we give explicit directions.
+   * do we need to explain how to fetch seqrepo data if we also provide instructions for using docker compose? seemingly this belongs in a separate non-quick installation description
+   * Is the "send a single SELECT statement to UTA" instruction necessary? Does it make these instructions look deceptively complex?
+   * Is the "try each docker image one at a time" suggestion necessary or helpful? Is a person who is unable to think of doing this going to be able to make any further debugging progress from there?
 
 Installation
 ============
@@ -18,16 +25,25 @@ While minimal functions of VRS-Python can be fulfilled with just the base Python
 
    .. tab:: MacOS
 
-      You can use Homebrew to install the prerequisites. See the `Homebrew documentation <https://docs.brew.sh/Installation>`_ for how to install.
+      Use Homebrew to install PostgreSQL and ``libpq``.
 
       .. code-block:: shell
 
          brew update  # make sure Homebrew is up to date
          brew install libpq
-         brew install python3
          brew install postgresql@14
 
+      A Python interpreter can be installed from the `official Python website <https://www.python.org/downloads/>`_. Alternatively, it can be installed via Homebrew (see `this writeup <https://realpython.com/installing-python/#how-to-install-python-on-macos>`_ for more information):
+
+      .. code-block:: shell
+
+         brew install python3
+
+      See the `Homebrew documentation <https://docs.brew.sh/Installation>`_ for more information and help with troubleshooting.
+
    .. tab:: Ubuntu
+
+      Use ``apt`` to install the prerequisites. See the `documentation <https://ubuntu.com/server/docs/package-management>`_ for more information.
 
       .. code-block:: shell
 
@@ -42,8 +58,7 @@ VRS-Python is available on `PyPI <https://pypi.org/project/ga4gh.vrs/>`_.
 
    pip install 'ga4gh.vrs[extras]'
 
-The ``[extras]`` option tells ``pip`` to install packages to fulfill the dependencies of the
-``ga4gh.vrs.extras`` package.
+Calling  ``pip`` with the ``[extras]`` option installs dependencies needed for use of the ``ga4gh.vrs.extras`` package, such as VCF annotation and variant translation.
 
 Setting up external data sources
 --------------------------------
@@ -52,9 +67,6 @@ In addition to the reference implementation of VRS provided in ``ga4gh.vrs``, VR
 
 Fetching SeqRepo data
 +++++++++++++++++++++
-
-.. warning::
-   TODO is this section necessary? could we just recommend docker?
 
 `SeqRepo <https://github.com/biocommons/biocommons.seqrepo>`_ provides fast access to biological sequences and sequence metadata. Install SeqRepo and use the provided command-line tools to fetch a recent data snapshot:
 
@@ -81,7 +93,7 @@ Launching remaining services with Docker
 Installation of the remaining dependencies, `SeqRepo REST Service <https://github.com/biocommons/seqrepo-rest-service>`_ and the `Universal Transcript Archive <https://github.com/biocommons/uta>`_ is simplest by way of their provided `Docker <https://www.docker.com/>`_ images.
 
 .. note::
-   TODO fill in info about local data usage.... If you would like to use local instances of UTA, see [UTA](https://github.com/biocommons/uta) directly. We do provide some additional setup help [here](./docs/setup_help/).
+   If you would like to use local instances of UTA, see `UTA <https://github.com/biocommons/uta>`_ directly. We do provide some additional setup help [here](./docs/setup_help/).
 
 Launch the requisite Docker services. Depending on your network and hoost, the *first* run is likely to take several minutes in order to fully download and install all data. Subsequent startups should be nearly instantaneous.
 
@@ -99,13 +111,6 @@ After all images are acquired, verify that the SeqRepo REST Service and UTA cont
    CONTAINER ID        IMAGE                                    //  NAMES
    86e872ab0c69        biocommons/seqrepo-rest-service:latest   //  vrs-python_seqrepo-rest-service_1
    a40576b8cf1f        biocommons/uta:uta_20210129b              //  vrs-python_uta_1
-
-.. warning::
-   the rest of this stuff doesn't actually seem super helpful or necessary.
-
-   - the "UTA and seqrepo installation test" only tests UTA
-
-   - The "try each one at a time" tip is fine I guess but is probably not going to help anyone who wasn't able to think of that themselves
 
 You can test UTA and seqrepo installations like so: ::
 
