@@ -107,11 +107,13 @@ Next, set up and acquire a recent SeqRepo data snapshot.
    sudo chown $USER /usr/local/share/seqrepo
    seqrepo pull -i $SEQREPO_VERSION
 
-Users frequently report encountering a `PermissionError` while calling the `pull` command. If necessary, manually move data from its temporary file location:
+.. note::
 
-.. code-block:: shell
+   Users frequently report encountering a ``PermissionError`` while calling the ``pull`` command. If necessary, manually move data from its temporary file location:
 
-   sudo mv /usr/local/share/seqrepo/$SEQREPO_VERSION.* /usr/local/share/seqrepo/$SEQREPO_VERSION
+   .. code-block:: shell
+
+      sudo mv /usr/local/share/seqrepo/$SEQREPO_VERSION.* /usr/local/share/seqrepo/$SEQREPO_VERSION
 
 Next, install UTA from a database dump. As noted in the `UTA documentation <https://github.com/biocommons/uta?tab=readme-ov-file#installing-from-database-dumps>`_, PostgreSQL data and binary locations can vary substantially between system architectures, operating systems, so users may need to adapt these instructions to their own working environments as needed.
 
