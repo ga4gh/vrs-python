@@ -65,17 +65,13 @@ dev = [
     # style
     "pylint",
     "yapf",
-    "smart_open",
     # docs
     "sphinx",
     "sphinx_rtd_theme",
     "restview",
-    # idk?  TODO figure it out
-    "ipython",
-    "jedi<0.18",
+    "smart_open",  # TODO remove?
 ]
 notebooks = [
-    "ipython",
     "jupyter",
     "tabulate",
 ]
