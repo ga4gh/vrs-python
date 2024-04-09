@@ -115,7 +115,7 @@ Next, set up and acquire a recent SeqRepo data snapshot.
 
       sudo mv /usr/local/share/seqrepo/$SEQREPO_VERSION.* /usr/local/share/seqrepo/$SEQREPO_VERSION
 
-Next, install UTA from a database dump. As noted in the `UTA documentation <https://github.com/biocommons/uta?tab=readme-ov-file#installing-from-database-dumps>`_, PostgreSQL data and binary locations can vary substantially between system architectures, operating systems, so users may need to adapt these instructions to their own working environments as needed.
+Next, install UTA from a database dump. As noted in the `UTA documentation <https://github.com/biocommons/uta?tab=readme-ov-file#installing-from-database-dumps>`_, PostgreSQL data and binary locations can vary substantially between system architectures, operating systems, and installation methods, so users may need to adapt these instructions to their own working environments as needed.
 
 To begin, start PostgreSQL service:
 
