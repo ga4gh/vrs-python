@@ -30,8 +30,8 @@ VRS modules
    ga4gh.vrs._internal.models
    ga4gh.vrs._internal.enderef
 
-Tool modules
-------------
+Extras modules
+--------------
 
 .. autosummary::
    :nosignatures:
@@ -43,7 +43,3 @@ Tool modules
    ga4gh.vrs.extras.object_store
    ga4gh.vrs.extras.decorators
    ga4gh.vrs.utils.hgvs_tools
-
-
-
-
