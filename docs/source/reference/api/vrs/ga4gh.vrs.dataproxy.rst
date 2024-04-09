@@ -1,7 +1,7 @@
-﻿ga4gh.vrs
-=========
+﻿ga4gh.vrs.dataproxy
+===================
 
-.. automodule:: ga4gh.vrs
+.. automodule:: ga4gh.vrs.dataproxy
    :members:
    :undoc-members:
    :special-members: __init__

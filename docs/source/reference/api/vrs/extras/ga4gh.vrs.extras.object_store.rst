@@ -1,0 +1,8 @@
+﻿ga4gh.vrs.extras.object_store
+=============================
+
+.. automodule:: ga4gh.vrs.extras.object_store
+   :members:
+   :undoc-members:
+   :special-members: __init__
+   :exclude-members: model_fields, model_config
