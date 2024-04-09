@@ -78,6 +78,8 @@ After all images are acquired, verify that the SeqRepo REST Service and UTA cont
    86e872ab0c69        biocommons/seqrepo-rest-service:latest   //  vrs-python_seqrepo-rest-service_1
    a40576b8cf1f        biocommons/uta:uta_20210129b             //  vrs-python_uta_1
 
+Finally, install VRS-Python and the ``extras`` dependency group via `PyPI`_.
+
 .. code-block:: shell
 
    pip install 'ga4gh.vrs[extras]'
