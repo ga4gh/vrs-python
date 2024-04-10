@@ -23,7 +23,7 @@ Example of how to run:
 python3 -m src.ga4gh.vrs.extras.vcf_annotation --vcf_in input.vcf.gz --vcf_out output.vcf.gz --vrs_pickle_out vrs_objects.pkl
 ```
 
-`--vcf_in` specifies the path of the input VCF file to annotate. `--vcf_out` specifies the path of the output annotated VCF file. The `--vrs_pickle_out` specifies the path of the output pickle file containing VRS data (optional).
+`--vcf_in` specifies the path of the input VCF file to annotate. `--vcf_out` specifies the path of the output annotated VCF file. The `--vrs_pickle_out` specifies the path of the output pickle file containing VRS data (Both vcf_out and vrs_pickle_out are optional, but at least one __must__ be provided).
 
 ### Use local SeqRepo Data Proxy with different
 
