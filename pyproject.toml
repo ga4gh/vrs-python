@@ -37,12 +37,9 @@ keywords = [
 requires-python = ">=3.8"
 dynamic = ["version"]
 dependencies = [
-    "bioutils",
-    "canonicaljson",
-    "coloredlogs",
-    "numpy",
-    "pyyaml",
     "pydantic~=2.1",
+    "bioutils",
+    "requests",
 ]
 
 [project.optional-dependencies]
@@ -51,7 +48,6 @@ extras = [
     "biocommons.seqrepo>=0.5.1",
     "bioutils>=0.5.2",
     "hgvs>=1.4",
-    "requests",
     "dill~=0.3.7",
     "click",
 ]
@@ -69,11 +65,11 @@ dev = [
     "sphinx",
     "sphinx_rtd_theme",
     "restview",
-    "smart_open",  # TODO remove?
 ]
 notebooks = [
     "jupyter",
     "tabulate",
+    "pyyaml"
 ]
 
 [project.urls]
