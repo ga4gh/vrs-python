@@ -11,9 +11,14 @@ Instead, users should use one of the following:
     module name, e.g., `ga4gh.core.core_models.Gene`
 """
 from typing import Any, Dict, List, Literal, Optional, Union
+try:
+    from typing import Annotated  # Python 3.9 and later
+except ImportError:
+    from typing_extensions import Annotated  # For Python 3.8
 from enum import Enum
 
-from pydantic import BaseModel, ConfigDict, Field, RootModel, constr, model_serializer
+from pydantic import BaseModel, ConfigDict, Field, RootModel, StringConstraints, model_serializer
+
 from ga4gh.core import GA4GH_IR_REGEXP
 
 
@@ -40,7 +45,7 @@ class Code(RootModel):
     character and no leading or  trailing whitespace, and where there is no whitespace
     other than single spaces in the contents."""
 
-    root: constr(pattern=r'\S+( \S+)*') = Field(
+    root: Annotated[str, StringConstraints(pattern=r'\S+( \S+)*')] = Field(
         ...,
         json_schema_extra={
             'description': 'Indicates that the value is taken from a set of controlled strings defined elsewhere. Technically, a code is restricted to a string which has at least one character and no leading or  trailing whitespace, and where there is no whitespace other than single spaces in the contents.',
