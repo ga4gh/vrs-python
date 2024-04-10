@@ -1,0 +1,101 @@
+[project]
+name = "ga4gh.vrs"
+authors = [
+    {name = "Larry Babb", email = "lbabb@broadinstitute.org"},
+    {name = "Reece Hart", email = "reecehart@gmail.com"},
+    {name = "Andreas Prlic", email = "andreas.prlic@gmail.com"},
+    {name = "Alex Wagner", email = "alex.wagner@nationwidechildrens.org"},
+]
+readme = "README.md"
+description = "GA4GH Variation Representation Specification (VRS) reference implementation"
+license = {file = "LICENSE"}
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Healthcare Industry",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+    "Topic :: Scientific/Engineering :: Medical Science Apps.",
+]
+keywords = [
+    "bioinformatics",
+    "ga4gh",
+    "genomics",
+    "hgvs",
+    "spdi",
+    "variation"
+]
+requires-python = ">=3.8"
+dynamic = ["version"]
+dependencies = [
+    "pydantic~=2.1",
+    "bioutils",
+    "requests",
+]
+
+[project.optional-dependencies]
+extras = [
+    "psycopg2-binary",
+    "biocommons.seqrepo>=0.5.1",
+    "bioutils>=0.5.2",
+    "hgvs>=1.4",
+    "dill~=0.3.7",
+    "click",
+]
+dev = [
+    # tests
+    "pytest",
+    "pytest-cov",
+    "pytest-vcr",
+    "vcrpy",
+    "pyyaml",
+    # style
+    "pylint",
+    "yapf",
+    # docs
+    "sphinx",
+    "sphinx_rtd_theme",
+    "restview",
+]
+notebooks = [
+    "jupyter",
+    "tabulate",
+    "pyyaml"
+]
+
+[project.urls]
+Homepage = "https://github.com/ga4gh/vrs-python"
+Documentation = "https://github.com/ga4gh/vrs-python"
+Changelog = "https://github.com/ga4gh/vrs-python/releases"
+Source = "https://github.com/ga4gh/vrs-python"
+"Bug Tracker" = "https://github.com/ga4gh/vrs-python/issues"
+
+[build-system]
+requires = ["setuptools>=65.3", "setuptools_scm>=8"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools_scm]
+
+[tool.pytest.ini_options]
+addopts = "--cov-report=term-missing --cov=ga4gh"
+testpaths = ["tests", "src"]
+doctest_optionflags = "ALLOW_UNICODE ALLOW_BYTES ELLIPSIS IGNORE_EXCEPTION_DETAIL NORMALIZE_WHITESPACE"
+
+[tool.yapf]
+based_on_style = "pep8"
+column_limit = 120
+spaces_before_comment = 4
+split_before_logical_operator = true
+split_before_named_assigns = true
