@@ -1,4 +1,5 @@
-"""
+"""GKS Common Library models
+
 **This module should not be imported directly.**
 
 Instead, users should use one of the following:
@@ -14,6 +15,11 @@ from enum import Enum
 
 from pydantic import BaseModel, ConfigDict, Field, RootModel, constr, model_serializer
 from ga4gh.core import GA4GH_IR_REGEXP
+
+
+#########################################
+# gks-common core
+#########################################
 
 
 class Relation(Enum):
@@ -44,6 +50,12 @@ class Code(RootModel):
 
 
 class IRI(RootModel):
+    """An IRI Reference (either an IRI or a relative-reference), according to `RFC3986
+    section 4.1 <https://datatracker.ietf.org/doc/html/rfc3986#section-4.1>` and
+    `RFC3987 section 2.1 <https://datatracker.ietf.org/doc/html/rfc3987#section-2.1>`.
+    MAY be a JSON Pointer as an IRI fragment, as described by `RFC6901 section 6
+    <https://datatracker.ietf.org/doc/html/rfc6901#section-6>`.
+    """
 
     def __hash__(self):
         return self.root.__hash__()
@@ -152,6 +164,10 @@ class _DomainEntity(_MappableEntity):
     )
 
 
+#########################################
+# gks-common conditions
+#########################################
+
 class Phenotype(_DomainEntity):
     """An observable characteristic or trait of an organism."""
 
@@ -183,6 +199,21 @@ class TraitSet(_DomainEntity):
         ...,
         min_length=2
     )
+
+
+class Condition(RootModel):
+    """A disease or other medical disorder."""
+
+    root: Union[Disease, Phenotype, TraitSet] = Field(
+        ...,
+        json_schema_extra={'description': 'A disease or other medical disorder.'},
+        discriminator='type',
+    )
+
+
+#########################################
+# gks-common therapeutics
+#########################################
 
 
 class TherapeuticAction(_DomainEntity):
@@ -237,16 +268,6 @@ class CombinationTherapy(_DomainEntity):
     )
 
 
-class Condition(RootModel):
-    """A disease or other medical disorder."""
-
-    root: Union[Disease, Phenotype, TraitSet] = Field(
-        ...,
-        json_schema_extra={'description': 'A disease or other medical disorder.'},
-        discriminator='type',
-    )
-
-
 class TherapeuticProcedure(RootModel):
     """An action or administration of therapeutic agents to produce an effect  that is
     intended to alter or stop a pathologic process.
@@ -257,6 +278,11 @@ class TherapeuticProcedure(RootModel):
         json_schema_extra={'description': 'An action or administration of therapeutic agents to produce an effect that is intended to alter or stop a pathologic process.'},
         discriminator='type',
     )
+
+
+#########################################
+# gks-common therapeutics
+#########################################
 
 
 class Gene(_DomainEntity):

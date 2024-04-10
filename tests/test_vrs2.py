@@ -304,6 +304,7 @@ def test_class_refatt_map():
         '_CopyNumber': ['location'],
         'CopyNumberCount': ['location'],
         'CopyNumberChange': ['location'],
+        'Adjacency': ['adjoinedSequences'],
     }
     assert class_refatt_map_expected == models.class_refatt_map
 
