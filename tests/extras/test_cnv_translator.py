@@ -65,7 +65,91 @@ from_hgvs_cx_tests = (
                    'start': 32344742,
                    'type': 'SequenceLocation'},
       'type': 'CopyNumberChange'}
-     )
+    ),
+    (
+        "NC_000023.11:g.(31060227_31100351)_(33274278_33417151)dup",
+        None,
+        {
+            "copyChange": "efo:0030070",
+            "digest": "H0-_q06in6rsvLfq_5b-CSmP4ZQ6r7-Q",
+            "id": "ga4gh:CX.H0-_q06in6rsvLfq_5b-CSmP4ZQ6r7-Q",
+            "location": {
+                "digest": "R3FeXqOiAu8Vms7QngINQwIxW904fdWY",
+                "end": [33274278, 33417151],
+                "id": "ga4gh:SL.R3FeXqOiAu8Vms7QngINQwIxW904fdWY",
+                "sequenceReference": {
+                    "refgetAccession": "SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP",
+                    "type": "SequenceReference"
+                },
+                "start": [31060226, 31100350],
+                "type": "SequenceLocation"
+            },
+            "type": "CopyNumberChange"
+        }
+    ),
+    (
+        "NC_000009.11:g.(?_108337304)_(108337428_?)del",
+        None,
+        {
+            "copyChange": "efo:0030067",
+            "digest": "ANthOqEGX8MIn0kXuyQcn9bouYfbFgjH",
+            "id": "ga4gh:CX.ANthOqEGX8MIn0kXuyQcn9bouYfbFgjH",
+            "location": {
+                "digest": "lpDGeQvnz80iis8xSxoCX_Pulnu7wx4M",
+                "end": [108337428, None],
+                "id": "ga4gh:SL.lpDGeQvnz80iis8xSxoCX_Pulnu7wx4M",
+                "sequenceReference": {
+                    "refgetAccession": "SQ.HBckYGQ4wYG9APHLpjoQ9UUe9v7NxExt",
+                    "type": "SequenceReference"
+                },
+                "start": [None, 108337303],
+                "type": "SequenceLocation"
+            },
+            "type": "CopyNumberChange"
+        }
+    ),
+    (
+        "NC_000005.9:g.(90136803)_(90159675)dup",
+        None,
+        {
+            "copyChange": "efo:0030070",
+            "digest": "YcbXUe21Bt1wQDV7zGM0lacOupkxduFS",
+            "id": "ga4gh:CX.YcbXUe21Bt1wQDV7zGM0lacOupkxduFS",
+            "location": {
+                "digest": "r82CARuf8IxOidMdvQCUcsXNp3XiHEVH",
+                "end": 90159675,
+                "id": "ga4gh:SL.r82CARuf8IxOidMdvQCUcsXNp3XiHEVH",
+                "sequenceReference": {
+                    "refgetAccession": "SQ.vbjOdMfHJvTjK_nqvFvpaSKhZillW0SX",
+                    "type": "SequenceReference"
+                },
+                "start": 90136802,
+                "type": "SequenceLocation"
+            },
+            "type": "CopyNumberChange"
+        }
+    ),
+    (
+        "NC_000009.11:g.108337304_(108337428_?)del",
+        None,
+        {
+            "copyChange": "efo:0030067",
+            "digest": "brfJaiKCnSw-mvc3K9sUIEAyCN620PuD",
+            "id": "ga4gh:CX.brfJaiKCnSw-mvc3K9sUIEAyCN620PuD",
+            "location": {
+                "digest": "6myLdODZ8WgbEDXc3HLp88ZbG536NCM-",
+                "end": [108337428, None],
+                "id": "ga4gh:SL.6myLdODZ8WgbEDXc3HLp88ZbG536NCM-",
+                "sequenceReference": {
+                    "refgetAccession": "SQ.HBckYGQ4wYG9APHLpjoQ9UUe9v7NxExt",
+                    "type": "SequenceReference"
+                },
+                "start": 108337303,
+                "type": "SequenceLocation"
+            },
+            "type": "CopyNumberChange"
+        }
+    )
 )
 
 
@@ -75,6 +159,15 @@ def test_from_hgvs_cx(tlr, hgvsexpr ,copy_change, expected):
     """test that _from_hgvs works correctly for copy number change"""
     cx = tlr._from_hgvs(hgvsexpr, copy_change=copy_change)
     assert cx.model_dump(exclude_none=True) == expected
+
+@pytest.mark.vcf
+def test_from_hgvs_cx_invalid(tlr):
+    """test that _from_hgvs works correctly for copy number change invalid input"""
+    # Should fail since it's not g. or m.
+    with pytest.raises(
+        ValueError, match="Only 'g' and 'm' reference sequences are supported"
+    ):
+        tlr._from_hgvs("NM_001197320.1:c.281_283dup")
 
 
 from_hgvs_cn_tests = (

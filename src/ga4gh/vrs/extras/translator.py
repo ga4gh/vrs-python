@@ -10,6 +10,7 @@ from collections.abc import Mapping
 from typing import Optional, Union
 from ga4gh.vrs.dataproxy import create_dataproxy, _DataProxy
 from ga4gh.vrs.extras.decorators import lazy_property
+from hgvs.location import Interval, SimplePosition, AAPosition, BaseOffsetInterval
 import logging
 import re
 
@@ -438,10 +439,13 @@ class CnvTranslator(_Translator):
             copy_change: Copy change. If not provided, default is efo:0030067 for
                 deletions and efo:0030070 for duplications
         """
-        # sv = self._get_parsed_hgvs(hgvs_dup_del_expr)
         sv = self.hgvs_tools.parse(hgvs_dup_del_expr)
         if not sv:
             return None
+
+        if sv.type not in {"g", "m"}:
+            err_msg = "Only 'g' and 'm' reference sequences are supported"
+            raise ValueError(err_msg)
 
         sv_type = self.hgvs_tools.get_edit_type(sv)
         if sv_type not in {"del", "dup"}:
@@ -454,10 +458,13 @@ class CnvTranslator(_Translator):
         if not refget_accession:
             return None
 
+        start = self._get_vrs_loc_start_end_val(sv.posedit.pos.start, is_start=True)
+        end = self._get_vrs_loc_start_end_val(sv.posedit.pos.end, is_start=False)
+
         location = models.SequenceLocation(
             sequenceReference=models.SequenceReference(refgetAccession=refget_accession),
-            start=sv.posedit.pos.start.base - 1,
-            end=sv.posedit.pos.end.base
+            start=start,
+            end=end
         )
 
         copies = kwargs.get("copies")
@@ -471,6 +478,43 @@ class CnvTranslator(_Translator):
 
         cnv =self._post_process_imported_cnv(cnv)
         return cnv
+
+    @staticmethod
+    def _get_vrs_loc_start_end_val(
+        pos: Union[SimplePosition, AAPosition, BaseOffsetInterval, Interval],
+        is_start: bool = True
+    ) -> Union[int, models.Range]:
+        """Get VRS Location start or end value
+
+        :param pos: biocommons hgvs location instance for position
+        :param is_start: ``True`` if ``pos`` represents VRS Sequence Location start.
+            ``False`` if ``pos`` represents VRS Sequence Location end.
+        :raise ValueError: If unsupported biocommons hgvs location is passed
+        :return: VRS Location start or end value using inter-residue positions
+        """
+        def _get_pos_value(
+            position: Optional[int],
+            do_subtract_1: bool
+        ) -> Optional[int]:
+            """Get position value
+
+            :param position: Position
+            :param do_subtract_1: Whether or not we need to subtract 1 for ``position``
+            :return: Adjusted position value
+            """
+            return position - 1 if do_subtract_1 else position
+
+        if isinstance(pos, (SimplePosition, AAPosition, BaseOffsetInterval)):
+            vrs_loc_pos_val = _get_pos_value(pos.base, is_start)
+        elif isinstance(pos, Interval):
+            start_val = _get_pos_value(pos.start.base, is_start and pos.start.base is not None)
+            end_val = _get_pos_value(pos.end.base, is_start and pos.end.base is not None)
+            vrs_loc_pos_val = start_val if start_val == end_val else models.Range([start_val, end_val])
+        else:
+            err_msg = f"HGVS Location is not supported: {type(pos)}"
+            raise ValueError(err_msg)
+
+        return vrs_loc_pos_val
 
     def _post_process_imported_cnv(self, copy_number):
         """Provide common post-processing for imported Copy Numbers IN-PLACE."""
