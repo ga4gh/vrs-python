@@ -58,11 +58,6 @@ devready:
 	@echo '#################################################################################'
 
 #=> install: install package
-#=> bdist bdist_egg bdist_wheel build sdist: distribution options
-.PHONY: bdist bdist_egg bdist_wheel build build_sphinx sdist install
-bdist bdist_egg bdist_wheel build sdist install: %:
-	python setup.py $@
-
 .PHONY: install-extras
 install-extras:
 	pip install -e .[extras]
@@ -70,17 +65,17 @@ install-extras:
 
 ############################################################################
 #= TESTING
-# see test configuration in setup.cfg
+# see test configuration in pyproject.toml
 
 #=> test: execute tests
 .PHONY: test
 test:
-	python setup.py pytest
+	pytest
 
 #=> doctest: execute documentation tests (requires extra data)
 .PHONY: doctest
 doctest:
-	python setup.py pytest --doctest-modules
+	pytest --doctest-modules
 
 ############################################################################
 #= UTILITY TARGETS
