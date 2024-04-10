@@ -1,4 +1,5 @@
-"""
+"""GA4GH VRS models
+
 **This module should not be imported directly.**
 
 Instead, users should use one of the following:
@@ -148,11 +149,15 @@ class Syntax(Enum):
 
 
 class ResidueAlphabet(Enum):
+    """Define constraints for residue alphabet"""
+
     AA = 'aa'
     NA = 'na'
 
 
 class CopyChange(Enum):
+    """Define constraints for copy change"""
+
     EFO_0030069 = 'efo:0030069'
     EFO_0020073 = 'efo:0020073'
     EFO_0030068 = 'efo:0030068'
@@ -295,8 +300,13 @@ class Expression(BaseModel):
     value: str
     syntax_version: Optional[str] = None
 
+#########################################
+# vrs numerics, comparators, and ranges
+#########################################
 
 class Range(RootModel):
+    """An inclusive range of values bounded by one or more integers."""
+
     root: List[Optional[int]] = Field(
         ...,
         json_schema_extra={
@@ -308,6 +318,12 @@ class Range(RootModel):
 
 
 class Residue(RootModel):
+    """A character representing a specific residue (i.e., molecular species) or
+    groupings of these ("ambiguity codes"), using `one-letter IUPAC abbreviations
+    <https://en.wikipedia.org/wiki/International_Union_of_Pure_and_Applied_Chemistry#Amino_acid_and_nucleotide_base_codes>`_
+    for nucleic acids and amino acids.
+    """
+
     root: constr(pattern=r'[A-Z*\-]') = Field(
         ...,
         json_schema_extra={
@@ -317,6 +333,12 @@ class Residue(RootModel):
 
 
 class SequenceString(RootModel):
+    """A character string of Residues that represents a biological sequence using the
+    conventional sequence order (5'-to-3' for nucleic acid sequences, and
+    amino-to-carboxyl for amino acid sequences). IUPAC ambiguity codes are permitted in
+    Sequence Strings.
+    """
+
     root: constr(pattern=r'^[A-Z*\-]*$') = Field(
         ...,
         json_schema_extra={
@@ -325,33 +347,19 @@ class SequenceString(RootModel):
     )
 
 
-class SequenceReference(_ValueObject):
-    model_config = ConfigDict(
-        use_enum_values=True
-    )
-
-    type: Literal['SequenceReference'] = Field('SequenceReference', description='MUST be "SequenceReference"')
-    refgetAccession: constr(pattern=r'^SQ.[0-9A-Za-z_\-]{32}$') = Field(
-        ...,
-        description='A `GA4GH RefGet <http://samtools.github.io/hts-specs/refget.html>` identifier for the referenced sequence, using the sha512t24u digest.',
-    )
-    residueAlphabet: Optional[ResidueAlphabet] = None
-
-    class ga4gh(_ValueObject.ga4gh):
-        keys = [
-            'refgetAccession',
-            'type'
-        ]
+#########################################
+# vrs sequence expression
+#########################################
 
 
 class LengthExpression(_ValueObject):
-    """An expression of a DNA, RNA, or protein polymer of known length but unspecified sequence."""
+    """A sequence expressed only by its length."""
 
-    type: Literal['ReferenceLengthExpression'] = Field(
-        'ReferenceLengthExpression', description='MUST be "ReferenceLengthExpression"'
+    type: Literal['LengthExpression'] = Field(
+        'LengthExpression', description='MUST be "LengthExpression"'
     )
-    length: Union[Range, int] = Field(
-        ..., description='The number of residues of the expressed sequence.'
+    length: Optional[Union[Range, int]] = Field(
+        None
     )
 
     class ga4gh(_ValueObject.ga4gh):
@@ -362,7 +370,7 @@ class LengthExpression(_ValueObject):
 
 
 class ReferenceLengthExpression(_ValueObject):
-    """An expression sequence derived from a reference."""
+    """An expression of a length of a sequence from a repeating reference."""
 
     type: Literal['ReferenceLengthExpression'] = Field(
         'ReferenceLengthExpression', description='MUST be "ReferenceLengthExpression"'
@@ -400,6 +408,32 @@ class LiteralSequenceExpression(_ValueObject):
         ]
 
 
+#########################################
+# vrs location
+#########################################
+
+
+class SequenceReference(_ValueObject):
+    """A sequence of nucleic or amino acid character codes."""
+
+    model_config = ConfigDict(
+        use_enum_values=True
+    )
+
+    type: Literal['SequenceReference'] = Field('SequenceReference', description='MUST be "SequenceReference"')
+    refgetAccession: constr(pattern=r'^SQ.[0-9A-Za-z_\-]{32}$') = Field(
+        ...,
+        description='A `GA4GH RefGet <http://samtools.github.io/hts-specs/refget.html>` identifier for the referenced sequence, using the sha512t24u digest.',
+    )
+    residueAlphabet: Optional[ResidueAlphabet] = None
+
+    class ga4gh(_ValueObject.ga4gh):
+        keys = [
+            'refgetAccession',
+            'type'
+        ]
+
+
 class SequenceLocation(_Ga4ghIdentifiableObject):
     """A `Location` defined by an interval on a referenced `Sequence`."""
 
@@ -407,14 +441,14 @@ class SequenceLocation(_Ga4ghIdentifiableObject):
     sequenceReference: Optional[Union[IRI, SequenceReference]] = Field(
         None, description='A SequenceReference.'
     )
-    start: Union[Range, int] = Field(
-        ...,
+    start: Optional[Union[Range, int]] = Field(
+        None,
         description='The start coordinate or range of the SequenceLocation. The minimum value of this coordinate or range is 0. MUST represent a coordinate or range less than the value of `end`.',
     )
-    end: Union[Range, int] = Field(
-        ...,
+    end: Optional[Union[Range, int]] = Field(
+        None,
         description='The end coordinate or range of the SequenceLocation. The minimum value of this coordinate or range is 0. MUST represent a coordinate or range greater than the value of `start`.',
-    
+
     )
     def get_refget_accession(self):
         if isinstance(self.sequenceReference, SequenceReference):
@@ -433,6 +467,9 @@ class SequenceLocation(_Ga4ghIdentifiableObject):
             'type'
         ]
 
+#########################################
+# base variation
+#########################################
 
 
 class _VariationBase(_Ga4ghIdentifiableObject):
@@ -441,7 +478,49 @@ class _VariationBase(_Ga4ghIdentifiableObject):
     expressions: Optional[List[Expression]] = None
 
 
+#########################################
+# vrs structural variation (under active discussion)
+#########################################
+
+
+class Adjacency(_VariationBase):
+    """The `Adjacency` class can represent either the termination of a sequence or the
+    adjoining of the end of a sequence with the beginning of an adjacent sequence,
+    potentially with an intervening linker sequence.
+    """
+
+    model_config = ConfigDict(
+        use_enum_values=True
+    )
+
+    type: Literal['Adjacency'] = Field('Adjacency', description='MUST be "Adjacency"')
+    adjoinedSequences: List[Union[IRI, SequenceLocation]] = Field(
+        ...,
+        description="The terminal sequence or pair of adjoined sequences that defines in the adjacency.",
+        min_length=1,
+        max_length=2,
+    )
+    linker: Optional[Union[LiteralSequenceExpression, ReferenceLengthExpression]] = Field(
+        None,
+        description="he sequence found between adjoined sequences."
+    )
+
+    class ga4gh(_Ga4ghIdentifiableObject.ga4gh):
+        prefix = 'AJ'
+        keys = [
+            'adjoinedSequences',
+            'linker',
+            'type'
+        ]
+
+
+#########################################
+# vrs molecular variation
+#########################################
+
+
 class Allele(_VariationBase):
+    """The state of a molecule at a Location."""
 
     type: Literal['Allele'] = Field('Allele', description='MUST be "Allele"')
     location: Union[IRI, SequenceLocation] = Field(
@@ -461,12 +540,12 @@ class Allele(_VariationBase):
 
 
 class Haplotype(_VariationBase):
-    """A set of non-overlapping Allele members that co-occur on the same molecule."""
+    """An ordered set of co-occurring Variation on the same molecule."""
 
     type: Literal['Haplotype'] = Field('Haplotype', description='MUST be "Haplotype"')
-    members: List[Union[Allele, IRI]] = Field(
+    members: List[Union[Adjacency, Allele, IRI]] = Field(
         ...,
-        description='A list of Alleles (or IRI references to `Alleles`) that comprise a Haplotype. Since each `Haplotype` member MUST be an `Allele`, and all members MUST share a common `SequenceReference`, implementations MAY use a compact representation of Haplotype that omits type and `SequenceReference` information in individual Haplotype members. Implementations MUST transform compact `Allele` representations into an `Allele` when computing GA4GH identifiers.',
+        description='A list of Alleles and Adjacencies that comprise a Haplotype. Members must share the same reference sequence as adjacent members. Alleles should not have overlapping or adjacent coordinates with neighboring Alleles. Neighboring alleles should be ordered by ascending coordinates, unless represented on a DNA inversion (following an Adjacency with end-defined adjoinedSequences), in which case they should be ordered in descending coordinates. Sequence references MUST be consistent for all members between and including the end of one Adjacency and the beginning of another.',
         min_length=2,
     )
 
@@ -482,6 +561,11 @@ class Haplotype(_VariationBase):
             'members',
             'type'
         ]
+
+
+#########################################
+# vrs systemic variation
+#########################################
 
 
 class _CopyNumber(_VariationBase):
@@ -535,6 +619,11 @@ class CopyNumberChange(_CopyNumber):
         ]
 
 
+#########################################
+# vrs kinds of variation, expression, and location
+#########################################
+
+
 class MolecularVariation(RootModel):
     """A variation on a contiguous molecule."""
 
@@ -547,6 +636,8 @@ class MolecularVariation(RootModel):
     )
 
 class SequenceExpression(RootModel):
+    """An expression describing a Sequence."""
+
     root: Union[LiteralSequenceExpression, ReferenceLengthExpression] = Field(
         ...,
         json_schema_extra={'description': 'An expression describing a Sequence.'},
@@ -555,6 +646,8 @@ class SequenceExpression(RootModel):
 
 
 class Location(RootModel):
+    """A contiguous segment of a biological sequence."""
+
     root: SequenceLocation = Field(
         ...,
         json_schema_extra={
@@ -565,6 +658,8 @@ class Location(RootModel):
 
 
 class Variation(RootModel):
+    """A representation of the state of one or more biomolecules."""
+
     root: Union[Allele, CopyNumberChange, CopyNumberCount, Haplotype] = Field(
         ...,
         json_schema_extra={
