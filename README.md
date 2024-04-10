@@ -22,7 +22,7 @@
 - Algorithm for generating consistent, globally unique identifiers for variation without a central authority
 - Algorithm for performing fully justified allele normalization
 - Translating from and to other variant formats
-- Annotate VCFs with VRS
+- [Annotate VCFs with VRS](https://github.com/ga4gh/vrs-python/blob/main/docs/extras/vcf_annotator.md)
 - Convert GA4GH objects between inlined and referenced forms
 
 ## Known Issues
