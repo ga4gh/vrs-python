@@ -18,15 +18,14 @@ V1 pydantic: datamodel-codegen --input submodules/vrs/schema/merged.json --input
 V2 pydantic: datamodel-codegen --input submodules/vrs/schema/merged.json --input-file-type jsonschema --output models.py --output-model-type pydantic_v2.BaseModel --allow-extra-fields
 """
 
-from typing import List, Literal, Optional, Union, Dict
+from typing import List, Literal, Optional, Union, Dict, Annotated
 from collections import OrderedDict
 from enum import Enum
 import inspect
 import sys
-import typing
 from ga4gh.core import sha512t24u, GA4GH_PREFIX_SEP, CURIE_SEP, CURIE_NAMESPACE, GA4GH_IR_REGEXP
 
-from pydantic import BaseModel, ConfigDict, Field, RootModel, constr, model_serializer
+from pydantic import BaseModel, ConfigDict, Field, RootModel, StringConstraints, model_serializer
 
 from ga4gh.core._internal.pydantic import (
     is_ga4gh_identifiable,
@@ -59,10 +58,10 @@ def flatten_type(t):
     Flattens a complex type into a list of constituent types.
     """
     if hasattr(t, '__dict__') and '__origin__' in t.__dict__:
-        if t.__origin__ == typing.Literal:
+        if t.__origin__ == Literal:
             return list(t.__args__)
-        elif (t.__origin__ == typing.Union
-              or issubclass(t.__origin__, typing.List)):
+        elif (t.__origin__ == Union
+              or issubclass(t.__origin__, List)):
             return list(flatten([flatten_type(sub_t) for sub_t in t.__args__]))
     return [t]
 
@@ -214,7 +213,7 @@ class _Ga4ghIdentifiableObject(_ValueObject):
 
     type: str
 
-    digest: Optional[constr(pattern=r'^[0-9A-Za-z_\-]{32}$')] = Field(
+    digest: Optional[Annotated[str, StringConstraints(pattern=r'^[0-9A-Za-z_\-]{32}$')]] = Field(
         None,
         description='A sha512t24u digest created using the VRS Computed Identifier algorithm.',
     )
@@ -324,7 +323,7 @@ class Residue(RootModel):
     for nucleic acids and amino acids.
     """
 
-    root: constr(pattern=r'[A-Z*\-]') = Field(
+    root: Annotated[str, StringConstraints(pattern=r'[A-Z*\-]')] = Field(
         ...,
         json_schema_extra={
             'description': 'A character representing a specific residue (i.e., molecular species) or groupings of these ("ambiguity codes"), using [one-letter IUPAC abbreviations](https://en.wikipedia.org/wiki/International_Union_of_Pure_and_Applied_Chemistry#Amino_acid_and_nucleotide_base_codes) for nucleic acids and amino acids.'
@@ -339,7 +338,7 @@ class SequenceString(RootModel):
     Sequence Strings.
     """
 
-    root: constr(pattern=r'^[A-Z*\-]*$') = Field(
+    root: Annotated[str, StringConstraints(pattern=r'^[A-Z*\-]*$')] = Field(
         ...,
         json_schema_extra={
             'description': 'A character string of Residues that represents a biological sequence using the conventional sequence order (5’-to-3’ for nucleic acid sequences, and amino-to-carboxyl for amino acid sequences). IUPAC ambiguity codes are permitted in Sequence Strings.'
@@ -421,7 +420,7 @@ class SequenceReference(_ValueObject):
     )
 
     type: Literal['SequenceReference'] = Field('SequenceReference', description='MUST be "SequenceReference"')
-    refgetAccession: constr(pattern=r'^SQ.[0-9A-Za-z_\-]{32}$') = Field(
+    refgetAccession: Annotated[str, StringConstraints(pattern=r'^SQ.[0-9A-Za-z_\-]{32}$')] = Field(
         ...,
         description='A `GA4GH RefGet <http://samtools.github.io/hts-specs/refget.html>` identifier for the referenced sequence, using the sha512t24u digest.',
     )
