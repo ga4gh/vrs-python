@@ -18,12 +18,7 @@ V1 pydantic: datamodel-codegen --input submodules/vrs/schema/merged.json --input
 V2 pydantic: datamodel-codegen --input submodules/vrs/schema/merged.json --input-file-type jsonschema --output models.py --output-model-type pydantic_v2.BaseModel --allow-extra-fields
 """
 
-from typing import List, Literal, Optional, Union, Dict
-try:
-    from typing import Annotated  # Python 3.9 and later
-except ImportError:
-    from typing_extensions import Annotated  # For Python 3.8
-
+from typing import List, Literal, Optional, Union, Dict, Annotated
 from collections import OrderedDict
 from enum import Enum
 import inspect

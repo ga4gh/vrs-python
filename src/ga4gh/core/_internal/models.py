@@ -10,11 +10,7 @@ Instead, users should use one of the following:
   * `import ga4gh.core`, and refer to models using the fully-qualified
     module name, e.g., `ga4gh.core.core_models.Gene`
 """
-from typing import Any, Dict, List, Literal, Optional, Union
-try:
-    from typing import Annotated  # Python 3.9 and later
-except ImportError:
-    from typing_extensions import Annotated  # For Python 3.8
+from typing import Any, Dict, List, Literal, Optional, Union, Annotated
 from enum import Enum
 
 from pydantic import BaseModel, ConfigDict, Field, RootModel, StringConstraints, model_serializer
