@@ -34,7 +34,7 @@ All known issues are listed there. Please report any issues you find.
 
 ### Prerequisites
 
-- Python >= 3.8
+- Python >= 3.9
   - _Note: Python 3.10 is required for developers contributing to VRS-Python_
 - libpq
 - postgresql
