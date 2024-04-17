@@ -208,6 +208,12 @@ duplication_output_normalized = {
     "type": "Allele"
 }
 
+def test_from_invalid(tlr):
+    try:
+        tlr.translate_from("BRAF amplication")
+        assert "Expected exception to be thrown" is None
+    except ValueError as e:
+        assert e.args[0] == "Unable to parse data as beacon, gnomad, hgvs, spdi, vrs"
 
 @pytest.mark.vcr
 def test_from_beacon(tlr):

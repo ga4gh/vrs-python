@@ -302,7 +302,10 @@ class AlleleTranslator(_Translator):
 
     def _from_hgvs(self, hgvs_expr: str, **kwargs):
         allele_values = self.hgvs_tools.extract_allele_values(hgvs_expr)
-        return self._create_allele(allele_values, **kwargs)
+        if allele_values:
+            return self._create_allele(allele_values, **kwargs)
+        else:
+            return None
 
     def _from_spdi(self, spdi_expr, **kwargs):
         """Parse SPDI expression in to a GA4GH Allele
