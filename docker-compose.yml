@@ -23,6 +23,8 @@ services:
     # psql -XAt postgres://anonymous@localhost/uta -c 'select count(*) from uta_20210129b.transcript'
     # 314227
     image: biocommons/uta:uta_20210129b
+    environment:
+      - POSTGRES_PASSWORD=some-password-that-you-make-up
     volumes:
       - uta_vol:/var/lib/postgresql/data
     ports:
