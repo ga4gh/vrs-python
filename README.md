@@ -82,9 +82,10 @@ First, you must install a local [SeqRepo](https://github.com/biocommons/biocommo
 ```shell
 pip install seqrepo
 export SEQREPO_VERSION=2021-01-29  # or newer if available -- check `seqrepo list-remote-instances`
-sudo mkdir /usr/local/share/seqrepo
+sudo mkdir -p /usr/local/share/seqrepo
 sudo chown $USER /usr/local/share/seqrepo
 seqrepo pull -i $SEQREPO_VERSION
+seqrepo update-latest
 ```
 
 If you encounter a permission error similar to the one below:
@@ -138,8 +139,8 @@ nearly instantaneous.
 You can test UTA and seqrepo installations like so:
 
 ```shell
-$ psql -XAt postgres://anonymous@localhost/uta -c 'select count(*) from transcript'
-249909
+$ psql -XAt postgres://anonymous@localhost/uta -c 'select count(*) from uta_20210129b.transcript'
+314227
 ```
 
 ##### It doesn't work
@@ -198,6 +199,12 @@ git clone --recurse-submodules git@github.com:YOUR_GITHUB_ID/vrs-python.git
 cd vrs-python
 make devready
 source venv/3.10/bin/activate
+```
+
+If you already cloned the repo, but forgot to include `--recurse-submodules` you can run:
+
+```shell
+git submodule update --init --recursive
 ```
 
 #### Submodules
