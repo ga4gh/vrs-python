@@ -23,10 +23,11 @@ from collections import OrderedDict
 from enum import Enum
 import inspect
 import sys
-from ga4gh.core import sha512t24u, GA4GH_PREFIX_SEP, CURIE_SEP, CURIE_NAMESPACE, GA4GH_IR_REGEXP
+from ga4gh.core import sha512t24u, GA4GH_PREFIX_SEP, CURIE_SEP, CURIE_NAMESPACE
 
 from pydantic import BaseModel, ConfigDict, Field, RootModel, StringConstraints, model_serializer
 
+from ga4gh.core._internal.identifiers import GA4GH_IR_REGEXP
 from ga4gh.core._internal.pydantic import (
     is_ga4gh_identifiable,
     getattr_in
