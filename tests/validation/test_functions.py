@@ -1,7 +1,6 @@
 import os
 
 import pytest
-import vcr
 import yaml
 
 from ga4gh.core import sha512t24u

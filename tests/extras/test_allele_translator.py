@@ -211,7 +211,7 @@ duplication_output_normalized = {
 def test_from_invalid(tlr):
     try:
         tlr.translate_from("BRAF amplication")
-        assert "Expected exception to be thrown" is None
+        assert "Expected exception to be thrown" == None
     except ValueError as e:
         assert e.args[0] == "Unable to parse data as beacon, gnomad, hgvs, spdi, vrs"
 
@@ -514,21 +514,3 @@ def test_to_hgvs_iri_ref_keyerror(tlr):
         # we have to add functionality to address the handling of iri-references in the future
         tlr.translate_to(iri_vo, "hgvs")
     assert str(e.value) == "'ga4gh:seqrefs.jsonc#/NM_181798.1'"
-
-# TODO: Readd these tests
-# @pytest.mark.vcr
-# def test_errors(tlr):
-#     with pytest.raises(ValueError):
-#         tlr._from_beacon("bogus")
-#
-#     with pytest.raises(ValueError):
-#         tlr._from_gnomad("NM_182763.2:c.688+403C>T")
-#
-#     with pytest.raises(ValueError):
-#         tlr._from_hgvs("NM_182763.2:c.688+403C>T")
-#
-#     with pytest.raises(ValueError):
-#         tlr._from_hgvs("NM_182763.2:c.688_690inv")
-#
-#     with pytest.raises(ValueError):
-#         tlr._from_spdi("NM_182763.2:c.688+403C>T")

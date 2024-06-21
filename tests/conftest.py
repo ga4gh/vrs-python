@@ -18,9 +18,3 @@ def rest_dataproxy():
         base_url=os.environ.get(
             "SEQREPO_REST_URL",
             "http://localhost:5000/seqrepo"))
-
-
-# See https://github.com/ga4gh/vrs-python/issues/24
-# @pytest.fixture(autouse=True)
-# def setup_doctest(doctest_namespace, tlr):
-#     doctest_namespace["tlr"] = tlr

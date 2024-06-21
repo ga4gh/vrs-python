@@ -1,9 +1,4 @@
-import tempfile
-import ast
-import os
 import pytest
-import shutil
-import sys
 
 from ga4gh.vrs.extras.object_store import Sqlite3MutableMapping
 
@@ -107,21 +102,6 @@ def test_classes(tmp_path):
 
     object_store.close()
 
-
-# This version verifies that setting autocommit=False may
-# lose data is .close or .commit is not explicitly called
-# def test_no_commit():
-#     tmpdir = tempfile.mkdtemp()
-#     db_path = tmpdir + "/test_commit.sqlite3"
-#     object_store = Sqlite3MutableMapping(db_path, autocommit=False)
-#     value_count = int(1e5)
-#     for i in range(value_count):
-#         object_store[f"key{i}"] = f"value{i}"
-#     object_store.db.close()
-#     # See if the stuff is still there
-#     object_store = Sqlite3MutableMapping(db_path)
-#     for i in range(value_count):
-#         assert object_store[f"key{i}"] == f"value{i}"
 
 def test_commit(tmp_path):
     db_path = str(tmp_path) + "/test_commit.sqlite3"

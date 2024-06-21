@@ -1,11 +1,6 @@
 import pytest
 from ga4gh.vrs import models, normalize
 
-# >>> dp.get_sequence("refseq:NC_000019.10", 44908820, 44908830)
-#  |820      |825      | 830
-# ' G C G C C T G G C A '
-#    |A| a1
-#
 
 allele_dict = {
     "location": {
