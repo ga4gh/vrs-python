@@ -45,7 +45,7 @@ def test_schema_class_fields_are_valid():
             continue
         schema_fields = set(VRS_SCHEMA[vrs_class]['properties'])
         pydantic_model = getattr(models, vrs_class)
-        assert set(pydantic_model.__fields__) == schema_fields, vrs_class
+        assert set(pydantic_model.model_fields) == schema_fields, vrs_class
 
 
 def test_model_keys_are_valid():
