@@ -15,7 +15,7 @@ from ._internal.identifiers import (
 from ._internal.pydantic import (
     is_pydantic_instance, is_curie_type, is_ga4gh_identifiable, is_literal, pydantic_copy
 )
-from ._internal import models as core_models
+from ._internal import models as common_models
 
 try:
     __version__ = version(__name__)
