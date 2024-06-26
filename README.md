@@ -34,8 +34,8 @@ All known issues are listed there. Please report any issues you find.
 
 ### Prerequisites
 
-- Python >= 3.9
-  - _Note: Python 3.10 is required for developers contributing to VRS-Python_
+- Python >= 3.10
+  - _Note: Python 3.12 is required for developers contributing to VRS-Python_
 - libpq
 - postgresql
 
@@ -198,7 +198,7 @@ Fork the repo at <https://github.com/ga4gh/vrs-python/>.
 git clone --recurse-submodules git@github.com:YOUR_GITHUB_ID/vrs-python.git
 cd vrs-python
 make devready
-source venv/3.10/bin/activate
+source venv/3.12/bin/activate
 ```
 
 If you already cloned the repo, but forgot to include `--recurse-submodules` you can run:
@@ -253,7 +253,7 @@ We have created a public [`VRS-demo-notebooks`](https://app.terra.bio/#workspace
 1. Open VS Code.
 2. Use Extensions view (Ctrl+Shift+X or ⌘+Shift+X) to install the [Jupyter extension](https://marketplace.visualstudio.com/items?itemName=ms-toolsai.jupyter).
 3. Navigate to your vrs-python project folder and open it in VS Code.
-4. In a notebook, click `Select Kernel` at the top right. Select the option where the path is `venv/3.10/bin/python3`. See [here](https://code.visualstudio.com/docs/datascience/jupyter-kernel-management) for more information on managing Jupyter Kernels in VS Code.
+4. In a notebook, click `Select Kernel` at the top right. Select the option where the path is `venv/3.12/bin/python3`. See [here](https://code.visualstudio.com/docs/datascience/jupyter-kernel-management) for more information on managing Jupyter Kernels in VS Code.
 5. After selecting the kernel you can now run the notebook.
 
 ## Security Note (from the GA4GH Security Team)

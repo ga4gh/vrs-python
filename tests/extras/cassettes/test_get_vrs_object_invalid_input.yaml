@@ -9,7 +9,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.31.0
+      - python-requests/2.32.3
     method: GET
     uri: http://localhost:5000/seqrepo/1/metadata/GRCh38:.
   response:
@@ -23,7 +23,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 26 Mar 2024 16:29:21 GMT
+      - Wed, 26 Jun 2024 11:58:58 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -39,7 +39,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.31.0
+      - python-requests/2.32.3
     method: GET
     uri: http://localhost:5000/seqrepo/1/metadata/GRCh38:7
   response:
@@ -64,7 +64,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 26 Mar 2024 16:29:21 GMT
+      - Wed, 26 Jun 2024 11:58:58 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -80,7 +80,37 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.31.0
+      - python-requests/2.32.3
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/GRCh38:7?start=140753335&end=140753336
+  response:
+    body:
+      string: A
+    headers:
+      Connection:
+      - close
+      Content-Length:
+      - '1'
+      Content-Type:
+      - text/plain; charset=utf-8
+      Date:
+      - Wed, 26 Jun 2024 11:58:58 GMT
+      Server:
+      - Werkzeug/2.2.2 Python/3.10.4
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.32.3
     method: GET
     uri: http://localhost:5000/seqrepo/1/metadata/ga4gh:SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul
   response:
@@ -105,7 +135,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 26 Mar 2024 16:29:21 GMT
+      - Wed, 26 Jun 2024 11:58:58 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -121,7 +151,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.31.0
+      - python-requests/2.32.3
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul?start=140753335&end=140753336
   response:
@@ -135,37 +165,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Tue, 26 Mar 2024 16:29:21 GMT
-      Server:
-      - Werkzeug/2.2.2 Python/3.10.4
-    status:
-      code: 200
-      message: OK
-- request:
-    body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      User-Agent:
-      - python-requests/2.31.0
-    method: GET
-    uri: http://localhost:5000/seqrepo/1/sequence/GRCh38:7?start=140753335&end=140753336
-  response:
-    body:
-      string: A
-    headers:
-      Connection:
-      - close
-      Content-Length:
-      - '1'
-      Content-Type:
-      - text/plain; charset=utf-8
-      Date:
-      - Tue, 26 Mar 2024 16:29:21 GMT
+      - Wed, 26 Jun 2024 11:58:58 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:

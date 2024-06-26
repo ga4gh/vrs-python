@@ -9,7 +9,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.31.0
+      - python-requests/2.32.3
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/NC_000013.11?start=32936731&end=32936732
   response:
@@ -23,7 +23,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Thu, 28 Mar 2024 15:00:00 GMT
+      - Wed, 26 Jun 2024 11:58:35 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -39,37 +39,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.31.0
-    method: GET
-    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT?start=32936731&end=32936732
-  response:
-    body:
-      string: C
-    headers:
-      Connection:
-      - close
-      Content-Length:
-      - '1'
-      Content-Type:
-      - text/plain; charset=utf-8
-      Date:
-      - Thu, 28 Mar 2024 15:00:00 GMT
-      Server:
-      - Werkzeug/2.2.2 Python/3.10.4
-    status:
-      code: 200
-      message: OK
-- request:
-    body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      User-Agent:
-      - python-requests/2.31.0
+      - python-requests/2.32.3
     method: GET
     uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nucleotide&id=NC_000013.11&rettype=fasta&seq_start=32936732&seq_stop=32936732&tool=bioutils&email=biocommons-dev@googlegroups.com
   response:
@@ -93,20 +63,20 @@ interactions:
       Content-Type:
       - text/plain
       Date:
-      - Thu, 28 Mar 2024 15:00:00 GMT
+      - Wed, 26 Jun 2024 11:58:35 GMT
       Keep-Alive:
       - timeout=4, max=40
       NCBI-PHID:
-      - 322C9662D163BFD50000455DC8C5F803.1.1.m_5
+      - D0BDC04CDF84FC0500005C647A219942.1.1.m_5
       NCBI-SID:
-      - B4EFF4C120F51122_C2F5SID
+      - 0F837A16B6853FBD_220BSID
       Referrer-Policy:
       - origin-when-cross-origin
       Server:
       - Finatra
       Set-Cookie:
-      - ncbi_sid=B4EFF4C120F51122_C2F5SID; domain=.nih.gov; path=/; expires=Fri, 28
-        Mar 2025 15:00:00 GMT
+      - ncbi_sid=0F837A16B6853FBD_220BSID; domain=.nih.gov; path=/; expires=Thu, 26
+        Jun 2025 11:58:35 GMT
       Strict-Transport-Security:
       - max-age=31536000; includeSubDomains; preload
       Transfer-Encoding:
