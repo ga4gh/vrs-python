@@ -9,21 +9,23 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.24.0
+      - python-requests/2.32.3
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/NC_000013.11?start=50000000&end=50000050
   response:
     body:
       string: TTAGGTGTTTAGATGATTTCTAAGATGCTTTTAAGCCCAGTATTTCTATT
     headers:
+      Connection:
+      - close
       Content-Length:
       - '50'
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Mon, 13 Jul 2020 04:40:31 GMT
+      - Wed, 26 Jun 2024 11:58:58 GMT
       Server:
-      - Werkzeug/1.0.1 Python/3.8.2
+      - Werkzeug/2.2.2 Python/3.10.4
     status:
       code: 200
       message: OK

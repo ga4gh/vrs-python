@@ -9,7 +9,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.31.0
+      - python-requests/2.32.3
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl?start=289464&end=289464
   response:
@@ -23,7 +23,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Tue, 26 Mar 2024 16:28:36 GMT
+      - Wed, 26 Jun 2024 11:58:46 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -39,7 +39,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.31.0
+      - python-requests/2.32.3
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl?start=289463&end=289464
   response:
@@ -53,7 +53,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Tue, 26 Mar 2024 16:28:36 GMT
+      - Wed, 26 Jun 2024 11:58:46 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -69,7 +69,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.31.0
+      - python-requests/2.32.3
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl?start=289464&end=289465
   response:
@@ -83,7 +83,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Tue, 26 Mar 2024 16:28:36 GMT
+      - Wed, 26 Jun 2024 11:58:46 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -99,7 +99,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.31.0
+      - python-requests/2.32.3
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl?start=289465&end=289466
   response:
@@ -113,7 +113,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Tue, 26 Mar 2024 16:28:37 GMT
+      - Wed, 26 Jun 2024 11:58:46 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -129,7 +129,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.31.0
+      - python-requests/2.32.3
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl?start=289466&end=289467
   response:
@@ -143,7 +143,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Tue, 26 Mar 2024 16:28:37 GMT
+      - Wed, 26 Jun 2024 11:58:46 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -159,7 +159,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.31.0
+      - python-requests/2.32.3
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl?start=289464&end=289466
   response:
@@ -173,7 +173,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Tue, 26 Mar 2024 16:28:37 GMT
+      - Wed, 26 Jun 2024 11:58:46 GMT
       Server:
       - Werkzeug/2.2.2 Python/3.10.4
     status:
@@ -189,7 +189,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.31.0
+      - python-requests/2.32.3
     method: GET
     uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nucleotide&id=NC_000019.10&rettype=fasta&seq_start=289465&seq_stop=289466&tool=bioutils&email=biocommons-dev@googlegroups.com
   response:
@@ -213,20 +213,20 @@ interactions:
       Content-Type:
       - text/plain
       Date:
-      - Tue, 26 Mar 2024 16:28:37 GMT
+      - Wed, 26 Jun 2024 11:58:46 GMT
       Keep-Alive:
       - timeout=4, max=40
       NCBI-PHID:
-      - 939B0CF92DC7363500003FD0BAD06517.1.1.m_5
+      - D0BDC04CDF84FC0500004164B5C5CA50.1.1.m_5
       NCBI-SID:
-      - F51BC9F288C8985B_C4F0SID
+      - 23518C7A3ED150B5_B224SID
       Referrer-Policy:
       - origin-when-cross-origin
       Server:
       - Finatra
       Set-Cookie:
-      - ncbi_sid=F51BC9F288C8985B_C4F0SID; domain=.nih.gov; path=/; expires=Wed, 26
-        Mar 2025 16:28:37 GMT
+      - ncbi_sid=23518C7A3ED150B5_B224SID; domain=.nih.gov; path=/; expires=Thu, 26
+        Jun 2025 11:58:46 GMT
       Strict-Transport-Security:
       - max-age=31536000; includeSubDomains; preload
       Transfer-Encoding:
@@ -254,7 +254,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.31.0
+      - python-requests/2.32.3
     method: GET
     uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nucleotide&id=NC_000019.10&rettype=fasta&seq_start=289466&seq_stop=289466&tool=bioutils&email=biocommons-dev@googlegroups.com
   response:
@@ -278,20 +278,20 @@ interactions:
       Content-Type:
       - text/plain
       Date:
-      - Tue, 26 Mar 2024 16:28:37 GMT
+      - Wed, 26 Jun 2024 11:58:47 GMT
       Keep-Alive:
       - timeout=4, max=40
       NCBI-PHID:
-      - D0BDBF1F4546BFE50000180FB0927718.1.1.m_5
+      - 322C2168844ED525000033625B3DB0E4.1.1.m_5
       NCBI-SID:
-      - 1A46F0BEFF181537_3F38SID
+      - 2EFCCFA110F2FAAD_83DASID
       Referrer-Policy:
       - origin-when-cross-origin
       Server:
       - Finatra
       Set-Cookie:
-      - ncbi_sid=1A46F0BEFF181537_3F38SID; domain=.nih.gov; path=/; expires=Wed, 26
-        Mar 2025 16:28:37 GMT
+      - ncbi_sid=2EFCCFA110F2FAAD_83DASID; domain=.nih.gov; path=/; expires=Thu, 26
+        Jun 2025 11:58:47 GMT
       Strict-Transport-Security:
       - max-age=31536000; includeSubDomains; preload
       Transfer-Encoding:
@@ -319,7 +319,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.31.0
+      - python-requests/2.32.3
     method: GET
     uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nucleotide&id=NC_000019.10&rettype=fasta&seq_start=289465&seq_stop=289486&tool=bioutils&email=biocommons-dev@googlegroups.com
   response:
@@ -344,20 +344,20 @@ interactions:
       Content-Type:
       - text/plain
       Date:
-      - Tue, 26 Mar 2024 16:28:43 GMT
+      - Wed, 26 Jun 2024 11:58:47 GMT
       Keep-Alive:
       - timeout=4, max=40
       NCBI-PHID:
-      - 939B0CF92DC7363500004DD0C184C8B1.1.1.m_5
+      - D0BDC04CDF84FC0500002564BA070495.1.1.m_5
       NCBI-SID:
-      - F13B6D2A00EB19E0_A01ESID
+      - A4BFD55E738F1983_7D6BSID
       Referrer-Policy:
       - origin-when-cross-origin
       Server:
       - Finatra
       Set-Cookie:
-      - ncbi_sid=F13B6D2A00EB19E0_A01ESID; domain=.nih.gov; path=/; expires=Wed, 26
-        Mar 2025 16:28:38 GMT
+      - ncbi_sid=A4BFD55E738F1983_7D6BSID; domain=.nih.gov; path=/; expires=Thu, 26
+        Jun 2025 11:58:47 GMT
       Strict-Transport-Security:
       - max-age=31536000; includeSubDomains; preload
       Transfer-Encoding:
@@ -385,7 +385,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.31.0
+      - python-requests/2.32.3
     method: GET
     uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nucleotide&id=NC_000019.10&rettype=fasta&seq_start=289463&seq_stop=289466&tool=bioutils&email=biocommons-dev@googlegroups.com
   response:
@@ -409,20 +409,20 @@ interactions:
       Content-Type:
       - text/plain
       Date:
-      - Tue, 26 Mar 2024 16:28:43 GMT
+      - Wed, 26 Jun 2024 11:58:48 GMT
       Keep-Alive:
       - timeout=4, max=40
       NCBI-PHID:
-      - 322C87E474B568E500005A0D459D6169.1.1.m_5
+      - 322C2168844ED52500004B6261A52076.1.1.m_5
       NCBI-SID:
-      - 0ED03A969EED9C4F_4B92SID
+      - 4D83F50ED8EB562C_4BE4SID
       Referrer-Policy:
       - origin-when-cross-origin
       Server:
       - Finatra
       Set-Cookie:
-      - ncbi_sid=0ED03A969EED9C4F_4B92SID; domain=.nih.gov; path=/; expires=Wed, 26
-        Mar 2025 16:28:43 GMT
+      - ncbi_sid=4D83F50ED8EB562C_4BE4SID; domain=.nih.gov; path=/; expires=Thu, 26
+        Jun 2025 11:58:48 GMT
       Strict-Transport-Security:
       - max-age=31536000; includeSubDomains; preload
       Transfer-Encoding:
@@ -430,7 +430,7 @@ interactions:
       X-RateLimit-Limit:
       - '3'
       X-RateLimit-Remaining:
-      - '2'
+      - '1'
       X-UA-Compatible:
       - IE=Edge
       X-XSS-Protection:
