@@ -257,7 +257,7 @@ def _is_valid_cycle(template_start, template, target):
 # TODO _normalize_genotype?
 
 
-def _normalize_haplotype(o, data_proxy=None):
+def _normalize_cis_phased_block(o, data_proxy=None):
 
     o.members = sorted(o.members, key=ga4gh_digest)
     return o
@@ -265,7 +265,7 @@ def _normalize_haplotype(o, data_proxy=None):
 
 handlers = {
     "Allele": _normalize_allele,
-    "Haplotype": _normalize_haplotype,
+    "CisPhasedBlock": _normalize_cis_phased_block,
 }
 
 
