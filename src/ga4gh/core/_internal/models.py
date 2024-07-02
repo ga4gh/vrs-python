@@ -4,11 +4,11 @@
 
 Instead, users should use one of the following:
 
-  * `from ga4gh.core import core_models`, and refer to models with the
-    abbreviated name, e.g., `core_models.Gene` (recommended)
+  * `from ga4gh.core import common_models`, and refer to models with the
+    abbreviated name, e.g., `common_models.Gene` (recommended)
 
   * `import ga4gh.core`, and refer to models using the fully-qualified
-    module name, e.g., `ga4gh.core.core_models.Gene`
+    module name, e.g., `ga4gh.core.common_models.Gene`
 """
 import datetime
 from typing import Any, Dict, ForwardRef, Literal, Annotated, Optional, Union, List
