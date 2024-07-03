@@ -481,12 +481,6 @@ class CisPhasedBlock(_VariationBase):
     )
     sequenceReference: Optional[SequenceReference] = Field(None, description="An optional Sequence Reference on which all of the in-cis Alleles are found. When defined, this may be used to implicitly define the `sequenceReference` attribute for each of the CisPhasedBlock member Alleles.")
 
-    @model_serializer(when_used='json')
-    def ga4gh_serialize(self) -> Dict:
-        out = _ValueObject.ga4gh_serialize(self)
-        out['members'] = sorted(out['members'])
-        return out
-
     class ga4gh(_Ga4ghIdentifiableObject.ga4gh):
         prefix = 'CPB'
         keys = [
@@ -530,6 +524,12 @@ class Adjacency(_VariationBase):
             'linker',
             'type'
         ]
+
+    @model_serializer(when_used='json')
+    def ga4gh_serialize(self) -> Dict:
+        out = _ValueObject.ga4gh_serialize(self)
+        out['adjoinedSequences'] = sorted(out['adjoinedSequences'])
+        return out
 
 
 class SequenceTerminus(_VariationBase):
@@ -575,6 +575,12 @@ class DerivativeSequence(_VariationBase):
             "components",
             "type"
         ]
+
+    @model_serializer(when_used='json')
+    def ga4gh_serialize(self) -> Dict:
+        out = _ValueObject.ga4gh_serialize(self)
+        out['components'] = sorted(out['components'])
+        return out
 
 
 #########################################
