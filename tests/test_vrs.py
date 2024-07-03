@@ -35,7 +35,11 @@ a = models.Allele(**allele_dict)
 
 allele_383650_dict = {
     "type": "Allele",
+    "digest": "SZIS2ua7AL-0YgUTAqyBsFPYK3vE8h_d",
+    "id": "ga4gh:VA.SZIS2ua7AL-0YgUTAqyBsFPYK3vE8h_d",
     "location": {
+        "id": "ga4gh:SL.TaoXEhpHvA6SdilBUO-AX00YDARv9Uoe",
+        "digest": "TaoXEhpHvA6SdilBUO-AX00YDARv9Uoe",
         "type": "SequenceLocation",
         "sequenceReference": {
             "type": "SequenceReference",
@@ -101,24 +105,24 @@ def test_vr():
     # Sequence Reference
     seqref = a.location.sequenceReference
     seqref_serialized = ga4gh_serialize(seqref)
-    assert seqref_serialized == b'{"refgetAccession":"SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul"}'
+    assert seqref_serialized == b'{"refgetAccession":"SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul","type":"SequenceReference"}'
     assert ga4gh_digest(seqref) is None
     assert ga4gh_identify(seqref) is None
 
     # Location
     loc = a.location
     loc_serialized = ga4gh_serialize(loc)
-    assert loc_serialized == b'{"end":55181320,"sequenceReference":{"refgetAccession":"SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul"},"start":55181319,"type":"SequenceLocation"}'
-    assert sha512t24u(loc_serialized) == '2bggIw-5f9iwF4rvLi72l6r1yYfu8FqN'
-    assert ga4gh_digest(loc) == '2bggIw-5f9iwF4rvLi72l6r1yYfu8FqN'
-    assert ga4gh_identify(loc) == 'ga4gh:SL.2bggIw-5f9iwF4rvLi72l6r1yYfu8FqN'
+    assert loc_serialized == b'{"end":55181320,"sequenceReference":{"refgetAccession":"SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul","type":"SequenceReference"},"start":55181319,"type":"SequenceLocation"}'
+    assert sha512t24u(loc_serialized) == '_G2K0qSioM74l_u3OaKR0mgLYdeTL7Xd'
+    assert ga4gh_digest(loc) == '_G2K0qSioM74l_u3OaKR0mgLYdeTL7Xd'
+    assert ga4gh_identify(loc) == 'ga4gh:SL._G2K0qSioM74l_u3OaKR0mgLYdeTL7Xd'
 
     # Allele
     allele_serialized = ga4gh_serialize(a)
-    assert allele_serialized == b'{"location":"2bggIw-5f9iwF4rvLi72l6r1yYfu8FqN","state":{"sequence":"T","type":"LiteralSequenceExpression"},"type":"Allele"}'
-    assert sha512t24u(allele_serialized) == '3HB4RttHyDFgT8KTHurSlDSjUA8N8HKG'
-    assert ga4gh_digest(a) == '3HB4RttHyDFgT8KTHurSlDSjUA8N8HKG'
-    assert ga4gh_identify(a) == 'ga4gh:VA.3HB4RttHyDFgT8KTHurSlDSjUA8N8HKG'
+    assert allele_serialized == b'{"location":"_G2K0qSioM74l_u3OaKR0mgLYdeTL7Xd","state":{"sequence":"T","type":"LiteralSequenceExpression"},"type":"Allele"}'
+    assert sha512t24u(allele_serialized) == 'Hy2XU_-rp4IMh6I_1NXNecBo8Qx8n0oE'
+    assert ga4gh_digest(a) == 'Hy2XU_-rp4IMh6I_1NXNecBo8Qx8n0oE'
+    assert ga4gh_identify(a) == 'ga4gh:VA.Hy2XU_-rp4IMh6I_1NXNecBo8Qx8n0oE'
 
     with pytest.raises(ValidationError):
         models.Allele(**{
@@ -163,17 +167,17 @@ def test_cpb():
     assert cpb_431012.model_dump(exclude_none=True) == cpb_431012_dict
     assert is_pydantic_instance(cpb_431012)
     cpb_serialized = ga4gh_serialize(cpb_431012)
-    assert cpb_serialized == b'{"members":["NnK--c7SIbZvcnAgkPjlH2Iszl4IkbjT","qlCSPm6oakAob8jw9BoExi8In5AmsF-0"],"type":"CisPhasedBlock"}'
-    assert sha512t24u(cpb_serialized) == 'Qx631LTg7-7Jdfo0hLeuCW9ylprE2qPM'
-    assert ga4gh_digest(cpb_431012) == 'Qx631LTg7-7Jdfo0hLeuCW9ylprE2qPM'
-    assert ga4gh_identify(cpb_431012) == 'ga4gh:CPB.Qx631LTg7-7Jdfo0hLeuCW9ylprE2qPM'
+    assert cpb_serialized == b'{"members":["SZIS2ua7AL-0YgUTAqyBsFPYK3vE8h_d","TKhpDsfclpSXpn6BjTLViB_ceqRerOd2"],"type":"CisPhasedBlock"}'
+    assert sha512t24u(cpb_serialized) == 'x8GH5G73cPMs37jy1-9mJjWynu324rxI'
+    assert ga4gh_digest(cpb_431012) == 'x8GH5G73cPMs37jy1-9mJjWynu324rxI'
+    assert ga4gh_identify(cpb_431012) == 'ga4gh:CPB.x8GH5G73cPMs37jy1-9mJjWynu324rxI'
 
 
 def test_ga4gh_iri():
-    iri = models.IRI.model_construct("ga4gh:VA.3HB4RttHyDFgT8KTHurSlDSjUA8N8HKG")
+    iri = models.IRI.model_construct("ga4gh:VA.Hy2XU_-rp4IMh6I_1NXNecBo8Qx8n0oE")
     assert is_curie_type(iri)
     assert iri.root == pydantic_copy(iri).root
-    assert ga4gh_serialize(iri) == b'"3HB4RttHyDFgT8KTHurSlDSjUA8N8HKG"'
+    assert ga4gh_serialize(iri) == b'"Hy2XU_-rp4IMh6I_1NXNecBo8Qx8n0oE"'
 
 
 def test_enref():
@@ -185,12 +189,12 @@ def test_enref():
     actual_no_loc = allele_383650_enreffed.model_dump().copy()
     actual_no_loc.pop("location")
     assert actual_no_loc == orig_no_loc, "Original and enreffed match except for enreffed field"
-    assert allele_383650_enreffed.location == 'ga4gh:SL.-9ppL7WzaMWrHwFZv9edFWW_H523sPnX'
+    assert allele_383650_enreffed.location == 'ga4gh:SL.TaoXEhpHvA6SdilBUO-AX00YDARv9Uoe'
     assert (allele_383650_enreffed.model_dump(exclude_none=True) == {
-        'digest': 'qlCSPm6oakAob8jw9BoExi8In5AmsF-0',
-        'id': 'ga4gh:VA.qlCSPm6oakAob8jw9BoExi8In5AmsF-0',
+        'digest': 'SZIS2ua7AL-0YgUTAqyBsFPYK3vE8h_d',
+        'id': 'ga4gh:VA.SZIS2ua7AL-0YgUTAqyBsFPYK3vE8h_d',
         'type': 'Allele',
-        'location': 'ga4gh:SL.-9ppL7WzaMWrHwFZv9edFWW_H523sPnX',
+        'location': 'ga4gh:SL.TaoXEhpHvA6SdilBUO-AX00YDARv9Uoe',
         'state': {
             'type': 'LiteralSequenceExpression',
             'sequence': 'T'}})
@@ -198,8 +202,8 @@ def test_enref():
 
     dereffed = vrs_deref(allele_383650_enreffed, object_store=object_store)
     assert (dereffed.location.model_dump(exclude_none=True) == {
-        'digest': '-9ppL7WzaMWrHwFZv9edFWW_H523sPnX',
-        'id': 'ga4gh:SL.-9ppL7WzaMWrHwFZv9edFWW_H523sPnX',
+        'digest': 'TaoXEhpHvA6SdilBUO-AX00YDARv9Uoe',
+        'id': 'ga4gh:SL.TaoXEhpHvA6SdilBUO-AX00YDARv9Uoe',
         'type': 'SequenceLocation',
         'sequenceReference': {
             'type': 'SequenceReference',
@@ -207,7 +211,6 @@ def test_enref():
         },
         'start': 128325834,
         'end': 128325835})
-    dereffed.location.id = None
     assert dereffed.location.model_dump(exclude_none=True) == allele_383650.location.model_dump(exclude_none=True)
     assert dereffed.model_dump() == allele_383650.model_dump()
 
@@ -282,7 +285,7 @@ def test_compute_identifiers_when():
         },
         "state": {"type": "LiteralSequenceExpression", "sequence": "T"},
     }
-    correct_id = "ga4gh:VA.Yej0kQTGuatF6tXLAarhWzzHqC6VupfN"
+    correct_id = "ga4gh:VA.NRUtY5Jcoevxr0tIgbNa-oIFm-Gv4qas"
     syntax_valid_id = "ga4gh:VA.39eae078d9bb30da2a5c5d1969cb1472"
     syntax_invalid_id = "ga4gh:12345"
 

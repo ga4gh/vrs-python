@@ -395,7 +395,8 @@ class SequenceReference(_ValueObject):
 
     class ga4gh(_ValueObject.ga4gh):
         keys = [
-            'refgetAccession'
+            'refgetAccession',
+            'type'
         ]
 
 
