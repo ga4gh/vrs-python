@@ -81,7 +81,7 @@ First, you must install a local [SeqRepo](https://github.com/biocommons/biocommo
 
 ```shell
 pip install seqrepo
-export SEQREPO_VERSION=2021-01-29  # or newer if available -- check `seqrepo list-remote-instances`
+export SEQREPO_VERSION=2024-02-20  # or newer if available -- check `seqrepo list-remote-instances`
 sudo mkdir -p /usr/local/share/seqrepo
 sudo chown $USER /usr/local/share/seqrepo
 seqrepo pull -i $SEQREPO_VERSION
@@ -91,7 +91,7 @@ seqrepo update-latest
 If you encounter a permission error similar to the one below:
 
 ```shell
-PermissionError: [Error 13] Permission denied: '/usr/local/share/seqrepo/2021-01-29._fkuefgd' -> '/usr/local/share/seqrepo/2021-01-29'
+PermissionError: [Error 13] Permission denied: '/usr/local/share/seqrepo/2024-02-20._fkuefgd' -> '/usr/local/share/seqrepo/2024-02-20'
 ```
 
 Try moving data manually with `sudo`:
@@ -154,9 +154,9 @@ Here are some things to try.
   $ docker-compose up seqrepo-rest-service
   Starting vrs-python_seqrepo-rest-service_1 ... done
   Attaching to vrs-python_seqrepo-rest-service_1
-  seqrepo-rest-service_1  | 2022-07-26 15:59:59 seqrepo_rest_service.__main__[1] INFO Using seqrepo_dir='/usr/local/share/seqrepo/2021-01-29' from command line
+  seqrepo-rest-service_1  | 2022-07-26 15:59:59 seqrepo_rest_service.__main__[1] INFO Using seqrepo_dir='/usr/local/share/seqrepo/2024-02-20' from command line
   ⋮
-  seqrepo-rest-service_1  | OSError: Unable to open SeqRepo directory /usr/local/share/seqrepo/2021-01-29
+  seqrepo-rest-service_1  | OSError: Unable to open SeqRepo directory /usr/local/share/seqrepo/2024-02-20
   vrs-python_seqrepo-rest-service_1 exited with code 1
   ```
 
