@@ -25,7 +25,7 @@ Document = ForwardRef("Document")
 Method = ForwardRef("Method")
 
 #########################################
-# GKS Common Core Information Model
+# GKS Common Abstract Entity & Utility Class Definitions
 #########################################
 
 class AgentSubtype(str, Enum):
@@ -113,9 +113,9 @@ class RecordMetadata(BaseModel):
     real world entity this record or object represents).
     """
 
-    recordIdentifier: Optional[str] = Field(None, description="The business identifier of the record described in the RecordMetadata object (required when the record described is not the one in the present system)")
+    recordIdentifier: Optional[str] = Field(None, description="The identifier of the data record or object described in this RecordMetadata object.")
     recordVersion: Optional[str] = Field(None, description="The version number of the record-level artifact the object describes.")
-    derivedFrom: Optional[str] = Field(None, description="Another data record from which the record described here was derived.")
+    derivedFrom: Optional[str] = Field(None, description="Another data record from which the record described here was derived, through a data ingest and/or transformation process. Value should be a string representing the identifier of the source record.")
     dateRecordCreated: Optional[str] = Field(None, description="The date the record was initially created.")
     contributions: Optional[List[Contribution]] = Field(None, description="Describes specific contributions made by an human or software agent to the creation, modification, or administrative management of a data record or object.")
 
@@ -193,6 +193,7 @@ class _Entity(BaseModel):
         None,
         description="The 'logical' identifier of the entity in the system of record, e.g. a UUID. This 'id' is unique within a given system. The identified entity may have a different 'id' in a different system, or may refer to an 'id' for the shared concept in another system (e.g. a CURIE)."
     )
+    type: str
     label: Optional[str] = Field(
         None,
         description='A primary label for the entity.'
@@ -213,7 +214,6 @@ class _DomainEntity(_Entity):
     occasion.
     """
 
-    type: str
     mappings: Optional[List[ConceptMapping]] = Field(None, description="A list of mappings to concepts in terminologies or code systems. Each mapping should include a coding and a relation.")
 
 class Agent(_Entity):
@@ -227,17 +227,15 @@ class Agent(_Entity):
     subtype: Optional[AgentSubtype] = Field(None, description="A more specific type of agent the agent represents.")
 
 
-class Contribution(_Entity):
-    """An action taken by an agent in contributing to the creation, modification,
-    assessment, or deprecation of a particular entity (e.g. a Statement, EvidenceLine,
-    DataItem, Publication, etc.)
+class Activity(_Entity):
+    """An action or set of actions performed by an agent, that occurs over a period of
+    time. Activities may use, generate, modify, move, or destroy one or more entities.
     """
 
-    type: Literal["Contribution"] = "Contribution"
-    contributor: Optional[Agent] = Field(None, description="The agent that made the contribution.")
-    date: Optional[str] = Field(None, description="The date on which the contribution was made. The date SHOULD be formatted as a date string in ISO format 'YYYY-MM-DD'.")
-    contributionMadeTo: Optional[_InformationEntity] = Field(None, description="The artifact toward which the contribution was made.")  # noqa: N815
-    activity: Optional[Coding] = Field(None, description="SHOULD describe a concept descending from the Contributor Role Ontology.")
+    subtype: Optional[Coding] = Field(None, description="A more specific type of activity that an Activity object may represent.")
+    date: Optional[str] = Field(None, description="The date that the Activity was completed. The date SHOULD be formatted as a date string in ISO format 'YYYY-MM-DD'.")
+    performedBy: Optional[List[Agent]] = Field(None, description="An Agent who contributed to executing the Activity.")
+    specifiedBy: Optional[List[Method]] = Field(None, description="A method that was followed in performing an Activity, that describes how it was executed.")
 
     @field_validator("date")
     @classmethod
@@ -255,13 +253,24 @@ class Contribution(_Entity):
                 raise ValueError(msg) from e
         return v
 
+class Contribution(Activity):
+    """An action taken by an agent in contributing to the creation, modification,
+    assessment, or deprecation of a particular entity (e.g. a Statement, EvidenceLine,
+    DataItem, Publication, etc.)
+    """
+
+    type: Literal["Contribution"] = "Contribution"
+    contributor: Optional[Agent] = Field(None, description="The agent that made the contribution.")
+    contributionMadeTo: Optional[_InformationEntity] = Field(None, description="The artifact toward which the contribution was made.")  # noqa: N815
+    activityType: Optional[Coding] = Field(None, description="SHOULD describe a concept descending from the Contributor Role Ontology.")
+
+
 class _InformationEntity(_Entity):
     """Information Entities are abstract (non-physical) entities that are about
     something (i.e. they carry information about things in the real world).
     """
 
     id: str
-    type: Literal['InformationEntity'] = Field("InformationEntity", description="MUST be 'InformationEntity'.")
     specifiedBy: Optional[Union[Method, IRI]] = Field(None, description="A `Method` that describes all or part of the process through which the information was generated.")
     contributions: Optional[List[Contribution]] = Field(description="A list of `Contribution` objects that describe the activities performed by agents upon this entity.")
     isReportedIn: Optional[List[Union[Document, IRI]]] = Field(description="A document in which the information content is expressed.")

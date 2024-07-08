@@ -563,7 +563,7 @@ class DerivativeSequence(_VariationBase):
     )
 
     type: Literal["DerivativeSequence"] = Field("DerivativeSequence", description='MUST be "DerivativeSequence"')
-    components: Optional[List[Union[IRI, Adjacency, SequenceTerminus, CisPhasedBlock]]] = Field(
+    components: List[Union[IRI, Adjacency, Allele, SequenceTerminus, CisPhasedBlock]] = Field(
         ...,
         description="The sequence components that make up the derivative sequence.",
         min_length=2
