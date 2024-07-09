@@ -14,7 +14,7 @@ import datetime
 from typing import Any, Dict, ForwardRef, Literal, Annotated, Optional, Union, List
 from enum import Enum
 
-from pydantic import BaseModel, ConfigDict, Field, RootModel, StringConstraints, constr, field_validator, model_serializer
+from pydantic import BaseModel, Field, RootModel, StringConstraints, constr, field_validator, model_serializer, model_validator
 
 from ga4gh.core import GA4GH_IR_REGEXP
 
@@ -63,7 +63,7 @@ class Syntax(str, Enum):
     SPDI = "spdi"
 
 #########################################
-# GKS Common Core Information Model - Utility Type Classes
+# GKS Common Abstract Utility Classes
 # These do not inherit from Entity and are not typed explicitly
 #########################################
 
@@ -157,14 +157,12 @@ class Extension(BaseModel):
     understood, but may be used for pre-negotiated exchange of message attributes
     between systems.
     """
-    model_config = ConfigDict(
-        extra='allow',
-    )
+
     name: str = Field(..., description='A name for the Extension. Should be indicative of its meaning and/or the type of information it value represents.')
     value: Optional[Union[float, str, bool, Dict[str, Any], List[Any]]] = Field(
         None, description='The value of the Extension - can be any primitive or structured object'
     )
-    extensionDescription: Optional[str] = Field(None, description="A description of the meaning or utility of the Extension, to explain the type of information it is meant to hold.")
+    description: Optional[str] = Field(None, description="A description of the meaning or utility of the Extension, to explain the type of information it is meant to hold.")
 
 
 class Expression(BaseModel):
@@ -179,7 +177,7 @@ class Expression(BaseModel):
 
 
 #########################################
-# GKS Common Core Information Model Classes
+# GKS Common Abstract Entity Class Definitions
 #########################################
 
 
@@ -215,6 +213,7 @@ class _DomainEntity(_Entity):
     """
 
     mappings: Optional[List[ConceptMapping]] = Field(None, description="A list of mappings to concepts in terminologies or code systems. Each mapping should include a coding and a relation.")
+
 
 class Agent(_Entity):
     """An autonomous actor (person, organization, or computational agent) that bears
@@ -253,6 +252,7 @@ class Activity(_Entity):
                 raise ValueError(msg) from e
         return v
 
+
 class Contribution(Activity):
     """An action taken by an agent in contributing to the creation, modification,
     assessment, or deprecation of a particular entity (e.g. a Statement, EvidenceLine,
@@ -263,6 +263,17 @@ class Contribution(Activity):
     contributor: Optional[Agent] = Field(None, description="The agent that made the contribution.")
     contributionMadeTo: Optional[_InformationEntity] = Field(None, description="The artifact toward which the contribution was made.")  # noqa: N815
     activityType: Optional[Coding] = Field(None, description="SHOULD describe a concept descending from the Contributor Role Ontology.")
+
+    @model_validator(mode="before")
+    def handle_extends_prop(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+        """Handle extends properties by renaming fields
+
+        :param values: Input values to process
+        :return: Processed values with extended properties renamed
+        """
+        if "performedBy" in values:
+            values["contributor"] = values.pop("performedBy")
+        return values
 
 
 class _InformationEntity(_Entity):
@@ -299,14 +310,13 @@ class Document(_InformationEntity):
     )
 
 
-class Method(_Entity):
+class Method(_InformationEntity):
     """A set of instructions that specify how to achieve some objective (e.g.
     experimental protocols, curation guidelines, rule sets, etc.)
     """
 
     type: Literal["Method"] = Field("Method", description="MUST be 'Method'.")
     isReportedIn: Optional[Union[Document, IRI]]  = None  # noqa: N815
-    isReportedIn: Optional[Document]  = None
     subtype: Optional[Coding] = Field(
         None,
         description="A more specific type of entity the method represents (e.g. Variant Interpretation Guideline, Experimental Protocol)",
@@ -428,6 +438,7 @@ class Gene(_DomainEntity):
         'Gene',
         description='MUST be "Gene".'
     )
+
 
 # Update forward references
 _InformationEntity.model_rebuild()

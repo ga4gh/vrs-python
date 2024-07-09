@@ -381,10 +381,6 @@ class LiteralSequenceExpression(_ValueObject):
 class SequenceReference(_ValueObject):
     """A sequence of nucleic or amino acid character codes."""
 
-    model_config = ConfigDict(
-        use_enum_values=True
-    )
-
     type: Literal['SequenceReference'] = Field('SequenceReference', description='MUST be "SequenceReference"')
     refgetAccession: Annotated[str, StringConstraints(pattern=r'^SQ.[0-9A-Za-z_\-]{32}$')] = Field(
         ...,
@@ -506,10 +502,6 @@ class Adjacency(_VariationBase):
     potentially with an intervening linker sequence.
     """
 
-    model_config = ConfigDict(
-        use_enum_values=True
-    )
-
     type: Literal['Adjacency'] = Field('Adjacency', description='MUST be "Adjacency"')
     adjoinedSequences: List[Union[IRI, SequenceLocation]] = Field(
         ...,
@@ -538,10 +530,6 @@ class SequenceTerminus(_VariationBase):
     is not allowed and it removes the unnecessary array structure.
     """
 
-    model_config = ConfigDict(
-        use_enum_values=True
-    )
-
     type: Literal["SequenceTerminus"] = Field("SequenceTerminus", description='MUST be "SequenceTerminus"')
     location: Union[IRI, SequenceLocation] = Field(..., description="The location of the terminus.")
 
@@ -557,10 +545,6 @@ class DerivativeSequence(_VariationBase):
     """The "Derivative Sequence" data class is a structure for describing a derivate
     sequence composed from multiple sequence adjacencies.
     """
-
-    model_config = ConfigDict(
-        use_enum_values=True
-    )
 
     type: Literal["DerivativeSequence"] = Field("DerivativeSequence", description='MUST be "DerivativeSequence"')
     components: List[Union[IRI, Adjacency, Allele, SequenceTerminus, CisPhasedBlock]] = Field(
@@ -614,9 +598,6 @@ class CopyNumberChange(_CopyNumber):
     """An assessment of the copy number of a `Location` or a `Gene` within a system
     (e.g. genome, cell, etc.) relative to a baseline ploidy.
     """
-    model_config = ConfigDict(
-        use_enum_values=True
-    )
 
     type: Literal['CopyNumberChange'] = Field('CopyNumberChange', description='MUST be "CopyNumberChange"')
     copyChange: CopyChange = Field(
@@ -674,7 +655,7 @@ class Location(RootModel):
 class Variation(RootModel):
     """A representation of the state of one or more biomolecules."""
 
-    root: Union[Allele, CisPhasedBlock, Adjacency, SequenceTerminus, CopyNumberChange, CopyNumberCount] = Field(
+    root: Union[Allele, CisPhasedBlock, Adjacency, SequenceTerminus, DerivativeSequence, CopyNumberChange, CopyNumberCount] = Field(
         ...,
         json_schema_extra={
             'description': 'A representation of the state of one or more biomolecules.'
