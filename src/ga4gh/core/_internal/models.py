@@ -283,8 +283,8 @@ class _InformationEntity(_Entity):
 
     id: str
     specifiedBy: Optional[Union[Method, IRI]] = Field(None, description="A `Method` that describes all or part of the process through which the information was generated.")
-    contributions: Optional[List[Contribution]] = Field(description="A list of `Contribution` objects that describe the activities performed by agents upon this entity.")
-    isReportedIn: Optional[List[Union[Document, IRI]]] = Field(description="A document in which the information content is expressed.")
+    contributions: Optional[List[Contribution]] = Field(None, description="A list of `Contribution` objects that describe the activities performed by agents upon this entity.")
+    isReportedIn: Optional[List[Union[Document, IRI]]] = Field(None, description="A document in which the information content is expressed.")
     dateAuthored: Optional[str] = Field(None, description="Indicates when the information content expressed in the Information Entity was generated.")
     derivedFrom: Optional[List[_InformationEntity]] = Field(None, description="Another Information Entity from which this Information Entity is derived, in whole or in part.")
     recordMetadata: Optional[RecordMetadata] = Field(None, description="Metadata that applies to a specific concrete record of information as encoded in a particular system.")
@@ -445,3 +445,4 @@ _InformationEntity.model_rebuild()
 Contribution.model_rebuild()
 Document.model_rebuild()
 Method.model_rebuild()
+Activity.model_rebuild()
