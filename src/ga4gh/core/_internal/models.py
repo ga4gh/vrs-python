@@ -10,19 +10,14 @@ Instead, users should use one of the following:
   * `import ga4gh.core`, and refer to models using the fully-qualified
     module name, e.g., `ga4gh.core.common_models.Gene`
 """
+from __future__ import annotations
 import datetime
-from typing import Any, Dict, ForwardRef, Literal, Annotated, Optional, Union, List
+from typing import Any, Dict, Literal, Annotated, Optional, Union, List
 from enum import Enum
 
 from pydantic import BaseModel, Field, RootModel, StringConstraints, constr, field_validator, model_serializer, model_validator
 
 from ga4gh.core import GA4GH_IR_REGEXP
-
-# Declare forward references
-_InformationEntity = ForwardRef("_InformationEntity")
-Contribution = ForwardRef("Contribution")
-Document = ForwardRef("Document")
-Method = ForwardRef("Method")
 
 #########################################
 # GKS Common Abstract Entity & Utility Class Definitions
@@ -438,11 +433,3 @@ class Gene(_DomainEntity):
         'Gene',
         description='MUST be "Gene".'
     )
-
-
-# Update forward references
-_InformationEntity.model_rebuild()
-Contribution.model_rebuild()
-Document.model_rebuild()
-Method.model_rebuild()
-Activity.model_rebuild()
