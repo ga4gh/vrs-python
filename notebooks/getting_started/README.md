@@ -16,8 +16,8 @@ The following software packages must exist in your execution environment before 
 From a terminal window, run the following commands:
 * git clone --recurse-submodules https://github.com/ga4gh/vrs-python
 * cd vrs-python
-* make devready
-* source venv/3.10/bin/activate
+* make nbready
+* source venv/3.12/bin/activate
 * cd notebooks/getting_started
 * jupyter notebook notebook_name.ipynb
 
