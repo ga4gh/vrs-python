@@ -176,6 +176,15 @@ class Expression(BaseModel):
 #########################################
 
 
+class CommonEntityType(str, Enum):
+    """Define GKS Common Entity types"""
+
+    AGENT = "Agent"
+    CONTRIBUTION = "Contribution"
+    DOCUMENT = "Document"
+    METHOD = "Method"
+
+
 class _Entity(BaseModel):
     """Entity is the root class of the 'gks-common' core information model classes -
     those that have identifiers and other general metadata like labels, xrefs, urls,
@@ -216,7 +225,7 @@ class Agent(_Entity):
     entity, or for another agent's activity.
     """
 
-    type: Literal["Agent"] = Field("Agent", description="MUST be 'Agent'.")
+    type: Literal[CommonEntityType.AGENT] = Field(CommonEntityType.AGENT, description=f"MUST be '{CommonEntityType.AGENT.value}'.")
     name: Optional[str] = Field(None, description="The descriptive name of the agent.")
     subtype: Optional[AgentSubtype] = Field(None, description="A more specific type of agent the agent represents.")
 
@@ -254,7 +263,7 @@ class Contribution(Activity):
     DataItem, Publication, etc.)
     """
 
-    type: Literal["Contribution"] = "Contribution"
+    type: Literal[CommonEntityType.CONTRIBUTION] = CommonEntityType.CONTRIBUTION
     contributor: Optional[Agent] = Field(None, description="The agent that made the contribution.")
     contributionMadeTo: Optional[_InformationEntity] = Field(None, description="The artifact toward which the contribution was made.")  # noqa: N815
     activityType: Optional[Coding] = Field(None, description="SHOULD describe a concept descending from the Contributor Role Ontology.")
@@ -287,7 +296,7 @@ class _InformationEntity(_Entity):
 class Document(_InformationEntity):
     """a representation of a physical or digital document"""
 
-    type: Literal["Document"] = "Document"
+    type: Literal[CommonEntityType.DOCUMENT] = CommonEntityType.DOCUMENT
     subtype: Optional[Coding] = Field(
         None, description="A more specific type for the document (e.g. a publication, patent, pathology report)"
     )
@@ -310,7 +319,7 @@ class Method(_InformationEntity):
     experimental protocols, curation guidelines, rule sets, etc.)
     """
 
-    type: Literal["Method"] = Field("Method", description="MUST be 'Method'.")
+    type: Literal[CommonEntityType.METHOD] = Field(CommonEntityType.METHOD, description=f"MUST be '{CommonEntityType.METHOD.value}'.")
     isReportedIn: Optional[Union[Document, IRI]]  = None  # noqa: N815
     subtype: Optional[Coding] = Field(
         None,
@@ -323,12 +332,25 @@ class Method(_InformationEntity):
 # GKS Common Domain Entities
 #########################################
 
+
+class CommonDomainType(str, Enum):
+    """Define GKS Common Domain Entity types"""
+
+    PHENOTYPE = "Phenotype"
+    DISEASE = "Disease"
+    TRAIT_SET = "TraitSet"
+    TR_ACTION = "TherapeuticAction"
+    TR_AGENT = "TherapeuticAgent"
+    TR_SUB = "TherapeuticSubstituteGroup"
+    TR_COMB = "CombinationTherapy"
+    GENE = "Gene"
+
 class Phenotype(_DomainEntity):
     """An observable characteristic or trait of an organism."""
 
-    type: Literal['Phenotype'] = Field(
-        'Phenotype',
-        description='MUST be "Phenotype".'
+    type: Literal[CommonDomainType.PHENOTYPE] = Field(
+        CommonDomainType.PHENOTYPE,
+        description=f'MUST be "{CommonDomainType.PHENOTYPE.value}".'
     )
 
 
@@ -337,18 +359,18 @@ class Disease(_DomainEntity):
     of all or part of an organism and is not immediately due to any external injury.
     """
 
-    type: Literal['Disease'] = Field(
-        'Disease',
-        description='MUST be "Disease".'
+    type: Literal[CommonDomainType.DISEASE] = Field(
+        CommonDomainType.DISEASE,
+        description=f'MUST be "{CommonDomainType.DISEASE.value}".'
     )
 
 
 class TraitSet(_DomainEntity):
     """A set of phenotype and/or disease concepts that together constitute a condition."""
 
-    type: Literal['TraitSet'] = Field(
-        'TraitSet',
-        description='MUST be "TraitSet".'
+    type: Literal[CommonDomainType.TRAIT_SET] = Field(
+        CommonDomainType.TRAIT_SET,
+        description=f'MUST be "{CommonDomainType.TRAIT_SET.value}".'
     )
     traits: List[Union[Disease, Phenotype]] = Field(
         ...,
@@ -369,27 +391,27 @@ class Condition(RootModel):
 class TherapeuticAction(_DomainEntity):
     """A therapeutic action taken that is intended to alter or stop a pathologic process."""
 
-    type: Literal['TherapeuticAction'] = Field(
-        'TherapeuticAction',
-        description='MUST be "TherapeuticAction".'
+    type: Literal[CommonDomainType.TR_ACTION] = Field(
+        CommonDomainType.TR_ACTION,
+        description=f'MUST be "{CommonDomainType.TR_ACTION.value}".'
     )
 
 
 class TherapeuticAgent(_DomainEntity):
     """An administered therapeutic agent that is intended to alter or stop a pathologic process."""
 
-    type: Literal['TherapeuticAgent'] = Field(
-        'TherapeuticAgent',
-        description='MUST be "TherapeuticAgent".'
+    type: Literal[CommonDomainType.TR_AGENT] = Field(
+        CommonDomainType.TR_AGENT,
+        description=f'MUST be "{CommonDomainType.TR_AGENT.value}".'
     )
 
 
 class TherapeuticSubstituteGroup(_DomainEntity):
     """A group of therapeutic procedures that may be treated as substitutes for one another."""
 
-    type: Literal['TherapeuticSubstituteGroup'] = Field(
-        'TherapeuticSubstituteGroup',
-        description='MUST be "TherapeuticSubstituteGroup".'
+    type: Literal[CommonDomainType.TR_SUB] = Field(
+        CommonDomainType.TR_SUB,
+        description=f'MUST be "{CommonDomainType.TR_SUB.value}".'
     )
     substitutes: List[Union[TherapeuticAction, TherapeuticAgent]] = Field(
         ...,
@@ -403,9 +425,9 @@ class CombinationTherapy(_DomainEntity):
     performed in combination.
     """
 
-    type: Literal['CombinationTherapy'] = Field(
-        'CombinationTherapy',
-        description='MUST be "CombinationTherapy".'
+    type: Literal[CommonDomainType.TR_COMB] = Field(
+        CommonDomainType.TR_COMB,
+        description=f'MUST be "{CommonDomainType.TR_COMB.value}".'
     )
     components: List[Union[TherapeuticSubstituteGroup, TherapeuticAction, TherapeuticAgent]] = Field(
         ...,
@@ -429,7 +451,7 @@ class TherapeuticProcedure(RootModel):
 class Gene(_DomainEntity):
     """A basic physical and functional unit of heredity."""
 
-    type: Literal['Gene'] = Field(
-        'Gene',
-        description='MUST be "Gene".'
+    type: Literal[CommonDomainType.GENE] = Field(
+        CommonDomainType.GENE,
+        description=f'MUST be "{CommonDomainType.GENE.value}".'
     )
