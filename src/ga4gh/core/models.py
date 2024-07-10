@@ -10,25 +10,18 @@ Instead, users should use one of the following:
   * `import ga4gh.core`, and refer to models using the fully-qualified
     module name, e.g., `ga4gh.core.common_models.Gene`
 """
-from __future__ import annotations
-import datetime
 from typing import Any, Dict, Literal, Annotated, Optional, Union, List
 from enum import Enum
 
-from pydantic import BaseModel, Field, RootModel, StringConstraints, constr, field_validator, model_serializer, model_validator
+from pydantic import BaseModel, Field, RootModel, StringConstraints, model_serializer
 
 from ga4gh.core import GA4GH_IR_REGEXP
 
+
 #########################################
-# GKS Common Abstract Entity & Utility Class Definitions
+# GKS Common Utility Class Definitions
 #########################################
 
-class AgentSubtype(str, Enum):
-    """Define constraints for agent subtype"""
-
-    PERSON = "person"
-    ORGANIZATION = "organization"
-    COMPUTER = "computer"
 
 class Relation(str, Enum):
     """A mapping relation between concepts as defined by the Simple Knowledge
@@ -102,18 +95,6 @@ class IRI(RootModel):
     )
 
 
-class RecordMetadata(BaseModel):
-    """A reusable structure that encapsulates provenance metadata about a serialized
-    data record or object in a particular dataset (as opposed to provenance about the
-    real world entity this record or object represents).
-    """
-
-    recordIdentifier: Optional[str] = Field(None, description="The identifier of the data record or object described in this RecordMetadata object.")
-    recordVersion: Optional[str] = Field(None, description="The version number of the record-level artifact the object describes.")
-    derivedFrom: Optional[str] = Field(None, description="Another data record from which the record described here was derived, through a data ingest and/or transformation process. Value should be a string representing the identifier of the source record.")
-    dateRecordCreated: Optional[str] = Field(None, description="The date the record was initially created.")
-    contributions: Optional[List[Contribution]] = Field(None, description="Describes specific contributions made by an human or software agent to the creation, modification, or administrative management of a data record or object.")
-
 
 class Coding(BaseModel):
     """A structured representation of a code for a defined concept in a terminology or
@@ -176,15 +157,6 @@ class Expression(BaseModel):
 #########################################
 
 
-class CommonEntityType(str, Enum):
-    """Define GKS Common Entity types"""
-
-    AGENT = "Agent"
-    CONTRIBUTION = "Contribution"
-    DOCUMENT = "Document"
-    METHOD = "Method"
-
-
 class _Entity(BaseModel):
     """Entity is the root class of the 'gks-common' core information model classes -
     those that have identifiers and other general metadata like labels, xrefs, urls,
@@ -217,115 +189,6 @@ class _DomainEntity(_Entity):
     """
 
     mappings: Optional[List[ConceptMapping]] = Field(None, description="A list of mappings to concepts in terminologies or code systems. Each mapping should include a coding and a relation.")
-
-
-class Agent(_Entity):
-    """An autonomous actor (person, organization, or computational agent) that bears
-    some form of responsibility for an activity taking place, for the existence of an
-    entity, or for another agent's activity.
-    """
-
-    type: Literal[CommonEntityType.AGENT] = Field(CommonEntityType.AGENT, description=f"MUST be '{CommonEntityType.AGENT.value}'.")
-    name: Optional[str] = Field(None, description="The descriptive name of the agent.")
-    subtype: Optional[AgentSubtype] = Field(None, description="A more specific type of agent the agent represents.")
-
-
-class Activity(_Entity):
-    """An action or set of actions performed by an agent, that occurs over a period of
-    time. Activities may use, generate, modify, move, or destroy one or more entities.
-    """
-
-    subtype: Optional[Coding] = Field(None, description="A more specific type of activity that an Activity object may represent.")
-    date: Optional[str] = Field(None, description="The date that the Activity was completed. The date SHOULD be formatted as a date string in ISO format 'YYYY-MM-DD'.")
-    performedBy: Optional[List[Agent]] = Field(None, description="An Agent who contributed to executing the Activity.")
-    specifiedBy: Optional[List[Method]] = Field(None, description="A method that was followed in performing an Activity, that describes how it was executed.")
-
-    @field_validator("date")
-    @classmethod
-    def date_format(cls, v: Optional[str]) -> Optional[str]:
-        """Check that date is YYYY-MM-DD format"""
-        if v:
-            valid_format = "%Y-%m-%d"
-
-            try:
-                datetime.datetime.strptime(v, valid_format).replace(
-                    tzinfo=datetime.timezone.utc
-                ).strftime(valid_format)
-            except ValueError as e:
-                msg = "`date` must use YYYY-MM-DD format"
-                raise ValueError(msg) from e
-        return v
-
-
-class Contribution(Activity):
-    """An action taken by an agent in contributing to the creation, modification,
-    assessment, or deprecation of a particular entity (e.g. a Statement, EvidenceLine,
-    DataItem, Publication, etc.)
-    """
-
-    type: Literal[CommonEntityType.CONTRIBUTION] = CommonEntityType.CONTRIBUTION
-    contributor: Optional[Agent] = Field(None, description="The agent that made the contribution.")
-    contributionMadeTo: Optional[_InformationEntity] = Field(None, description="The artifact toward which the contribution was made.")  # noqa: N815
-    activityType: Optional[Coding] = Field(None, description="SHOULD describe a concept descending from the Contributor Role Ontology.")
-
-    @model_validator(mode="before")
-    def handle_extends_prop(cls, values: Dict[str, Any]) -> Dict[str, Any]:
-        """Handle extends properties by renaming fields
-
-        :param values: Input values to process
-        :return: Processed values with extended properties renamed
-        """
-        if "performedBy" in values:
-            values["contributor"] = values.pop("performedBy")
-        return values
-
-
-class _InformationEntity(_Entity):
-    """Information Entities are abstract (non-physical) entities that are about
-    something (i.e. they carry information about things in the real world).
-    """
-
-    id: str
-    specifiedBy: Optional[Union[Method, IRI]] = Field(None, description="A `Method` that describes all or part of the process through which the information was generated.")
-    contributions: Optional[List[Contribution]] = Field(None, description="A list of `Contribution` objects that describe the activities performed by agents upon this entity.")
-    isReportedIn: Optional[List[Union[Document, IRI]]] = Field(None, description="A document in which the information content is expressed.")
-    dateAuthored: Optional[str] = Field(None, description="Indicates when the information content expressed in the Information Entity was generated.")
-    derivedFrom: Optional[List[_InformationEntity]] = Field(None, description="Another Information Entity from which this Information Entity is derived, in whole or in part.")
-    recordMetadata: Optional[RecordMetadata] = Field(None, description="Metadata that applies to a specific concrete record of information as encoded in a particular system.")
-
-class Document(_InformationEntity):
-    """a representation of a physical or digital document"""
-
-    type: Literal[CommonEntityType.DOCUMENT] = CommonEntityType.DOCUMENT
-    subtype: Optional[Coding] = Field(
-        None, description="A more specific type for the document (e.g. a publication, patent, pathology report)"
-    )
-    title: Optional[str] = Field(None, description="The title of the Document")
-    url: Optional[constr(pattern="^(https?|s?ftp)://")] = Field(
-        None, description="A URL at which the document may be retrieved."
-    )
-    doi: Optional[constr(pattern="^10.(\\d+)(\\.\\d+)*\\/[\\w\\-\\.]+")] = Field(
-        None,
-        description="A `Digital Object Identifier <https://www.doi.org/the-identifier/what-is-a-doi/>_` for the document.",
-    )
-    pmid: Optional[int] = Field(
-        None,
-        description="A `PubMed unique identifier <https://en.wikipedia.org/wiki/PubMed#PubMed_identifier>`_.",
-    )
-
-
-class Method(_InformationEntity):
-    """A set of instructions that specify how to achieve some objective (e.g.
-    experimental protocols, curation guidelines, rule sets, etc.)
-    """
-
-    type: Literal[CommonEntityType.METHOD] = Field(CommonEntityType.METHOD, description=f"MUST be '{CommonEntityType.METHOD.value}'.")
-    isReportedIn: Optional[Union[Document, IRI]]  = None  # noqa: N815
-    subtype: Optional[Coding] = Field(
-        None,
-        description="A more specific type of entity the method represents (e.g. Variant Interpretation Guideline, Experimental Protocol)",
-    )
-    license: Optional[str] = Field(None, description="A particular license that dictates legal permissions for how a published method (e.g. an experimental protocol, workflow specification, curation guideline) can be used.")
 
 
 #########################################
