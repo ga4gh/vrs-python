@@ -23,7 +23,7 @@ from ga4gh.core.pydantic import (
     is_ga4gh_identifiable,
     getattr_in
 )
-from ga4gh.core.models import IRI, Expression, _DomainEntity
+from ga4gh.core.entity_models import IRI, Expression, _DomainEntity
 
 
 def flatten(vals):
