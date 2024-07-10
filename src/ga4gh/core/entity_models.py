@@ -19,9 +19,6 @@ from pydantic import BaseModel, Field, RootModel, StringConstraints, constr, fie
 
 from ga4gh.core import GA4GH_IR_REGEXP
 
-#########################################
-# GKS Common Abstract Entity & Utility Class Definitions
-#########################################
 
 class AgentSubtype(str, Enum):
     """Define constraints for agent subtype"""
