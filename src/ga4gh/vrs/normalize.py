@@ -11,7 +11,7 @@ from typing import NamedTuple, Optional, Union
 from bioutils.normalize import normalize as _normalize, NormalizationMode
 from ga4gh.core import is_pydantic_instance, ga4gh_digest, pydantic_copy
 
-from ._internal import models
+from . import models
 from .dataproxy import SequenceProxy
 
 
