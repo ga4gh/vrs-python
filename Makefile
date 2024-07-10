@@ -57,6 +57,14 @@ devready:
 	@echo '###  Do not forget to `source ${VEDIR}/bin/activate` to use this environment  ###'
 	@echo '#################################################################################'
 
+#=> nbready: create venv, install prerequisites, install pkg in notebook mode
+.PHONY: nbready
+nbready:
+	make ${VEDIR} && source ${VEDIR}/bin/activate && pip install -e '.[extras,notebooks]'
+	@echo '#################################################################################'
+	@echo '###  Do not forget to `source ${VEDIR}/bin/activate` to use this environment  ###'
+	@echo '#################################################################################'
+
 #=> install: install package
 .PHONY: install-extras
 install-extras:
