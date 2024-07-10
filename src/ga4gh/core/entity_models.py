@@ -5,10 +5,10 @@
 Instead, users should use one of the following:
 
   * `from ga4gh.core import entity_models`, and refer to models with the
-    abbreviated name, e.g., `entity_models.Method` (recommended)
+    abbreviated name, e.g., `entity_models.Coding` (recommended)
 
   * `import ga4gh.core`, and refer to models using the fully-qualified
-    module name, e.g., `ga4gh.core.entity_models.Method`
+    module name, e.g., `ga4gh.core.entity_models.Coding`
 """
 from typing import Any, Dict, Literal, Annotated, Optional, Union, List
 from enum import Enum
