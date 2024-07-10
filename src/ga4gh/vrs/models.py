@@ -19,11 +19,11 @@ from ga4gh.core import sha512t24u, GA4GH_PREFIX_SEP, CURIE_SEP, CURIE_NAMESPACE,
 
 from pydantic import BaseModel, Field, RootModel, StringConstraints, model_serializer
 
-from ga4gh.core._internal.pydantic import (
+from ga4gh.core.pydantic import (
     is_ga4gh_identifiable,
     getattr_in
 )
-from ga4gh.core._internal.models import IRI, Expression, _DomainEntity
+from ga4gh.core.models import IRI, Expression, _DomainEntity
 
 
 def flatten(vals):

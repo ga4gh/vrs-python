@@ -5,10 +5,15 @@ implementation
 from importlib.metadata import version, PackageNotFoundError
 
 from .normalize import normalize
-from ._internal.enderef import vrs_deref, vrs_enref
-from ._internal import models
+from .enderef import vrs_deref, vrs_enref
+from . import models
 
-__all__ = """models normalize schema_path vrs_deref vrs_enref""".split()
+__all__ = [
+    "normalize",
+    "vrs_deref",
+    "vrs_enref",
+    "models"
+]
 
 try:
     __version__ = version(__name__)
