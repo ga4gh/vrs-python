@@ -125,7 +125,7 @@ def pydantic_class_refatt_map():
             class_keys)
 
 
-class VrsTypes(str, Enum):
+class VrsType(str, Enum):
     """Define  VRS Types"""
 
     LEN_EXPR = "LengthExpression"
@@ -339,8 +339,8 @@ class SequenceString(RootModel):
 class LengthExpression(_ValueObject):
     """A sequence expressed only by its length."""
 
-    type: Literal[VrsTypes.LEN_EXPR] = Field(
-        VrsTypes.LEN_EXPR, description=f'MUST be "{VrsTypes.LEN_EXPR.value}"'
+    type: Literal[VrsType.LEN_EXPR] = Field(
+        VrsType.LEN_EXPR, description=f'MUST be "{VrsType.LEN_EXPR.value}"'
     )
     length: Optional[Union[Range, int]] = None
 
@@ -354,8 +354,8 @@ class LengthExpression(_ValueObject):
 class ReferenceLengthExpression(_ValueObject):
     """An expression of a length of a sequence from a repeating reference."""
 
-    type: Literal[VrsTypes.REF_LEN_EXPR] = Field(
-        VrsTypes.REF_LEN_EXPR, description=f'MUST be "{VrsTypes.REF_LEN_EXPR.value}"'
+    type: Literal[VrsType.REF_LEN_EXPR] = Field(
+        VrsType.REF_LEN_EXPR, description=f'MUST be "{VrsType.REF_LEN_EXPR.value}"'
     )
     length: Union[Range, int] = Field(
         ..., description='The number of residues of the expressed sequence.'
@@ -378,8 +378,8 @@ class ReferenceLengthExpression(_ValueObject):
 class LiteralSequenceExpression(_ValueObject):
     """An explicit expression of a Sequence."""
 
-    type: Literal[VrsTypes.LIT_SEQ_EXPR] = Field(
-        VrsTypes.LIT_SEQ_EXPR, description=f'MUST be "{VrsTypes.LIT_SEQ_EXPR.value}"'
+    type: Literal[VrsType.LIT_SEQ_EXPR] = Field(
+        VrsType.LIT_SEQ_EXPR, description=f'MUST be "{VrsType.LIT_SEQ_EXPR.value}"'
     )
     sequence: SequenceString = Field(..., description='the literal sequence')
 
@@ -398,7 +398,7 @@ class LiteralSequenceExpression(_ValueObject):
 class SequenceReference(_ValueObject):
     """A sequence of nucleic or amino acid character codes."""
 
-    type: Literal[VrsTypes.SEQ_REF] = Field(VrsTypes.SEQ_REF, description=f'MUST be "{VrsTypes.SEQ_REF.value}"')
+    type: Literal[VrsType.SEQ_REF] = Field(VrsType.SEQ_REF, description=f'MUST be "{VrsType.SEQ_REF.value}"')
     refgetAccession: Annotated[str, StringConstraints(pattern=r'^SQ.[0-9A-Za-z_\-]{32}$')] = Field(
         ...,
         description='A `GA4GH RefGet <http://samtools.github.io/hts-specs/refget.html>` identifier for the referenced sequence, using the sha512t24u digest.',
@@ -416,7 +416,7 @@ class SequenceReference(_ValueObject):
 class SequenceLocation(_Ga4ghIdentifiableObject):
     """A `Location` defined by an interval on a referenced `Sequence`."""
 
-    type: Literal[VrsTypes.SEQ_LOC] = Field(VrsTypes.SEQ_LOC, description=f'MUST be "{VrsTypes.SEQ_LOC.value}"')
+    type: Literal[VrsType.SEQ_LOC] = Field(VrsType.SEQ_LOC, description=f'MUST be "{VrsType.SEQ_LOC.value}"')
     sequenceReference: Optional[Union[IRI, SequenceReference]] = Field(
         None, description='A reference to a `Sequence` on which the location is defined.'
     )
@@ -466,7 +466,7 @@ class _VariationBase(_Ga4ghIdentifiableObject):
 class Allele(_VariationBase):
     """The state of a molecule at a `Location`."""
 
-    type: Literal[VrsTypes.ALLELE] = Field(VrsTypes.ALLELE, description=f'MUST be "{VrsTypes.ALLELE.value}"')
+    type: Literal[VrsType.ALLELE] = Field(VrsType.ALLELE, description=f'MUST be "{VrsType.ALLELE.value}"')
     location: Union[IRI, SequenceLocation] = Field(
         ..., description='The location of the Allele'
     )
@@ -486,7 +486,7 @@ class Allele(_VariationBase):
 class CisPhasedBlock(_VariationBase):
     """An ordered set of co-occurring `Variation` on the same molecule."""
 
-    type: Literal[VrsTypes.CIS_PHASED_BLOCK] = Field(VrsTypes.CIS_PHASED_BLOCK, description=f'MUST be "{VrsTypes.CIS_PHASED_BLOCK.value}"')
+    type: Literal[VrsType.CIS_PHASED_BLOCK] = Field(VrsType.CIS_PHASED_BLOCK, description=f'MUST be "{VrsType.CIS_PHASED_BLOCK.value}"')
     members: List[Union[Allele, IRI]] = Field(
         ...,
         description='A list of `Alleles` that are found in-cis on a shared molecule.',
@@ -519,7 +519,7 @@ class Adjacency(_VariationBase):
     potentially with an intervening linker sequence.
     """
 
-    type: Literal[VrsTypes.ADJACENCY] = Field(VrsTypes.ADJACENCY, description=f'MUST be "{VrsTypes.ADJACENCY.value}"')
+    type: Literal[VrsType.ADJACENCY] = Field(VrsType.ADJACENCY, description=f'MUST be "{VrsType.ADJACENCY.value}"')
     adjoinedSequences: List[Union[IRI, SequenceLocation]] = Field(
         ...,
         description="The terminal sequence or pair of adjoined sequences that defines in the adjacency.",
@@ -547,7 +547,7 @@ class SequenceTerminus(_VariationBase):
     is not allowed and it removes the unnecessary array structure.
     """
 
-    type: Literal[VrsTypes.SEQ_TERMINUS] = Field(VrsTypes.SEQ_TERMINUS, description=f'MUST be "{VrsTypes.SEQ_TERMINUS.value}"')
+    type: Literal[VrsType.SEQ_TERMINUS] = Field(VrsType.SEQ_TERMINUS, description=f'MUST be "{VrsType.SEQ_TERMINUS.value}"')
     location: Union[IRI, SequenceLocation] = Field(..., description="The location of the terminus.")
 
     class ga4gh(_Ga4ghIdentifiableObject.ga4gh):
@@ -563,7 +563,7 @@ class DerivativeSequence(_VariationBase):
     sequence composed from multiple sequence adjacencies.
     """
 
-    type: Literal[VrsTypes.DERIVATIVE_SEQ] = Field(VrsTypes.DERIVATIVE_SEQ, description=f'MUST be "{VrsTypes.DERIVATIVE_SEQ.value}"')
+    type: Literal[VrsType.DERIVATIVE_SEQ] = Field(VrsType.DERIVATIVE_SEQ, description=f'MUST be "{VrsType.DERIVATIVE_SEQ.value}"')
     components: List[Union[IRI, Adjacency, Allele, SequenceTerminus, CisPhasedBlock]] = Field(
         ...,
         description="The sequence components that make up the derivative sequence.",
@@ -597,7 +597,7 @@ class CopyNumberCount(_CopyNumber):
     (e.g. genome, cell, etc.).
     """
 
-    type: Literal[VrsTypes.CN_COUNT] = Field(VrsTypes.CN_COUNT, description=f'MUST be "{VrsTypes.CN_COUNT.value}"')
+    type: Literal[VrsType.CN_COUNT] = Field(VrsType.CN_COUNT, description=f'MUST be "{VrsType.CN_COUNT.value}"')
     copies: Union[Range, int] = Field(
         ..., description='The integral number of copies of the subject in a system'
     )
@@ -616,7 +616,7 @@ class CopyNumberChange(_CopyNumber):
     (e.g. genome, cell, etc.) relative to a baseline ploidy.
     """
 
-    type: Literal[VrsTypes.CN_CHANGE] = Field(VrsTypes.CN_CHANGE, description=f'MUST be "{VrsTypes.CN_CHANGE.value}"')
+    type: Literal[VrsType.CN_CHANGE] = Field(VrsType.CN_CHANGE, description=f'MUST be "{VrsType.CN_CHANGE.value}"')
     copyChange: CopyChange = Field(
         ...,
         description='MUST be one of "efo:0030069" (complete genomic loss), "efo:0020073" (high-level loss), "efo:0030068" (low-level loss), "efo:0030067" (loss), "efo:0030064" (regional base ploidy), "efo:0030070" (gain), "efo:0030071" (low-level gain), "efo:0030072" (high-level gain).',
