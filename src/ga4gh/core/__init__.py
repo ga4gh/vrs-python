@@ -14,7 +14,7 @@ from .identifiers import (
 from .pydantic import (
     is_pydantic_instance, is_curie_type, is_ga4gh_identifiable, is_literal, pydantic_copy
 )
-from . import models as common_models
+from . import entity_models, domain_models
 
 __all__ = [
     "sha512t24u",
@@ -37,7 +37,8 @@ __all__ = [
     "is_ga4gh_identifiable",
     "is_literal",
     "pydantic_copy",
-    "common_models"
+    "entity_models",
+    "domain_models"
 ]
 
 try:

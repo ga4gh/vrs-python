@@ -1,14 +1,14 @@
-"""GKS Common Library models
+"""GKS Common Library Entity models
 
 **This module should not be imported directly.**
 
 Instead, users should use one of the following:
 
-  * `from ga4gh.core import common_models`, and refer to models with the
-    abbreviated name, e.g., `common_models.Gene` (recommended)
+  * `from ga4gh.core import entity_models`, and refer to models with the
+    abbreviated name, e.g., `entity_models.Coding` (recommended)
 
   * `import ga4gh.core`, and refer to models using the fully-qualified
-    module name, e.g., `ga4gh.core.common_models.Gene`
+    module name, e.g., `ga4gh.core.entity_models.Coding`
 """
 from typing import Any, Dict, Literal, Annotated, Optional, Union, List
 from enum import Enum
@@ -17,10 +17,6 @@ from pydantic import BaseModel, Field, RootModel, StringConstraints, model_seria
 
 from ga4gh.core import GA4GH_IR_REGEXP
 
-
-#########################################
-# GKS Common Utility Class Definitions
-#########################################
 
 
 class Relation(str, Enum):
