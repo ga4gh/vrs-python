@@ -511,12 +511,12 @@ class Allele(_VariationBase):
     )
 
     def ga4gh_serialize_as_version(self, as_version):
-        location_id = self.location.compute_ga4gh_identifier(as_version=as_version)
-        sequence = self.state.sequence
+        location_digest = self.location.compute_digest(as_version=as_version)
+        sequence = get_pydantic_root(self.state.sequence)
         if sequence is None:
             raise ValueError('State sequence attribute must be defined.')
         if as_version == '1.3':
-            f'{{"location":"{location_id}","state":{{"sequence":"{sequence}","type":"LiteralSequenceExpression"}},"type":"Allele"}}'
+            return f'{{"location":"{location_digest}","state":{{"sequence":"{sequence}","type":"LiteralSequenceExpression"}},"type":"Allele"}}'
         else:
             raise ValueError(f'Serializing as version {as_version} not supported for this class.')
 
