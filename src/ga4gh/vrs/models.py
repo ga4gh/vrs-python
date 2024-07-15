@@ -16,6 +16,7 @@ from enum import Enum
 import inspect
 import sys
 from ga4gh.core import sha512t24u, GA4GH_PREFIX_SEP, CURIE_SEP, CURIE_NAMESPACE, GA4GH_IR_REGEXP
+from ga4gh.core.pydantic import get_pydantic_root
 
 from pydantic import BaseModel, Field, RootModel, StringConstraints, model_serializer
 
@@ -229,16 +230,22 @@ class _Ga4ghIdentifiableObject(_ValueObject):
     def has_valid_digest(self):
         return bool(self.digest)  # Pydantic constraint ensures digest field value is valid
 
-    def compute_digest(self, store=True) -> str:
+    def compute_digest(self, store=True, as_version=None) -> str:
         """A sha512t24u digest created using the VRS Computed Identifier algorithm.
         Stores the digest in the object if store is True.
         """
-        digest = sha512t24u(self.model_dump_json().encode("utf-8"))
-        if store:
-            self.digest = digest
+        if as_version is None:
+            digest = sha512t24u(self.model_dump_json().encode("utf-8"))
+            if store:
+                self.digest = digest
+        else:
+            try:
+                digest = sha512t24u(self.ga4gh_serialize_as_version(as_version).encode("utf-8"))
+            except AttributeError:
+                raise AttributeError('This class does not support prior version identifiers.')
         return digest
 
-    def get_or_create_ga4gh_identifier(self, in_place='default', recompute=False) -> str:
+    def get_or_create_ga4gh_identifier(self, in_place='default', recompute=False, as_version=None) -> str:
         """Sets and returns a GA4GH Computed Identifier for the object.
         Overwrites the existing identifier if overwrite is True.
 
@@ -253,6 +260,9 @@ class _Ga4ghIdentifiableObject(_ValueObject):
 
         Digests will be recalculated even if present if recompute is True.
         """
+        if as_version is not None:
+            return self.compute_ga4gh_identifier(as_version=as_version)
+
         if in_place == 'default':
             if self.id is None:
                 self.id = self.compute_ga4gh_identifier(recompute)
@@ -268,10 +278,14 @@ class _Ga4ghIdentifiableObject(_ValueObject):
         else:
             return self.compute_ga4gh_identifier(recompute)
 
-    def compute_ga4gh_identifier(self, recompute=False):
+    def compute_ga4gh_identifier(self, recompute=False, as_version=None):
         """Returns a GA4GH Computed Identifier"""
-        self.get_or_create_digest(recompute)
-        return f'{CURIE_NAMESPACE}{CURIE_SEP}{self.ga4gh.prefix}{GA4GH_PREFIX_SEP}{self.digest}'
+        if as_version is None:
+            self.get_or_create_digest(recompute)
+            return f'{CURIE_NAMESPACE}{CURIE_SEP}{self.ga4gh.prefix}{GA4GH_PREFIX_SEP}{self.digest}'
+        else:
+            digest = self.compute_digest(as_version=as_version)
+            return f'{CURIE_NAMESPACE}{CURIE_SEP}{self.ga4gh.priorPrefix[as_version]}{GA4GH_PREFIX_SEP}{digest}'
 
     def get_or_create_digest(self, recompute=False) -> str:
         """Sets and returns a sha512t24u digest of the GA4GH Identifiable Object, or creates
@@ -431,6 +445,27 @@ class SequenceLocation(_Ga4ghIdentifiableObject):
     )
     sequence: Optional[SequenceString] = Field(None, description="The literal sequence encoded by the `sequenceReference` at these coordinates.")
 
+    def ga4gh_serialize_as_version(self, as_version):
+        if as_version == '1.3':
+            out = list()
+            for value in [self.start,self.end]:
+                value = get_pydantic_root(value)
+                if isinstance(value, int):
+                    result = f'{{"type":"Number","value":{value}}}'
+                elif isinstance(value, list):
+                    if value[0] is None:
+                        result = f'{{"comparator":"<=","type":"IndefiniteRange","value":{value[1]}}}'
+                    elif value[1] is None:
+                        result = f'{{"comparator":">=","type":"IndefiniteRange","value":{value[0]}}}'
+                    else:
+                        result = f'{{"max":{value[1]},"min":{value[0]},"type":"DefiniteRange"}}'
+                else:
+                    raise ValueError(f'{value} is not int or list.')
+                out.append(result)
+            return f'{{"interval":{{"end":{out[1]},"start":{out[0]},"type":"SequenceInterval"}},"sequence_id":"{self.sequenceReference.refgetAccession.split('.')[1]}","type":"SequenceLocation"}}'
+        else:
+            raise ValueError(f'Serializing as version {as_version} not supported for this class.')
+
     def get_refget_accession(self):
         if isinstance(self.sequenceReference, SequenceReference):
             return self.sequenceReference.refgetAccession
@@ -441,6 +476,7 @@ class SequenceLocation(_Ga4ghIdentifiableObject):
 
     class ga4gh(_Ga4ghIdentifiableObject.ga4gh):
         prefix = 'SL'
+        priorPrefix = {'1.3': 'VSL'}
         keys = [
             'end',
             'sequenceReference',
@@ -474,8 +510,19 @@ class Allele(_VariationBase):
         ..., description='An expression of the sequence state'
     )
 
+    def ga4gh_serialize_as_version(self, as_version):
+        location_id = self.location.compute_ga4gh_identifier(as_version=as_version)
+        sequence = self.state.sequence
+        if sequence is None:
+            raise ValueError('State sequence attribute must be defined.')
+        if as_version == '1.3':
+            f'{{"location":"{location_id}","state":{{"sequence":"{sequence}","type":"LiteralSequenceExpression"}},"type":"Allele"}}'
+        else:
+            raise ValueError(f'Serializing as version {as_version} not supported for this class.')
+
     class ga4gh(_Ga4ghIdentifiableObject.ga4gh):
         prefix = 'VA'
+        priorPrefix = {'1.3': 'VA'}
         keys = [
             'location',
             'state',
@@ -502,6 +549,7 @@ class CisPhasedBlock(_VariationBase):
 
     class ga4gh(_Ga4ghIdentifiableObject.ga4gh):
         prefix = 'CPB'
+        priorPrefix = {'1.3': 'VH'}
         keys = [
             'members',
             'type'

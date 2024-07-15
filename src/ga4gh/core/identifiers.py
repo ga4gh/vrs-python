@@ -122,7 +122,7 @@ def parse_ga4gh_identifier(ir):
         raise ValueError(ir) from e
 
 
-def ga4gh_identify(vro, in_place='default'):
+def ga4gh_identify(vro, in_place='default', as_version=None):
     """
     Return the GA4GH digest-based id for the object, as a CURIE
     (string).  Returns None if object is not identifiable.
@@ -158,14 +158,14 @@ def ga4gh_identify(vro, in_place='default'):
                 do_compute = not vro.has_valid_ga4gh_id()
 
         if do_compute:
-            obj_id = vro.get_or_create_ga4gh_identifier(in_place)
+            obj_id = vro.get_or_create_ga4gh_identifier(in_place, as_version=as_version)
 
         return obj_id
 
     return None
 
 
-def ga4gh_digest(vro: BaseModel, overwrite=False):
+def ga4gh_digest(vro: BaseModel, overwrite=False, as_version=None):
     """
     Return the GA4GH digest for the object.
 
@@ -181,7 +181,10 @@ def ga4gh_digest(vro: BaseModel, overwrite=False):
 
     """
     if vro.is_ga4gh_identifiable():  # Only GA4GH identifiable objects are GA4GH digestible
-        return vro.get_or_create_digest(overwrite)
+        if as_version is None:
+            return vro.get_or_create_digest(overwrite)
+        else:
+            return vro.compute_digest(as_version=as_version)
     else:
         return None
 
@@ -210,9 +213,12 @@ def collapse_identifiable_values(obj: dict) -> dict:
     return obj
 
 
-def ga4gh_serialize(obj: BaseModel) -> Optional[bytes]:
+def ga4gh_serialize(obj: BaseModel, as_version=None) -> Optional[bytes]:
     """
     TODO find a way to output identify_all without the 'digest' fields on subobjects,
     without traversing the whole tree again in collapse_identifiable_values.
     """
-    return obj.model_dump_json().encode("utf-8")
+    if as_version is None:
+        return obj.model_dump_json().encode("utf-8")
+    else:
+        return obj.ga4gh_serialize_as_version(as_version)

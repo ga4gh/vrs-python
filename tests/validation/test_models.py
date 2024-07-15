@@ -10,10 +10,25 @@ import yaml
 from ga4gh.core import ga4gh_serialize, ga4gh_digest, ga4gh_identify
 from ga4gh.vrs import models
 
+def ga4gh_1_3_identify(*args, **kwargs):
+    kwargs['as_version'] = '1.3'
+    return ga4gh_identify(*args, **kwargs)
+
+def ga4gh_1_3_digest(*args, **kwargs):
+    kwargs['as_version'] = '1.3'
+    return ga4gh_digest(*args, **kwargs)
+
+def ga4gh_1_3_serialize(*args, **kwargs):
+    kwargs['as_version'] = '1.3'
+    return ga4gh_serialize(*args, **kwargs)
+
 fxs = {
     "ga4gh_serialize": lambda o: ga4gh_serialize(o).decode() if ga4gh_serialize(o) else None,
     "ga4gh_digest": ga4gh_digest,
     "ga4gh_identify": ga4gh_identify,
+    "ga4gh_1_3_digest": ga4gh_1_3_digest,
+    "ga4gh_1_3_identify": ga4gh_1_3_identify,
+    "ga4gh_1_3_serialize": ga4gh_1_3_serialize
 }
 
 validation_fn = os.path.join(os.path.dirname(__file__), "data", "models.yaml")
