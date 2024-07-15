@@ -137,6 +137,10 @@ def ga4gh_identify(vro, in_place='default', as_version=None):
     - 'never': the vro.id field will not be edited in-place,
         even when empty
 
+    If 'as_version' is set to a version string, other parameters are 
+    ignored and an identifier returned following the conventions of 
+    the VRS version indicated by 'as_version'.
+
     TODO update example for VRS 2.0
     >>> import ga4gh.vrs
     >>> ival = ga4gh.vrs.models.SimpleInterval(start=44908821, end=44908822)
@@ -169,7 +173,9 @@ def ga4gh_digest(vro: BaseModel, overwrite=False, as_version=None):
     """
     Return the GA4GH digest for the object.
 
-    do_compact: bool - true if object compaction should be performed during serialization
+    If 'as_version' is set to a version string, other parameters 
+    are ignored and a digest returned following the conventions of 
+    the VRS version indicated by 'as_version'.
 
     TODO update example
 
@@ -215,8 +221,11 @@ def collapse_identifiable_values(obj: dict) -> dict:
 
 def ga4gh_serialize(obj: BaseModel, as_version=None) -> Optional[bytes]:
     """
-    TODO find a way to output identify_all without the 'digest' fields on subobjects,
-    without traversing the whole tree again in collapse_identifiable_values.
+    Serializes an object for use in computed digest computation.
+
+    If a VRS version string is specified for the 'as_version' parameter,
+    the returned serialization follows the convention of the specified
+    VRS version.
     """
     if as_version is None:
         return obj.model_dump_json().encode("utf-8")
