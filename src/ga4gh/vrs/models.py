@@ -232,7 +232,9 @@ class _Ga4ghIdentifiableObject(_ValueObject):
 
     def compute_digest(self, store=True, as_version=None) -> str:
         """A sha512t24u digest created using the VRS Computed Identifier algorithm.
-        Stores the digest in the object if store is True.
+        Stores the digest in the object if store is True. If 'as_version' is set to
+        a version string, other parameters are ignored and a digest returned
+        following the conventions of the VRS version indicated by 'as_version'.
         """
         if as_version is None:
             digest = sha512t24u(self.model_dump_json().encode("utf-8"))
@@ -259,6 +261,10 @@ class _Ga4ghIdentifiableObject(_ValueObject):
             even when empty
 
         Digests will be recalculated even if present if recompute is True.
+
+        If 'as_version' is set to a version string, other parameters are 
+        ignored and an identifier returned following the conventions of 
+        the VRS version indicated by 'as_version'.
         """
         if as_version is not None:
             return self.compute_ga4gh_identifier(as_version=as_version)
@@ -279,7 +285,12 @@ class _Ga4ghIdentifiableObject(_ValueObject):
             return self.compute_ga4gh_identifier(recompute)
 
     def compute_ga4gh_identifier(self, recompute=False, as_version=None):
-        """Returns a GA4GH Computed Identifier"""
+        """Returns a GA4GH Computed Identifier.
+        
+        If 'as_version' is set to a version string, other parameters are
+        ignored and a computed identifier returned following the conventions 
+        of the VRS version indicated by 'as_version'.
+        """
         if as_version is None:
             self.get_or_create_digest(recompute)
             return f'{CURIE_NAMESPACE}{CURIE_SEP}{self.ga4gh.prefix}{GA4GH_PREFIX_SEP}{self.digest}'
@@ -446,6 +457,8 @@ class SequenceLocation(_Ga4ghIdentifiableObject):
     sequence: Optional[SequenceString] = Field(None, description="The literal sequence encoded by the `sequenceReference` at these coordinates.")
 
     def ga4gh_serialize_as_version(self, as_version):
+        """This method will return a serialized string following the conventions for
+        SequenceLocation serialization as defined in the VRS version specified by 'as_version`."""
         if as_version == '1.3':
             out = list()
             for value in [self.start,self.end]:
@@ -511,6 +524,8 @@ class Allele(_VariationBase):
     )
 
     def ga4gh_serialize_as_version(self, as_version):
+        """This method will return a serialized string following the conventions for
+        Allele serialization as defined in the VRS version specified by 'as_version`."""
         location_digest = self.location.compute_digest(as_version=as_version)
         sequence = get_pydantic_root(self.state.sequence)
         if sequence is None:
