@@ -262,8 +262,8 @@ class _Ga4ghIdentifiableObject(_ValueObject):
 
         Digests will be recalculated even if present if recompute is True.
 
-        If 'as_version' is set to a version string, other parameters are 
-        ignored and an identifier returned following the conventions of 
+        If 'as_version' is set to a version string, other parameters are
+        ignored and an identifier returned following the conventions of
         the VRS version indicated by 'as_version'.
         """
         if as_version is not None:
@@ -286,9 +286,9 @@ class _Ga4ghIdentifiableObject(_ValueObject):
 
     def compute_ga4gh_identifier(self, recompute=False, as_version=None):
         """Returns a GA4GH Computed Identifier.
-        
+
         If 'as_version' is set to a version string, other parameters are
-        ignored and a computed identifier returned following the conventions 
+        ignored and a computed identifier returned following the conventions
         of the VRS version indicated by 'as_version'.
         """
         if as_version is None:
@@ -475,7 +475,7 @@ class SequenceLocation(_Ga4ghIdentifiableObject):
                 else:
                     raise ValueError(f'{value} is not int or list.')
                 out.append(result)
-            return f'{{"interval":{{"end":{out[1]},"start":{out[0]},"type":"SequenceInterval"}},"sequence_id":"{self.sequenceReference.refgetAccession.split('.')[1]}","type":"SequenceLocation"}}'
+            return f'{{"interval":{{"end":{out[1]},"start":{out[0]},"type":"SequenceInterval"}},"sequence_id":"{self.sequenceReference.refgetAccession.split(".")[1]}","type":"SequenceLocation"}}'
         else:
             raise ValueError(f'Serializing as version {as_version} not supported for this class.')
 
