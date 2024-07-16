@@ -19,7 +19,7 @@ import contextvars
 import logging
 import re
 from contextlib import ContextDecorator
-from enum import IntEnum
+from enum import Enum, IntEnum
 from typing import Union, Optional
 from pydantic import BaseModel, RootModel
 
@@ -56,6 +56,20 @@ class VrsObjectIdentifierIs(IntEnum):
     ANY = 0
     GA4GH_INVALID = 1
     MISSING = 2
+
+
+class PrevVrsVersion(str, Enum):
+    """Define previous VRS versions that are supported for computing digests and
+    identifiers based on the current VRS model
+    """
+
+    V1_3 = "1.3"
+
+    @classmethod
+    def validate(cls, version):
+        if version is not None and version not in cls.__members__.values():
+            err_msg = f"Expected `PrevVrsVersion`, but got {version}"
+            raise ValueError(err_msg)
 
 
 ga4gh_compute_identifier_when = contextvars.ContextVar("ga4gh_compute_identifier_when")
@@ -122,9 +136,8 @@ def parse_ga4gh_identifier(ir):
         raise ValueError(ir) from e
 
 
-def ga4gh_identify(vro, in_place='default', as_version=None):
-    """
-    Return the GA4GH digest-based id for the object, as a CURIE
+def ga4gh_identify(vro, in_place: str = 'default', as_version: PrevVrsVersion | None = None) -> str | None:
+    """Return the GA4GH digest-based id for the object, as a CURIE
     (string).  Returns None if object is not identifiable.
 
     This function has three options for in_place editing of vro.id:
@@ -137,18 +150,18 @@ def ga4gh_identify(vro, in_place='default', as_version=None):
     - 'never': the vro.id field will not be edited in-place,
         even when empty
 
-    If 'as_version' is set to a version string, other parameters are 
-    ignored and an identifier returned following the conventions of 
-    the VRS version indicated by 'as_version'.
+    If ``as_version`` is provided, other parameters are ignored and an identifier is
+    returned following the conventions of the VRS version indicated by ``as_version_``.
+    Raises ``ValueError`` if ``as_version`` is not a ``PrevVrsVersion``.
 
-    TODO update example for VRS 2.0
+    >>> from ga4gh.core import ga4gh_identify
     >>> import ga4gh.vrs
-    >>> ival = ga4gh.vrs.models.SimpleInterval(start=44908821, end=44908822)
-    >>> location = ga4gh.vrs.models.Location(sequence_id="ga4gh:SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl", interval=ival)
+    >>> location = ga4gh.vrs.models.SequenceLocation(start=44908821, end=44908822, sequenceReference=ga4gh.vrs.models.SequenceReference(refgetAccession="SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul"))
     >>> ga4gh_identify(location)
-    'ga4gh:VSL.u5fspwVbQ79QkX6GHLF8tXPCAXFJqRPx'
-
+    'ga4gh:SL.4t6JnYWqHwYw9WzBT_lmWBb3tLQNalkT'
     """
+    PrevVrsVersion.validate(as_version)
+
     if vro.is_ga4gh_identifiable():
         when_rule = ga4gh_compute_identifier_when.get(VrsObjectIdentifierIs.ANY)
         obj_id = None
@@ -169,23 +182,21 @@ def ga4gh_identify(vro, in_place='default', as_version=None):
     return None
 
 
-def ga4gh_digest(vro: BaseModel, overwrite=False, as_version=None):
-    """
-    Return the GA4GH digest for the object.
+def ga4gh_digest(vro: BaseModel, overwrite: bool = False, as_version: PrevVrsVersion | None = None) -> str:
+    """Return the GA4GH digest for the object.
 
-    If 'as_version' is set to a version string, other parameters 
-    are ignored and a digest returned following the conventions of 
-    the VRS version indicated by 'as_version'.
+    If ``as_version`` is provided, other parameters are ignored and a digest is returned
+    following the conventions of the VRS version indicated by ``as_version_``.
+    Raises ``ValueError`` if ``as_version`` is not a ``PrevVrsVersion``.
 
-    TODO update example
-
+    >>> from ga4gh.core import ga4gh_digest
     >>> import ga4gh.vrs
-    >>> ival = ga4gh.vrs.models.SimpleInterval(start=44908821, end=44908822)
-    >>> location = ga4gh.vrs.models.Location(sequence_id="ga4gh:SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl", interval=ival)
+    >>> location = ga4gh.vrs.models.SequenceLocation(start=44908821, end=44908822, sequenceReference=ga4gh.vrs.models.SequenceReference(refgetAccession="SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul"))
     >>> ga4gh_digest(location)
-    'u5fspwVbQ79QkX6GHLF8tXPCAXFJqRPx'
-
+    '4t6JnYWqHwYw9WzBT_lmWBb3tLQNalkT'
     """
+    PrevVrsVersion.validate(as_version)
+
     if vro.is_ga4gh_identifiable():  # Only GA4GH identifiable objects are GA4GH digestible
         if as_version is None:
             return vro.get_or_create_digest(overwrite)
@@ -219,14 +230,14 @@ def collapse_identifiable_values(obj: dict) -> dict:
     return obj
 
 
-def ga4gh_serialize(obj: BaseModel, as_version=None) -> Optional[bytes]:
-    """
-    Serializes an object for use in computed digest computation.
+def ga4gh_serialize(obj: BaseModel, as_version: PrevVrsVersion | None = None) -> Optional[bytes]:
+    """Serializes an object for use in computed digest computation.
 
-    If a VRS version string is specified for the 'as_version' parameter,
-    the returned serialization follows the convention of the specified
-    VRS version.
+    If ``as_version`` is provided, the returned serialization follows
+    the conventions of the VRS version indicated by ``as_version_``.
     """
+    PrevVrsVersion.validate(as_version)
+
     if as_version is None:
         return obj.model_dump_json().encode("utf-8")
     else:
