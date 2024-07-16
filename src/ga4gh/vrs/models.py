@@ -565,7 +565,6 @@ class CisPhasedBlock(_VariationBase):
 
     class ga4gh(_Ga4ghIdentifiableObject.ga4gh):
         prefix = 'CPB'
-        priorPrefix = {'1.3': 'VH'}
         keys = [
             'members',
             'type'
