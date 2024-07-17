@@ -23,7 +23,7 @@ def ga4gh_1_3_serialize(*args, **kwargs):
     return ga4gh_serialize(*args, **kwargs)
 
 fxs = {
-    "ga4gh_serialize": lambda o: ga4gh_serialize(o).decode() if ga4gh_serialize(o) else None,
+    "ga4gh_serialize": ga4gh_serialize,
     "ga4gh_digest": ga4gh_digest,
     "ga4gh_identify": ga4gh_identify,
     "ga4gh_1_3_digest": ga4gh_1_3_digest,
@@ -59,6 +59,8 @@ def flatten_tests(vts):
 def test_validation(cls, data, fn, exp):
     o = getattr(models, cls)(**data)
     fx = fxs[fn]
+    if fn == "ga4gh_serialize":
+        exp = exp.encode("utf-8")
     assert fx(o) == exp
 
 
