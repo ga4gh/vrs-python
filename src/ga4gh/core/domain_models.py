@@ -15,7 +15,7 @@ from enum import Enum
 
 from pydantic import Field, RootModel
 
-from ga4gh.core.entity_models import _DomainEntity
+from ga4gh.core.entity_models import DomainEntity
 
 
 class CommonDomainType(str, Enum):
@@ -30,7 +30,7 @@ class CommonDomainType(str, Enum):
     TR_COMB = "CombinationTherapy"
     GENE = "Gene"
 
-class Phenotype(_DomainEntity):
+class Phenotype(DomainEntity):
     """An observable characteristic or trait of an organism."""
 
     type: Literal[CommonDomainType.PHENOTYPE] = Field(
@@ -39,7 +39,7 @@ class Phenotype(_DomainEntity):
     )
 
 
-class Disease(_DomainEntity):
+class Disease(DomainEntity):
     """A particular abnormal condition that negatively affects the structure or function
     of all or part of an organism and is not immediately due to any external injury.
     """
@@ -50,7 +50,7 @@ class Disease(_DomainEntity):
     )
 
 
-class TraitSet(_DomainEntity):
+class TraitSet(DomainEntity):
     """A set of phenotype and/or disease concepts that together constitute a condition."""
 
     type: Literal[CommonDomainType.TRAIT_SET] = Field(
@@ -73,7 +73,7 @@ class Condition(RootModel):
     )
 
 
-class TherapeuticAction(_DomainEntity):
+class TherapeuticAction(DomainEntity):
     """A therapeutic action taken that is intended to alter or stop a pathologic process."""
 
     type: Literal[CommonDomainType.TR_ACTION] = Field(
@@ -82,7 +82,7 @@ class TherapeuticAction(_DomainEntity):
     )
 
 
-class TherapeuticAgent(_DomainEntity):
+class TherapeuticAgent(DomainEntity):
     """An administered therapeutic agent that is intended to alter or stop a pathologic process."""
 
     type: Literal[CommonDomainType.TR_AGENT] = Field(
@@ -91,7 +91,7 @@ class TherapeuticAgent(_DomainEntity):
     )
 
 
-class TherapeuticSubstituteGroup(_DomainEntity):
+class TherapeuticSubstituteGroup(DomainEntity):
     """A group of therapeutic procedures that may be treated as substitutes for one another."""
 
     type: Literal[CommonDomainType.TR_SUB] = Field(
@@ -105,7 +105,7 @@ class TherapeuticSubstituteGroup(_DomainEntity):
     )
 
 
-class CombinationTherapy(_DomainEntity):
+class CombinationTherapy(DomainEntity):
     """A therapeutic procedure that involves multiple different therapeutic procedures
     performed in combination.
     """
@@ -133,7 +133,7 @@ class TherapeuticProcedure(RootModel):
     )
 
 
-class Gene(_DomainEntity):
+class Gene(DomainEntity):
     """A basic physical and functional unit of heredity."""
 
     type: Literal[CommonDomainType.GENE] = Field(
