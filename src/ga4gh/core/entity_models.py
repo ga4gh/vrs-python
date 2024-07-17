@@ -13,7 +13,7 @@ Instead, users should use one of the following:
 from typing import Any, Dict, Annotated, Optional, Union, List
 from enum import Enum
 
-from pydantic import BaseModel, Field, RootModel, StringConstraints, model_serializer
+from pydantic import BaseModel, Field, RootModel, StringConstraints, model_serializer, field_validator
 
 from ga4gh.core import GA4GH_IR_REGEXP
 
@@ -174,6 +174,17 @@ class _Entity(BaseModel):
     )
     alternativeLabels: Optional[List[str]] = Field(None, description="Alternative name(s) for the Entity.")
     extensions: Optional[List[Extension]] = Field(None, description="A list of extensions to the entity. Extensions are not expected to be natively understood, but may be used for pre-negotiated exchange of message attributes between systems.")
+
+    @field_validator("type")
+    def validate_type(cls, v: str | Enum) -> str:
+        """Ensure that ``type`` field is represented as a string
+
+        :param v: Input values
+        :return: String representation of ``type`` field
+        """
+        if isinstance(v, Enum):
+            v = v.value
+        return v
 
 
 class _DomainEntity(_Entity):
