@@ -16,18 +16,15 @@ For that reason, they are implemented here in one file.
 """
 
 import contextvars
-import logging
 import re
 from contextlib import ContextDecorator
 from enum import Enum, IntEnum
-from typing import Union, Optional
-from pydantic import BaseModel, RootModel
+from typing import Optional
+from pydantic import BaseModel
 
-from .pydantic import get_pydantic_root
+from ga4gh.core.pydantic import get_pydantic_root
 
 __all__ = "ga4gh_digest ga4gh_identify ga4gh_serialize is_ga4gh_identifier parse_ga4gh_identifier".split()
-
-_logger = logging.getLogger(__name__)
 
 CURIE_NAMESPACE = "ga4gh"
 CURIE_SEP = ":"
@@ -36,7 +33,7 @@ GA4GH_PREFIX_SEP = "."
 GA4GH_IR_REGEXP = re.compile(r"^ga4gh:(?P<type>[^.]+)\.(?P<digest>[0-9A-Za-z_\-]{32})$")
 GA4GH_DIGEST_REGEXP = re.compile(r"^[0-9A-Za-z_\-]{32}$")
 
-ns_w_sep = CURIE_NAMESPACE + CURIE_SEP
+NS_W_SEP = f"{CURIE_NAMESPACE}{CURIE_SEP}"
 
 
 class VrsObjectIdentifierIs(IntEnum):
@@ -47,9 +44,9 @@ class VrsObjectIdentifierIs(IntEnum):
       GA4GH_INVALID - Compute the identifier if it is missing or is present but syntactically invalid
       MISSING - Only compute the identifier if missing
 
-    The default behavior is safe and ensures that the identifiers are correct, 
-    but at a performance cost. Where the source of inputs to `ga4gh_identify` 
-    are well controlled, for example when annotating a VCF file with VRS IDs, 
+    The default behavior is safe and ensures that the identifiers are correct,
+    but at a performance cost. Where the source of inputs to `ga4gh_identify`
+    are well controlled, for example when annotating a VCF file with VRS IDs,
     using `MISSING` can improve performance.
     """
 
@@ -113,27 +110,7 @@ def is_ga4gh_identifier(ir):
     False
 
     """
-    return str(get_pydantic_root(ir)).startswith(ns_w_sep)
-
-
-def parse_ga4gh_identifier(ir):
-    """
-    Parses a GA4GH identifier, returning a dict with type and digest components
-
-    >>> parse_ga4gh_identifier("ga4gh:SQ.0123abcd")
-    {'type': 'SQ', 'digest': '0123abcd'}
-
-    >>> parse_ga4gh_identifier("notga4gh:SQ.0123abcd")
-    Traceback (most recent call last):
-    ...
-    ValueError: notga4gh:SQ.0123abcd
-
-    """
-
-    try:
-        return GA4GH_IR_REGEXP.match(str(ir)).groupdict()
-    except AttributeError as e:
-        raise ValueError(ir) from e
+    return str(get_pydantic_root(ir)).startswith(NS_W_SEP)
 
 
 def ga4gh_identify(vro, in_place: str = 'default', as_version: PrevVrsVersion | None = None) -> str | None:
@@ -171,7 +148,7 @@ def ga4gh_identify(vro, in_place: str = 'default', as_version: PrevVrsVersion | 
             obj_id = getattr(vro, "id", None)
             if when_rule == VrsObjectIdentifierIs.MISSING:
                 do_compute = obj_id is None or obj_id == ""
-            else:  # GA4GHComputeIdentifierIs.GA4GH_INVALID
+            else:  # VrsObjectIdentifierIs.GA4GH_INVALID
                 do_compute = not vro.has_valid_ga4gh_id()
 
         if do_compute:
@@ -182,8 +159,10 @@ def ga4gh_identify(vro, in_place: str = 'default', as_version: PrevVrsVersion | 
     return None
 
 
-def ga4gh_digest(vro: BaseModel, overwrite: bool = False, as_version: PrevVrsVersion | None = None) -> str:
+def ga4gh_digest(vro: BaseModel, overwrite: bool = False, as_version: PrevVrsVersion | None = None) -> str | None:
     """Return the GA4GH digest for the object.
+
+    Only GA4GH identifiable objects are GA4GH digestible.
 
     If ``as_version`` is provided, other parameters are ignored and a digest is returned
     following the conventions of the VRS version indicated by ``as_version_``.
@@ -197,37 +176,13 @@ def ga4gh_digest(vro: BaseModel, overwrite: bool = False, as_version: PrevVrsVer
     """
     PrevVrsVersion.validate(as_version)
 
-    if vro.is_ga4gh_identifiable():  # Only GA4GH identifiable objects are GA4GH digestible
+    if vro.is_ga4gh_identifiable():
         if as_version is None:
             return vro.get_or_create_digest(overwrite)
         else:
             return vro.compute_digest(as_version=as_version)
     else:
         return None
-
-
-def replace_with_digest(val: dict) -> Union[str, dict]:
-    """
-    If val has a digest computed, return it, else return val
-    """
-    if isinstance(val, dict) and val.get("digest", None) is not None:
-        return val["digest"]
-    return val
-
-
-def collapse_identifiable_values(obj: dict) -> dict:
-    """
-    Replaces dict values with their digests if they are defined.
-    Does not collapse the top level object, only objects it contains.
-    """
-    if isinstance(obj, dict):
-        obj = {
-            k: replace_with_digest(collapse_identifiable_values(obj[k]))
-            for k in obj.keys()
-        }
-    elif isinstance(obj, list) or isinstance(obj, set):
-        obj = [replace_with_digest(collapse_identifiable_values(elem)) for elem in obj]
-    return obj
 
 
 def ga4gh_serialize(obj: BaseModel, as_version: PrevVrsVersion | None = None) -> Optional[bytes]:

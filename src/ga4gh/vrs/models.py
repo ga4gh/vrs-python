@@ -28,7 +28,6 @@ from ga4gh.core.pydantic import get_pydantic_root
 from pydantic import BaseModel, Field, RootModel, StringConstraints, model_serializer
 
 from ga4gh.core.pydantic import (
-    is_ga4gh_identifiable,
     getattr_in
 )
 from ga4gh.core.entity_models import IRI, Expression, _DomainEntity
@@ -43,7 +42,6 @@ def flatten(vals):
         Return True if the thing looks like a collection.
         This is not exhaustive, do not use in general.
         """
-        # return hasattr(thing, '__iter__') and not isinstance(thing, str) and not inspect.isclass(thing)
         return type(thing) in [list, set]
     if is_coll(vals):
         for x in vals:
@@ -93,7 +91,7 @@ def pydantic_class_refatt_map():
     # Types directly reffable
     reffable_classes = list(filter(
         lambda c: ('id' in c.model_fields
-                   and is_ga4gh_identifiable(c)),
+                   and c.is_ga4gh_identifiable()),
         model_classes
     ))
     # Types reffable because they are a union of reffable types
@@ -233,9 +231,6 @@ class _Ga4ghIdentifiableObject(_ValueObject):
 
     def has_valid_ga4gh_id(self):
         return self.id and GA4GH_IR_REGEXP.match(self.id) is not None
-
-    def has_valid_digest(self):
-        return bool(self.digest)  # Pydantic constraint ensures digest field value is valid
 
     def compute_digest(self, store=True, as_version: PrevVrsVersion | None = None) -> str:
         """A sha512t24u digest created using the VRS Computed Identifier algorithm.
