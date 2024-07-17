@@ -179,7 +179,7 @@ class _Entity(BaseModel):
     def validate_type(cls, v: str | Enum) -> str:
         """Ensure that ``type`` field is represented as a string
 
-        :param v: Input values
+        :param v: Input value
         :return: String representation of ``type`` field
         """
         if isinstance(v, Enum):
