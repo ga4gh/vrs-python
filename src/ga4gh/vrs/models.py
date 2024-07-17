@@ -15,7 +15,14 @@ from collections import OrderedDict
 from enum import Enum
 import inspect
 import sys
-from ga4gh.core import sha512t24u, GA4GH_PREFIX_SEP, CURIE_SEP, CURIE_NAMESPACE, GA4GH_IR_REGEXP
+from ga4gh.core import (
+    sha512t24u,
+    GA4GH_PREFIX_SEP,
+    CURIE_SEP,
+    CURIE_NAMESPACE,
+    GA4GH_IR_REGEXP,
+    PrevVrsVersion
+)
 from ga4gh.core.pydantic import get_pydantic_root
 
 from pydantic import BaseModel, Field, RootModel, StringConstraints, model_serializer
@@ -230,11 +237,13 @@ class _Ga4ghIdentifiableObject(_ValueObject):
     def has_valid_digest(self):
         return bool(self.digest)  # Pydantic constraint ensures digest field value is valid
 
-    def compute_digest(self, store=True, as_version=None) -> str:
+    def compute_digest(self, store=True, as_version: PrevVrsVersion | None = None) -> str:
         """A sha512t24u digest created using the VRS Computed Identifier algorithm.
-        Stores the digest in the object if store is True. If 'as_version' is set to
-        a version string, other parameters are ignored and a digest returned
-        following the conventions of the VRS version indicated by 'as_version'.
+
+        Stores the digest in the object if ``store`` is ``True``.
+
+        If ``as_version`` is provided, other parameters are ignored and a digest is
+        returned following the conventions of the VRS version indicated by ``as_version_``.
         """
         if as_version is None:
             digest = sha512t24u(self.model_dump_json().encode("utf-8"))
@@ -262,9 +271,9 @@ class _Ga4ghIdentifiableObject(_ValueObject):
 
         Digests will be recalculated even if present if recompute is True.
 
-        If 'as_version' is set to a version string, other parameters are
-        ignored and an identifier returned following the conventions of
-        the VRS version indicated by 'as_version'.
+        If ``as_version`` is provided, other parameters are ignored and an identifier is
+        returned following the conventions of the VRS version indicated by
+        ``as_version_``.
         """
         if as_version is not None:
             return self.compute_ga4gh_identifier(as_version=as_version)
@@ -287,9 +296,9 @@ class _Ga4ghIdentifiableObject(_ValueObject):
     def compute_ga4gh_identifier(self, recompute=False, as_version=None):
         """Returns a GA4GH Computed Identifier.
 
-        If 'as_version' is set to a version string, other parameters are
-        ignored and a computed identifier returned following the conventions
-        of the VRS version indicated by 'as_version'.
+        If ``as_version`` is provided, other parameters are ignored and a computed
+        identifier is returned following the conventions of the VRS version indicated by
+        ``as_version_``.
         """
         if as_version is None:
             self.get_or_create_digest(recompute)
@@ -456,12 +465,21 @@ class SequenceLocation(_Ga4ghIdentifiableObject):
     )
     sequence: Optional[SequenceString] = Field(None, description="The literal sequence encoded by the `sequenceReference` at these coordinates.")
 
-    def ga4gh_serialize_as_version(self, as_version):
+    def ga4gh_serialize_as_version(self, as_version: PrevVrsVersion):
         """This method will return a serialized string following the conventions for
-        SequenceLocation serialization as defined in the VRS version specified by 'as_version`."""
-        if as_version == '1.3':
-            out = list()
-            for value in [self.start,self.end]:
+        SequenceLocation serialization as defined in the VRS version specified by
+        ``as_version``.
+
+        :raises ValueError: If ``sequenceReference`` is not a ``SequenceReference``
+            object; ``start`` or ``end`` are not an int or list.
+        """
+        if as_version == PrevVrsVersion.V1_3:
+            if not isinstance(self.sequenceReference, SequenceReference):
+                err_msg = "Must provide `sequenceReference` and it must be a valid `SequenceReference`"
+                raise ValueError(err_msg)
+
+            out = []
+            for value in [self.start, self.end]:
                 value = get_pydantic_root(value)
                 if isinstance(value, int):
                     result = f'{{"type":"Number","value":{value}}}'
@@ -476,8 +494,6 @@ class SequenceLocation(_Ga4ghIdentifiableObject):
                     raise ValueError(f'{value} is not int or list.')
                 out.append(result)
             return f'{{"interval":{{"end":{out[1]},"start":{out[0]},"type":"SequenceInterval"}},"sequence_id":"{self.sequenceReference.refgetAccession.split(".")[1]}","type":"SequenceLocation"}}'
-        else:
-            raise ValueError(f'Serializing as version {as_version} not supported for this class.')
 
     def get_refget_accession(self):
         if isinstance(self.sequenceReference, SequenceReference):
@@ -489,7 +505,7 @@ class SequenceLocation(_Ga4ghIdentifiableObject):
 
     class ga4gh(_Ga4ghIdentifiableObject.ga4gh):
         prefix = 'SL'
-        priorPrefix = {'1.3': 'VSL'}
+        priorPrefix = {PrevVrsVersion.V1_3.value: 'VSL'}
         keys = [
             'end',
             'sequenceReference',
@@ -523,21 +539,31 @@ class Allele(_VariationBase):
         ..., description='An expression of the sequence state'
     )
 
-    def ga4gh_serialize_as_version(self, as_version):
+    def ga4gh_serialize_as_version(self, as_version: PrevVrsVersion):
         """This method will return a serialized string following the conventions for
-        Allele serialization as defined in the VRS version specified by 'as_version`."""
+        Allele serialization as defined in the VRS version specified by 'as_version`.
+
+        :raises ValueError: If ``state`` is not a ``LiteralSequenceExpression`` or
+            ``ReferenceLengthExpression``; ``state.sequence`` is null.
+        """
         location_digest = self.location.compute_digest(as_version=as_version)
+
+        if not isinstance(self.state, (LiteralSequenceExpression, ReferenceLengthExpression)):
+            err_msg = "Only `LiteralSequenceExpression` and `ReferenceLengthExpression` are supported for previous versions of VRS"
+            raise ValueError(err_msg)
+
         sequence = get_pydantic_root(self.state.sequence)
+
         if sequence is None:
             raise ValueError('State sequence attribute must be defined.')
-        if as_version == '1.3':
+
+        if as_version == PrevVrsVersion.V1_3:
             return f'{{"location":"{location_digest}","state":{{"sequence":"{sequence}","type":"LiteralSequenceExpression"}},"type":"Allele"}}'
-        else:
-            raise ValueError(f'Serializing as version {as_version} not supported for this class.')
+
 
     class ga4gh(_Ga4ghIdentifiableObject.ga4gh):
         prefix = 'VA'
-        priorPrefix = {'1.3': 'VA'}
+        priorPrefix = {PrevVrsVersion.V1_3.value: 'VA'}
         keys = [
             'location',
             'state',
