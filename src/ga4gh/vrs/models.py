@@ -193,7 +193,7 @@ class _ValueObject(_DomainEntity):
     """
 
     def __hash__(self):
-        return self.model_dump_json().__hash__()
+        return encode_canonical_json(self.ga4gh_serialize()).decode("utf-8").__hash__()
 
     def ga4gh_serialize(self) -> Dict:
         out = OrderedDict()
