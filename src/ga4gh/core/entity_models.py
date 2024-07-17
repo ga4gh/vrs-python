@@ -10,6 +10,7 @@ Instead, users should use one of the following:
   * `import ga4gh.core`, and refer to models using the fully-qualified
     module name, e.g., `ga4gh.core.entity_models.Coding`
 """
+from abc import ABC
 from typing import Any, Dict, Annotated, Optional, Union, List
 from enum import Enum
 
@@ -153,7 +154,7 @@ class Expression(BaseModel):
 #########################################
 
 
-class _Entity(BaseModel):
+class Entity(ABC, BaseModel):
     """Entity is the root class of the 'gks-common' core information model classes -
     those that have identifiers and other general metadata like labels, xrefs, urls,
     descriptions, etc. All common classes descend from and inherit its attributes.
@@ -187,7 +188,7 @@ class _Entity(BaseModel):
         return v
 
 
-class _DomainEntity(_Entity):
+class DomainEntity(Entity, ABC):
     """An Entity that is specific to a particular biomedical domain such as disease,
     therapeutics, or genes. Domain Entities are considered as 'concept-level' entities,
     as opposed to particular instances. e.g. 'Lung Cancer', not 'patient123's lung

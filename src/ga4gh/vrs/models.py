@@ -10,6 +10,7 @@ Instead, users should use one of the following:
   * `import ga4gh.vrs`, and refer to models using the fully-qualified
     module name, e.g., `ga4gh.vrs.models.Allele`
 """
+from abc import ABC
 from typing import List, Literal, Optional, Union, Dict, Annotated
 from collections import OrderedDict
 from enum import Enum
@@ -28,10 +29,9 @@ from ga4gh.core.pydantic import get_pydantic_root
 from pydantic import BaseModel, Field, RootModel, StringConstraints, model_serializer
 
 from ga4gh.core.pydantic import (
-    is_ga4gh_identifiable,
     getattr_in
 )
-from ga4gh.core.entity_models import IRI, Expression, _DomainEntity
+from ga4gh.core.entity_models import IRI, Expression, DomainEntity
 
 
 def flatten(vals):
@@ -43,7 +43,6 @@ def flatten(vals):
         Return True if the thing looks like a collection.
         This is not exhaustive, do not use in general.
         """
-        # return hasattr(thing, '__iter__') and not isinstance(thing, str) and not inspect.isclass(thing)
         return type(thing) in [list, set]
     if is_coll(vals):
         for x in vals:
@@ -93,7 +92,7 @@ def pydantic_class_refatt_map():
     # Types directly reffable
     reffable_classes = list(filter(
         lambda c: ('id' in c.model_fields
-                   and is_ga4gh_identifiable(c)),
+                   and c.is_ga4gh_identifiable()),
         model_classes
     ))
     # Types reffable because they are a union of reffable types
@@ -188,7 +187,7 @@ def _recurse_ga4gh_serialize(obj):
         return obj
 
 
-class _ValueObject(_DomainEntity):
+class _ValueObject(DomainEntity, ABC):
     """A contextual value whose equality is based on value, not identity.
     See https://en.wikipedia.org/wiki/Value_object for more on Value Objects.
     """
@@ -212,7 +211,7 @@ class _ValueObject(_DomainEntity):
         return False
 
 
-class _Ga4ghIdentifiableObject(_ValueObject):
+class _Ga4ghIdentifiableObject(_ValueObject, ABC):
     """A contextual value object for which a GA4GH computed identifier can be created.
     All GA4GH Identifiable Objects may have computed digests from the VRS Computed
     Identifier algorithm.
@@ -233,9 +232,6 @@ class _Ga4ghIdentifiableObject(_ValueObject):
 
     def has_valid_ga4gh_id(self):
         return self.id and GA4GH_IR_REGEXP.match(self.id) is not None
-
-    def has_valid_digest(self):
-        return bool(self.digest)  # Pydantic constraint ensures digest field value is valid
 
     def compute_digest(self, store=True, as_version: PrevVrsVersion | None = None) -> str:
         """A sha512t24u digest created using the VRS Computed Identifier algorithm.
@@ -518,7 +514,7 @@ class SequenceLocation(_Ga4ghIdentifiableObject):
 #########################################
 
 
-class _VariationBase(_Ga4ghIdentifiableObject):
+class _VariationBase(_Ga4ghIdentifiableObject, ABC):
     """Base class for variation"""
 
     expressions: Optional[List[Expression]] = None
@@ -671,7 +667,7 @@ class DerivativeSequence(_VariationBase):
 #########################################
 
 
-class _CopyNumber(_VariationBase):
+class _CopyNumber(_VariationBase, ABC):
     """A measure of the copies of a `Location` within a system (e.g. genome, cell, etc.)"""
 
     location: Union[IRI, SequenceLocation] = Field(

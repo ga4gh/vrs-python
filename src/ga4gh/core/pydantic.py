@@ -21,24 +21,6 @@ def getattr_in(obj, names) -> Any:
     return v
 
 
-def is_ga4gh_identifiable(o: Any) -> bool:
-    """
-    Determine if object is a GA4GH identifiable type.
-
-    :param o: Object
-    :return: `True` if `o` is a GA4GH Identifiable Object. `False` otherwise.
-    """
-    return o.is_ga4gh_identifiable()
-
-
-def is_literal(o: Any) -> bool:
-    return isinstance(o, (str, int, float, complex, bool))
-
-
-def is_list(o: Any) -> bool:
-    return isinstance(o, list)
-
-
 def is_curie_type(o: Any) -> bool:
     """
     Returns true if the object is a str-like matching the CURIE pattern.
