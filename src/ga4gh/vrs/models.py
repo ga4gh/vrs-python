@@ -10,6 +10,7 @@ Instead, users should use one of the following:
   * `import ga4gh.vrs`, and refer to models using the fully-qualified
     module name, e.g., `ga4gh.vrs.models.Allele`
 """
+from abc import ABC
 from typing import List, Literal, Optional, Union, Dict, Annotated
 from collections import OrderedDict
 from enum import Enum
@@ -31,7 +32,7 @@ from ga4gh.core.pydantic import (
     is_ga4gh_identifiable,
     getattr_in
 )
-from ga4gh.core.entity_models import IRI, Expression, _DomainEntity
+from ga4gh.core.entity_models import IRI, Expression, DomainEntity
 
 
 def flatten(vals):
@@ -188,7 +189,7 @@ def _recurse_ga4gh_serialize(obj):
         return obj
 
 
-class _ValueObject(_DomainEntity):
+class _ValueObject(DomainEntity, ABC):
     """A contextual value whose equality is based on value, not identity.
     See https://en.wikipedia.org/wiki/Value_object for more on Value Objects.
     """
@@ -212,7 +213,7 @@ class _ValueObject(_DomainEntity):
         return False
 
 
-class _Ga4ghIdentifiableObject(_ValueObject):
+class _Ga4ghIdentifiableObject(_ValueObject, ABC):
     """A contextual value object for which a GA4GH computed identifier can be created.
     All GA4GH Identifiable Objects may have computed digests from the VRS Computed
     Identifier algorithm.
@@ -518,7 +519,7 @@ class SequenceLocation(_Ga4ghIdentifiableObject):
 #########################################
 
 
-class _VariationBase(_Ga4ghIdentifiableObject):
+class _VariationBase(_Ga4ghIdentifiableObject, ABC):
     """Base class for variation"""
 
     expressions: Optional[List[Expression]] = None
@@ -671,7 +672,7 @@ class DerivativeSequence(_VariationBase):
 #########################################
 
 
-class _CopyNumber(_VariationBase):
+class _CopyNumber(_VariationBase, ABC):
     """A measure of the copies of a `Location` within a system (e.g. genome, cell, etc.)"""
 
     location: Union[IRI, SequenceLocation] = Field(
