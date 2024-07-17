@@ -24,7 +24,7 @@ from pydantic import BaseModel
 
 from ga4gh.core.pydantic import get_pydantic_root
 
-__all__ = "ga4gh_digest ga4gh_identify ga4gh_serialize is_ga4gh_identifier parse_ga4gh_identifier".split()
+__all__ = "ga4gh_digest ga4gh_identify ga4gh_serialize is_ga4gh_identifier".split()
 
 CURIE_NAMESPACE = "ga4gh"
 CURIE_SEP = ":"
