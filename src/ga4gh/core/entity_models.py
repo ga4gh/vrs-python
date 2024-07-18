@@ -14,7 +14,7 @@ from abc import ABC
 from typing import Any, Dict, Annotated, Optional, Union, List
 from enum import Enum
 
-from pydantic import BaseModel, Field, RootModel, StringConstraints
+from pydantic import BaseModel, Field, RootModel, StringConstraints, ConfigDict
 
 from ga4gh.core import GA4GH_IR_REGEXP
 
@@ -118,6 +118,8 @@ class Coding(BaseModel):
 class ConceptMapping(BaseModel):
     """A mapping to a concept in a terminology or code system."""
 
+    model_config = ConfigDict(use_enum_values=True)
+
     coding: Coding = Field(..., description="A structured representation of a code for a defined concept in a terminology or code system.")
     relation: Relation = Field(..., description="A mapping relation between concepts as defined by the Simple Knowledge Organization System (SKOS).")
 
@@ -142,6 +144,8 @@ class Expression(BaseModel):
     Variation object. Common examples of expressions for the description of molecular
     variation include the HGVS and ISCN nomenclatures.
     """
+
+    model_config = ConfigDict(use_enum_values=True)
 
     syntax: Syntax = Field(..., description="The syntax used to describe the variation. The value should be one of the supported syntaxes.")
     value: str = Field(..., description="The expression of the variation in the specified syntax. The value should be a valid expression in the specified syntax.")
