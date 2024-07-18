@@ -10,6 +10,7 @@ Instead, users should use one of the following:
   * `import ga4gh.core`, and refer to models using the fully-qualified
     module name, e.g., `ga4gh.core.domain_models.Gene`
 """
+from enum import Enum
 from typing import Literal, Union, List
 
 from pydantic import Field, RootModel
@@ -17,7 +18,7 @@ from pydantic import Field, RootModel
 from ga4gh.core.entity_models import DomainEntity
 
 
-class CommonDomainType:
+class CommonDomainType(str, Enum):
     """Define GKS Common Domain Entity types"""
 
     PHENOTYPE = "Phenotype"
@@ -33,8 +34,8 @@ class Phenotype(DomainEntity):
     """An observable characteristic or trait of an organism."""
 
     type: Literal["Phenotype"] = Field(
-        CommonDomainType.PHENOTYPE,
-        description=f'MUST be "{CommonDomainType.PHENOTYPE}".'
+        CommonDomainType.PHENOTYPE.value,
+        description=f'MUST be "{CommonDomainType.PHENOTYPE.value}".'
     )
 
 
@@ -44,8 +45,8 @@ class Disease(DomainEntity):
     """
 
     type: Literal["Disease"] = Field(
-        CommonDomainType.DISEASE,
-        description=f'MUST be "{CommonDomainType.DISEASE}".'
+        CommonDomainType.DISEASE.value,
+        description=f'MUST be "{CommonDomainType.DISEASE.value}".'
     )
 
 
@@ -53,8 +54,8 @@ class TraitSet(DomainEntity):
     """A set of phenotype and/or disease concepts that together constitute a condition."""
 
     type: Literal["TraitSet"] = Field(
-        CommonDomainType.TRAIT_SET,
-        description=f'MUST be "{CommonDomainType.TRAIT_SET}".'
+        CommonDomainType.TRAIT_SET.value,
+        description=f'MUST be "{CommonDomainType.TRAIT_SET.value}".'
     )
     traits: List[Union[Disease, Phenotype]] = Field(
         ...,
@@ -76,8 +77,8 @@ class TherapeuticAction(DomainEntity):
     """A therapeutic action taken that is intended to alter or stop a pathologic process."""
 
     type: Literal["TherapeuticAction"] = Field(
-        CommonDomainType.TR_ACTION,
-        description=f'MUST be "{CommonDomainType.TR_ACTION}".'
+        CommonDomainType.TR_ACTION.value,
+        description=f'MUST be "{CommonDomainType.TR_ACTION.value}".'
     )
 
 
@@ -85,8 +86,8 @@ class TherapeuticAgent(DomainEntity):
     """An administered therapeutic agent that is intended to alter or stop a pathologic process."""
 
     type: Literal["TherapeuticAgent"] = Field(
-        CommonDomainType.TR_AGENT,
-        description=f'MUST be "{CommonDomainType.TR_AGENT}".'
+        CommonDomainType.TR_AGENT.value,
+        description=f'MUST be "{CommonDomainType.TR_AGENT.value}".'
     )
 
 
@@ -94,8 +95,8 @@ class TherapeuticSubstituteGroup(DomainEntity):
     """A group of therapeutic procedures that may be treated as substitutes for one another."""
 
     type: Literal["TherapeuticSubstituteGroup"] = Field(
-        CommonDomainType.TR_SUB,
-        description=f'MUST be "{CommonDomainType.TR_SUB}".'
+        CommonDomainType.TR_SUB.value,
+        description=f'MUST be "{CommonDomainType.TR_SUB.value}".'
     )
     substitutes: List[Union[TherapeuticAction, TherapeuticAgent]] = Field(
         ...,
@@ -110,8 +111,8 @@ class CombinationTherapy(DomainEntity):
     """
 
     type: Literal["CombinationTherapy"] = Field(
-        CommonDomainType.TR_COMB,
-        description=f'MUST be "{CommonDomainType.TR_COMB}".'
+        CommonDomainType.TR_COMB.value,
+        description=f'MUST be "{CommonDomainType.TR_COMB.value}".'
     )
     components: List[Union[TherapeuticSubstituteGroup, TherapeuticAction, TherapeuticAgent]] = Field(
         ...,
@@ -136,6 +137,6 @@ class Gene(DomainEntity):
     """A basic physical and functional unit of heredity."""
 
     type: Literal["Gene"] = Field(
-        CommonDomainType.GENE,
-        description=f'MUST be "{CommonDomainType.GENE}".'
+        CommonDomainType.GENE.value,
+        description=f'MUST be "{CommonDomainType.GENE.value}".'
     )

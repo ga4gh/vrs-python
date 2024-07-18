@@ -101,18 +101,18 @@ def test_prev_vrs_version():
 
 def test_valid_types():
     """Ensure that type enums values correct. Values should correspond to class"""
-    for gks_models, gks_type in [(models, VrsType), (domain_models, CommonDomainType)]:
-        for attr, value in gks_type.__dict__.items():
-            if not attr.startswith("__"):
-                if hasattr(gks_models, value):
-                    gks_class = getattr(gks_models, value)
-                    try:
-                        assert gks_class(type=value)
-                    except ValidationError as e:
-                        found_type_mismatch = False
-                        for error in e.errors():
-                            if error["loc"] == ("type",):
-                                found_type_mismatch = True
-                        assert not found_type_mismatch, f"Found mismatch in type literal: {value} vs {error['ctx']['expected']}"
-                else:
-                    assert False, f"{str(gks_models)} class not found: {value}"
+    for gks_models, gks_enum in [(models, VrsType), (domain_models, CommonDomainType)]:
+        for enum_val in gks_enum.__members__.values():
+            enum_val = enum_val.value
+            if hasattr(gks_models, enum_val):
+                gks_class = getattr(gks_models, enum_val)
+                try:
+                    assert gks_class(type=enum_val)
+                except ValidationError as e:
+                    found_type_mismatch = False
+                    for error in e.errors():
+                        if error["loc"] == ("type",):
+                            found_type_mismatch = True
+                    assert not found_type_mismatch, f"Found mismatch in type literal: {enum_val} vs {error['ctx']['expected']}"
+            else:
+                assert False, f"{str(gks_models)} class not found: {enum_val}"
