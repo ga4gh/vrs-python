@@ -6,12 +6,14 @@ from importlib.metadata import version, PackageNotFoundError
 
 from .normalize import normalize
 from .enderef import vrs_deref, vrs_enref
+from .models import VrsType
 from . import models
 
 __all__ = [
     "normalize",
     "vrs_deref",
     "vrs_enref",
+    "VrsType",
     "models"
 ]
 

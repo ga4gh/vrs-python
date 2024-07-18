@@ -15,6 +15,7 @@ from .identifiers import (
 from .pydantic import (
     is_pydantic_instance, is_curie_type, pydantic_copy
 )
+from .domain_models import CommonDomainType
 from . import entity_models, domain_models
 
 __all__ = [
@@ -36,6 +37,7 @@ __all__ = [
     "is_pydantic_instance",
     "is_curie_type",
     "pydantic_copy",
+    "CommonDomainType",
     "entity_models",
     "domain_models"
 ]

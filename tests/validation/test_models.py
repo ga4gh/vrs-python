@@ -4,11 +4,12 @@
 
 import os
 
+from pydantic import ValidationError
 import pytest
 import yaml
 
-from ga4gh.core import ga4gh_serialize, ga4gh_digest, ga4gh_identify, PrevVrsVersion, entity_models
-from ga4gh.vrs import models
+from ga4gh.core import ga4gh_serialize, ga4gh_digest, ga4gh_identify, PrevVrsVersion, entity_models, CommonDomainType, domain_models
+from ga4gh.vrs import models, VrsType
 
 def ga4gh_1_3_identify(*args, **kwargs):
     kwargs['as_version'] = PrevVrsVersion.V1_3
@@ -96,3 +97,22 @@ def test_prev_vrs_version():
 
         with pytest.raises(ValueError, match="Only `LiteralSequenceExpression` and `ReferenceLengthExpression` are supported for previous versions of VRS"):
             ga4gh_func(allele_le, as_version=PrevVrsVersion.V1_3)
+
+
+def test_valid_types():
+    """Ensure that type enums values correct. Values should correspond to class"""
+    for gks_models, gks_enum in [(models, VrsType), (domain_models, CommonDomainType)]:
+        for enum_val in gks_enum.__members__.values():
+            enum_val = enum_val.value
+            if hasattr(gks_models, enum_val):
+                gks_class = getattr(gks_models, enum_val)
+                try:
+                    assert gks_class(type=enum_val)
+                except ValidationError as e:
+                    found_type_mismatch = False
+                    for error in e.errors():
+                        if error["loc"] == ("type",):
+                            found_type_mismatch = True
+                    assert not found_type_mismatch, f"Found mismatch in type literal: {enum_val} vs {error['ctx']['expected']}"
+            else:
+                assert False, f"{str(gks_models)} class not found: {enum_val}"
