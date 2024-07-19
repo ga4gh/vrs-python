@@ -26,7 +26,8 @@ from ga4gh.core import (
 )
 from ga4gh.core.pydantic import get_pydantic_root
 
-from pydantic import BaseModel, Field, RootModel, StringConstraints, model_serializer, ConfigDict
+from canonicaljson import encode_canonical_json
+from pydantic import BaseModel, Field, RootModel, StringConstraints, ConfigDict
 
 from ga4gh.core.pydantic import (
     getattr_in
@@ -178,7 +179,7 @@ def _recurse_ga4gh_serialize(obj):
     elif isinstance(obj, _ValueObject):
         return obj.ga4gh_serialize()
     elif isinstance(obj, RootModel):
-        return _recurse_ga4gh_serialize(obj.model_dump(mode='json'))
+        return _recurse_ga4gh_serialize(obj.model_dump())
     elif isinstance(obj, str):
         return obj
     elif isinstance(obj, list):
@@ -193,9 +194,8 @@ class _ValueObject(DomainEntity, ABC):
     """
 
     def __hash__(self):
-        return self.model_dump_json().__hash__()
+        return encode_canonical_json(self.ga4gh_serialize()).decode("utf-8").__hash__()
 
-    @model_serializer(when_used='json')
     def ga4gh_serialize(self) -> Dict:
         out = OrderedDict()
         for k in self.ga4gh.keys:
@@ -242,7 +242,7 @@ class _Ga4ghIdentifiableObject(_ValueObject, ABC):
         returned following the conventions of the VRS version indicated by ``as_version_``.
         """
         if as_version is None:
-            digest = sha512t24u(self.model_dump_json().encode("utf-8"))
+            digest = sha512t24u(encode_canonical_json(self.ga4gh_serialize()))
             if store:
                 self.digest = digest
         else:
@@ -580,7 +580,6 @@ class CisPhasedBlock(_VariationBase):
     )
     sequenceReference: Optional[SequenceReference] = Field(None, description="An optional Sequence Reference on which all of the in-cis Alleles are found. When defined, this may be used to implicitly define the `sequenceReference` attribute for each of the CisPhasedBlock member Alleles.")
 
-    @model_serializer(when_used="json")
     def ga4gh_serialize(self) -> Dict:
         out = _ValueObject.ga4gh_serialize(self)
         out["members"] = sorted(out["members"])
