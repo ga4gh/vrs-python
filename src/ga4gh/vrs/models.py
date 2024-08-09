@@ -32,7 +32,7 @@ from pydantic import BaseModel, Field, RootModel, StringConstraints, ConfigDict
 from ga4gh.core.pydantic import (
     getattr_in
 )
-from ga4gh.core.entity_models import IRI, Expression, DomainEntity
+from ga4gh.core.entity_models import IRI, Expression, Entity
 
 
 def flatten(vals):
@@ -188,7 +188,7 @@ def _recurse_ga4gh_serialize(obj):
         return obj
 
 
-class _ValueObject(DomainEntity, ABC):
+class _ValueObject(Entity, ABC):
     """A contextual value whose equality is based on value, not identity.
     See https://en.wikipedia.org/wiki/Value_object for more on Value Objects.
     """
