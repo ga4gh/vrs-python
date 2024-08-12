@@ -16,7 +16,7 @@ def tlr(rest_dataproxy):
 
 from_hgvs_cx_tests = (
     ("NC_000013.11:g.26440969_26443305del", models.CopyChange.EFO_0030069,
-     {'copyChange': 'efo:0030069',
+     {'copyChange': 'EFO:0030069',
       'digest': 'TvAhuGK6HYf53mXoUnon60cZ7DC_UgM3',
       'id': 'ga4gh:CX.TvAhuGK6HYf53mXoUnon60cZ7DC_UgM3',
       'location': {'digest': '4akcjXlbAu4xBKnxjOL_b4DM_20HOCA3',
@@ -28,7 +28,7 @@ from_hgvs_cx_tests = (
                    'type': 'SequenceLocation'},
       'type': 'CopyNumberChange'}),
     ("NC_000013.11:g.32379315_32379819del", None,
-     {'copyChange': 'efo:0030067',
+     {'copyChange': 'EFO:0030067',
       'digest': 'K1J2muiVvrDWqKnd5cMpFbTP0eJUfeuE',
       'id': 'ga4gh:CX.K1J2muiVvrDWqKnd5cMpFbTP0eJUfeuE',
       'location': {'digest': '_TUGA9kX6JKdXzUklgN2zWkOvNu5pNmV',
@@ -41,7 +41,7 @@ from_hgvs_cx_tests = (
       'type': 'CopyNumberChange'}
      ),
     ("NC_000013.11:g.32332787_32333388dup", models.CopyChange.EFO_0030071,
-     {'copyChange': 'efo:0030071',
+     {'copyChange': 'EFO:0030071',
       'digest': '5gODsVN83N1fe9Lc_Octy5rBlkYl8pGU',
       'id': 'ga4gh:CX.5gODsVN83N1fe9Lc_Octy5rBlkYl8pGU',
       'location': {'digest': 'UOA3zJOPfQxxRord_7pBkoMBpt46xcQq',
@@ -54,7 +54,7 @@ from_hgvs_cx_tests = (
       'type': 'CopyNumberChange'}
      ),
     ("NC_000013.11:g.32344743_32352093dup", None,
-     {'copyChange': 'efo:0030070',
+     {'copyChange': 'EFO:0030070',
       'digest': '-sUe85R9UC_RxX7e_B1YsmsdyLsGvvmq',
       'id': 'ga4gh:CX.-sUe85R9UC_RxX7e_B1YsmsdyLsGvvmq',
       'location': {'digest': '17-a6p7m6QznwxZyVz2QdA9oPf5jTCyT',
