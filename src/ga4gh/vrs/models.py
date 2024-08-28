@@ -332,7 +332,7 @@ class Range(RootModel):
     )
 
     @model_validator(mode="after")
-    def validate_range(self) -> Self:
+    def validate_range(self) -> "Range":
         """Validate range values
 
         :raises ValueError: If ``root`` does not include at least one integer or if
@@ -481,7 +481,7 @@ class SequenceLocation(_Ga4ghIdentifiableObject):
     sequence: Optional[SequenceString] = Field(None, description="The literal sequence encoded by the `sequenceReference` at these coordinates.")
 
     @model_validator(mode="after")
-    def validate_start_end(self) -> Self:
+    def validate_start_end(self) -> "SequenceLocation":
         """Validate ``start`` and ``end`` fields
 
         :raises ValueError: If ``start`` or ``end`` has a value less than 0 or if
