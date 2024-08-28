@@ -11,7 +11,7 @@ Instead, users should use one of the following:
     module name, e.g., `ga4gh.vrs.models.Allele`
 """
 from abc import ABC
-from typing import List, Literal, Optional, Self, Union, Dict, Annotated
+from typing import List, Literal, Optional, Union, Dict, Annotated
 from collections import OrderedDict
 from enum import Enum
 import inspect
