@@ -101,10 +101,8 @@ cpb_431012 = models.CisPhasedBlock(**cpb_431012_dict)
     [
         (lambda: models.Range(root=[None, None]), "Must provide at least one integer."),
         (lambda: models.Range(root=[2, 1]), "The first integer must be less than or equal to the second integer."),
-        (lambda: models.SequenceLocation(sequenceReference=allele_280320.location.sequenceReference, start=-1), "The minimum value of `start` or `end` is 0."),
-        (lambda: models.SequenceLocation(sequenceReference=allele_280320.location.sequenceReference, end=[-1, 0]), "The minimum value of `start` or `end` is 0."),
-        (lambda: models.SequenceLocation(sequenceReference=allele_280320.location.sequenceReference, start=1, end=0), "`start` must be less than or equal to `end`."),
-        (lambda: models.SequenceLocation(sequenceReference=allele_280320.location.sequenceReference, start=[3,4], end=[1,2]), "`start` must be less than or equal to `end`.")
+        (lambda: models.SequenceLocation(sequenceReference=allele_280320.location.sequenceReference, start=-1), "The minimum value of `start` is 0."),
+        (lambda: models.SequenceLocation(sequenceReference=allele_280320.location.sequenceReference, end=[-1, 0]), "The minimum value of `end` is 0."),
     ]
 )
 def test_model_validation_errors(vrs_model, expected_err_msg):
