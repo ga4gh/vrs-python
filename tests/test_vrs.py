@@ -96,6 +96,24 @@ cpb_431012_dict = {
 cpb_431012 = models.CisPhasedBlock(**cpb_431012_dict)
 
 
+@pytest.mark.parametrize(
+    "vrs_model, expected_err_msg",
+    [
+        (lambda: models.Range(root=[None, None]), "Must provide at least one integer."),
+        (lambda: models.Range(root=[2, 1]), "The first integer must be less than or equal to the second integer."),
+        (lambda: models.SequenceLocation(sequenceReference=allele_280320.location.sequenceReference, start=-1), "The minimum value of `start` or `end` is 0."),
+        (lambda: models.SequenceLocation(sequenceReference=allele_280320.location.sequenceReference, end=[-1, 0]), "The minimum value of `start` or `end` is 0."),
+        (lambda: models.SequenceLocation(sequenceReference=allele_280320.location.sequenceReference, start=1, end=0), "`start` must be less than or equal to `end`."),
+        (lambda: models.SequenceLocation(sequenceReference=allele_280320.location.sequenceReference, start=[3,4], end=[1,2]), "`start` must be less than or equal to `end`.")
+    ]
+)
+def test_model_validation_errors(vrs_model, expected_err_msg):
+    """Test that invalid VRS models raise errors"""
+    with pytest.raises(ValueError) as e:
+        vrs_model()
+    assert str(e.value.errors()[0]["ctx"]["error"]) == expected_err_msg
+
+
 def test_vr():
     assert a.model_dump(exclude_none=True) == allele_dict
     assert is_pydantic_instance(a)

@@ -11,7 +11,7 @@ Instead, users should use one of the following:
     module name, e.g., `ga4gh.vrs.models.Allele`
 """
 from abc import ABC
-from typing import List, Literal, Optional, Union, Dict, Annotated
+from typing import List, Literal, Optional, Self, Union, Dict, Annotated
 from collections import OrderedDict
 from enum import Enum
 import inspect
@@ -27,7 +27,7 @@ from ga4gh.core import (
 from ga4gh.core.pydantic import get_pydantic_root
 
 from canonicaljson import encode_canonical_json
-from pydantic import BaseModel, Field, RootModel, StringConstraints, ConfigDict
+from pydantic import BaseModel, Field, RootModel, StringConstraints, ConfigDict, model_validator
 
 from ga4gh.core.pydantic import (
     getattr_in
@@ -331,6 +331,23 @@ class Range(RootModel):
         min_length=2,
     )
 
+    @model_validator(mode="after")
+    def validate_range(self) -> Self:
+        """Validate range values
+
+        :raises ValueError: If ``root`` does not include at least one integer or if
+            the first element in ``root`` is greater than the second element in ``root``
+        """
+        if self.root.count(None) == 2:
+            err_msg = "Must provide at least one integer."
+            raise ValueError(err_msg)
+
+        if self.root[0] is not None and self.root[1] is not None:
+            if self.root[0] > self.root[1]:
+                err_msg = "The first integer must be less than or equal to the second integer."
+                raise ValueError(err_msg)
+
+        return self
 
 class Residue(RootModel):
     """A character representing a specific residue (i.e., molecular species) or
@@ -454,14 +471,54 @@ class SequenceLocation(_Ga4ghIdentifiableObject):
     )
     start: Optional[Union[Range, int]] = Field(
         None,
-        description='The start coordinate or range of the SequenceLocation. The minimum value of this coordinate or range is 0. MUST represent a coordinate or range less than the value of `end`.',
+        description='The start coordinate or range of the SequenceLocation. The minimum value of this coordinate or range is 0. MUST represent a coordinate or range less than or equal to the value of `end`.',
     )
     end: Optional[Union[Range, int]] = Field(
         None,
-        description='The end coordinate or range of the SequenceLocation. The minimum value of this coordinate or range is 0. MUST represent a coordinate or range greater than the value of `start`.',
+        description='The end coordinate or range of the SequenceLocation. The minimum value of this coordinate or range is 0. MUST represent a coordinate or range greater than or equal to the value of `start`.',
 
     )
     sequence: Optional[SequenceString] = Field(None, description="The literal sequence encoded by the `sequenceReference` at these coordinates.")
+
+    @model_validator(mode="after")
+    def validate_start_end(self) -> Self:
+        """Validate ``start`` and ``end`` fields
+
+        :raises ValueError: If ``start`` or ``end`` has a value less than 0 or if
+            ``start`` is greater than ``end``
+        :return: Sequence Location
+        """
+        def _get_int_values(start_or_end: int | Range | None) -> list[int]:
+            """Get list of integers from ``start`` or ``end`` fields
+
+            :param start_or_end: ``start`` or ``end`` field
+            :raises ValueError: If ``start_or_end`` has a value less than 0
+            :return: List of integer values
+            """
+            int_values = []
+
+            if start_or_end is not None:
+                if isinstance(start_or_end, int):
+                    int_values = [start_or_end]
+                else:
+                    int_values = [val for val in start_or_end.root if val is not None]
+
+                if any(int_val < 0 for int_val in int_values):
+                    err_msg = "The minimum value of `start` or `end` is 0."
+                    raise ValueError(err_msg)
+
+            return int_values
+
+        start_values = _get_int_values(self.start)
+        end_values = _get_int_values(self.end)
+
+        if start_values and end_values:
+            for start_val in start_values:
+                if any(start_val > end_val for end_val in end_values):
+                    err_msg = "`start` must be less than or equal to `end`."
+                    raise ValueError(err_msg)
+
+        return self
 
     def ga4gh_serialize_as_version(self, as_version: PrevVrsVersion):
         """This method will return a serialized string following the conventions for
