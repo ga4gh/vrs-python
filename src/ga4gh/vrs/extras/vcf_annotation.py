@@ -281,24 +281,21 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
         """Get VRS Object given `vcf_coords`. `vrs_data` and `vrs_field_data` will
         be mutated.
 
-        :param str vcf_coords: Allele to get VRS object for. Format is chr-pos-ref-alt
-        :param Dict vrs_data: Dictionary containing the VRS object information for the
-            VCF
-        :param Dict vrs_field_data: If `output_vcf`, will keys will be VRS Fields and
-            values will be list of VRS data. Else, will be an empty dictionary
-        :param str assembly: The assembly used in `vcf_coords`
-        :param Optional[str] vrs_data_key: The key to update in `vrs_data`. If not
-            provided, will use `vcf_coords` as the key.
-        :param bool output_pickle: `True` if VRS pickle file will be output.
-            `False` otherwise.
-        :param bool output_vcf: `True` if annotated VCF file will be output.
-            `False` otherwise.
-        :param bool vrs_attributes: If `True` will include VRS_Start, VRS_End,
-            VRS_State fields in the INFO field. If `False` will not include these fields.
-            Only used if `output_vcf` set to `True`.
-        :param bool require_validation: If `True` then validation checks must pass in
-            order to return a VRS object. If `False` then VRS object will be returned
-            even if validation checks fail. Defaults to `True`.
+        :param vcf_coords: Allele to get VRS object for. Format is chr-pos-ref-alt
+        :param vrs_data: Dictionary containing the VRS object information for the VCF
+        :param vrs_field_data: If `output_vcf`, will keys will be VRS Fields and values
+            will be list of VRS data. Else, will be an empty dictionary
+        :param assembly: The assembly used in `vcf_coords`
+        :param vrs_data_key: The key to update in `vrs_data`. If not provided, will use
+            `vcf_coords` as the key.
+        :param output_pickle: If `True`, VRS pickle file will be output.
+        :param output_vcf: If `True`, annotated VCF file will be output.
+        :param vrs_attributes: If `True` will include VRS_Start, VRS_End, VRS_State
+            fields in the INFO field. If `False` will not include these fields. Only
+            used if `output_vcf` set to `True`.
+        :param require_validation: If `True` then validation checks must pass in order
+            to return a VRS object. If `False` then VRS object will be returned even if
+            validation checks fail. Defaults to `True`.
         """
         try:
             vrs_obj = self.tlr._from_gnomad(
@@ -359,27 +356,24 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
     ) -> Dict:
         """Get VRS data for record's reference and alt alleles.
 
-        :param pysam.VariantRecord record: A row in the VCF file
-        :param Dict vrs_data: Dictionary containing the VRS object information for the
-            VCF. Will be mutated if `output_pickle = True`
-        :param str assembly: The assembly used in `record`
-        :param List[str] additional_info_fields: Additional VRS fields to add in INFO
-            field
-        :param bool vrs_attributes: If `True` will include VRS_Start, VRS_End,
-            VRS_State fields in the INFO field. If `False` will not include these fields.
-            Only used if `output_vcf` set to `True`.
-        :param bool output_pickle: `True` if VRS pickle file will be output.
-            `False` otherwise.
-        :param bool output_vcf: `True` if annotated VCF file will be output.
-            `False` otherwise.
-        :return: If `output_vcf = True`, a dictionary containing VRS Fields and list
-            of associated values. If `output_vcf = False`, an empty dictionary will be
-            returned.
+        :param record: A row in the VCF file
+        :param vrs_data: Dictionary containing the VRS object information for the VCF.
+            Will be mutated if `output_pickle = True`
+        :param assembly: The assembly used in `record`
+        :param additional_info_fields: Additional VRS fields to add in INFO field
+        :param vrs_attributes: If `True` will include VRS_Start, VRS_End, VRS_State
+            fields in the INFO field. If `False` will not include these fields. Only
+            used if `output_vcf` set to `True`.
+        :param output_pickle: If `True`, VRS pickle file will be output.
+        :param output_vcf: If `True`, annotated VCF file will be output.
         :param compute_for_ref: If true, compute VRS IDs for the reference allele
-        :param bool require_validation: If `True` then validation checks must pass in
+        :param require_validation: If `True` then validation checks must pass in
             order to return a VRS object. A `DataProxyValidationError` will be raised if
             validation checks fail. If `False` then VRS object will be returned even if
             validation checks fail. Defaults to `True`.
+        :return: If `output_vcf = True`, a dictionary containing VRS Fields and list
+            of associated values. If `output_vcf = False`, an empty dictionary will be
+            returned.
         """
         vrs_field_data = {field: [] for field in additional_info_fields} if output_vcf else {}
 
