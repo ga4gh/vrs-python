@@ -3,6 +3,7 @@
 Example of how to run from root of vrs-python directory:
 python3 -m src.ga4gh.vrs.extras.vcf_annotation --vcf_in input.vcf.gz \
     --vcf_out output.vcf.gz --vrs_pickle_out vrs_objects.pkl
+# TODO update that
 """
 import logging
 import pickle
@@ -109,7 +110,7 @@ class SeqRepoProxyType(str, Enum):
     show_default=True,
     help="Require validation checks to pass in order to return a VRS object"
 )
-def annotate_click(  # pylint: disable=too-many-arguments
+def cli(  # pylint: disable=too-many-arguments
     vcf_in: str, vcf_out: Optional[str], vrs_pickle_out: Optional[str],
     vrs_attributes: bool, seqrepo_dp_type: SeqRepoProxyType, seqrepo_root_dir: str,
     seqrepo_base_url: str, assembly: str, skip_ref: bool, require_validation: bool
@@ -118,7 +119,7 @@ def annotate_click(  # pylint: disable=too-many-arguments
 
     Example arguments:
 
-    --vcf_in input.vcf.gz --vcf_out output.vcf.gz --vrs_pickle_out vrs_objects.pkl
+    --vcf_in input.vcf.gz --vcf_out output.vcf.gz --vrs_pickle_out vrs_objects.pkl  # TODO update that
     """
     annotator = VCFAnnotator(seqrepo_dp_type, seqrepo_base_url, seqrepo_root_dir)
     start = timer()
@@ -411,9 +412,3 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
                 )
 
         return vrs_field_data
-
-
-if __name__ == "__main__":
-    # python3 -m src.ga4gh.vrs.extras.vcf_annotation --vcf_in input.vcf.gz \
-    #    --vcf_out output.vcf.gz --vrs_pickle_out vrs_objects.pkl
-    annotate_click()  # pylint: disable=no-value-for-parameter
