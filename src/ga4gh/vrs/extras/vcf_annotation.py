@@ -183,15 +183,15 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
         """Annotates an input VCF file with VRS Allele IDs & creates a pickle file
         containing the vrs object information.
 
-        :param str vcf_in: The path for the input VCF file to annotate
-        :param Optional[str] vcf_out: The path for the output VCF file
-        :param Optional[str] vrs_pickle_out: The path for the output VCF pickle file
-        :param bool vrs_attributes: If `True` will include VRS_Start, VRS_End,
-            VRS_State fields in the INFO field. If `False` will not include these fields.
-            Only used if `vcf_out` is provided.
-        :param str assembly: The assembly used in `vcf_in` data
+        :param vcf_in: The path for the input VCF file to annotate
+        :param vcf_out: The path for the output VCF file
+        :param vrs_pickle_out: The path for the output VCF pickle file
+        :param vrs_attributes: If `True` will include VRS_Start, VRS_End, VRS_State
+            fields in the INFO field. If `False` will not include these fields. Only
+            used if `vcf_out` is provided.
+        :param assembly: The assembly used in `vcf_in` data
         :param compute_for_ref: If true, compute VRS IDs for the reference allele
-        :param bool require_validation: If `True` then validation checks must pass in
+        :param require_validation: If `True` then validation checks must pass in
             order to return a VRS object. If `False` then VRS object will be returned
             even if validation checks fail.
         """
