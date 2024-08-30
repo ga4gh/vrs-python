@@ -46,21 +46,21 @@ class SeqRepoProxyType(str, Enum):
     "--vcf_out",
     required=False,
     type=click.Path(writable=True, allow_dash=False, path_type=pathlib.Path),
-    help=("The path for the output VCF file. If not provided, must provide "
+    help=("Declare save location for output annotated VCF. If not provided, must provide "
           "--vrs_pickle_out.")
 )
 @click.option(
     "--vrs_pickle_out",
     required=False,
     type=click.Path(writable=True, allow_dash=False, path_type=pathlib.Path),
-    help=("The path for the output VCF pickle file. If not provided, must provide "
-          "--vcf_out")
+    help=("Declare save location for output VCF pickle. If not provided, must provide "
+          "--vcf_out.")
 )
 @click.option(
     "--vrs_attributes",
     is_flag=True,
     default=False,
-    help="Will include VRS_Start, VRS_End, VRS_State fields in the INFO field.",
+    help="Include VRS_Start, VRS_End, and VRS_State fields in the VCF output INFO field.",
 )
 @click.option(
     "--seqrepo_dp_type",
@@ -68,7 +68,7 @@ class SeqRepoProxyType(str, Enum):
     default=SeqRepoProxyType.LOCAL,
     type=click.Choice([v.value for v in SeqRepoProxyType.__members__.values()],
                       case_sensitive=True),
-    help="The type of the SeqRepo Data Proxy to use",
+    help="Specify type of SeqRepo dataproxy to use.",
     show_default=True,
     show_choices=True
 )
@@ -77,14 +77,14 @@ class SeqRepoProxyType(str, Enum):
     required=False,
     default=pathlib.Path("/usr/local/share/seqrepo/latest"),
     type=click.Path(path_type=pathlib.Path),
-    help="The root directory for local SeqRepo instance",
+    help="Define root directory for local SeqRepo instance, if --seqrepo_dp_type=local.",
     show_default=True
 )
 @click.option(
     "--seqrepo_base_url",
     required=False,
     default="http://localhost:5000/seqrepo",
-    help="The base url for SeqRepo REST API",
+    help="Specify base URL for SeqRepo REST API, if --seqrepo_dp_type=rest.",
     show_default=True
 )
 @click.option(
@@ -92,7 +92,7 @@ class SeqRepoProxyType(str, Enum):
     required=False,
     default="GRCh38",
     show_default=True,
-    help="The assembly that the `vcf_in` data uses.",
+    help="Specify assembly that was used to create VCF at `vcf_in`.",
     type=str
 )
 @click.option(
@@ -105,7 +105,7 @@ class SeqRepoProxyType(str, Enum):
     "--require_validation",
     is_flag=True,
     default=False,
-    help="Require validation checks to pass in order to return a VRS object"
+    help="Require validation checks to pass to annotate a record with a VRS object."
 )
 def annotate_click(  # pylint: disable=too-many-arguments
     vcf_in: pathlib.Path, vcf_out: Optional[pathlib.Path], vrs_pickle_out: Optional[pathlib.Path],
