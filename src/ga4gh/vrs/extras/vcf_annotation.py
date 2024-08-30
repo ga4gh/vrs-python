@@ -61,7 +61,6 @@ class SeqRepoProxyType(str, Enum):
     is_flag=True,
     default=False,
     help="Will include VRS_Start, VRS_End, VRS_State fields in the INFO field.",
-    show_default=True
 )
 @click.option(
     "--seqrepo_dp_type",
@@ -99,14 +98,12 @@ class SeqRepoProxyType(str, Enum):
     "--skip_ref",
     is_flag=True,
     default=False,
-    show_default=True,
     help="Skip VRS computation for REF alleles."
 )
 @click.option(
     "--require_validation",
     is_flag=True,
     default=False,
-    show_default=True,
     help="Require validation checks to pass in order to return a VRS object"
 )
 def annotate_click(  # pylint: disable=too-many-arguments
