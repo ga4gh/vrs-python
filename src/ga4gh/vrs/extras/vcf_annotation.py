@@ -112,7 +112,7 @@ def annotate_click(  # pylint: disable=too-many-arguments
     vrs_attributes: bool, seqrepo_dp_type: SeqRepoProxyType, seqrepo_root_dir: pathlib.Path,
     seqrepo_base_url: str, assembly: str, skip_ref: bool, require_validation: bool
 ) -> None:
-    """Annotate file located at VCF_IN.
+    """Extract VRS objects from VCF located at VCF_IN.
 
         python3 src/ga4gh/vrs/extras/vcf_annotation.py input.vcf.gz --vcf_out output.vcf.gz --vrs_pickle_out vrs_objects.pkl
     """
