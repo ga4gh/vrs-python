@@ -4,6 +4,7 @@ Example of how to run from root of vrs-python directory:
 python3 -m src.ga4gh.vrs.extras.vcf_annotation --vcf_in input.vcf.gz \
     --vcf_out output.vcf.gz --vrs_pickle_out vrs_objects.pkl
 """
+import pathlib
 import logging
 import pickle
 from enum import Enum
@@ -36,23 +37,23 @@ class SeqRepoProxyType(str, Enum):
 
 
 @click.command()
-@click.option(
+@click.option(  # TODO make argument
     "--vcf_in",
     required=True,
-    type=str,
+    type=click.Path(exists=True, dir_okay=False, readable=True, allow_dash=False, path_type=pathlib.Path),
     help="The path for the input VCF file to annotate"
 )
 @click.option(
     "--vcf_out",
     required=False,
-    type=str,
+    type=click.Path(writable=True, allow_dash=False, path_type=pathlib.Path),
     help=("The path for the output VCF file. If not provided, must provide "
           "--vrs_pickle_out.")
 )
 @click.option(
     "--vrs_pickle_out",
     required=False,
-    type=str,
+    type=click.Path(writable=True, allow_dash=False, path_type=pathlib.Path),
     help=("The path for the output VCF pickle file. If not provided, must provide "
           "--vcf_out")
 )
@@ -75,7 +76,8 @@ class SeqRepoProxyType(str, Enum):
 @click.option(
     "--seqrepo_root_dir",
     required=False,
-    default="/usr/local/share/seqrepo/latest",
+    default=pathlib.Path("/usr/local/share/seqrepo/latest"),
+    type=click.Path(path_type=pathlib.Path),
     help="The root directory for local SeqRepo instance",
     show_default=True
 )
@@ -107,8 +109,8 @@ class SeqRepoProxyType(str, Enum):
     help="Require validation checks to pass in order to return a VRS object"
 )
 def annotate_click(  # pylint: disable=too-many-arguments
-    vcf_in: str, vcf_out: Optional[str], vrs_pickle_out: Optional[str],
-    vrs_attributes: bool, seqrepo_dp_type: SeqRepoProxyType, seqrepo_root_dir: str,
+    vcf_in: pathlib.Path, vcf_out: Optional[pathlib.Path], vrs_pickle_out: Optional[pathlib.Path],
+    vrs_attributes: bool, seqrepo_dp_type: SeqRepoProxyType, seqrepo_root_dir: pathlib.Path,
     seqrepo_base_url: str, assembly: str, skip_ref: bool, require_validation: bool
 ) -> None:
     """Annotate VCF file via click
@@ -117,13 +119,15 @@ def annotate_click(  # pylint: disable=too-many-arguments
 
     --vcf_in input.vcf.gz --vcf_out output.vcf.gz --vrs_pickle_out vrs_objects.pkl
     """
-    annotator = VCFAnnotator(seqrepo_dp_type, seqrepo_base_url, seqrepo_root_dir)
+    annotator = VCFAnnotator(seqrepo_dp_type, seqrepo_base_url, str(seqrepo_root_dir.absolute()))
     start = timer()
     msg = f"Annotating {vcf_in} with the VCF Annotator..."
     _logger.info(msg)
     click.echo(msg)
+    vcf_out_str = str(vcf_out.absolute()) if vcf_out is not None else vcf_out
+    vrs_pkl_out_str = str(vrs_pickle_out.absolute()) if vrs_pickle_out is not None else vrs_pickle_out
     annotator.annotate(
-        vcf_in, vcf_out=vcf_out, vrs_pickle_out=vrs_pickle_out,
+        str(vcf_in.absolute()), vcf_out=vcf_out_str, vrs_pickle_out=vrs_pkl_out_str,
         vrs_attributes=vrs_attributes, assembly=assembly,
         compute_for_ref=(not skip_ref), require_validation=require_validation
     )
