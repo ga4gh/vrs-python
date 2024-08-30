@@ -37,11 +37,10 @@ class SeqRepoProxyType(str, Enum):
 
 
 @click.command()
-@click.option(  # TODO make argument
-    "--vcf_in",
-    required=True,
-    type=click.Path(exists=True, dir_okay=False, readable=True, allow_dash=False, path_type=pathlib.Path),
-    help="The path for the input VCF file to annotate"
+@click.argument(
+    "vcf_in",
+    nargs=1,
+    type=click.Path(exists=True, readable=True, dir_okay=False, path_type=pathlib.Path)
 )
 @click.option(
     "--vcf_out",
@@ -113,19 +112,17 @@ def annotate_click(  # pylint: disable=too-many-arguments
     vrs_attributes: bool, seqrepo_dp_type: SeqRepoProxyType, seqrepo_root_dir: pathlib.Path,
     seqrepo_base_url: str, assembly: str, skip_ref: bool, require_validation: bool
 ) -> None:
-    """Annotate VCF file via click
+    """Annotate file located at VCF_IN.
 
-    Example arguments:
-
-    --vcf_in input.vcf.gz --vcf_out output.vcf.gz --vrs_pickle_out vrs_objects.pkl
+        python3 src/ga4gh/vrs/extras/vcf_annotation.py input.vcf.gz --vcf_out output.vcf.gz --vrs_pickle_out vrs_objects.pkl
     """
     annotator = VCFAnnotator(seqrepo_dp_type, seqrepo_base_url, str(seqrepo_root_dir.absolute()))
+    vcf_out_str = str(vcf_out.absolute()) if vcf_out is not None else vcf_out
+    vrs_pkl_out_str = str(vrs_pickle_out.absolute()) if vrs_pickle_out is not None else vrs_pickle_out
     start = timer()
     msg = f"Annotating {vcf_in} with the VCF Annotator..."
     _logger.info(msg)
     click.echo(msg)
-    vcf_out_str = str(vcf_out.absolute()) if vcf_out is not None else vcf_out
-    vrs_pkl_out_str = str(vrs_pickle_out.absolute()) if vrs_pickle_out is not None else vrs_pickle_out
     annotator.annotate(
         str(vcf_in.absolute()), vcf_out=vcf_out_str, vrs_pickle_out=vrs_pkl_out_str,
         vrs_attributes=vrs_attributes, assembly=assembly,
