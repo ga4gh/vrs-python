@@ -65,7 +65,7 @@ class SeqRepoProxyType(str, Enum):
 @click.option(
     "--seqrepo_dp_type",
     required=False,
-    default=SeqRepoProxyType.LOCAL,
+    default=SeqRepoProxyType.LOCAL.value,
     type=click.Choice([v.value for v in SeqRepoProxyType.__members__.values()],
                       case_sensitive=True),
     help="The type of the SeqRepo Data Proxy to use",
