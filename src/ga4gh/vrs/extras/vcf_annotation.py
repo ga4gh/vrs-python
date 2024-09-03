@@ -8,7 +8,6 @@ import pathlib
 import logging
 import pickle
 from enum import Enum
-from typing import Dict, List, Optional
 from timeit import default_timer as timer
 
 import click
@@ -107,10 +106,18 @@ class SeqRepoProxyType(str, Enum):
     default=False,
     help="Require validation checks to pass to annotate a record with a VRS object."
 )
+@click.option(
+    "--silent",
+    "-s",
+    is_flag=True,
+    default=False,
+    help="Suppress messages printed to stdout"
+)
 def annotate_click(  # pylint: disable=too-many-arguments
-    vcf_in: pathlib.Path, vcf_out: Optional[pathlib.Path], vrs_pickle_out: Optional[pathlib.Path],
+    vcf_in: pathlib.Path, vcf_out: pathlib.Path | None, vrs_pickle_out: pathlib.Path | None,
     vrs_attributes: bool, seqrepo_dp_type: SeqRepoProxyType, seqrepo_root_dir: pathlib.Path,
-    seqrepo_base_url: str, assembly: str, skip_ref: bool, require_validation: bool
+    seqrepo_base_url: str, assembly: str, skip_ref: bool, require_validation: bool,
+    silent: bool
 ) -> None:
     """Extract VRS objects from VCF located at VCF_IN.
 
@@ -122,7 +129,8 @@ def annotate_click(  # pylint: disable=too-many-arguments
     start = timer()
     msg = f"Annotating {vcf_in} with the VCF Annotator..."
     _logger.info(msg)
-    click.echo(msg)
+    if not silent:
+        click.echo(msg)
     annotator.annotate(
         str(vcf_in.absolute()), vcf_out=vcf_out_str, vrs_pickle_out=vrs_pkl_out_str,
         vrs_attributes=vrs_attributes, assembly=assembly,
@@ -130,7 +138,8 @@ def annotate_click(  # pylint: disable=too-many-arguments
     )
     end = timer()
     msg = f"VCF Annotator finished in {(end - start):.5f} seconds"
-    _logger.info(msg)
+    if not silent:
+        _logger.info(msg)
     click.echo(msg)
 
 class VCFAnnotator:  # pylint: disable=too-few-public-methods
@@ -173,8 +182,8 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
 
     @use_ga4gh_compute_identifier_when(VrsObjectIdentifierIs.MISSING)
     def annotate(  # pylint: disable=too-many-arguments,too-many-locals
-        self, vcf_in: str, vcf_out: Optional[str] = None,
-        vrs_pickle_out: Optional[str] = None, vrs_attributes: bool = False,
+        self, vcf_in: str, vcf_out: str | None = None,
+        vrs_pickle_out: str | None = None, vrs_attributes: bool = False,
         assembly: str = "GRCh38", compute_for_ref: bool = True,
         require_validation: bool = True
     ) -> None:
@@ -271,8 +280,8 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
                 pickle.dump(vrs_data, wf)
 
     def _get_vrs_object(  # pylint: disable=too-many-arguments,too-many-locals
-        self, vcf_coords: str, vrs_data: Dict, vrs_field_data: Dict, assembly: str,
-        vrs_data_key: Optional[str] = None, output_pickle: bool = True,
+        self, vcf_coords: str, vrs_data: dict, vrs_field_data: dict, assembly: str,
+        vrs_data_key: str | None = None, output_pickle: bool = True,
         output_vcf: bool = False, vrs_attributes: bool = False,
         require_validation: bool = True
     ) -> None:
@@ -350,11 +359,11 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
                 vrs_field_data[self.VRS_STATES_FIELD].append(alt)
 
     def _get_vrs_data(  # pylint: disable=too-many-arguments,too-many-locals
-        self, record: pysam.VariantRecord, vrs_data: Dict, assembly: str,  # pylint: disable=no-member
-        additional_info_fields: List[str], vrs_attributes: bool = False,
+        self, record: pysam.VariantRecord, vrs_data: dict, assembly: str,  # pylint: disable=no-member
+        additional_info_fields: list[str], vrs_attributes: bool = False,
         output_pickle: bool = True, output_vcf: bool = True,
         compute_for_ref: bool = True, require_validation: bool = True
-    ) -> Dict:
+    ) -> dict:
         """Get VRS data for record's reference and alt alleles.
 
         :param pysam.VariantRecord record: A row in the VCF file
