@@ -4,6 +4,7 @@ Example of how to run from root of vrs-python directory:
 python3 -m src.ga4gh.vrs.extras.vcf_annotation --vcf_in input.vcf.gz \
     --vcf_out output.vcf.gz --vrs_pickle_out vrs_objects.pkl
 """
+import pathlib
 import logging
 import pickle
 from enum import Enum
@@ -35,32 +36,30 @@ class SeqRepoProxyType(str, Enum):
 
 
 @click.command()
-@click.option(
-    "--vcf_in",
-    required=True,
-    type=str,
-    help="The path for the input VCF file to annotate"
+@click.argument(
+    "vcf_in",
+    nargs=1,
+    type=click.Path(exists=True, readable=True, dir_okay=False, path_type=pathlib.Path)
 )
 @click.option(
     "--vcf_out",
     required=False,
-    type=str,
-    help=("The path for the output VCF file. If not provided, must provide "
+    type=click.Path(writable=True, allow_dash=False, path_type=pathlib.Path),
+    help=("Declare save location for output annotated VCF. If not provided, must provide "
           "--vrs_pickle_out.")
 )
 @click.option(
     "--vrs_pickle_out",
     required=False,
-    type=str,
-    help=("The path for the output VCF pickle file. If not provided, must provide "
-          "--vcf_out")
+    type=click.Path(writable=True, allow_dash=False, path_type=pathlib.Path),
+    help=("Declare save location for output VCF pickle. If not provided, must provide "
+          "--vcf_out.")
 )
 @click.option(
     "--vrs_attributes",
     is_flag=True,
     default=False,
-    help="Will include VRS_Start, VRS_End, VRS_State fields in the INFO field.",
-    show_default=True
+    help="Include VRS_Start, VRS_End, and VRS_State fields in the VCF output INFO field.",
 )
 @click.option(
     "--seqrepo_dp_type",
@@ -68,22 +67,23 @@ class SeqRepoProxyType(str, Enum):
     default=SeqRepoProxyType.LOCAL,
     type=click.Choice([v.value for v in SeqRepoProxyType.__members__.values()],
                       case_sensitive=True),
-    help="The type of the SeqRepo Data Proxy to use",
+    help="Specify type of SeqRepo dataproxy to use.",
     show_default=True,
     show_choices=True
 )
 @click.option(
     "--seqrepo_root_dir",
     required=False,
-    default="/usr/local/share/seqrepo/latest",
-    help="The root directory for local SeqRepo instance",
+    default=pathlib.Path("/usr/local/share/seqrepo/latest"),
+    type=click.Path(path_type=pathlib.Path),
+    help="Define root directory for local SeqRepo instance, if --seqrepo_dp_type=local.",
     show_default=True
 )
 @click.option(
     "--seqrepo_base_url",
     required=False,
     default="http://localhost:5000/seqrepo",
-    help="The base url for SeqRepo REST API",
+    help="Specify base URL for SeqRepo REST API, if --seqrepo_dp_type=rest.",
     show_default=True
 )
 @click.option(
@@ -91,22 +91,20 @@ class SeqRepoProxyType(str, Enum):
     required=False,
     default="GRCh38",
     show_default=True,
-    help="The assembly that the `vcf_in` data uses.",
+    help="Specify assembly that was used to create input VCF.",
     type=str
 )
 @click.option(
     "--skip_ref",
     is_flag=True,
     default=False,
-    show_default=True,
     help="Skip VRS computation for REF alleles."
 )
 @click.option(
     "--require_validation",
     is_flag=True,
     default=False,
-    show_default=True,
-    help="Require validation checks to pass in order to return a VRS object"
+    help="Require validation checks to pass to construct a VRS object."
 )
 @click.option(
     "--silent",
@@ -116,33 +114,36 @@ class SeqRepoProxyType(str, Enum):
     help="Suppress messages printed to stdout"
 )
 def annotate_click(  # pylint: disable=too-many-arguments
-    vcf_in: str, vcf_out: str | None, vrs_pickle_out: str | None,
-    vrs_attributes: bool, seqrepo_dp_type: SeqRepoProxyType, seqrepo_root_dir: str,
+    vcf_in: pathlib.Path, vcf_out: pathlib.Path | None, vrs_pickle_out: pathlib.Path | None,
+    vrs_attributes: bool, seqrepo_dp_type: SeqRepoProxyType, seqrepo_root_dir: pathlib.Path,
     seqrepo_base_url: str, assembly: str, skip_ref: bool, require_validation: bool,
     silent: bool,
 ) -> None:
-    """Annotate VCF file via click
+    """Extract VRS objects from VCF located at VCF_IN.
 
-    Example arguments:
+        $ python3 src/ga4gh/vrs/extras/vcf_annotation.py input.vcf.gz --vcf_out output.vcf.gz --vrs_pickle_out vrs_objects.pkl
 
-    --vcf_in input.vcf.gz --vcf_out output.vcf.gz --vrs_pickle_out vrs_objects.pkl
+    Note that at least one of --vcf_out or --vrs_pickle_out must be selected and defined.
     """
-    annotator = VCFAnnotator(seqrepo_dp_type, seqrepo_base_url, seqrepo_root_dir)
+    annotator = VCFAnnotator(seqrepo_dp_type, seqrepo_base_url, str(seqrepo_root_dir.absolute()))
+    vcf_out_str = str(vcf_out.absolute()) if vcf_out is not None else vcf_out
+    vrs_pkl_out_str = str(vrs_pickle_out.absolute()) if vrs_pickle_out is not None else vrs_pickle_out
     start = timer()
     msg = f"Annotating {vcf_in} with the VCF Annotator..."
     _logger.info(msg)
     if not silent:
         click.echo(msg)
     annotator.annotate(
-        vcf_in, vcf_out=vcf_out, vrs_pickle_out=vrs_pickle_out,
+        str(vcf_in.absolute()), vcf_out=vcf_out_str, vrs_pickle_out=vrs_pkl_out_str,
         vrs_attributes=vrs_attributes, assembly=assembly,
         compute_for_ref=(not skip_ref), require_validation=require_validation
     )
     end = timer()
     msg = f"VCF Annotator finished in {(end - start):.5f} seconds"
+    _logger.info(msg)
     if not silent:
-        _logger.info(msg)
-    click.echo(msg)
+        click.echo(msg)
+
 
 class VCFAnnotator:  # pylint: disable=too-few-public-methods
     """Annotate VCFs with VRS allele IDs.
@@ -157,7 +158,7 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
     VRS_ENDS_FIELD = "VRS_Ends"
     VRS_STATES_FIELD = "VRS_States"
     VRS_ERROR_FIELD = "VRS_Error"
-# VCF character escape map
+    # VCF character escape map
     VCF_ESCAPE_MAP = [
         ("%", "%25"),
         (";", "%3B"),
@@ -420,6 +421,6 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
 
 
 if __name__ == "__main__":
-    # python3 -m src.ga4gh.vrs.extras.vcf_annotation --vcf_in input.vcf.gz \
+    # python3 -m src.ga4gh.vrs.extras.vcf_annotation input.vcf.gz \
     #    --vcf_out output.vcf.gz --vrs_pickle_out vrs_objects.pkl
     annotate_click()  # pylint: disable=no-value-for-parameter
