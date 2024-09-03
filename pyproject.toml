@@ -79,7 +79,7 @@ Source = "https://github.com/ga4gh/vrs-python"
 "Bug Tracker" = "https://github.com/ga4gh/vrs-python/issues"
 
 [project.scripts]
-vrs-annotate-vcf = "ga4gh.vrs.extras.vcf_annotation:cli"
+vrs-annotate-vcf = "ga4gh.vrs.extras.vcf_annotation:_cli"
 
 [build-system]
 requires = ["setuptools>=65.3", "setuptools_scm>=8"]
