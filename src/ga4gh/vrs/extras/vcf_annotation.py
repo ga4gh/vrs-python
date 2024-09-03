@@ -121,7 +121,9 @@ def annotate_click(  # pylint: disable=too-many-arguments
 ) -> None:
     """Extract VRS objects from VCF located at VCF_IN.
 
-        python3 src/ga4gh/vrs/extras/vcf_annotation.py input.vcf.gz --vcf_out output.vcf.gz --vrs_pickle_out vrs_objects.pkl
+        $ python3 src/ga4gh/vrs/extras/vcf_annotation.py input.vcf.gz --vcf_out output.vcf.gz --vrs_pickle_out vrs_objects.pkl
+
+    Note that at least one of --vcf_out or --vrs_pickle_out must be selected and defined.
     """
     annotator = VCFAnnotator(seqrepo_dp_type, seqrepo_base_url, str(seqrepo_root_dir.absolute()))
     vcf_out_str = str(vcf_out.absolute()) if vcf_out is not None else vcf_out
