@@ -1,6 +1,6 @@
 """Annotate VCFs with VRS
 
-    $ vrs-annotate-vcf input.vcf.gz --vcf_out output.vcf.gz --vrs_pickle_out vrs_objects.pkl
+    $ vrs-annotate input.vcf.gz --vcf_out output.vcf.gz --vrs_pickle_out vrs_objects.pkl
 
 """
 import pathlib
@@ -120,7 +120,7 @@ def _cli(  # pylint: disable=too-many-arguments
 ) -> None:
     """Extract VRS objects from VCF located at VCF_IN.
 
-        $ vrs-annotate-vcf input.vcf.gz --vcf_out output.vcf.gz --vrs_pickle_out vrs_objects.pkl
+        $ vrs-annotate input.vcf.gz --vcf_out output.vcf.gz --vrs_pickle_out vrs_objects.pkl
 
     Note that at least one of --vcf_out or --vrs_pickle_out must be selected and defined.
     """
