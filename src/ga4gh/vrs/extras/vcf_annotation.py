@@ -91,7 +91,7 @@ class SeqRepoProxyType(str, Enum):
     required=False,
     default="GRCh38",
     show_default=True,
-    help="Specify assembly that was used to create VCF at `vcf_in`.",
+    help="Specify assembly that was used to create input VCF.",
     type=str
 )
 @click.option(
