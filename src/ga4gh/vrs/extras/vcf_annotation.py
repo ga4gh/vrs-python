@@ -104,7 +104,7 @@ class SeqRepoProxyType(str, Enum):
     "--require_validation",
     is_flag=True,
     default=False,
-    help="Require validation checks to pass to annotate a record with a VRS object."
+    help="Require validation checks to pass to construct a VRS object."
 )
 @click.option(
     "--silent",
@@ -117,7 +117,7 @@ def annotate_click(  # pylint: disable=too-many-arguments
     vcf_in: pathlib.Path, vcf_out: pathlib.Path | None, vrs_pickle_out: pathlib.Path | None,
     vrs_attributes: bool, seqrepo_dp_type: SeqRepoProxyType, seqrepo_root_dir: pathlib.Path,
     seqrepo_base_url: str, assembly: str, skip_ref: bool, require_validation: bool,
-    silent: bool
+    silent: bool,
 ) -> None:
     """Extract VRS objects from VCF located at VCF_IN.
 
