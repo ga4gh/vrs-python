@@ -109,10 +109,18 @@ class SeqRepoProxyType(str, Enum):
     show_default=True,
     help="Require validation checks to pass in order to return a VRS object"
 )
+@click.option(
+    "--silent",
+    "-s",
+    is_flag=True,
+    default=False,
+    help="Suppress messages printed to stdout"
+)
 def annotate_click(  # pylint: disable=too-many-arguments
     vcf_in: str, vcf_out: Optional[str], vrs_pickle_out: Optional[str],
     vrs_attributes: bool, seqrepo_dp_type: SeqRepoProxyType, seqrepo_root_dir: str,
-    seqrepo_base_url: str, assembly: str, skip_ref: bool, require_validation: bool
+    seqrepo_base_url: str, assembly: str, skip_ref: bool, require_validation: bool,
+    silent: bool,
 ) -> None:
     """Annotate VCF file via click
 
@@ -124,7 +132,8 @@ def annotate_click(  # pylint: disable=too-many-arguments
     start = timer()
     msg = f"Annotating {vcf_in} with the VCF Annotator..."
     _logger.info(msg)
-    click.echo(msg)
+    if not silent:
+        click.echo(msg)
     annotator.annotate(
         vcf_in, vcf_out=vcf_out, vrs_pickle_out=vrs_pickle_out,
         vrs_attributes=vrs_attributes, assembly=assembly,
@@ -132,7 +141,8 @@ def annotate_click(  # pylint: disable=too-many-arguments
     )
     end = timer()
     msg = f"VCF Annotator finished in {(end - start):.5f} seconds"
-    _logger.info(msg)
+    if not silent:
+        _logger.info(msg)
     click.echo(msg)
 
 class VCFAnnotator:  # pylint: disable=too-few-public-methods
