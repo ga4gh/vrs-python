@@ -67,7 +67,7 @@ class _Translator(ABC):
                 copies(int): The number of copies to use. If provided will return a
                     CopyNumberCount
                 copy_change(models.CopyChange): Copy change. If not provided, default is
-                    efo:0030067 for deletions and efo:0030070 for duplications
+                    EFO:0030067 for deletions and EFO:0030070 for duplications
             For AlleleTranslator
                 assembly_name (str): Assembly used for `var`. Defaults to the
                     `default_assembly_name`. Only used for beacon and gnomad.
@@ -438,8 +438,8 @@ class CnvTranslator(_Translator):
         kwargs:
             copies: The number of copies to use. If provided will return a
                 CopyNumberCount
-            copy_change: Copy change. If not provided, default is efo:0030067 for
-                deletions and efo:0030070 for duplications
+            copy_change: Copy change. If not provided, default is EFO:0030067 for
+                deletions and EFO:0030070 for duplications
         """
         # sv = self._get_parsed_hgvs(hgvs_dup_del_expr)
         sv = self.hgvs_tools.parse(hgvs_dup_del_expr)

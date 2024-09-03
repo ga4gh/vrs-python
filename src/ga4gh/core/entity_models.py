@@ -14,7 +14,7 @@ from abc import ABC
 from typing import Any, Dict, Annotated, Optional, Union, List
 from enum import Enum
 
-from pydantic import BaseModel, Field, RootModel, StringConstraints, model_serializer, ConfigDict
+from pydantic import BaseModel, Field, RootModel, StringConstraints, ConfigDict
 
 from ga4gh.core import GA4GH_IR_REGEXP
 
@@ -78,7 +78,6 @@ class IRI(RootModel):
     def __hash__(self):
         return self.root.__hash__()
 
-    @model_serializer(when_used='json')
     def ga4gh_serialize(self):
         m = GA4GH_IR_REGEXP.match(self.root)
         if m is not None:

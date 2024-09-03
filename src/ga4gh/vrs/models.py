@@ -26,12 +26,13 @@ from ga4gh.core import (
 )
 from ga4gh.core.pydantic import get_pydantic_root
 
-from pydantic import BaseModel, Field, RootModel, StringConstraints, model_serializer, ConfigDict
+from canonicaljson import encode_canonical_json
+from pydantic import BaseModel, Field, RootModel, StringConstraints, ConfigDict
 
 from ga4gh.core.pydantic import (
     getattr_in
 )
-from ga4gh.core.entity_models import IRI, Expression, DomainEntity
+from ga4gh.core.entity_models import IRI, Expression, Entity
 
 
 def flatten(vals):
@@ -143,8 +144,9 @@ class VrsType(str, Enum):
     ALLELE = "Allele"
     CIS_PHASED_BLOCK = "CisPhasedBlock"
     ADJACENCY = "Adjacency"
-    SEQ_TERMINUS = "SequenceTerminus"
-    DERIVATIVE_SEQ = "DerivativeSequence"
+    TERMINUS = "Terminus"
+    TRAVERSAL_BLOCK = "TraversalBlock"
+    DERIVATIVE_MOL = "DerivativeMolecule"
     CN_COUNT = "CopyNumberCount"
     CN_CHANGE = "CopyNumberChange"
 
@@ -162,14 +164,14 @@ class ResidueAlphabet(str, Enum):
 class CopyChange(str, Enum):
     """Define constraints for copy change"""
 
-    EFO_0030069 = 'efo:0030069'
-    EFO_0020073 = 'efo:0020073'
-    EFO_0030068 = 'efo:0030068'
-    EFO_0030067 = 'efo:0030067'
-    EFO_0030064 = 'efo:0030064'
-    EFO_0030070 = 'efo:0030070'
-    EFO_0030071 = 'efo:0030071'
-    EFO_0030072 = 'efo:0030072'
+    EFO_0030069 = 'EFO:0030069'
+    EFO_0020073 = 'EFO:0020073'
+    EFO_0030068 = 'EFO:0030068'
+    EFO_0030067 = 'EFO:0030067'
+    EFO_0030064 = 'EFO:0030064'
+    EFO_0030070 = 'EFO:0030070'
+    EFO_0030071 = 'EFO:0030071'
+    EFO_0030072 = 'EFO:0030072'
 
 
 def _recurse_ga4gh_serialize(obj):
@@ -178,7 +180,7 @@ def _recurse_ga4gh_serialize(obj):
     elif isinstance(obj, _ValueObject):
         return obj.ga4gh_serialize()
     elif isinstance(obj, RootModel):
-        return _recurse_ga4gh_serialize(obj.model_dump(mode='json'))
+        return _recurse_ga4gh_serialize(obj.model_dump())
     elif isinstance(obj, str):
         return obj
     elif isinstance(obj, list):
@@ -187,15 +189,14 @@ def _recurse_ga4gh_serialize(obj):
         return obj
 
 
-class _ValueObject(DomainEntity, ABC):
+class _ValueObject(Entity, ABC):
     """A contextual value whose equality is based on value, not identity.
     See https://en.wikipedia.org/wiki/Value_object for more on Value Objects.
     """
 
     def __hash__(self):
-        return self.model_dump_json().__hash__()
+        return encode_canonical_json(self.ga4gh_serialize()).decode("utf-8").__hash__()
 
-    @model_serializer(when_used='json')
     def ga4gh_serialize(self) -> Dict:
         out = OrderedDict()
         for k in self.ga4gh.keys:
@@ -242,7 +243,7 @@ class _Ga4ghIdentifiableObject(_ValueObject, ABC):
         returned following the conventions of the VRS version indicated by ``as_version_``.
         """
         if as_version is None:
-            digest = sha512t24u(self.model_dump_json().encode("utf-8"))
+            digest = sha512t24u(encode_canonical_json(self.ga4gh_serialize()))
             if store:
                 self.digest = digest
         else:
@@ -419,7 +420,6 @@ class LiteralSequenceExpression(_ValueObject):
             'type'
         ]
 
-
 #########################################
 # vrs location
 #########################################
@@ -580,7 +580,6 @@ class CisPhasedBlock(_VariationBase):
     )
     sequenceReference: Optional[SequenceReference] = Field(None, description="An optional Sequence Reference on which all of the in-cis Alleles are found. When defined, this may be used to implicitly define the `sequenceReference` attribute for each of the CisPhasedBlock member Alleles.")
 
-    @model_serializer(when_used="json")
     def ga4gh_serialize(self) -> Dict:
         out = _ValueObject.ga4gh_serialize(self)
         out["members"] = sorted(out["members"])
@@ -627,37 +626,61 @@ class Adjacency(_VariationBase):
         ]
 
 
-class SequenceTerminus(_VariationBase):
-    """The `SequenceTerminus` data class provides a structure for describing the end
+class Terminus(_VariationBase):
+    """The `Terminus` data class provides a structure for describing the end
     (terminus) of a sequence. Structurally similar to Adjacency but the linker sequence
     is not allowed and it removes the unnecessary array structure.
     """
 
-    type: Literal["SequenceTerminus"] = Field(VrsType.SEQ_TERMINUS.value, description=f'MUST be "{VrsType.SEQ_TERMINUS.value}"')
+    type: Literal["Terminus"] = Field(VrsType.TERMINUS.value, description=f'MUST be "{VrsType.TERMINUS.value}"')
     location: Union[IRI, SequenceLocation] = Field(..., description="The location of the terminus.")
 
     class ga4gh(_Ga4ghIdentifiableObject.ga4gh):
-        prefix = "SQX"
+        prefix = "TM"
         keys = [
             "location",
             "type"
         ]
 
+class TraversalBlock(_ValueObject):
+    """A component used to describe the orientation of a molecular variation within
+    a DerivativeMolecule."""
 
-class DerivativeSequence(_VariationBase):
-    """The "Derivative Sequence" data class is a structure for describing a derivate
-    sequence composed from multiple sequence adjacencies.
-    """
-
-    type: Literal["DerivativeSequence"] = Field(VrsType.DERIVATIVE_SEQ.value, description=f'MUST be "{VrsType.DERIVATIVE_SEQ.value}"')
-    components: List[Union[IRI, Adjacency, Allele, SequenceTerminus, CisPhasedBlock]] = Field(
+    type: Literal["TraversalBlock"] = Field(
+        VrsType.TRAVERSAL_BLOCK.value, description=f'MUST be "{VrsType.TRAVERSAL_BLOCK.value}"'
+    )
+    orientation: Literal["forward", "reverse_complement"] = Field(
         ...,
-        description="The sequence components that make up the derivative sequence.",
-        min_length=2
+        description='The orientation of the traversal block, either forward or reverse_complement.'
     )
 
+    component: Union[IRI, Adjacency, Allele, Terminus, CisPhasedBlock] = Field(
+        ...,
+        description="The component that make up the derivative molecule."
+    )
+
+    class ga4gh(_ValueObject.ga4gh):
+        keys = [
+            'component',
+            'orientation',
+            'type'
+        ]        
+
+class DerivativeMolecule(_VariationBase):
+    """The "Derivative Molecule" data class is a structure for describing a derivate
+    molecule composed from multiple sequence components.
+    """
+
+    type: Literal["DerivativeMolecule"] = Field(VrsType.DERIVATIVE_MOL.value, description=f'MUST be "{VrsType.DERIVATIVE_MOL.value}"')
+    components: List[TraversalBlock] = Field(
+        ...,
+        description="The traversal block components that make up the derivative molecule.",
+        min_length=2
+    )
+    circular: Optional[bool] = Field(None, description="A flag indicating if the derivative molecule is circular (true) or linear (false).")    
+
     class ga4gh(_Ga4ghIdentifiableObject.ga4gh):
-        prefix = "DSQ"
+        prefix = "DM"
         keys = [
             "components",
             "type"
@@ -707,7 +730,7 @@ class CopyNumberChange(_CopyNumber):
     type: Literal["CopyNumberChange"] = Field(VrsType.CN_CHANGE.value, description=f'MUST be "{VrsType.CN_CHANGE.value}"')
     copyChange: CopyChange = Field(
         ...,
-        description='MUST be one of "efo:0030069" (complete genomic loss), "efo:0020073" (high-level loss), "efo:0030068" (low-level loss), "efo:0030067" (loss), "efo:0030064" (regional base ploidy), "efo:0030070" (gain), "efo:0030071" (low-level gain), "efo:0030072" (high-level gain).',
+        description='MUST be one of "EFO:0030069" (complete genomic loss), "EFO:0020073" (high-level loss), "EFO:0030068" (low-level loss), "EFO:0030067" (loss), "EFO:0030064" (regional base ploidy), "EFO:0030070" (gain), "EFO:0030071" (low-level gain), "EFO:0030072" (high-level gain).',
     )
 
     class ga4gh(_Ga4ghIdentifiableObject.ga4gh):
@@ -727,7 +750,7 @@ class CopyNumberChange(_CopyNumber):
 class MolecularVariation(RootModel):
     """A `variation` on a contiguous molecule."""
 
-    root: Union[Allele, CisPhasedBlock, Adjacency, SequenceTerminus, DerivativeSequence] = Field(
+    root: Union[Allele, CisPhasedBlock, Adjacency, Terminus, DerivativeMolecule] = Field(
         ...,
         json_schema_extra={
             'description': 'A `variation` on a contiguous molecule.'
@@ -760,7 +783,7 @@ class Location(RootModel):
 class Variation(RootModel):
     """A representation of the state of one or more biomolecules."""
 
-    root: Union[Allele, CisPhasedBlock, Adjacency, SequenceTerminus, DerivativeSequence, CopyNumberChange, CopyNumberCount] = Field(
+    root: Union[Allele, CisPhasedBlock, Adjacency, Terminus, DerivativeMolecule, CopyNumberChange, CopyNumberCount] = Field(
         ...,
         json_schema_extra={
             'description': 'A representation of the state of one or more biomolecules.'

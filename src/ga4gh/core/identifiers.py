@@ -14,7 +14,7 @@ For example, here is a call path for ga4gh_identify called on an Allele:
 For that reason, they are implemented here in one file.
 
 """
-
+from canonicaljson import encode_canonical_json
 import contextvars
 import re
 from contextlib import ContextDecorator
@@ -194,6 +194,6 @@ def ga4gh_serialize(obj: BaseModel, as_version: PrevVrsVersion | None = None) ->
     PrevVrsVersion.validate(as_version)
 
     if as_version is None:
-        return obj.model_dump_json().encode("utf-8")
+        return encode_canonical_json(obj.ga4gh_serialize())
     else:
         return obj.ga4gh_serialize_as_version(as_version)
