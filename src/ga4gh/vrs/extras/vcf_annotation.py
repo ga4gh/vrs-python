@@ -138,14 +138,16 @@ def annotate_click(  # pylint: disable=too-many-arguments
     )
     end = timer()
     msg = f"VCF Annotator finished in {(end - start):.5f} seconds"
+    _logger.info(msg)
     if not silent:
-        _logger.info(msg)
-    click.echo(msg)
+        click.echo(msg)
+
 
 class VCFAnnotator:  # pylint: disable=too-few-public-methods
-    """Provides utility for annotating VCF's with VRS Allele IDs.
-    VCF's are read using pysam and stored as pysam objects.
-    Alleles are translated into VRS Allele IDs using VRS-Python Translator.
+    """Annotate VCFs with VRS allele IDs.
+
+    Uses pysam to read, store, and (optionally) output VCFs. Alleles are translated
+    into VRS IDs using the VRS-Python translator class.
     """
 
     # Field names for VCF
@@ -154,7 +156,6 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
     VRS_ENDS_FIELD = "VRS_Ends"
     VRS_STATES_FIELD = "VRS_States"
     VRS_ERROR_FIELD = "VRS_Error"
-
     # VCF character escape map
     VCF_ESCAPE_MAP = [
         ("%", "%25"),
@@ -168,11 +169,12 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
     def __init__(self, seqrepo_dp_type: SeqRepoProxyType = SeqRepoProxyType.LOCAL,
                  seqrepo_base_url: str = "http://localhost:5000/seqrepo",
                  seqrepo_root_dir: str = "/usr/local/share/seqrepo/latest") -> None:
-        """Initialize the VCFAnnotator class
+        """Initialize the VCFAnnotator class.
 
-        :param SeqRepoProxyType seqrepo_dp_type: The type of SeqRepo Data Proxy to use
-        :param str seqrepo_base_url: The base url for SeqRepo REST API
-        :param str seqrepo_root_dir: The root directory for the local SeqRepo instance
+        :param seqrepo_dp_type: The type of SeqRepo Data Proxy to use
+            (i.e., local vs REST)
+        :param seqrepo_base_url: The base url for SeqRepo REST API
+        :param seqrepo_root_dir: The root directory for the local SeqRepo instance
         """
         if seqrepo_dp_type == SeqRepoProxyType.LOCAL:
             self.dp = SeqRepoDataProxy(SeqRepo(seqrepo_root_dir))
@@ -187,20 +189,22 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
         assembly: str = "GRCh38", compute_for_ref: bool = True,
         require_validation: bool = True
     ) -> None:
-        """Annotates an input VCF file with VRS Allele IDs & creates a pickle file
-        containing the vrs object information.
+        """Given a VCF, produce an output VCF annotated with VRS allele IDs, and/or
+        a pickle file containing the full VRS objects.
 
-        :param str vcf_in: The path for the input VCF file to annotate
-        :param Optional[str] vcf_out: The path for the output VCF file
-        :param Optional[str] vrs_pickle_out: The path for the output VCF pickle file
-        :param bool vrs_attributes: If `True` will include VRS_Start, VRS_End,
-            VRS_State fields in the INFO field. If `False` will not include these fields.
-            Only used if `vcf_out` is provided.
-        :param str assembly: The assembly used in `vcf_in` data
+        :param vcf_in: Location of input VCF
+        :param vcf_out: The path for the output VCF file
+        :param vrs_pickle_out: The path for the output VCF pickle file
+        :param vrs_attributes: If `True`, include VRS_Start, VRS_End, VRS_State
+            properties in the VCF INFO field. If `False` will not include these
+            properties. Only used if `vcf_out` is defined.
+        :param assembly: The assembly used in `vcf_in` data
         :param compute_for_ref: If true, compute VRS IDs for the reference allele
-        :param bool require_validation: If `True` then validation checks must pass in
-            order to return a VRS object. If `False` then VRS object will be returned
-            even if validation checks fail.
+        :param require_validation: If `True`, validation checks (i.e., REF value
+            matches expected REF at given location) must pass in order to return a VRS
+            object for a record. If `False` then VRS object will be returned even if
+            validation checks fail, although all instances of failed validation are
+            logged as warnings regardless.
         """
         if not any((vcf_out, vrs_pickle_out)):
             raise VCFAnnotatorException(
@@ -285,27 +289,24 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
         output_vcf: bool = False, vrs_attributes: bool = False,
         require_validation: bool = True
     ) -> None:
-        """Get VRS Object given `vcf_coords`. `vrs_data` and `vrs_field_data` will
+        """Get VRS object given `vcf_coords`. `vrs_data` and `vrs_field_data` will
         be mutated.
 
-        :param str vcf_coords: Allele to get VRS object for. Format is chr-pos-ref-alt
-        :param Dict vrs_data: Dictionary containing the VRS object information for the
-            VCF
-        :param Dict vrs_field_data: If `output_vcf`, will keys will be VRS Fields and
-            values will be list of VRS data. Else, will be an empty dictionary
-        :param str assembly: The assembly used in `vcf_coords`
-        :param Optional[str] vrs_data_key: The key to update in `vrs_data`. If not
-            provided, will use `vcf_coords` as the key.
-        :param bool output_pickle: `True` if VRS pickle file will be output.
-            `False` otherwise.
-        :param bool output_vcf: `True` if annotated VCF file will be output.
-            `False` otherwise.
-        :param bool vrs_attributes: If `True` will include VRS_Start, VRS_End,
-            VRS_State fields in the INFO field. If `False` will not include these fields.
-            Only used if `output_vcf` set to `True`.
-        :param bool require_validation: If `True` then validation checks must pass in
-            order to return a VRS object. If `False` then VRS object will be returned
-            even if validation checks fail. Defaults to `True`.
+        :param vcf_coords: Allele to get VRS object for. Format is chr-pos-ref-alt
+        :param vrs_data: Dictionary containing the VRS object information for the VCF
+        :param vrs_field_data: If `output_vcf`, keys are VRS Fields and values are list
+            of VRS data. Empty otherwise.
+        :param assembly: The assembly used in `vcf_coords`
+        :param vrs_data_key: The key to update in `vrs_data`. If not provided, will use
+            `vcf_coords` as the key.
+        :param output_pickle: If `True`, VRS pickle file will be output.
+        :param output_vcf: If `True`, annotated VCF file will be output.
+        :param vrs_attributes: If `True` will include VRS_Start, VRS_End, VRS_State
+            fields in the INFO field. If `False` will not include these fields. Only
+            used if `output_vcf` set to `True`.
+        :param require_validation: If `True` then validation checks must pass in order
+            to return a VRS object. If `False` then VRS object will be returned even if
+            validation checks fail. Defaults to `True`.
         """
         try:
             vrs_obj = self.tlr._from_gnomad(
@@ -366,27 +367,24 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
     ) -> dict:
         """Get VRS data for record's reference and alt alleles.
 
-        :param pysam.VariantRecord record: A row in the VCF file
-        :param Dict vrs_data: Dictionary containing the VRS object information for the
-            VCF. Will be mutated if `output_pickle = True`
-        :param str assembly: The assembly used in `record`
-        :param List[str] additional_info_fields: Additional VRS fields to add in INFO
-            field
-        :param bool vrs_attributes: If `True` will include VRS_Start, VRS_End,
-            VRS_State fields in the INFO field. If `False` will not include these fields.
-            Only used if `output_vcf` set to `True`.
-        :param bool output_pickle: `True` if VRS pickle file will be output.
-            `False` otherwise.
-        :param bool output_vcf: `True` if annotated VCF file will be output.
-            `False` otherwise.
-        :return: If `output_vcf = True`, a dictionary containing VRS Fields and list
-            of associated values. If `output_vcf = False`, an empty dictionary will be
-            returned.
+        :param record: A row in the VCF file
+        :param vrs_data: Dictionary containing the VRS object information for the VCF.
+            Will be mutated if `output_pickle = True`
+        :param assembly: The assembly used in `record`
+        :param additional_info_fields: Additional VRS fields to add in INFO field
+        :param vrs_attributes: If `True` will include VRS_Start, VRS_End, VRS_State
+            fields in the INFO field. If `False` will not include these fields. Only
+            used if `output_vcf` set to `True`.
+        :param output_pickle: If `True`, VRS pickle file will be output.
+        :param output_vcf: If `True`, annotated VCF file will be output.
         :param compute_for_ref: If true, compute VRS IDs for the reference allele
-        :param bool require_validation: If `True` then validation checks must pass in
+        :param require_validation: If `True` then validation checks must pass in
             order to return a VRS object. A `DataProxyValidationError` will be raised if
             validation checks fail. If `False` then VRS object will be returned even if
             validation checks fail. Defaults to `True`.
+        :return: If `output_vcf = True`, a dictionary containing VRS Fields and list
+            of associated values. If `output_vcf = False`, an empty dictionary will be
+            returned.
         """
         vrs_field_data = {field: [] for field in additional_info_fields} if output_vcf else {}
 
@@ -421,6 +419,6 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
 
 
 if __name__ == "__main__":
-    # python3 -m src.ga4gh.vrs.extras.vcf_annotation --vcf_in input.vcf.gz \
+    # python3 -m src.ga4gh.vrs.extras.vcf_annotation input.vcf.gz \
     #    --vcf_out output.vcf.gz --vrs_pickle_out vrs_objects.pkl
     annotate_click()  # pylint: disable=no-value-for-parameter
