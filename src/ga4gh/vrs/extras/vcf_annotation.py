@@ -1,8 +1,7 @@
-"""Module containing tools for annotating VCFs with VRS
+"""Annotate VCFs with VRS
 
-Example of how to run from root of vrs-python directory:
-python3 -m src.ga4gh.vrs.extras.vcf_annotation --vcf_in input.vcf.gz \
-    --vcf_out output.vcf.gz --vrs_pickle_out vrs_objects.pkl
+    $ vrs-annotate vcf input.vcf.gz --vcf_out output.vcf.gz --vrs_pickle_out vrs_objects.pkl
+
 """
 import pathlib
 import logging
@@ -34,8 +33,13 @@ class SeqRepoProxyType(str, Enum):
     LOCAL = "local"
     REST = "rest"
 
+@click.group()
+def _cli() -> None:
+    """Annotate input files with VRS variation objects."""
 
-@click.command()
+
+
+@_cli.command(name="vcf")
 @click.argument(
     "vcf_in",
     nargs=1,
@@ -113,7 +117,7 @@ class SeqRepoProxyType(str, Enum):
     default=False,
     help="Suppress messages printed to stdout"
 )
-def annotate_click(  # pylint: disable=too-many-arguments
+def _annotate_vcf_cli(  # pylint: disable=too-many-arguments
     vcf_in: pathlib.Path, vcf_out: pathlib.Path | None, vrs_pickle_out: pathlib.Path | None,
     vrs_attributes: bool, seqrepo_dp_type: SeqRepoProxyType, seqrepo_root_dir: pathlib.Path,
     seqrepo_base_url: str, assembly: str, skip_ref: bool, require_validation: bool,
@@ -121,7 +125,7 @@ def annotate_click(  # pylint: disable=too-many-arguments
 ) -> None:
     """Extract VRS objects from VCF located at VCF_IN.
 
-        $ python3 src/ga4gh/vrs/extras/vcf_annotation.py input.vcf.gz --vcf_out output.vcf.gz --vrs_pickle_out vrs_objects.pkl
+        $ vrs-annotate vcf input.vcf.gz --vcf_out output.vcf.gz --vrs_pickle_out vrs_objects.pkl
 
     Note that at least one of --vcf_out or --vrs_pickle_out must be selected and defined.
     """
@@ -418,9 +422,3 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
                 )
 
         return vrs_field_data
-
-
-if __name__ == "__main__":
-    # python3 -m src.ga4gh.vrs.extras.vcf_annotation input.vcf.gz \
-    #    --vcf_out output.vcf.gz --vrs_pickle_out vrs_objects.pkl
-    annotate_click()  # pylint: disable=no-value-for-parameter
