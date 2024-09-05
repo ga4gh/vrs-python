@@ -33,8 +33,13 @@ class SeqRepoProxyType(str, Enum):
     LOCAL = "local"
     REST = "rest"
 
+@click.group()
+def _cli() -> None:
+    """Annotate input files with VRS variation objects."""
 
-@click.command()
+
+
+@_cli.command(name="vcf")
 @click.argument(
     "vcf_in",
     nargs=1,
@@ -112,7 +117,7 @@ class SeqRepoProxyType(str, Enum):
     default=False,
     help="Suppress messages printed to stdout"
 )
-def _cli(  # pylint: disable=too-many-arguments
+def _annotate_vcf_cli(  # pylint: disable=too-many-arguments
     vcf_in: pathlib.Path, vcf_out: pathlib.Path | None, vrs_pickle_out: pathlib.Path | None,
     vrs_attributes: bool, seqrepo_dp_type: SeqRepoProxyType, seqrepo_root_dir: pathlib.Path,
     seqrepo_base_url: str, assembly: str, skip_ref: bool, require_validation: bool,
