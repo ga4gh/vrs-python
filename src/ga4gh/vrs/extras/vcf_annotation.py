@@ -38,7 +38,7 @@ class SeqRepoProxyType(str, Enum):
 def _cli() -> None:
     """Annotate input files with VRS variation objects."""
     logging.basicConfig(
-        filename="vrs-python-annotate.log",
+        filename="vrs-annotate.log",
         level=logging.INFO,
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
     )
