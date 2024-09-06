@@ -56,7 +56,7 @@ class _LogLevel(str, Enum):
 def _log_level_option(func: Callable) -> Callable:
     """Provide reusable log level CLI option decorator.
 
-    Adds a `--log-level` CLI option to any decorated command. Doesn't pass on any
+    Adds a `--log_level` CLI option to any decorated command. Doesn't pass on any
     values, just sets the logging level for this module.
 
     :param func: incoming click command
