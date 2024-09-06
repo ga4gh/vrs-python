@@ -40,7 +40,7 @@ def _cli() -> None:
     logging.basicConfig(
         filename="vrs-python-annotate.log",
         level=logging.INFO,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
     )
 
 
@@ -62,7 +62,7 @@ def _log_level_option(func: Callable) -> Callable:
     :param func: incoming click command
     :return: same command, wrapped with log level option
     """
-    def _set_log_level(ctx: dict, param: str, value: _LogLevel) -> None:
+    def _set_log_level(ctx: dict, param: str, value: _LogLevel) -> None:  # pylint: disable=unused-argument
         level_map = {
             _LogLevel.DEBUG: logging.DEBUG,
             _LogLevel.INFO: logging.INFO,
@@ -73,9 +73,9 @@ def _log_level_option(func: Callable) -> Callable:
         logging.getLogger(__name__).setLevel(level_map[value])
 
     wrapped_func = click.option(
-        '--log_level',
+        "--log_level",
         type=click.Choice([v.value for v in _LogLevel.__members__.values()]),
-        default='info',
+        default="info",
         help="Set the logging level.",
         callback=_set_log_level,
         expose_value=False,
