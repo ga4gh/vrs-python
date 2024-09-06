@@ -3,6 +3,7 @@
     $ vrs-annotate vcf input.vcf.gz --vcf_out output.vcf.gz --vrs_pickle_out vrs_objects.pkl
 
 """
+from collections.abc import Callable
 import pathlib
 import logging
 import pickle
@@ -36,10 +37,55 @@ class SeqRepoProxyType(str, Enum):
 @click.group()
 def _cli() -> None:
     """Annotate input files with VRS variation objects."""
+    logging.basicConfig(
+        filename="vrs-python-annotate.log",
+        level=logging.INFO,
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    )
 
+
+class _LogLevel(str, Enum):
+    """Define legal values for `--log_level` option."""
+    DEBUG = "debug"
+    INFO = "info"
+    WARNING = "warning"
+    ERROR = "error"
+    CRITICAL = "critical"
+
+
+def _log_level_option(func: Callable) -> Callable:
+    """Provide reusable log level CLI option decorator.
+
+    Adds a `--log-level` CLI option to any decorated command. Doesn't pass on any
+    values, just sets the logging level for this module.
+
+    :param func: incoming click command
+    :return: same command, wrapped with log level option
+    """
+    def _set_log_level(ctx: dict, param: str, value: _LogLevel) -> None:
+        level_map = {
+            _LogLevel.DEBUG: logging.DEBUG,
+            _LogLevel.INFO: logging.INFO,
+            _LogLevel.WARNING: logging.WARNING,
+            _LogLevel.ERROR: logging.ERROR,
+            _LogLevel.CRITICAL: logging.CRITICAL,
+        }
+        logging.getLogger(__name__).setLevel(level_map[value])
+
+    wrapped_func = click.option(
+        '--log_level',
+        type=click.Choice([v.value for v in _LogLevel.__members__.values()]),
+        default='info',
+        help="Set the logging level.",
+        callback=_set_log_level,
+        expose_value=False,
+        is_eager=True
+    )(func)
+    return wrapped_func
 
 
 @_cli.command(name="vcf")
+@_log_level_option
 @click.argument(
     "vcf_in",
     nargs=1,
