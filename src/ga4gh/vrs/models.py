@@ -32,7 +32,7 @@ from pydantic import BaseModel, Field, RootModel, StringConstraints, ConfigDict
 from ga4gh.core.pydantic import (
     getattr_in
 )
-from ga4gh.core.entity_models import IRI, Expression, Entity
+from ga4gh.core.entity_models import IRI, Entity
 
 
 def flatten(vals):
@@ -151,6 +151,13 @@ class VrsType(str, Enum):
     CN_CHANGE = "CopyNumberChange"
 
 
+class Orientation(str, Enum):
+    """The orientation of the molecular variation component."""
+
+    FORWARD = "forward"
+    REVERSE_COMPLEMENT = "reverse_complement"
+
+
 class ResidueAlphabet(str, Enum):
     """The interpretation of the character codes referred to by the refget accession,
     where "aa" specifies an amino acid character set, and "na" specifies a nucleic acid
@@ -172,6 +179,22 @@ class CopyChange(str, Enum):
     EFO_0030070 = 'EFO:0030070'
     EFO_0030071 = 'EFO:0030071'
     EFO_0030072 = 'EFO:0030072'
+
+
+class Syntax(str, Enum):
+    """The syntax used to describe the variation. The value should be one of the
+    supported syntaxes.
+    """
+
+    HGVS_C = "hgvs.c"
+    HGVS_P = "hgvs.p"
+    HGVS_G = "hgvs.g"
+    HGVS_M = "hgvs.m"
+    HGVS_N = "hgvs.n"
+    HGVS_R = "hgvs.r"
+    HGVS_ISCN = "iscn"
+    GNOMAD = "gnomad"
+    SPDI = "spdi"
 
 
 def _recurse_ga4gh_serialize(obj):
@@ -313,6 +336,18 @@ class _Ga4ghIdentifiableObject(_ValueObject, ABC):
 
     class ga4gh(_ValueObject.ga4gh):
         prefix: str
+
+class Expression(BaseModel):
+    """Representation of a variation by a specified nomenclature or syntax for a
+    Variation object. Common examples of expressions for the description of molecular
+    variation include the HGVS and ISCN nomenclatures.
+    """
+
+    model_config = ConfigDict(use_enum_values=True)
+
+    syntax: Syntax = Field(..., description="The syntax used to describe the variation. The value should be one of the supported syntaxes.")
+    value: str = Field(..., description="The expression of the variation in the specified syntax. The value should be a valid expression in the specified syntax.")
+    syntax_version: Optional[str] = Field(None, description="The version of the syntax used to describe the variation. This is particularly important for HGVS expressions, as the syntax has evolved over time.")
 
 
 #########################################
@@ -646,17 +681,19 @@ class TraversalBlock(_ValueObject):
     """A component used to describe the orientation of a molecular variation within
     a DerivativeMolecule."""
 
+    model_config = ConfigDict(use_enum_values=True)
+
     type: Literal["TraversalBlock"] = Field(
         VrsType.TRAVERSAL_BLOCK.value, description=f'MUST be "{VrsType.TRAVERSAL_BLOCK.value}"'
     )
-    orientation: Literal["forward", "reverse_complement"] = Field(
-        ...,
+    orientation: Optional[Orientation] = Field(
+        None,
         description='The orientation of the traversal block, either forward or reverse_complement.'
     )
 
-    component: Union[IRI, Adjacency, Allele, Terminus, CisPhasedBlock] = Field(
-        ...,
-        description="The component that make up the derivative molecule."
+    component: Optional[Union[Allele, CisPhasedBlock, Adjacency, Terminus]] = Field(
+        None,
+        description="The unoriented molecular variation component."
     )
 
     class ga4gh(_ValueObject.ga4gh):
@@ -664,7 +701,7 @@ class TraversalBlock(_ValueObject):
             'component',
             'orientation',
             'type'
-        ]        
+        ]
 
 class DerivativeMolecule(_VariationBase):
     """The "Derivative Molecule" data class is a structure for describing a derivate
@@ -672,12 +709,12 @@ class DerivativeMolecule(_VariationBase):
     """
 
     type: Literal["DerivativeMolecule"] = Field(VrsType.DERIVATIVE_MOL.value, description=f'MUST be "{VrsType.DERIVATIVE_MOL.value}"')
-    components: List[TraversalBlock] = Field(
+    components: List[Union[IRI, TraversalBlock]] = Field(
         ...,
-        description="The traversal block components that make up the derivative molecule.",
+        description="The molecular components that constitute the derivative molecule.",
         min_length=2
     )
-    circular: Optional[bool] = Field(None, description="A flag indicating if the derivative molecule is circular (true) or linear (false).")    
+    circular: Optional[bool] = Field(None, description="A boolean indicating whether the molecule represented by the sequence is circular (true) or linear (false).")
 
     class ga4gh(_Ga4ghIdentifiableObject.ga4gh):
         prefix = "DM"
