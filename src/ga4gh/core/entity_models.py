@@ -332,7 +332,19 @@ class EvidenceLine(InformationEntity):
     scoreOfEvidenceProvided: Optional[float] = Field(None, description="A quantitative score indicating the strength of support that an Evidence Line is determined to provide for or against its target Proposition, evaluated relative to the direction indicated by the directionOfEvidenceProvided value.")
 
 
-class Statement(InformationEntity, ABC):
+class StatementBase(InformationEntity, ABC):
+    """Internal base class that holds shared fields for Statement model."""
+
+    direction: Optional[Direction] = Field(None, description="A term indicating whether the Statement supports, disputes, or remains neutral w.r.t. the validity of the Proposition it evaluates.")
+    strength: Optional[Union[Coding, IRI]]= Field(None, description="A term used to report the strength of a Proposition's assessment in the direction indicated (i.e. how strongly supported or disputed the Proposition is believed to be).  Implementers may choose to frame a strength assessment in terms of how *confident* an agent is that the Proposition is true or false, or in terms of the *strength of all evidence* they believe supports or disputes it.")
+    score: Optional[float] = Field(None, description="A quantitative score that indicates the strength of a Proposition's assessment in the direction indicated (i.e. how strongly supported or disputed the Proposition is believed to be).  Depending on its implementation, a score may reflect how *confident* that agent is that the Proposition is true or false, or the *strength of evidence* they believe supports or disputes it.")
+    statementText: Optional[str] = Field(None, description="A natural-language expression of what a Statement asserts to be true.")
+    classification: Optional[Union[Coding, IRI]] = Field(None, description="A single term or phrase summarizing the outcome of direction and strength assessments of a Statement's proposition, in terms of a classification of its subject.")
+    hasEvidenceLines: Optional[List[EvidenceLine]] = Field(None, description="An evidence-based argument that supports or disputes the validity of the proposition that a Statement assesses or puts forth as true. The strength and direction of this argument (whether it supports or disputes the proposition, and how strongly) is based on an interpretation of one or more pieces of information as evidence (i.e. 'Evidence Items).")
+
+
+
+class Statement(StatementBase):
     """A claim of purported truth as made by a particular agent, on a particular
     occasion. Statements may be used to simply put forth a possible fact (i.e. a
     'proposition') as true, or to provide a more nuanced assessment of the level of
@@ -342,12 +354,6 @@ class Statement(InformationEntity, ABC):
     subject: Dict = Field(..., description="The Entity about which the Statement is made.")
     predicate: str = Field(..., description="The relationship declared to hold between the subject and the object of the Statement.")
     object: Dict = Field(..., description="An Entity or concept that is related to the subject of a Statement via its predicate.")
-    direction: Optional[Direction] = Field(None, description="A term indicating whether the Statement supports, disputes, or remains neutral w.r.t. the validity of the Proposition it evaluates.")
-    strength: Optional[Union[Coding, IRI]]= Field(None, description="A term used to report the strength of a Proposition's assessment in the direction indicated (i.e. how strongly supported or disputed the Proposition is believed to be).  Implementers may choose to frame a strength assessment in terms of how *confident* an agent is that the Proposition is true or false, or in terms of the *strength of all evidence* they believe supports or disputes it.")
-    score: Optional[float] = Field(None, description="A quantitative score that indicates the strength of a Proposition's assessment in the direction indicated (i.e. how strongly supported or disputed the Proposition is believed to be).  Depending on its implementation, a score may reflect how *confident* that agent is that the Proposition is true or false, or the *strength of evidence* they believe supports or disputes it.")
-    statementText: Optional[str] = Field(None, description="A natural-language expression of what a Statement asserts to be true.")
-    classification: Optional[Union[Coding, IRI]] = Field(None, description="A single term or phrase summarizing the outcome of direction and strength assessments of a Statement's proposition, in terms of a classification of its subject.")
-    hasEvidenceLines: Optional[List[EvidenceLine]] = Field(None, description="An evidence-based argument that supports or disputes the validity of the proposition that a Statement assesses or puts forth as true. The strength and direction of this argument (whether it supports or disputes the proposition, and how strongly) is based on an interpretation of one or more pieces of information as evidence (i.e. 'Evidence Items).")
 
 
 class StudyGroup(Entity):
@@ -371,6 +377,14 @@ class Characteristic(BaseModel):
     name: str = Field(..., description="The type of the trait  or role described by the trait (e.g. 'ethnicity', 'sex', 'age', 'disease status').")
     value: str = Field(..., description="The specific value(s) that the indicated traitor role holds in all population members (e.g. 'east asian', 'female', 'adolescent', 'cancer').")
     valueOperator: Optional[bool] = Field(None, description="An operation that defines how to logically interpret a set of more than one Characteristic values ('AND', 'OR', 'NOT')")
+
+
+class StudyResultBase(_InformationEntityBase, ABC):
+    """Internal base class that holds shared fields for StudyResult model."""
+
+    sourceDataSet: Optional[List[DataSet]] = Field(None, description="A larger DataSet from which the content of the StudyResult was derived.", max_length=1)
+    ancillaryResults: Optional[Dict] = None
+    qualityMeasures: Optional[Dict] = None
 
 
 class StudyResult(_InformationEntityBase, ABC):
