@@ -141,7 +141,7 @@ class Extension(BaseModel):
 
     name: str = Field(..., description='A name for the Extension. Should be indicative of its meaning and/or the type of information it value represents.')
     value: Optional[Union[float, str, bool, Dict[str, Any], List[Any]]] = Field(
-        None, description='The value of the Extension - can be any primitive or structured object'
+        ..., description='The value of the Extension - can be any primitive or structured object'
     )
     description: Optional[str] = Field(None, description="A description of the meaning or utility of the Extension, to explain the type of information it is meant to hold.")
 
