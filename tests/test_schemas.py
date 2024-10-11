@@ -84,7 +84,7 @@ def test_schema_models_in_pydantic(gks_schema, pydantic_models):
     for schema_model in (
         mapping.base_classes | mapping.concrete_classes | mapping.primitives
     ):
-        assert getattr(pydantic_models, schema_model, False)
+        assert getattr(pydantic_models, schema_model, False), schema_model
 
 
 @pytest.mark.parametrize(
@@ -101,18 +101,26 @@ def test_schema_class_fields(gks_schema, pydantic_models):
     """
     mapping = GKS_SCHEMA_MAPPING[gks_schema]
     for schema_model in mapping.concrete_classes:
-        schema_fields = set(mapping.schema[schema_model]["properties"])
+        schema_properties = mapping.schema[schema_model]["properties"]
         pydantic_model = getattr(pydantic_models, schema_model)
-        assert set(pydantic_model.model_fields) == schema_fields, schema_model
+        assert set(pydantic_model.model_fields) == set(schema_properties), schema_model
 
-        # Check required fields
         required_schema_fields = set(mapping.schema[schema_model]["required"])
-        required_pydantic_fields = {
-            field
-            for field, field_info in pydantic_model.model_fields.items()
-            if field_info.is_required() or isinstance(field_info.default, str)
-        }
-        assert required_pydantic_fields == required_schema_fields, schema_model
+
+        for property, property_def in schema_properties.items():
+            pydantic_model_field_info = pydantic_model.model_fields[property]
+            pydantic_field_required = pydantic_model_field_info.is_required()
+
+            if property in required_schema_fields:
+                if property != "type":
+                    assert pydantic_field_required, f"{pydantic_model}.{property}"
+            else:
+                assert not pydantic_field_required, f"{pydantic_model}.{property}"
+
+            if "description" in property_def:
+                assert property_def["description"].replace("'", "\"") == pydantic_model_field_info.description.replace("'", "\""), f"{pydantic_model}.{property}"
+            else:
+                assert pydantic_model_field_info.description is None, f"{pydantic_model}.{property}"
 
 
 def test_ga4gh_keys():

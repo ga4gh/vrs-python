@@ -411,7 +411,7 @@ class LengthExpression(_ValueObject):
     type: Literal["LengthExpression"] = Field(
         VrsType.LEN_EXPR.value, description=f'MUST be "{VrsType.LEN_EXPR.value}"'
     )
-    length: Optional[Union[Range, int]] = None
+    length: Optional[Union[Range, int]] = Field(None, description="The length of the sequence.")
 
     class ga4gh(_ValueObject.ga4gh):
         keys = [
@@ -427,13 +427,13 @@ class ReferenceLengthExpression(_ValueObject):
         VrsType.REF_LEN_EXPR.value, description=f'MUST be "{VrsType.REF_LEN_EXPR.value}"'
     )
     length: Union[Range, int] = Field(
-        ..., description='The number of residues of the expressed sequence.'
+        ..., description='The number of residues in the expressed sequence.'
     )
     sequence: Optional[SequenceString] = Field(
-        None, description='the `Sequence` encoded by the Reference Length Expression.'
+        None, description='the literal Sequence encoded by the Reference Length Expression.'
     )
     repeatSubunitLength: int = Field(
-        ..., description='The number of residues of the repeat subunit.'
+        ..., description='The number of residues in the repeat subunit.'
     )
 
     class ga4gh(_ValueObject.ga4gh):
@@ -471,9 +471,9 @@ class SequenceReference(_ValueObject):
     type: Literal["SequenceReference"] = Field(VrsType.SEQ_REF.value, description=f'MUST be "{VrsType.SEQ_REF.value}"')
     refgetAccession: Annotated[str, StringConstraints(pattern=r'^SQ.[0-9A-Za-z_\-]{32}$')] = Field(
         ...,
-        description='A `GA4GH RefGet <http://samtools.github.io/hts-specs/refget.html>` identifier for the referenced sequence, using the sha512t24u digest.',
+        description='A [GA4GH RefGet](http://samtools.github.io/hts-specs/refget.html) identifier for the referenced sequence, using the sha512t24u digest.',
     )
-    residueAlphabet: Optional[ResidueAlphabet] = Field(None, description="The interpretation of the character codes referred to by the refget accession, where 'aa' specifies an amino acid character set, and 'na' specifies a nucleic acid character set.")
+    residueAlphabet: Optional[ResidueAlphabet] = Field(None, description='The interpretation of the character codes referred to by the refget accession, where "aa" specifies an amino acid character set, and "na" specifies a nucleic acid character set.')
     circular: Optional[bool] = Field(None, description="A boolean indicating whether the molecule represented by the sequence is circular (true) or linear (false).")
 
     class ga4gh(_ValueObject.ga4gh):
@@ -488,15 +488,15 @@ class SequenceLocation(Ga4ghIdentifiableObject):
 
     type: Literal["SequenceLocation"] = Field(VrsType.SEQ_LOC.value, description=f'MUST be "{VrsType.SEQ_LOC.value}"')
     sequenceReference: Optional[Union[IRI, SequenceReference]] = Field(
-        None, description='A reference to a `Sequence` on which the location is defined.'
+        None, description='A reference to a Sequence on which the location is defined.'
     )
     start: Optional[Union[Range, int]] = Field(
         None,
-        description='The start coordinate or range of the SequenceLocation. The minimum value of this coordinate or range is 0. MUST represent a coordinate or range less than the value of `end`.',
+        description='The start coordinate or range of the SequenceLocation. The minimum value of this coordinate or range is 0. MUST represent a coordinate or range less than or equal to the value of `end`.',
     )
     end: Optional[Union[Range, int]] = Field(
         None,
-        description='The end coordinate or range of the SequenceLocation. The minimum value of this coordinate or range is 0. MUST represent a coordinate or range greater than the value of `start`.',
+        description='The end coordinate or range of the SequenceLocation. The minimum value of this coordinate or range is 0. MUST represent a coordinate or range greater than or equal to the value of `start`.',
 
     )
     sequence: Optional[SequenceString] = Field(None, description="The literal sequence encoded by the `sequenceReference` at these coordinates.")
@@ -616,7 +616,7 @@ class CisPhasedBlock(_VariationBase):
     type: Literal["CisPhasedBlock"] = Field(VrsType.CIS_PHASED_BLOCK.value, description=f'MUST be "{VrsType.CIS_PHASED_BLOCK.value}"')
     members: List[Union[Allele, IRI]] = Field(
         ...,
-        description='A list of `Alleles` that are found in-cis on a shared molecule.',
+        description='A list of Alleles that are found in-cis on a shared molecule.',
         min_length=2,
     )
     sequenceReference: Optional[SequenceReference] = Field(None, description="An optional Sequence Reference on which all of the in-cis Alleles are found. When defined, this may be used to implicitly define the `sequenceReference` attribute for each of the CisPhasedBlock member Alleles.")
@@ -645,7 +645,7 @@ class Adjacency(_VariationBase):
     potentially with an intervening linker sequence.
     """
 
-    type: Literal["Adjacency"] = Field(VrsType.ADJACENCY.value, description=f'MUST be "{VrsType.ADJACENCY.value}"')
+    type: Literal["Adjacency"] = Field(VrsType.ADJACENCY.value, description=f'MUST be "{VrsType.ADJACENCY.value}".')
     adjoinedSequences: List[Union[IRI, SequenceLocation]] = Field(
         ...,
         description="The terminal sequence or pair of adjoined sequences that defines in the adjacency.",
@@ -656,7 +656,7 @@ class Adjacency(_VariationBase):
         None,
         description="The sequence found between adjoined sequences."
     )
-    homology: Optional[bool] = Field(None, description="A flag indicating if coordinate ambiguity in the adjoined sequences is from sequence homology (true) or other uncertainty (false).")
+    homology: Optional[bool] = Field(None, description="A flag indicating if coordinate ambiguity in the adjoined sequences is from sequence homology (true) or other uncertainty, such as instrument ambiguity (false).")
 
     class ga4gh(Ga4ghIdentifiableObject.ga4gh):
         prefix = 'AJ'
@@ -673,7 +673,7 @@ class Terminus(_VariationBase):
     is not allowed and it removes the unnecessary array structure.
     """
 
-    type: Literal["Terminus"] = Field(VrsType.TERMINUS.value, description=f'MUST be "{VrsType.TERMINUS.value}"')
+    type: Literal["Terminus"] = Field(VrsType.TERMINUS.value, description=f'MUST be "{VrsType.TERMINUS.value}".')
     location: Union[IRI, SequenceLocation] = Field(..., description="The location of the terminus.")
 
     class ga4gh(Ga4ghIdentifiableObject.ga4gh):
@@ -690,11 +690,11 @@ class TraversalBlock(_ValueObject):
     model_config = ConfigDict(use_enum_values=True)
 
     type: Literal["TraversalBlock"] = Field(
-        VrsType.TRAVERSAL_BLOCK.value, description=f'MUST be "{VrsType.TRAVERSAL_BLOCK.value}"'
+        VrsType.TRAVERSAL_BLOCK.value, description=f'MUST be "{VrsType.TRAVERSAL_BLOCK.value}".'
     )
     orientation: Optional[Orientation] = Field(
         None,
-        description='The orientation of the traversal block, either forward or reverse_complement.'
+        description='The orientation of the molecular variation component.'
     )
 
     component: Optional[Union[Allele, CisPhasedBlock, Adjacency, Terminus]] = Field(
@@ -714,7 +714,7 @@ class DerivativeMolecule(_VariationBase):
     molecule composed from multiple sequence components.
     """
 
-    type: Literal["DerivativeMolecule"] = Field(VrsType.DERIVATIVE_MOL.value, description=f'MUST be "{VrsType.DERIVATIVE_MOL.value}"')
+    type: Literal["DerivativeMolecule"] = Field(VrsType.DERIVATIVE_MOL.value, description=f'MUST be "{VrsType.DERIVATIVE_MOL.value}".')
     components: List[Union[IRI, TraversalBlock]] = Field(
         ...,
         description="The molecular components that constitute the derivative molecule.",
@@ -776,7 +776,7 @@ class CopyNumberChange(_CopyNumber):
     type: Literal["CopyNumberChange"] = Field(VrsType.CN_CHANGE.value, description=f'MUST be "{VrsType.CN_CHANGE.value}"')
     copyChange: CopyChange = Field(
         ...,
-        description='MUST be one of "EFO:0030069" (complete genomic loss), "EFO:0020073" (high-level loss), "EFO:0030068" (low-level loss), "EFO:0030067" (loss), "EFO:0030064" (regional base ploidy), "EFO:0030070" (gain), "EFO:0030071" (low-level gain), "EFO:0030072" (high-level gain).',
+        description='MUST be a Coding representing one of "EFO:0030069" (complete genomic loss), "EFO:0020073" (high-level loss), "EFO:0030068" (low-level loss), "EFO:0030067" (loss), "EFO:0030064" (regional base ploidy), "EFO:0030070" (gain), "EFO:0030071" (low-level gain), "EFO:0030072" (high-level gain).',
     )
 
     class ga4gh(Ga4ghIdentifiableObject.ga4gh):

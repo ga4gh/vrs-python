@@ -11,7 +11,6 @@ from pydantic import BaseModel, Field, RootModel, StringConstraints, ConfigDict,
 from ga4gh.core import GA4GH_IR_REGEXP
 
 
-
 class CoreImType(str, Enum):
     """Define Core Information Model Types"""
 
@@ -23,7 +22,6 @@ class CoreImType(str, Enum):
     EVIDENCE_LINE = "EvidenceLine"
     INFORMATION_ENTITY = "InformationEntity"
     STUDY_GROUP = "StudyGroup"
-
 
 
 class Relation(str, Enum):
@@ -58,6 +56,7 @@ class Direction(str, Enum):
 # GKS Common Abstract Utility Classes
 # These do not inherit from Entity and are not typed explicitly
 #########################################
+
 
 class Code(RootModel):
     """Indicates that the value is taken from a set of controlled strings defined
@@ -96,7 +95,6 @@ class IRI(RootModel):
         json_schema_extra={'description': 'An IRI Reference (either an IRI or a relative-reference), according to `RFC3986 section 4.1  <https://datatracker.ietf.org/doc/html/rfc3986#section-4.1>` and `RFC3987 section 2.1 <https://datatracker.ietf.org/doc/html/rfc3987#section-2.1>`. MAY be a JSON Pointer as an IRI fragment, as  described by `RFC6901 section 6 <https://datatracker.ietf.org/doc/html/rfc6901#section-6>`.',
         }
     )
-
 
 
 class Coding(BaseModel):
@@ -150,6 +148,7 @@ class Extension(BaseModel):
 # GKS Common Abstract Entity Class Definitions
 #########################################
 
+
 class Entity(BaseModel):
     """Anything that exists, has existed, or will exist.
 
@@ -163,7 +162,7 @@ class Entity(BaseModel):
     type: str = Field(..., description="The name of the class that is instantiated by a data object representing the Entity.")
     label: Optional[str] = Field(
         None,
-        description='A primary label for the entity.'
+        description='A primary name for the entity.'
     )
     description: Optional[str] = Field(
         None,
@@ -193,8 +192,8 @@ class Agent(Entity):
     """
 
     type: Literal["Agent"] = Field(CoreImType.AGENT.value, description=f"MUST be '{CoreImType.AGENT.value}'.")
-    name: Optional[str] = Field(None, description="The descriptive name of the agent.")
-    subtype: Optional[AgentSubtype] = Field(None, description="A specific type of agent the Agent object represents.")
+    name: Optional[str] = Field(None, description="The given name of the Agent.")
+    subtype: Optional[AgentSubtype] = Field(None, description="A specific type of agent the Agent object represents. Must be one of {person, organization, software}.")
 
 
 class ActivityBase(Entity):
@@ -222,6 +221,7 @@ class ActivityBase(Entity):
                 logging.warning("`date` SHOULD be formatted as a date string in ISO format 'YYYY-MM-DD'")
         return v
 
+
 class Activity(ActivityBase):
     """An action or set of actions performed by an agent, that occurs over a period of
     time. Activities may use, generate, modify, move, or destroy one or more entities.
@@ -236,7 +236,7 @@ class Contribution(ActivityBase):
     DataSet, Publication, etc.)
     """
 
-    type: Literal["Contribution"] = Field(CoreImType.CONTRIBUTION.value, description=f"MUST be {CoreImType.CONTRIBUTION.value}.")
+    type: Literal["Contribution"] = Field(CoreImType.CONTRIBUTION.value, description=f"MUST be '{CoreImType.CONTRIBUTION.value}'.")
     contributor: Optional[List[Agent]] = Field(None, description="The agent that made the contribution.", min_length=1, max_length=1)
     activityType: Optional[Coding] = Field(None, description="The specific type of activity performed or role played by an agent in making the contribution (e.g. for a publication, agents may contribute as a primary author, editor, figure designer, data generator, etc. . Values of this property may be framed as activities or as contribution roles (e.g. using terms from the Contribution Role Ontology (CRO)).")
 
@@ -248,7 +248,7 @@ class InformationEntityBase(Entity):
     """
 
     type: Literal["InformationEntity"] = Field(CoreImType.INFORMATION_ENTITY.value, description=f"MUST be {CoreImType.INFORMATION_ENTITY.value}.")
-    specifiedBy: Optional[Union[Method, IRI]] = Field(None, description="A specification that describes all or part of the process that led to creation of the Information Entity ")
+    specifiedBy: Optional[Union[Method, IRI]] = Field(None, description="A specification that describes all or part of the process that led to creation of the Information Entity")
     contributions: Optional[List[Contribution] ]= Field(None, description="Specific actions taken by an Agent toward the creation, modification, validation, or deprecation of an Information Entity.")
     reportedIn: Optional[List[Union[Document, IRI]]] = Field(None, description="A document in which the the Information Entity is reported.")
     dateAuthored: Optional[str] = Field(None, description="Indicates when the information content expressed in the Information Entity was generated.")
@@ -263,12 +263,13 @@ class InformationEntity(InformationEntityBase):
 
     derivedFrom: Optional[List[InformationEntity]] = Field(None, description="Another Information Entity from which this Information Entity is derived, in whole or in part.")
 
+
 class Document(InformationEntity):
     """A collection of information, usually in a text-based or graphic human-readable
     form, intended to be read and understood together as a whole.
     """
 
-    type: Literal["Document"] = Field(CoreImType.DOCUMENT.value, description=f"Must be '{CoreImType.DOCUMENT.value}'.")
+    type: Literal["Document"] = Field(CoreImType.DOCUMENT.value, description=f"Must be '{CoreImType.DOCUMENT.value}'")
     subtype: Optional[Coding] = Field(
         None, description="A specific type of document that a Document instance represents (e.g.  'publication', 'patent', 'pathology report')"
     )
@@ -278,11 +279,11 @@ class Document(InformationEntity):
     )
     doi: Optional[Annotated[str, StringConstraints(pattern=r"^10\.(\d+)(\.\d+)*\/[\w\-\.]+")]] = Field(
         None,
-        description="A `Digital Object Identifier <https://www.doi.org/the-identifier/what-is-a-doi/>_` for the document.",
+        description="A [Digital Object Identifier](https://www.doi.org/the-identifier/what-is-a-doi/) for the document.",
     )
     pmid: Optional[int] = Field(
         None,
-        description="A `PubMed unique identifier <https://en.wikipedia.org/wiki/PubMed#PubMed_identifier>`_.",
+        description="A [PubMed unique identifier](https://en.wikipedia.org/wiki/PubMed#PubMed_identifier) for the document.",
     )
 
 
@@ -316,11 +317,12 @@ class DataSet(InformationEntity):
     common format or structure, to enable their computational manipulation as a unit.
     """
 
-    type: Literal["DataSet"] = Field(CoreImType.DATA_SET.value, description=f"MUST be '{CoreImType.DATA_SET.value}'")
+    type: Literal["DataSet"] = Field(CoreImType.DATA_SET.value, description=f"MUST be '{CoreImType.DATA_SET.value}'.")
     subtype: Optional[Coding] = Field(None, description="A specific type of data set the DataSet instance represents (e.g. a 'clinical data set', a 'sequencing data set', a 'gene expression data set', a 'genome annotation data set')")
     releaseDate: Optional[str] = Field(None, description="Indicates when a version of a Data Set was formally released.")
     version: Optional[str] = Field(None, description="The version of the Data Set, as assigned by its creator.")
     license: Optional[str] = Field(None, description="A specific license that dictates legal permissions for how a data set can be used (by whom, where, for what purposes, with what additional requirements, etc.)")
+
 
 class EvidenceLine(InformationEntity):
     """An independent, evidence-based argument that may support or refute the validity
@@ -329,7 +331,7 @@ class EvidenceLine(InformationEntity):
     the target proposition.
     """
 
-    type: Literal["EvidenceLine"] = Field(CoreImType.EVIDENCE_LINE.value, description=f"MUST be '{CoreImType.EVIDENCE_LINE.value}'")
+    type: Literal["EvidenceLine"] = Field(CoreImType.EVIDENCE_LINE.value, description=f"Must be '{CoreImType.EVIDENCE_LINE.value}'")
     hasEvidenceItems: Optional[List[InformationEntity]] = Field(None, description="An individual piece of information that was evaluated as evidence in building the argument represented by an Evidence Line.")
     directionOfEvidenceProvided: Optional[Direction] = Field(None, description="The direction of support that the Evidence Line is determined to provide toward its target Proposition (supports, disputes, neutral)")
     strengthOfEvidenceProvided: Optional[Union[Coding, IRI]] = Field(None, description="The strength of support that an Evidence Line is determined to provide for or against its target Proposition, evaluated relative to the direction indicated by the directionOfEvidenceProvided value.")
@@ -342,13 +344,13 @@ class StatementBase(InformationEntity):
     Abstract base class to be extended by other classes. Do NOT instantiate directly.
     """
 
+    predicate: str = Field(..., description="The relationship declared to hold between the subject and the object of the Statement.")
     direction: Optional[Direction] = Field(None, description="A term indicating whether the Statement supports, disputes, or remains neutral w.r.t. the validity of the Proposition it evaluates.")
     strength: Optional[Union[Coding, IRI]]= Field(None, description="A term used to report the strength of a Proposition's assessment in the direction indicated (i.e. how strongly supported or disputed the Proposition is believed to be).  Implementers may choose to frame a strength assessment in terms of how *confident* an agent is that the Proposition is true or false, or in terms of the *strength of all evidence* they believe supports or disputes it.")
     score: Optional[float] = Field(None, description="A quantitative score that indicates the strength of a Proposition's assessment in the direction indicated (i.e. how strongly supported or disputed the Proposition is believed to be).  Depending on its implementation, a score may reflect how *confident* that agent is that the Proposition is true or false, or the *strength of evidence* they believe supports or disputes it.")
     statementText: Optional[str] = Field(None, description="A natural-language expression of what a Statement asserts to be true.")
     classification: Optional[Union[Coding, IRI]] = Field(None, description="A single term or phrase summarizing the outcome of direction and strength assessments of a Statement's proposition, in terms of a classification of its subject.")
     hasEvidenceLines: Optional[List[EvidenceLine]] = Field(None, description="An evidence-based argument that supports or disputes the validity of the proposition that a Statement assesses or puts forth as true. The strength and direction of this argument (whether it supports or disputes the proposition, and how strongly) is based on an interpretation of one or more pieces of information as evidence (i.e. 'Evidence Items).")
-
 
 
 class Statement(StatementBase):
@@ -359,7 +361,6 @@ class Statement(StatementBase):
     """
 
     subject: Dict = Field(..., description="The Entity about which the Statement is made.")
-    predicate: str = Field(..., description="The relationship declared to hold between the subject and the object of the Statement.")
     object: Dict = Field(..., description="An Entity or concept that is related to the subject of a Statement via its predicate.")
 
 
@@ -370,7 +371,7 @@ class StudyGroup(Entity):
     referred to as a 'cohort' or 'population' in specific research settings.
     """
 
-    type: Literal["StudyGroup"] = Field(CoreImType.STUDY_GROUP.value, description=f"Must be '{CoreImType.STUDY_GROUP.value}'")
+    type: Literal["StudyGroup"] = Field(CoreImType.STUDY_GROUP.value, description=f'Must be "{CoreImType.STUDY_GROUP.value}"')
     memberCount: Optional[int] = Field(None, description="The total number of individual members in the StudyGroup.")
     isSubsetOf: Optional[List[StudyGroup] ]= Field(None, description="A larger StudyGroup of which this StudyGroup represents a subset.")
     characteristics: Optional[List[Characteristic]] = Field(None, description="A feature or role shared by all members of the StudyGroup, representing a criterion for membership in the group.")

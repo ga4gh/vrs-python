@@ -127,5 +127,5 @@ class Gene(DomainEntity):
 
     type: Literal["Gene"] = Field(
         CommonDomainType.GENE.value,
-        description=f'MUST be "{CommonDomainType.GENE.value}".'
+        description=f'MUST be "{CommonDomainType.GENE.value}"'
     )
