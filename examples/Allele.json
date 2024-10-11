@@ -59,7 +59,8 @@
       ]
     },
     "state": {
-      "anyOf": [
+      "description": "An expression of the sequence state",
+      "oneOf": [
         {
           "$ref": "/ga4gh/schema/vrs/2.x/json/LiteralSequenceExpression"
         },
@@ -69,8 +70,7 @@
         {
           "$ref": "/ga4gh/schema/vrs/2.x/json/LengthExpression"
         }
-      ],
-      "description": "An expression of the sequence state"
+      ]
     }
   },
   "required": [

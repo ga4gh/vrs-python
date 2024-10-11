@@ -39,10 +39,9 @@ class Allele(models.Allele, extra="forbid"):
     class Config:
         @staticmethod
         def json_schema_extra(cls):
-            cls["properties"]["location"]["oneOf"] = cls["properties"]["location"][
-                "anyOf"
-            ]
-            del cls["properties"]["location"]["anyOf"]
+            for prop in {"location", "state"}:
+                cls["properties"][prop]["oneOf"] = cls["properties"][prop]["anyOf"]
+                del cls["properties"][prop]["anyOf"]
 
     expressions: Optional[List[models.Expression]] = Field(None, ordered=False)
     maturity: Literal["draft"] = Field("draft", frozen=True)
