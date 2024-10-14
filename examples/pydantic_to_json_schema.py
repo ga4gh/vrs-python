@@ -8,7 +8,7 @@ from pydantic.json_schema import GenerateJsonSchema
 from ga4gh.core import entity_models, domain_models
 from ga4gh.vrs import models
 
-from utils import scrub_rst_markup
+from utils import scrub_rst_markup, EXCLUDE_PROPS
 
 MODULE_TO_REF = {
     "ga4gh.core.entity_models": "/ga4gh/schema/gks-common/1.x/core-im/json",
@@ -103,7 +103,8 @@ class GksGenerateJsonSchema(GenerateJsonSchema):
         model_class = schema.get("schema").get("cls")
         json_schema["title"] = model_class.__name__
 
-        json_schema["properties"].pop("maturity", None)
+        for prop_to_exclude in EXCLUDE_PROPS:
+            json_schema["properties"].pop(prop_to_exclude, None)
 
         if "maturity" in model_class.model_fields:
             json_schema["maturity"] = model_class.model_fields["maturity"].default

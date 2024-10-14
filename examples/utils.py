@@ -1,12 +1,13 @@
 import re
 
 
-ref_re = re.compile(r":ref:`(.*?)(\s?<.*>)?`")
-link_re = re.compile(r"`(.*?)\s?\<(.*)\>`_")
+REF_RE = re.compile(r":ref:`(.*?)(\s?<.*>)?`")
+LINK_RE = re.compile(r"`(.*?)\s?\<(.*)\>`_")
+EXCLUDE_PROPS = {"maturity"}
 
 
 def scrub_rst_markup(string):
-    string = ref_re.sub(r"\g<1>", string)
-    string = link_re.sub(r"[\g<1>](\g<2>)", string)
+    string = REF_RE.sub(r"\g<1>", string)
+    string = LINK_RE.sub(r"[\g<1>](\g<2>)", string)
     string = string.replace("\n", " ")
     return string

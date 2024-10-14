@@ -5,10 +5,10 @@ from pydantic._internal._model_construction import ModelMetaclass
 from typing import Annotated, Any, List
 from typing import get_args, get_origin
 
+from utils import EXCLUDE_PROPS
 from pydantic_to_json_schema import Allele
 
 
-EXCLUDE_PROPS = {"maturity"}
 PYTHON_TO_JSON_TYPES = {
     str: "string",
     int: "integer",
