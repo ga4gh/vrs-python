@@ -1,3 +1,4 @@
+from enum import Enum
 from annotated_types import MaxLen, MinLen
 from pydantic import BaseModel
 from pydantic._internal._model_construction import ModelMetaclass
@@ -26,6 +27,8 @@ def get_field_type(field_anno: Any) -> str | None:
         field_type = f":ref:`{field_anno.__name__}`"
     elif get_origin(field_anno) is Annotated:
         field_type = "string"
+    elif isinstance(field_anno, Enum):
+        field_type = field_anno.name
     else:
         field_type = None
     return field_type
@@ -57,8 +60,18 @@ def get_limits(
     return [str(limit) for limit in limits]
 
 
-def generate_rst(model: BaseModel) -> str:
-    lines = [
+def generate(model: BaseModel) -> str:
+    # TODO: Inheritance
+    inheritance = ""
+
+    rst_data = [
+        "**Computational Definition**",
+        "",
+        model.__doc__,
+        "",
+        "**Information Model**",
+        "",
+        inheritance,
         ".. list-table::",
         "   :class: clean-wrap",
         "   :header-rows: 1",
@@ -75,23 +88,36 @@ def generate_rst(model: BaseModel) -> str:
         if field_name in EXCLUDE_PROPS:
             continue
 
-        field_annotation = tuple(
-            anno for anno in get_args(field_info.annotation) if anno is not type(None)
-        )
-
-        field_is_list = get_origin(field_annotation[0]) in {list, List}
-        limits = get_limits(field_name, field_info.metadata, field_is_list)
-
-        if len(field_annotation) > 1:
-            field_type = " | ".join([get_field_type(anno) for anno in field_annotation])
+        field_type = None
+        if isinstance(field_info.annotation, type) and issubclass(
+            field_info.annotation, Enum
+        ):
+            field_is_list = False
+            field_type = f":ref:`{field_info.annotation.__name__}`"
         else:
-            field_type = get_field_type(
-                get_args(field_annotation[0])[0]
-                if field_is_list
-                else field_annotation[0]
+            field_annotation = tuple(
+                anno
+                for anno in get_args(field_info.annotation)
+                if anno is not type(None)
             )
 
-        lines.extend(
+            field_is_list = get_origin(field_annotation[0]) in {list, List}
+
+        limits = get_limits(field_name, field_info.metadata, field_is_list)
+
+        if field_type is None:
+            if len(field_annotation) > 1:
+                field_type = " | ".join(
+                    [get_field_type(anno) for anno in field_annotation]
+                )
+            else:
+                field_type = get_field_type(
+                    get_args(field_annotation[0])[0]
+                    if field_is_list
+                    else field_annotation[0]
+                )
+
+        rst_data.extend(
             [
                 f"   * - {field_name}",
                 f"     - {field_type}",
@@ -100,9 +126,9 @@ def generate_rst(model: BaseModel) -> str:
             ]
         )
 
-    return "\n".join(lines)
+    return "\n".join(rst_data)
 
 
 if __name__ == "__main__":
     with open("examples/Allele.rst", "w") as wf:
-        wf.write(generate_rst(Allele))
+        wf.write(generate(Allele))

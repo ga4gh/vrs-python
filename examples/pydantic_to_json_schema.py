@@ -1,3 +1,4 @@
+from enum import Enum
 from typing import List, Literal, Optional
 import json
 
@@ -7,6 +8,7 @@ from pydantic.json_schema import GenerateJsonSchema
 from ga4gh.core import entity_models, domain_models
 from ga4gh.vrs import models
 
+from utils import scrub_rst_markup
 
 MODULE_TO_REF = {
     "ga4gh.core.entity_models": "/ga4gh/schema/gks-common/1.x/core-im/json",
@@ -23,7 +25,7 @@ def create_model_module_map(*modules) -> dict[str, str]:
             model = getattr(module, attr_name)
             if (
                 isinstance(model, type)
-                and issubclass(model, (BaseModel, RootModel))
+                and issubclass(model, (BaseModel, RootModel, Enum))
                 and model.__module__ == module.__name__
             ):
                 model_module_map[attr_name] = MODULE_TO_REF[model.__module__]
@@ -34,7 +36,7 @@ MODEL_REF_MAP = create_model_module_map(domain_models, entity_models, models)
 
 
 class Allele(models.Allele, extra="forbid"):
-    """The state of a molecule at a Location."""
+    """The state of a molecule at a :ref:`Location`."""
 
     class Config:
         @staticmethod
@@ -81,6 +83,9 @@ class GksGenerateJsonSchema(GenerateJsonSchema):
                 class_name = schema["$ref"].split("/")[-1]
                 schema["$ref"] = f"{MODEL_REF_MAP[class_name]}/{class_name}"
 
+            if "description" in schema and isinstance(schema["description"], str):
+                schema["description"] = scrub_rst_markup(schema["description"])
+
             for value in schema.values():
                 self.traverse_and_modify(value)
 
@@ -119,7 +124,7 @@ class GksGenerateJsonSchema(GenerateJsonSchema):
         json_schema["$id"] = (
             f"https://w3id.org/ga4gh/schema/vrs/2.x/json/{model_class.__name__}"
         )
-        json_schema["description"] = model_class.__doc__
+        json_schema["description"] = scrub_rst_markup(model_class.__doc__)
 
         self.traverse_and_modify(json_schema)
         return json_schema

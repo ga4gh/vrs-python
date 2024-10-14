@@ -1,3 +1,10 @@
+**Computational Definition**
+
+The state of a molecule at a :ref:`Location`.
+
+**Information Model**
+
+
 .. list-table::
    :class: clean-wrap
    :header-rows: 1
