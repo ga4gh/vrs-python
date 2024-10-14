@@ -125,7 +125,10 @@ class GksGenerateJsonSchema(GenerateJsonSchema):
         return json_schema
 
 
-with open("examples/Allele.json", "w") as wf:
-    json.dump(
-        Allele.model_json_schema(schema_generator=GksGenerateJsonSchema), wf, indent=2
-    )
+if __name__ == "__main__":
+    with open("examples/Allele.json", "w") as wf:
+        json.dump(
+            Allele.model_json_schema(schema_generator=GksGenerateJsonSchema),
+            wf,
+            indent=2,
+        )
