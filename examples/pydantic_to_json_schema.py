@@ -65,7 +65,9 @@ class GksGenerateJsonSchema(GenerateJsonSchema):
                 if len(schema["anyOf"]) == 1:
                     schema.update(schema.pop("anyOf")[0])
 
-            schema.pop("default", None)
+            default = schema.get("default")
+            if default is None:
+                schema.pop("default", None)
 
             enum = schema.get("enum") or []
             if len(enum) == 1:

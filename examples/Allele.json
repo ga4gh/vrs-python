@@ -8,6 +8,7 @@
     },
     "type": {
       "const": "Allele",
+      "default": "Allele",
       "description": "MUST be \"Allele\"",
       "type": "string"
     },
