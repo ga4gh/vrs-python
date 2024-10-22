@@ -5,8 +5,9 @@ from pydantic._internal._model_construction import ModelMetaclass
 from typing import Annotated, Any, List
 from typing import get_args, get_origin
 
-from utils import EXCLUDE_PROPS
-from pydantic_to_json_schema import Allele
+from utils import EXCLUDE_PROPS, INSTANCE_TO_ABC
+
+from ga4gh.vrs import models
 
 
 PYTHON_TO_JSON_TYPES = {
@@ -61,8 +62,11 @@ def get_limits(
 
 
 def generate(model: BaseModel) -> str:
-    # TODO: Inheritance
-    inheritance = ""
+    model_name = model.__name__
+    if model_name in INSTANCE_TO_ABC:
+        inheritance = f"Some {model_name} attributes are inherited from :ref:`{INSTANCE_TO_ABC[model_name]}`.\n"
+    else:
+        inheritance = ""
 
     rst_data = [
         "**Computational Definition**",
@@ -95,11 +99,15 @@ def generate(model: BaseModel) -> str:
             field_is_list = False
             field_type = f":ref:`{field_info.annotation.__name__}`"
         else:
-            field_annotation = tuple(
-                anno
-                for anno in get_args(field_info.annotation)
-                if anno is not type(None)
-            )
+            field_anno_args = get_args(field_info.annotation)
+            if field_anno_args:
+                field_annotation = tuple(
+                    anno
+                    for anno in get_args(field_info.annotation)
+                    if anno is not type(None)
+                )
+            else:
+                field_annotation = [field_info.annotation]
 
             field_is_list = get_origin(field_annotation[0]) in {list, List}
 
@@ -131,4 +139,4 @@ def generate(model: BaseModel) -> str:
 
 if __name__ == "__main__":
     with open("examples/Allele.rst", "w") as wf:
-        wf.write(generate(Allele))
+        wf.write(generate(models.Allele))

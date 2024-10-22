@@ -4,6 +4,7 @@ The state of a molecule at a :ref:`Location`.
 
 **Information Model**
 
+Some Allele attributes are inherited from :ref:`Variation`.
 
 .. list-table::
    :class: clean-wrap
@@ -48,10 +49,10 @@ The state of a molecule at a :ref:`Location`.
      - 0..m
      - None
    * - location
-     - :ref:`IRI` | :ref:`SequenceLocation`
+     - :ref:`IRI` | :ref:`Location`
      - 0..1
      - The location of the Allele
    * - state
-     - :ref:`LiteralSequenceExpression` | :ref:`ReferenceLengthExpression` | :ref:`LengthExpression`
+     - :ref:`SequenceExpression`
      - 0..1
      - An expression of the sequence state

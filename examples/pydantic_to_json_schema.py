@@ -1,8 +1,7 @@
 from enum import Enum
-from typing import List, Literal, Optional
 import json
 
-from pydantic import Field, BaseModel, RootModel
+from pydantic import BaseModel, RootModel
 from pydantic.json_schema import GenerateJsonSchema
 
 from ga4gh.core import entity_models, domain_models
@@ -17,9 +16,9 @@ MODULE_TO_REF = {
 }
 
 
-def create_model_module_map(*modules) -> dict[str, str]:
-    """Creates a mapping from model names to their modules."""
-    model_module_map = {}
+def map_model_to_ref(*modules) -> dict[str, str]:
+    """Creates a mapping from model names to their JSON schema references."""
+    model_to_module = {}
     for module in modules:
         for attr_name in dir(module):
             model = getattr(module, attr_name)
@@ -28,33 +27,11 @@ def create_model_module_map(*modules) -> dict[str, str]:
                 and issubclass(model, (BaseModel, RootModel, Enum))
                 and model.__module__ == module.__name__
             ):
-                model_module_map[attr_name] = MODULE_TO_REF[model.__module__]
-    return model_module_map
+                model_to_module[attr_name] = MODULE_TO_REF[model.__module__]
+    return model_to_module
 
 
-MODEL_REF_MAP = create_model_module_map(domain_models, entity_models, models)
-
-
-class Allele(models.Allele, extra="forbid"):
-    """The state of a molecule at a :ref:`Location`."""
-
-    class Config:
-        @staticmethod
-        def json_schema_extra(cls):
-            for prop in {"location", "state"}:
-                cls["properties"][prop]["oneOf"] = cls["properties"][prop]["anyOf"]
-                del cls["properties"][prop]["anyOf"]
-
-    expressions: Optional[List[models.Expression]] = Field(None, ordered=False)
-    maturity: Literal["draft"] = Field("draft", frozen=True)
-    alternativeLabels: Optional[List[str]] = Field(
-        None, description="Alternative name(s) for the Entity.", ordered=False
-    )
-    extensions: Optional[List[entity_models.Extension]] = Field(
-        None,
-        description="A list of extensions to the Entity, that allow for capture of information not directly supported by elements defined in the model.",
-        ordered=False,
-    )
+MODEL_TO_REF = map_model_to_ref(domain_models, entity_models, models)
 
 
 class GksGenerateJsonSchema(GenerateJsonSchema):
@@ -81,7 +58,7 @@ class GksGenerateJsonSchema(GenerateJsonSchema):
 
             if "$ref" in schema:
                 class_name = schema["$ref"].split("/")[-1]
-                schema["$ref"] = f"{MODEL_REF_MAP[class_name]}/{class_name}"
+                schema["$ref"] = f"{MODEL_TO_REF[class_name]}/{class_name}"
 
             if "description" in schema and isinstance(schema["description"], str):
                 schema["description"] = scrub_rst_markup(schema["description"])
@@ -134,7 +111,7 @@ class GksGenerateJsonSchema(GenerateJsonSchema):
 if __name__ == "__main__":
     with open("examples/Allele.json", "w") as wf:
         json.dump(
-            Allele.model_json_schema(schema_generator=GksGenerateJsonSchema),
+            models.Allele.model_json_schema(schema_generator=GksGenerateJsonSchema),
             wf,
             indent=2,
         )

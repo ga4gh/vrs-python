@@ -10,6 +10,9 @@ Instead, users should use one of the following:
   * `import ga4gh.vrs`, and refer to models using the fully-qualified
     module name, e.g., `ga4gh.vrs.models.Allele`
 """
+from __future__ import annotations
+
+from abc import ABC
 from typing import List, Literal, Optional, Union, Dict, Annotated
 from collections import OrderedDict
 from enum import Enum
@@ -211,7 +214,7 @@ def _recurse_ga4gh_serialize(obj):
         return obj
 
 
-class _ValueObject(Entity):
+class _ValueObject(Entity, ABC):
     """A contextual value whose equality is based on value, not identity.
     See https://en.wikipedia.org/wiki/Value_object for more on Value Objects.
 
@@ -236,7 +239,7 @@ class _ValueObject(Entity):
         return False
 
 
-class Ga4ghIdentifiableObject(_ValueObject):
+class Ga4ghIdentifiableObject(_ValueObject, ABC):
     """A contextual value object for which a GA4GH computed identifier can be created.
     All GA4GH Identifiable Objects may have computed digests from the VRS Computed
     Identifier algorithm.
@@ -554,27 +557,34 @@ class SequenceLocation(Ga4ghIdentifiableObject):
 #########################################
 
 
-class _VariationBase(Ga4ghIdentifiableObject):
+class _VariationBase(Ga4ghIdentifiableObject, ABC):
     """Base class for variation
 
     Abstract base class to be extended by other classes. Do NOT instantiate directly.
     """
 
-    expressions: Optional[List[Expression]] = None
+    expressions: Optional[List[Expression]] = Field(None, ordered=False)
 
 #########################################
 # vrs molecular variation
 #########################################
 
 
-class Allele(_VariationBase):
-    """The state of a molecule at a `Location`."""
+class Allele(_VariationBase, extra="forbid"):
+    """The state of a molecule at a :ref:`Location`."""
 
+    class Config:
+        @staticmethod
+        def json_schema_extra(cls):
+            cls["properties"]["location"]["oneOf"] = cls["properties"]["location"]["anyOf"]
+            del cls["properties"]["location"]["anyOf"]
+
+    maturity: Literal["draft"] = Field("draft", frozen=True)
     type: Literal["Allele"] = Field(VrsType.ALLELE.value, description=f'MUST be "{VrsType.ALLELE.value}"')
-    location: Union[IRI, SequenceLocation] = Field(
+    location: Union[IRI, Location] = Field(
         ..., description='The location of the Allele'
     )
-    state: Union[LiteralSequenceExpression, ReferenceLengthExpression, LengthExpression] = Field(
+    state: SequenceExpression = Field(
         ..., description='An expression of the sequence state'
     )
 
@@ -735,7 +745,7 @@ class DerivativeMolecule(_VariationBase):
 #########################################
 
 
-class _CopyNumber(_VariationBase):
+class CopyNumber(_VariationBase, ABC):
     """A measure of the copies of a `Location` within a system (e.g. genome, cell, etc.)
 
     Abstract base class to be extended by other classes. Do NOT instantiate directly.
@@ -747,7 +757,7 @@ class _CopyNumber(_VariationBase):
     )
 
 
-class CopyNumberCount(_CopyNumber):
+class CopyNumberCount(CopyNumber):
     """The absolute count of discrete copies of a `Location` or `Gene`, within a system
     (e.g. genome, cell, etc.).
     """
@@ -766,7 +776,7 @@ class CopyNumberCount(_CopyNumber):
         ]
 
 
-class CopyNumberChange(_CopyNumber):
+class CopyNumberChange(CopyNumber):
     """An assessment of the copy number of a `Location` or a `Gene` within a system
     (e.g. genome, cell, etc.) relative to a baseline ploidy.
     """
@@ -826,18 +836,6 @@ class Location(RootModel):
     )
 
 
-class Variation(RootModel):
-    """A representation of the state of one or more biomolecules."""
-
-    root: Union[Allele, CisPhasedBlock, Adjacency, Terminus, DerivativeMolecule, CopyNumberChange, CopyNumberCount] = Field(
-        ...,
-        json_schema_extra={
-            'description': 'A representation of the state of one or more biomolecules.'
-        },
-        discriminator='type',
-    )
-
-
 class SystemicVariation(RootModel):
     """A Variation of multiple molecules in the context of a system, e.g. a genome,
     sample, or homologous chromosomes.
@@ -851,6 +849,17 @@ class SystemicVariation(RootModel):
         discriminator='type',
     )
 
+
+class Variation(RootModel):
+    """A representation of the state of one or more biomolecules."""
+
+    root: Union[MolecularVariation, SystemicVariation] = Field(
+        ...,
+        json_schema_extra={
+            'description': 'A representation of the state of one or more biomolecules.'
+        },
+        discriminator='type',
+    )
 
 # At end so classes exist
 (
