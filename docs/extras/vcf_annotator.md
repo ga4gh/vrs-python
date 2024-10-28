@@ -54,7 +54,7 @@ vrs-annotate vcf input.vcf.gz --vcf_out output.vcf.gz --vrs_pickle_out vrs_objec
 ```
 
 ### Other Options
-`--vrs_attribute`
+`--vrs_attributes`
 >Will include VRS_Start, VRS_End, VRS_State fields in the INFO field.
 
 `--assembly` [TEXT]

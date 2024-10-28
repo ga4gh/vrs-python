@@ -27,7 +27,7 @@ from ga4gh.core import (
 from ga4gh.core.pydantic import get_pydantic_root
 
 from canonicaljson import encode_canonical_json
-from pydantic import BaseModel, Field, RootModel, StringConstraints, ConfigDict
+from pydantic import BaseModel, Field, RootModel, StringConstraints, ConfigDict, ValidationInfo, field_validator
 
 from ga4gh.core.pydantic import (
     getattr_in
@@ -366,6 +366,25 @@ class Range(RootModel):
         min_length=2,
     )
 
+    @field_validator("root", mode="after")
+    def validate_range(cls, v: List[Optional[int]]) -> List[Optional[int]]:
+        """Validate range values
+
+        :param v: Root value
+        :raises ValueError: If ``root`` does not include at least one integer or if
+            the first element in ``root`` is greater than the second element in ``root``
+        :return: Inclusive range
+        """
+        if v.count(None) == 2:
+            err_msg = "Must provide at least one integer."
+            raise ValueError(err_msg)
+
+        if v[0] is not None and v[1] is not None:
+            if v[0] > v[1]:
+                err_msg = "The first integer must be less than or equal to the second integer."
+                raise ValueError(err_msg)
+
+        return v
 
 class Residue(RootModel):
     """A character representing a specific residue (i.e., molecular species) or
@@ -497,6 +516,26 @@ class SequenceLocation(_Ga4ghIdentifiableObject):
 
     )
     sequence: Optional[SequenceString] = Field(None, description="The literal sequence encoded by the `sequenceReference` at these coordinates.")
+
+    @field_validator("start", "end", mode="after")
+    def validate_start_end(cls, v: Optional[Union[Range, int]], info: ValidationInfo) -> Optional[Union[Range, int]]:
+        """Validate ``start`` and ``end`` fields
+
+        :param v: ``start`` or ``end`` value
+        :param info: Validation info
+        :raises ValueError: If ``start`` or ``end`` has a value less than 0
+        :return: Sequence Location
+        """
+        if v is not None:
+            if isinstance(v, int):
+                int_values = [v]
+            else:
+                int_values = [val for val in v.root if val is not None]
+
+            if any(int_val < 0 for int_val in int_values):
+                err_msg = f"The minimum value of `{info.field_name}` is 0."
+                raise ValueError(err_msg)
+        return v
 
     def ga4gh_serialize_as_version(self, as_version: PrevVrsVersion):
         """This method will return a serialized string following the conventions for
