@@ -1,6 +1,7 @@
 """GKS Common Library Data Type and Entity models"""
 from __future__ import annotations
 
+from abc import ABC
 import datetime
 import logging
 from typing import Any, Dict, Annotated, Literal, Optional, Union, List
@@ -149,7 +150,7 @@ class Extension(BaseModel):
 #########################################
 
 
-class Entity(BaseModel):
+class Entity(BaseModel, ABC):
     """Anything that exists, has existed, or will exist.
 
     Abstract base class to be extended by other classes. Do NOT instantiate directly.
@@ -172,14 +173,12 @@ class Entity(BaseModel):
     extensions: Optional[List[Extension]] = Field(None, description="A list of extensions to the Entity, that allow for capture of information not directly supported by elements defined in the model.")
 
 
-class DomainEntity(Entity):
+class DomainEntity(Entity, ABC):
     """An Entity that is specific to a particular biomedical domain such as disease,
     therapeutics, or genes. Domain Entities are considered as 'concept-level' entities,
     as opposed to particular instances. e.g. 'Lung Cancer', not 'patient123's lung
     cancer'. Or 'Erlotinib', not the particular doses given to a patient on a specific
     occasion.
-
-    Abstract base class to be extended by other classes. Do NOT instantiate directly.
     """
 
     mappings: Optional[List[ConceptMapping]] = Field(None, description="A list of mappings to concepts in terminologies or code systems. Each mapping should include a coding and a relation.")
@@ -196,10 +195,10 @@ class Agent(Entity):
     subtype: Optional[AgentSubtype] = Field(None, description="A specific type of agent the Agent object represents. Must be one of {person, organization, software}.")
 
 
-class ActivityBase(Entity):
+class ActivityBase(Entity, ABC):
     """Internal base class that holds shared fields for Activity model.
 
-    Abstract base class to be extended by other classes. Do NOT instantiate directly.
+    This class should not be used directly.
     """
 
     subtype: Optional[Coding] = Field(None, description="A specific type of activity the Activity instance represents.")
@@ -241,10 +240,10 @@ class Contribution(ActivityBase):
     activityType: Optional[Coding] = Field(None, description="The specific type of activity performed or role played by an agent in making the contribution (e.g. for a publication, agents may contribute as a primary author, editor, figure designer, data generator, etc. . Values of this property may be framed as activities or as contribution roles (e.g. using terms from the Contribution Role Ontology (CRO)).")
 
 
-class InformationEntityBase(Entity):
+class InformationEntityBase(Entity, ABC):
     """Internal base class that holds shared fields for InformationEntity model.
 
-    Abstract base class to be extended by other classes. Do NOT instantiate directly.
+    This class should not be used directly.
     """
 
     type: Literal["InformationEntity"] = Field(CoreImType.INFORMATION_ENTITY.value, description=f"MUST be {CoreImType.INFORMATION_ENTITY.value}.")
@@ -338,11 +337,8 @@ class EvidenceLine(InformationEntity):
     scoreOfEvidenceProvided: Optional[float] = Field(None, description="A quantitative score indicating the strength of support that an Evidence Line is determined to provide for or against its target Proposition, evaluated relative to the direction indicated by the directionOfEvidenceProvided value.")
 
 
-class StatementBase(InformationEntity):
-    """Internal base class that holds shared fields for Statement model.
-
-    Abstract base class to be extended by other classes. Do NOT instantiate directly.
-    """
+class StatementBase(InformationEntity, ABC):
+    """Internal base class that holds shared fields for Statement model."""
 
     predicate: str = Field(..., description="The relationship declared to hold between the subject and the object of the Statement.")
     direction: Optional[Direction] = Field(None, description="A term indicating whether the Statement supports, disputes, or remains neutral w.r.t. the validity of the Proposition it evaluates.")
@@ -387,23 +383,18 @@ class Characteristic(BaseModel):
     valueOperator: Optional[bool] = Field(None, description="An operation that defines how to logically interpret a set of more than one Characteristic values ('AND', 'OR', 'NOT')")
 
 
-class StudyResultBase(InformationEntityBase):
-    """Internal base class that holds shared fields for StudyResult model.
-
-    Abstract base class to be extended by other classes. Do NOT instantiate directly.
-    """
+class StudyResultBase(InformationEntityBase, ABC):
+    """Internal base class that holds shared fields for StudyResult model."""
 
     sourceDataSet: Optional[List[DataSet]] = Field(None, description="A larger DataSet from which the content of the StudyResult was derived.", max_length=1)
     ancillaryResults: Optional[Dict] = None
     qualityMeasures: Optional[Dict] = None
 
 
-class StudyResult(InformationEntityBase):
+class StudyResult(InformationEntityBase, ABC):
     """A collection of data items from a single study that pertain to a particular
     subject or experimental unit in the study, along with optional provenance
     information describing how these data items were generated.
-
-    Abstract base class to be extended by other classes. Do NOT instantiate directly.
     """
 
     focus: Optional[Union[DomainEntity, Coding, IRI]] = Field(None, description="The specific subject or experimental unit in a Study that data in the StudyResult object is about - e.g. a particular variant in a population allele frequency dataset like ExAC or gnomAD.")
