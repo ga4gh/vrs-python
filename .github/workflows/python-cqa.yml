@@ -54,21 +54,11 @@ jobs:
             args: "mixed-line-ending"
     steps:
     - uses: actions/checkout@v4
-    - uses: actions/cache@v4
-      with:
-        path: ~/.cache/pip
-        key: ${{ runner.os }}-pip-precommit-${{ hashFiles('pyproject.toml') }}
-        restore-keys: |
-          ${{ runner.os }}-pip-
-    - name: Set up Python ${{ matrix.python-version }}
+    - name: Set up Python 3.12
       uses: actions/setup-python@v5
       with:
         python-version: 3.12
-    - name: Update pip and setuptools
-      run: |
-        python -m pip install --upgrade pip setuptools
-    - name: Install dependencies
-      run: |
-        pip install -e .[dev]
     - name:  ${{ matrix.hook.name }}
-      run: pre-commit run ${{ matrix.hook.args }} --all-files
+      uses:
+      with:
+        extra_args: ${{ matrix.hook.args }} --all-files
