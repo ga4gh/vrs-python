@@ -51,7 +51,7 @@ def _update_gks_schema_mapping(
 
 
 GKS_SCHEMA_MAPPING = {gks: GKSSchemaMapping() for gks in GKSSchema}
-SUBMODULES_DIR = Path(__file__).parents[1] / "submodules" / "vrs"
+SUBMODULES_DIR = Path(__file__).parents[2] / "submodules" / "vrs"
 
 
 # Get vrs classes
