@@ -67,5 +67,5 @@ jobs:
     - name: Install dependencies
       run: |
         pip install -e .[dev]
-    - name: Run pre-commit ${{ matrix.hook.cmd }} command
+    - name: Run pre-commit ${{ matrix.hook.cmd }} hook
       run: pre-commit run ${{ matrix.hook.cmd }} --all-files
