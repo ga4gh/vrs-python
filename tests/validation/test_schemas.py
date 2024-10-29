@@ -25,7 +25,7 @@ class GKSSchemaMapping(BaseModel):
     base_classes: set = set()
     concrete_classes: set = set()
     primitives: set = set()
-    schema: dict = dict()
+    schema: dict = {}
 
 
 def _update_gks_schema_mapping(
@@ -71,7 +71,7 @@ for child in (SUBMODULES_DIR / "submodules" / "gks-common" / "schema").iterdir()
 
 
 @pytest.mark.parametrize(
-    "gks_schema,pydantic_models",
+    ("gks_schema", "pydantic_models"),
     [
         (GKSSchema.VRS, vrs_models),
         (GKSSchema.CORE_IM, entity_models),
@@ -88,7 +88,7 @@ def test_schema_models_in_pydantic(gks_schema, pydantic_models):
 
 
 @pytest.mark.parametrize(
-    "gks_schema,pydantic_models",
+    ("gks_schema", "pydantic_models"),
     [
         (GKSSchema.VRS, vrs_models),
         (GKSSchema.CORE_IM, entity_models),
@@ -107,20 +107,20 @@ def test_schema_class_fields(gks_schema, pydantic_models):
 
         required_schema_fields = set(mapping.schema[schema_model]["required"])
 
-        for property, property_def in schema_properties.items():
-            pydantic_model_field_info = pydantic_model.model_fields[property]
+        for prop, property_def in schema_properties.items():
+            pydantic_model_field_info = pydantic_model.model_fields[prop]
             pydantic_field_required = pydantic_model_field_info.is_required()
 
-            if property in required_schema_fields:
-                if property != "type":
-                    assert pydantic_field_required, f"{pydantic_model}.{property}"
+            if prop in required_schema_fields:
+                if prop != "type":
+                    assert pydantic_field_required, f"{pydantic_model}.{prop}"
             else:
-                assert not pydantic_field_required, f"{pydantic_model}.{property}"
+                assert not pydantic_field_required, f"{pydantic_model}.{prop}"
 
             if "description" in property_def:
-                assert property_def["description"].replace("'", "\"") == pydantic_model_field_info.description.replace("'", "\""), f"{pydantic_model}.{property}"
+                assert property_def["description"].replace("'", "\"") == pydantic_model_field_info.description.replace("'", "\""), f"{pydantic_model}.{prop}"
             else:
-                assert pydantic_model_field_info.description is None, f"{pydantic_model}.{property}"
+                assert pydantic_model_field_info.description is None, f"{pydantic_model}.{prop}"
 
 
 def test_ga4gh_keys():
