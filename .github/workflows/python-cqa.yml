@@ -70,7 +70,7 @@ jobs:
     - name: Install dependencies
       run: |
         pip install -e .[dev]
-    - name: {{ "${{ matrix.hook.name }}" }}
+    - name:  "${{ matrix.hook.name }}"
       uses: pre-commit/action@v3.0.1
       with:
         extra_args: "${{ matrix.hook.args }}" --all-files
