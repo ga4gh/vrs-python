@@ -33,7 +33,7 @@ class HgvsTools():
         self.variant_mapper = hgvs.variantmapper.VariantMapper(self.uta_conn)
         self.data_proxy = data_proxy
 
-    
+
 
     def close(self):
         # TODO These should only be closed if they are owned by this instance
@@ -57,7 +57,7 @@ class HgvsTools():
         if not self.hgvs_re.match(hgvs_str):
             return None
         return self.parser.parse_hgvs_variant(hgvs_str)
-    
+
     def is_intronic(self, sv: hgvs.sequencevariant.SequenceVariant):
         """
         Checks if the given SequenceVariant is intronic.
@@ -71,13 +71,13 @@ class HgvsTools():
         if isinstance(sv.posedit.pos, hgvs.location.BaseOffsetInterval):
             return (sv.posedit.pos.start.is_intronic or sv.posedit.pos.end.is_intronic)
         return False
-    
+
 
     def get_edit_type(self, sv: hgvs.sequencevariant.SequenceVariant):
         if sv is None or sv.posedit is None or sv.posedit.edit is None:
             return None
         return sv.posedit.edit.type
-    
+
     def get_position_and_state(self, sv: hgvs.sequencevariant.SequenceVariant):
         """
         Get the details of a sequence variant.
@@ -150,14 +150,14 @@ class HgvsTools():
         sv = self.parse(hgvs_expr)
         if not sv:
             return None
-        
+
         if self.is_intronic(sv):
             raise ValueError("Intronic HGVS variants are not supported")
 
         refget_accession = self.data_proxy.derive_refget_accession(sv.ac)
         if not refget_accession:
             return None
-        
+
         # translate coding coordinates to positional coordinates, if necessary
         if sv.type == "c":
             sv = self.c_to_n(sv)
@@ -166,7 +166,7 @@ class HgvsTools():
 
         retval = {"refget_accession": refget_accession, "start": start, "end": end, "literal_sequence": state}
         return retval
-    
+
     def from_allele(self, vo, namespace=None):
         """generates a *list* of HGVS expressions for VRS Allele.
 
@@ -188,15 +188,15 @@ class HgvsTools():
 
         if vo is None:
             return []
-        if not isinstance(vo, models.Allele): 
+        if not isinstance(vo, models.Allele):
             raise ValueError("VRS object must be an Allele")
         if vo.location is None:
             raise ValueError("VRS allele must have a location")
-        
+
         refget_accession = vo.location.get_refget_accession()
         if refget_accession is None:
             raise ValueError("VRS allele location must have a sequence reference")
-        
+
         sequence = f"ga4gh:{refget_accession}"
         aliases = self.data_proxy.translate_sequence_identifier(sequence, namespace)
 
@@ -218,9 +218,9 @@ class HgvsTools():
             # create the hgvs expression object
             var = self._to_sequence_variant(vo, sequence_type, sequence, accession)
             hgvs_exprs += [str(var)]
-         
+
         return list(set(hgvs_exprs))
-    
+
     def _to_sequence_variant(self, vo, sequence_type, sequence, accession):
         """Creates a SequenceVariant object from an Allele object."""
           # build interval and edit depending on sequence type
@@ -253,24 +253,24 @@ class HgvsTools():
             # this will subsequently be converted back to `c.` after hgvs normalization
             type='n' if sequence_type == 'c' else sequence_type,
             posedit=posedit)
-        
+
         try:
             # if the namespace is GRC, can't normalize, since hgvs can't deal with it
             parsed = self.parse(str(var))
             var = self.normalize(parsed)
-            
+
             # if sequence_type is coding, convert from "n." to "c." before continuing
             if sequence_type == "c":
                 var = self.n_to_c(var)
-            
+
         except hgvs.exceptions.HGVSDataNotAvailableError:
             _logger.warning(f"No data found for accession {accession}")
-        
+
         return var
 
     def normalize(self, hgvs):
         return self.normalizer.normalize(hgvs)
-    
+
     def n_to_c(self, hgvs):
         return self.variant_mapper.n_to_c(hgvs)
 
@@ -312,4 +312,3 @@ if __name__ == "__main__":
     hgvs_expr = hgvsTools.from_allele(vrs_allele, namespace="refseq")
 
     print(hgvs_expr)
-
