@@ -6,6 +6,9 @@ repos:
       - id: detect-private-key
       - id: trailing-whitespace
       - id: end-of-file-fixer
+      - id: check-merge-conflict
+      - id: detect-aws-credentials
+        args: [ --allow-missing-credentials ]
       - id: mixed-line-ending
         args: [ --fix=lf ]
 minimum_pre_commit_version: 4.0.1
