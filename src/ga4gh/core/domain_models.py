@@ -1,15 +1,4 @@
-"""GKS Common Library Domain Entity models
-
-**This module should not be imported directly.**
-
-Instead, users should use one of the following:
-
-  * `from ga4gh.core import domain_models`, and refer to models with the
-    abbreviated name, e.g., `domain_models.Gene` (recommended)
-
-  * `import ga4gh.core`, and refer to models using the fully-qualified
-    module name, e.g., `ga4gh.core.domain_models.Gene`
-"""
+"""GKS Common Library Domain Entity models"""
 from enum import Enum
 from typing import Literal, Union, List
 
@@ -138,5 +127,5 @@ class Gene(DomainEntity):
 
     type: Literal["Gene"] = Field(
         CommonDomainType.GENE.value,
-        description=f'MUST be "{CommonDomainType.GENE.value}".'
+        description=f'MUST be "{CommonDomainType.GENE.value}"'
     )
