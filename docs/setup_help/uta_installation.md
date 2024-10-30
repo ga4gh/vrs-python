@@ -8,7 +8,7 @@
 4. Create roles for the application, give login and CREATEDB permissions:
    1. `CREATE ROLE uta_admin WITH LOGIN CREATEDB;`
    2. `CREATE ROLE anonymous WITH LOGIN CREATEDB;`
-5. List the users using the command 
+5. List the users using the command
    1. `\du`
 6. Create the UTA Database object
    1. `CREATE DATABASE uta;`
@@ -16,7 +16,7 @@
    1. `GRANT ALL PRIVILEGES ON DATABASE uta TO uta_admin;`
 8. Exit postgres
    1. `\q`
-9. Download the UTA database and place it in the uta database object that you created before (**This step takes around 5 hours**). 
+9. Download the UTA database and place it in the uta database object that you created before (**This step takes around 5 hours**).
    1. `export UTA_VERSION=uta_20210129.pgd.gz\ncurl -O http://dl.biocommons.org/uta/$UTA_VERSION\ngzip -cdq ${UTA_VERSION} | psql -h localhost -U uta_admin --echo-errors --single-transaction -v ON_ERROR_STOP=1 -d uta -p 5432`
 10. Set your UTA path
     1. `export UTA_DB_URL=postgresql://uta_admin@localhost:5432/uta/uta_20210129`
