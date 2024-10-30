@@ -42,8 +42,3 @@ we show how to transform basic variants to VRS, and in some cases, back to the o
 The final notebook of this series,
 [Exploring the CNV Translator](5_Exploring_the_CnvTranslator.ipynb) details transformations
 of various forms of copy number variation to their VRS representations.
-
-
-
-
-

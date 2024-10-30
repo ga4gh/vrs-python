@@ -192,13 +192,20 @@ This section is intended for developers who contribute to VRS-Python.
 
 ### Installing for development
 
-Fork the repo at <https://github.com/ga4gh/vrs-python/>.
+Fork the repo at <https://github.com/ga4gh/vrs-python/> and initialize a development environment.
 
 ```shell
 git clone --recurse-submodules git@github.com:YOUR_GITHUB_ID/vrs-python.git
 cd vrs-python
 make devready
 source venv/3.12/bin/activate
+```
+
+This setup includes [pre-commit hooks](https://pre-commit.com/). If you create a virtual environment manually, be sure to install the hooks yourself; otherwise, commits may fail during [CI/CD checks](https://github.com/ga4gh/vrs-python/actions/workflows/python-cqa.yml):
+
+```shell
+source venv/3.12/bin/activate
+pre-commit install
 ```
 
 If you already cloned the repo, but forgot to include `--recurse-submodules` you can run:

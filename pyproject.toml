@@ -58,6 +58,7 @@ dev = [
     "vcrpy",
     "pyyaml",
     # style
+    "pre-commit>=4.0.1",
     "pylint",
     "yapf",
     # docs

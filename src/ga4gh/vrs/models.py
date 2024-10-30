@@ -703,7 +703,7 @@ class TraversalBlock(_ValueObject):
             'component',
             'orientation',
             'type'
-        ]        
+        ]
 
 class DerivativeMolecule(_VariationBase):
     """The "Derivative Molecule" data class is a structure for describing a derivate
@@ -716,7 +716,7 @@ class DerivativeMolecule(_VariationBase):
         description="The traversal block components that make up the derivative molecule.",
         min_length=2
     )
-    circular: Optional[bool] = Field(None, description="A flag indicating if the derivative molecule is circular (true) or linear (false).")    
+    circular: Optional[bool] = Field(None, description="A flag indicating if the derivative molecule is circular (true) or linear (false).")
 
     class ga4gh(_Ga4ghIdentifiableObject.ga4gh):
         prefix = "DM"
