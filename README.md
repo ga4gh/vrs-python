@@ -192,7 +192,9 @@ This section is intended for developers who contribute to VRS-Python.
 
 ### Installing for development
 
-Fork the repo at <https://github.com/ga4gh/vrs-python/> and initialize a development environment.
+[Fork the GitHub repo](https://github.com/ga4gh/vrs-python/fork).
+
+Then, clone the fork and initialize a development environment:
 
 ```shell
 git clone --recurse-submodules git@github.com:YOUR_GITHUB_ID/vrs-python.git
