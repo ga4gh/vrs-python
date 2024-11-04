@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 
 import pytest
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from ga4gh.core import entity_models, domain_models
 from ga4gh.vrs import models as vrs_models
@@ -25,7 +25,7 @@ class GKSSchemaMapping(BaseModel):
     base_classes: set = set()
     concrete_classes: set = set()
     primitives: set = set()
-    schema: dict = {}
+    gks_schema: dict = Field(alias="schema", default={})
 
 
 def _update_gks_schema_mapping(
@@ -40,7 +40,7 @@ def _update_gks_schema_mapping(
         cls_def = json.load(rf)
 
     spec_class = cls_def["title"]
-    gks_schema_mapping.schema[spec_class] = cls_def
+    gks_schema_mapping.gks_schema[spec_class] = cls_def
 
     if "properties" in cls_def:
         gks_schema_mapping.concrete_classes.add(spec_class)
@@ -101,11 +101,11 @@ def test_schema_class_fields(gks_schema, pydantic_models):
     """
     mapping = GKS_SCHEMA_MAPPING[gks_schema]
     for schema_model in mapping.concrete_classes:
-        schema_properties = mapping.schema[schema_model]["properties"]
+        schema_properties = mapping.gks_schema[schema_model]["properties"]
         pydantic_model = getattr(pydantic_models, schema_model)
         assert set(pydantic_model.model_fields) == set(schema_properties), schema_model
 
-        required_schema_fields = set(mapping.schema[schema_model]["required"])
+        required_schema_fields = set(mapping.gks_schema[schema_model]["required"])
 
         for prop, property_def in schema_properties.items():
             pydantic_model_field_info = pydantic_model.model_fields[prop]
@@ -128,7 +128,7 @@ def test_ga4gh_keys():
     vrs_mapping = GKS_SCHEMA_MAPPING[GKSSchema.VRS]
     for vrs_class in vrs_mapping.concrete_classes:
         if (
-            vrs_mapping.schema[vrs_class].get("ga4ghDigest", {}).get("keys", None)
+            vrs_mapping.gks_schema[vrs_class].get("ga4ghDigest", {}).get("keys", None)
             is None
         ):
             continue
@@ -141,7 +141,7 @@ def test_ga4gh_keys():
             raise AttributeError(vrs_class) from e
 
         assert set(pydantic_model_digest_keys) == set(
-            vrs_mapping.schema[vrs_class]["ga4ghDigest"]["keys"]
+            vrs_mapping.gks_schema[vrs_class]["ga4ghDigest"]["keys"]
         ), vrs_class
         assert pydantic_model_digest_keys == sorted(
             pydantic_model.ga4gh.keys
