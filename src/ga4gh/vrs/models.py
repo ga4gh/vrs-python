@@ -197,17 +197,17 @@ class Syntax(str, Enum):
     SPDI = "spdi"
 
 
-def _recurse_ga4gh_serialize(obj):
+def _recurse_ga4gh_serialize(obj, store_digest: bool = True):
     if isinstance(obj, _Ga4ghIdentifiableObject):
-        return obj.get_or_create_digest()
+        return obj.get_or_create_digest(store=store_digest)
     elif isinstance(obj, _ValueObject):
         return obj.ga4gh_serialize()
     elif isinstance(obj, RootModel):
-        return _recurse_ga4gh_serialize(obj.model_dump())
+        return _recurse_ga4gh_serialize(obj.model_dump(), store_digest)
     elif isinstance(obj, str):
         return obj
     elif isinstance(obj, list):
-        return [_recurse_ga4gh_serialize(x) for x in obj]
+        return [_recurse_ga4gh_serialize(x, store_digest) for x in obj]
     else:
         return obj
 
@@ -220,11 +220,11 @@ class _ValueObject(Entity, ABC):
     def __hash__(self):
         return encode_canonical_json(self.ga4gh_serialize()).decode("utf-8").__hash__()
 
-    def ga4gh_serialize(self) -> Dict:
+    def ga4gh_serialize(self, store_digest: bool = True) -> Dict:
         out = OrderedDict()
         for k in self.ga4gh.keys:
             v = getattr(self, k)
-            out[k] = _recurse_ga4gh_serialize(v)
+            out[k] = _recurse_ga4gh_serialize(v, store_digest=store_digest)
         return out
 
     class ga4gh:
@@ -266,7 +266,7 @@ class _Ga4ghIdentifiableObject(_ValueObject, ABC):
         returned following the conventions of the VRS version indicated by ``as_version_``.
         """
         if as_version is None:
-            digest = sha512t24u(encode_canonical_json(self.ga4gh_serialize()))
+            digest = sha512t24u(encode_canonical_json(self.ga4gh_serialize(store_digest=store)))
             if store:
                 self.digest = digest
         else:
@@ -281,7 +281,6 @@ class _Ga4ghIdentifiableObject(_ValueObject, ABC):
         in_place: str = 'default',
         recompute: bool = False,
         as_version: PrevVrsVersion | None = None,
-        store_digest: bool = True,
     ) -> str:
         """Sets and returns a GA4GH Computed Identifier for the object.
         Overwrites the existing identifier if overwrite is True.
@@ -301,8 +300,8 @@ class _Ga4ghIdentifiableObject(_ValueObject, ABC):
         :param recompute:
         :param as_version: If provided, other parameters are ignored and a computed
             identifier is returned following the conventions of the given VRS version.
-        :param store_digest: if ``False``, don't set the object's ``digest`` field.
         """
+        store_digest = in_place != 'never'
         if as_version is not None:
             return self.compute_ga4gh_identifier(as_version=as_version)
 
@@ -338,7 +337,7 @@ class _Ga4ghIdentifiableObject(_ValueObject, ABC):
             self.get_or_create_digest(recompute, store=store_digest)
             return f'{CURIE_NAMESPACE}{CURIE_SEP}{self.ga4gh.prefix}{GA4GH_PREFIX_SEP}{self.digest}'
         else:
-            digest = self.compute_digest(as_version=as_version)
+            digest = self.compute_digest(store=store_digest, as_version=as_version)
             return f'{CURIE_NAMESPACE}{CURIE_SEP}{self.ga4gh.priorPrefix[as_version]}{GA4GH_PREFIX_SEP}{digest}'
 
     def get_or_create_digest(self, recompute: bool = False, store: bool = True) -> str:
@@ -674,8 +673,8 @@ class CisPhasedBlock(_VariationBase):
     )
     sequenceReference: Optional[SequenceReference] = Field(None, description="An optional Sequence Reference on which all of the in-cis Alleles are found. When defined, this may be used to implicitly define the `sequenceReference` attribute for each of the CisPhasedBlock member Alleles.")
 
-    def ga4gh_serialize(self) -> Dict:
-        out = _ValueObject.ga4gh_serialize(self)
+    def ga4gh_serialize(self, store_digest: bool = True) -> Dict:
+        out = _ValueObject.ga4gh_serialize(self, store_digest=store_digest)
         out["members"] = sorted(out["members"])
         return out
 
