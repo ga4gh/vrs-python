@@ -23,9 +23,9 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Wed, 26 Jun 2024 11:58:39 GMT
+      - Tue, 05 Nov 2024 04:23:32 GMT
       Server:
-      - Werkzeug/2.2.2 Python/3.10.4
+      - Werkzeug/2.2.3 Python/3.10.12
     status:
       code: 200
       message: OK
@@ -53,9 +53,9 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Wed, 26 Jun 2024 11:58:39 GMT
+      - Tue, 05 Nov 2024 04:23:32 GMT
       Server:
-      - Werkzeug/2.2.2 Python/3.10.4
+      - Werkzeug/2.2.3 Python/3.10.12
     status:
       code: 200
       message: OK
@@ -83,9 +83,9 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Wed, 26 Jun 2024 11:58:39 GMT
+      - Tue, 05 Nov 2024 04:23:32 GMT
       Server:
-      - Werkzeug/2.2.2 Python/3.10.4
+      - Werkzeug/2.2.3 Python/3.10.12
     status:
       code: 200
       message: OK
@@ -113,9 +113,9 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Wed, 26 Jun 2024 11:58:39 GMT
+      - Tue, 05 Nov 2024 04:23:32 GMT
       Server:
-      - Werkzeug/2.2.2 Python/3.10.4
+      - Werkzeug/2.2.3 Python/3.10.12
     status:
       code: 200
       message: OK
@@ -143,9 +143,9 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Wed, 26 Jun 2024 11:58:39 GMT
+      - Tue, 05 Nov 2024 04:23:32 GMT
       Server:
-      - Werkzeug/2.2.2 Python/3.10.4
+      - Werkzeug/2.2.3 Python/3.10.12
     status:
       code: 200
       message: OK
@@ -173,9 +173,9 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Wed, 26 Jun 2024 11:58:39 GMT
+      - Tue, 05 Nov 2024 04:23:32 GMT
       Server:
-      - Werkzeug/2.2.2 Python/3.10.4
+      - Werkzeug/2.2.3 Python/3.10.12
     status:
       code: 200
       message: OK
@@ -203,9 +203,9 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Wed, 26 Jun 2024 11:58:39 GMT
+      - Tue, 05 Nov 2024 04:23:32 GMT
       Server:
-      - Werkzeug/2.2.2 Python/3.10.4
+      - Werkzeug/2.2.3 Python/3.10.12
     status:
       code: 200
       message: OK
@@ -233,9 +233,9 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Wed, 26 Jun 2024 11:58:39 GMT
+      - Tue, 05 Nov 2024 04:23:33 GMT
       Server:
-      - Werkzeug/2.2.2 Python/3.10.4
+      - Werkzeug/2.2.3 Python/3.10.12
     status:
       code: 200
       message: OK
@@ -263,9 +263,9 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Wed, 26 Jun 2024 11:58:39 GMT
+      - Tue, 05 Nov 2024 04:23:33 GMT
       Server:
-      - Werkzeug/2.2.2 Python/3.10.4
+      - Werkzeug/2.2.3 Python/3.10.12
     status:
       code: 200
       message: OK
@@ -293,9 +293,9 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Wed, 26 Jun 2024 11:58:39 GMT
+      - Tue, 05 Nov 2024 04:23:33 GMT
       Server:
-      - Werkzeug/2.2.2 Python/3.10.4
+      - Werkzeug/2.2.3 Python/3.10.12
     status:
       code: 200
       message: OK
@@ -323,9 +323,9 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Wed, 26 Jun 2024 11:58:39 GMT
+      - Tue, 05 Nov 2024 04:23:33 GMT
       Server:
-      - Werkzeug/2.2.2 Python/3.10.4
+      - Werkzeug/2.2.3 Python/3.10.12
     status:
       code: 200
       message: OK
@@ -353,9 +353,9 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Wed, 26 Jun 2024 11:58:39 GMT
+      - Tue, 05 Nov 2024 04:23:33 GMT
       Server:
-      - Werkzeug/2.2.2 Python/3.10.4
+      - Werkzeug/2.2.3 Python/3.10.12
     status:
       code: 200
       message: OK
@@ -383,9 +383,9 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Wed, 26 Jun 2024 11:58:39 GMT
+      - Tue, 05 Nov 2024 04:23:33 GMT
       Server:
-      - Werkzeug/2.2.2 Python/3.10.4
+      - Werkzeug/2.2.3 Python/3.10.12
     status:
       code: 200
       message: OK
@@ -413,9 +413,9 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Wed, 26 Jun 2024 11:58:39 GMT
+      - Tue, 05 Nov 2024 04:23:33 GMT
       Server:
-      - Werkzeug/2.2.2 Python/3.10.4
+      - Werkzeug/2.2.3 Python/3.10.12
     status:
       code: 200
       message: OK
@@ -443,9 +443,9 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Wed, 26 Jun 2024 11:58:40 GMT
+      - Tue, 05 Nov 2024 04:23:33 GMT
       Server:
-      - Werkzeug/2.2.2 Python/3.10.4
+      - Werkzeug/2.2.3 Python/3.10.12
     status:
       code: 200
       message: OK
@@ -473,9 +473,9 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Wed, 26 Jun 2024 11:58:40 GMT
+      - Tue, 05 Nov 2024 04:23:33 GMT
       Server:
-      - Werkzeug/2.2.2 Python/3.10.4
+      - Werkzeug/2.2.3 Python/3.10.12
     status:
       code: 200
       message: OK
@@ -503,9 +503,9 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Wed, 26 Jun 2024 11:58:40 GMT
+      - Tue, 05 Nov 2024 04:23:33 GMT
       Server:
-      - Werkzeug/2.2.2 Python/3.10.4
+      - Werkzeug/2.2.3 Python/3.10.12
     status:
       code: 200
       message: OK
@@ -533,9 +533,9 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Wed, 26 Jun 2024 11:58:40 GMT
+      - Tue, 05 Nov 2024 04:23:33 GMT
       Server:
-      - Werkzeug/2.2.2 Python/3.10.4
+      - Werkzeug/2.2.3 Python/3.10.12
     status:
       code: 200
       message: OK
@@ -554,9 +554,13 @@ interactions:
     uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nucleotide&id=NC_000013.11&rettype=fasta&seq_start=32331083&seq_stop=32331094&tool=bioutils&email=biocommons-dev@googlegroups.com
   response:
     body:
-      string: !!binary |
-        H4sIAAAAAAAAALLzc443AAJDYz1DQytjI2NjQwMLY10Iw9JEwSM/N1+hOLEgMzWvWCE5owjILc7P
-        TVUwNNZRcA9yzjC20CswNFEIKMrMTSyqVHAsLk7NTcqp5ApBAlxcAAAAAP//AwBz5s6GZgAAAA==
+      string: '>NC_000013.11:32331083-32331094 Homo sapiens chromosome 13, GRCh38.p14
+        Primary Assembly
+
+        TTTTTTTTTTTT
+
+
+        '
     headers:
       Access-Control-Allow-Origin:
       - '*'
@@ -573,20 +577,20 @@ interactions:
       Content-Type:
       - text/plain
       Date:
-      - Wed, 26 Jun 2024 11:58:40 GMT
+      - Tue, 05 Nov 2024 04:23:33 GMT
       Keep-Alive:
       - timeout=4, max=40
       NCBI-PHID:
-      - D0BDC04CDF84FC0500003264952754B0.1.1.m_5
+      - D0BD5FC90C0C9E55000046058658C914.1.1.m_5
       NCBI-SID:
-      - 5B5E8A1491FD253E_06B4SID
+      - D638653620E1943D_1DE7SID
       Referrer-Policy:
       - origin-when-cross-origin
       Server:
       - Finatra
       Set-Cookie:
-      - ncbi_sid=5B5E8A1491FD253E_06B4SID; domain=.nih.gov; path=/; expires=Thu, 26
-        Jun 2025 11:58:40 GMT
+      - ncbi_sid=D638653620E1943D_1DE7SID; domain=.nih.gov; path=/; expires=Wed, 05
+        Nov 2025 04:23:33 GMT
       Strict-Transport-Security:
       - max-age=31536000; includeSubDomains; preload
       Transfer-Encoding:
@@ -619,9 +623,13 @@ interactions:
     uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nucleotide&id=NC_000013.11&rettype=fasta&seq_start=32331094&seq_stop=32331094&tool=bioutils&email=biocommons-dev@googlegroups.com
   response:
     body:
-      string: !!binary |
-        H4sIAAAAAAAAALLzc443AAJDYz1DQytjI2NjQwNLE10YQ8EjPzdfoTixIDM1r1ghOaMIyC3Oz01V
-        MDTWUXAPcs4wttArMDRRCCjKzE0sqlRwLC5OzU3KqeQK4eICAAAA//8DAOcxeKNbAAAA
+      string: '>NC_000013.11:32331094-32331094 Homo sapiens chromosome 13, GRCh38.p14
+        Primary Assembly
+
+        T
+
+
+        '
     headers:
       Access-Control-Allow-Origin:
       - '*'
@@ -638,20 +646,20 @@ interactions:
       Content-Type:
       - text/plain
       Date:
-      - Wed, 26 Jun 2024 11:58:40 GMT
+      - Tue, 05 Nov 2024 04:23:33 GMT
       Keep-Alive:
       - timeout=4, max=40
       NCBI-PHID:
-      - 322C2168844ED525000028623B1F8AEC.1.1.m_5
+      - D0BD5FC90C0C9E5500004905884C00F7.1.1.m_5
       NCBI-SID:
-      - EC9D743D7453E637_C7F5SID
+      - 25C0678DF76DD696_BEDDSID
       Referrer-Policy:
       - origin-when-cross-origin
       Server:
       - Finatra
       Set-Cookie:
-      - ncbi_sid=EC9D743D7453E637_C7F5SID; domain=.nih.gov; path=/; expires=Thu, 26
-        Jun 2025 11:58:40 GMT
+      - ncbi_sid=25C0678DF76DD696_BEDDSID; domain=.nih.gov; path=/; expires=Wed, 05
+        Nov 2025 04:23:34 GMT
       Strict-Transport-Security:
       - max-age=31536000; includeSubDomains; preload
       Transfer-Encoding:
@@ -684,10 +692,13 @@ interactions:
     uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nucleotide&id=NC_000013.11&rettype=fasta&seq_start=32331083&seq_stop=32331114&tool=bioutils&email=biocommons-dev@googlegroups.com
   response:
     body:
-      string: !!binary |
-        H4sIAAAAAAAAALLzc443AAJDYz1DQytjI2NjQwMLY10ww9DQRMEjPzdfoTixIDM1r1ghOaMIyC3O
-        z01VMDTWUXAPcs4wttArACoLKMrMTSyqVHAsLk7NTcqp5ApBAu6O7u4h7kAyxBnIcQaS7iFcXAAA
-        AAD//wMAlOTJvHoAAAA=
+      string: '>NC_000013.11:32331083-32331114 Homo sapiens chromosome 13, GRCh38.p14
+        Primary Assembly
+
+        TTTTTTTTTTTTGAGGTGGAGTCTTGCTCTGT
+
+
+        '
     headers:
       Access-Control-Allow-Origin:
       - '*'
@@ -704,20 +715,20 @@ interactions:
       Content-Type:
       - text/plain
       Date:
-      - Wed, 26 Jun 2024 11:58:41 GMT
+      - Tue, 05 Nov 2024 04:23:34 GMT
       Keep-Alive:
       - timeout=4, max=40
       NCBI-PHID:
-      - 322C2168844ED52500003A623DA02599.1.1.m_5
+      - D0BD5FC90C0C9E550000410589B0B27B.1.1.m_5
       NCBI-SID:
-      - F67060DC297FDC2E_6A0ESID
+      - 26A4A0218EA2B845_8682SID
       Referrer-Policy:
       - origin-when-cross-origin
       Server:
       - Finatra
       Set-Cookie:
-      - ncbi_sid=F67060DC297FDC2E_6A0ESID; domain=.nih.gov; path=/; expires=Thu, 26
-        Jun 2025 11:58:41 GMT
+      - ncbi_sid=26A4A0218EA2B845_8682SID; domain=.nih.gov; path=/; expires=Wed, 05
+        Nov 2025 04:23:34 GMT
       Strict-Transport-Security:
       - max-age=31536000; includeSubDomains; preload
       Transfer-Encoding:
@@ -750,9 +761,13 @@ interactions:
     uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nucleotide&id=NC_000013.11&rettype=fasta&seq_start=32331093&seq_stop=32331094&tool=bioutils&email=biocommons-dev@googlegroups.com
   response:
     body:
-      string: !!binary |
-        H4sIAAAAAAAAALLzc443AAJDYz1DQytjI2NjQwNLY10ow0TBIz83X6E4sSAzNa9YITmjCMgtzs9N
-        VTA01lFwD3LOMLbQKzA0UQgoysxNLKpUcCwuTs1NyqnkCgnh4gIAAAD//wMAmBgGAVwAAAA=
+      string: '>NC_000013.11:32331093-32331094 Homo sapiens chromosome 13, GRCh38.p14
+        Primary Assembly
+
+        TT
+
+
+        '
     headers:
       Access-Control-Allow-Origin:
       - '*'
@@ -769,20 +784,20 @@ interactions:
       Content-Type:
       - text/plain
       Date:
-      - Wed, 26 Jun 2024 11:58:41 GMT
+      - Tue, 05 Nov 2024 04:23:34 GMT
       Keep-Alive:
       - timeout=4, max=40
       NCBI-PHID:
-      - 322C2168844ED52500002762404BF5C7.1.1.m_5
+      - D0BD5FC90C0C9E5500002A058B7CF6D7.1.1.m_5
       NCBI-SID:
-      - CC7258C6BEBE92B7_B633SID
+      - 55D2BECDA262676D_5026SID
       Referrer-Policy:
       - origin-when-cross-origin
       Server:
       - Finatra
       Set-Cookie:
-      - ncbi_sid=CC7258C6BEBE92B7_B633SID; domain=.nih.gov; path=/; expires=Thu, 26
-        Jun 2025 11:58:41 GMT
+      - ncbi_sid=55D2BECDA262676D_5026SID; domain=.nih.gov; path=/; expires=Wed, 05
+        Nov 2025 04:23:35 GMT
       Strict-Transport-Security:
       - max-age=31536000; includeSubDomains; preload
       Transfer-Encoding:
