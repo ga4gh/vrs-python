@@ -23,9 +23,9 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Wed, 26 Jun 2024 11:58:46 GMT
+      - Tue, 05 Nov 2024 04:23:36 GMT
       Server:
-      - Werkzeug/2.2.2 Python/3.10.4
+      - Werkzeug/2.2.3 Python/3.10.12
     status:
       code: 200
       message: OK
@@ -53,9 +53,9 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Wed, 26 Jun 2024 11:58:46 GMT
+      - Tue, 05 Nov 2024 04:23:36 GMT
       Server:
-      - Werkzeug/2.2.2 Python/3.10.4
+      - Werkzeug/2.2.3 Python/3.10.12
     status:
       code: 200
       message: OK
@@ -83,9 +83,9 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Wed, 26 Jun 2024 11:58:46 GMT
+      - Tue, 05 Nov 2024 04:23:36 GMT
       Server:
-      - Werkzeug/2.2.2 Python/3.10.4
+      - Werkzeug/2.2.3 Python/3.10.12
     status:
       code: 200
       message: OK
@@ -113,9 +113,9 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Wed, 26 Jun 2024 11:58:46 GMT
+      - Tue, 05 Nov 2024 04:23:36 GMT
       Server:
-      - Werkzeug/2.2.2 Python/3.10.4
+      - Werkzeug/2.2.3 Python/3.10.12
     status:
       code: 200
       message: OK
@@ -143,9 +143,9 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Wed, 26 Jun 2024 11:58:46 GMT
+      - Tue, 05 Nov 2024 04:23:36 GMT
       Server:
-      - Werkzeug/2.2.2 Python/3.10.4
+      - Werkzeug/2.2.3 Python/3.10.12
     status:
       code: 200
       message: OK
@@ -173,9 +173,9 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Wed, 26 Jun 2024 11:58:46 GMT
+      - Tue, 05 Nov 2024 04:23:36 GMT
       Server:
-      - Werkzeug/2.2.2 Python/3.10.4
+      - Werkzeug/2.2.3 Python/3.10.12
     status:
       code: 200
       message: OK
@@ -194,9 +194,13 @@ interactions:
     uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nucleotide&id=NC_000019.10&rettype=fasta&seq_start=289465&seq_stop=289466&tool=bioutils&email=biocommons-dev@googlegroups.com
   response:
     body:
-      string: !!binary |
-        H4sIAAAAAAAAALLzc443AAJDSz1DAysjC0sTM1NdMGWm4JGfm69QnFiQmZpXrJCcUQTkFufnpioY
-        WuoouAc5Zxhb6BUYmigEFGXmJhZVKjgWF6fmJuVUcjk7cnEBAAAA//8DAN6im+lYAAAA
+      string: '>NC_000019.10:289465-289466 Homo sapiens chromosome 19, GRCh38.p14
+        Primary Assembly
+
+        CA
+
+
+        '
     headers:
       Access-Control-Allow-Origin:
       - '*'
@@ -213,20 +217,20 @@ interactions:
       Content-Type:
       - text/plain
       Date:
-      - Wed, 26 Jun 2024 11:58:46 GMT
+      - Tue, 05 Nov 2024 04:23:36 GMT
       Keep-Alive:
       - timeout=4, max=40
       NCBI-PHID:
-      - D0BDC04CDF84FC0500004164B5C5CA50.1.1.m_5
+      - D0BD5FC90C0C9E550000520590057FCC.1.1.m_5
       NCBI-SID:
-      - 23518C7A3ED150B5_B224SID
+      - 2523A9E792D7BCD4_0E8ESID
       Referrer-Policy:
       - origin-when-cross-origin
       Server:
       - Finatra
       Set-Cookie:
-      - ncbi_sid=23518C7A3ED150B5_B224SID; domain=.nih.gov; path=/; expires=Thu, 26
-        Jun 2025 11:58:46 GMT
+      - ncbi_sid=2523A9E792D7BCD4_0E8ESID; domain=.nih.gov; path=/; expires=Wed, 05
+        Nov 2025 04:23:36 GMT
       Strict-Transport-Security:
       - max-age=31536000; includeSubDomains; preload
       Transfer-Encoding:
@@ -234,7 +238,7 @@ interactions:
       X-RateLimit-Limit:
       - '3'
       X-RateLimit-Remaining:
-      - '1'
+      - '2'
       X-UA-Compatible:
       - IE=Edge
       X-XSS-Protection:
@@ -259,9 +263,13 @@ interactions:
     uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nucleotide&id=NC_000019.10&rettype=fasta&seq_start=289466&seq_stop=289466&tool=bioutils&email=biocommons-dev@googlegroups.com
   response:
     body:
-      string: !!binary |
-        H4sIAAAAAAAAALLzc443AAJDSz1DAysjC0sTMzNdCKXgkZ+br1CcWJCZmleskJxRBOQW5+emKhha
-        6ii4BzlnGFvoFRiaKAQUZeYmFlUqOBYXp+Ym5VRyOXJxAQAAAP//AwDscSJIVwAAAA==
+      string: '>NC_000019.10:289466-289466 Homo sapiens chromosome 19, GRCh38.p14
+        Primary Assembly
+
+        A
+
+
+        '
     headers:
       Access-Control-Allow-Origin:
       - '*'
@@ -278,20 +286,20 @@ interactions:
       Content-Type:
       - text/plain
       Date:
-      - Wed, 26 Jun 2024 11:58:47 GMT
+      - Tue, 05 Nov 2024 04:23:36 GMT
       Keep-Alive:
       - timeout=4, max=40
       NCBI-PHID:
-      - 322C2168844ED525000033625B3DB0E4.1.1.m_5
+      - D0BD5FC90C0C9E550000470592B56B94.1.1.m_5
       NCBI-SID:
-      - 2EFCCFA110F2FAAD_83DASID
+      - DA6D1EFA76ED60B1_7328SID
       Referrer-Policy:
       - origin-when-cross-origin
       Server:
       - Finatra
       Set-Cookie:
-      - ncbi_sid=2EFCCFA110F2FAAD_83DASID; domain=.nih.gov; path=/; expires=Thu, 26
-        Jun 2025 11:58:47 GMT
+      - ncbi_sid=DA6D1EFA76ED60B1_7328SID; domain=.nih.gov; path=/; expires=Wed, 05
+        Nov 2025 04:23:37 GMT
       Strict-Transport-Security:
       - max-age=31536000; includeSubDomains; preload
       Transfer-Encoding:
@@ -324,10 +332,13 @@ interactions:
     uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nucleotide&id=NC_000019.10&rettype=fasta&seq_start=289465&seq_stop=289486&tool=bioutils&email=biocommons-dev@googlegroups.com
   response:
     body:
-      string: !!binary |
-        H4sIAAAAAAAAALLzc443AAJDSz1DAysjC0sTM1NdEGVhpuCRn5uvUJxYkJmaV6yQnFEE5Bbn56Yq
-        GFrqKLgHOWcYW+gVGJooBBRl5iYWVSo4Fhen5iblVHI5O7o7OzqHhIS4u7s7urs7O4NJLi4AAAAA
-        //8DAME0cP1sAAAA
+      string: '>NC_000019.10:289465-289486 Homo sapiens chromosome 19, GRCh38.p14
+        Primary Assembly
+
+        CAGCACTTTGGGAGGCCGAGGC
+
+
+        '
     headers:
       Access-Control-Allow-Origin:
       - '*'
@@ -344,20 +355,20 @@ interactions:
       Content-Type:
       - text/plain
       Date:
-      - Wed, 26 Jun 2024 11:58:47 GMT
+      - Tue, 05 Nov 2024 04:23:37 GMT
       Keep-Alive:
       - timeout=4, max=40
       NCBI-PHID:
-      - D0BDC04CDF84FC0500002564BA070495.1.1.m_5
+      - D0BD5FC90C0C9E550000610594B56557.1.1.m_5
       NCBI-SID:
-      - A4BFD55E738F1983_7D6BSID
+      - BF22CB9310A025DE_6D3FSID
       Referrer-Policy:
       - origin-when-cross-origin
       Server:
       - Finatra
       Set-Cookie:
-      - ncbi_sid=A4BFD55E738F1983_7D6BSID; domain=.nih.gov; path=/; expires=Thu, 26
-        Jun 2025 11:58:47 GMT
+      - ncbi_sid=BF22CB9310A025DE_6D3FSID; domain=.nih.gov; path=/; expires=Wed, 05
+        Nov 2025 04:23:37 GMT
       Strict-Transport-Security:
       - max-age=31536000; includeSubDomains; preload
       Transfer-Encoding:
@@ -390,9 +401,13 @@ interactions:
     uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nucleotide&id=NC_000019.10&rettype=fasta&seq_start=289463&seq_stop=289466&tool=bioutils&email=biocommons-dev@googlegroups.com
   response:
     body:
-      string: !!binary |
-        H4sIAAAAAAAAALLzc443AAJDSz1DAysjC0sTM2NdMGWm4JGfm69QnFiQmZpXrJCcUQTkFufnpioY
-        WuoouAc5Zxhb6BUYmigEFGXmJhZVKjgWF6fmJuVUcjmHODtycQEAAAD//wMAcnFU/1oAAAA=
+      string: '>NC_000019.10:289463-289466 Homo sapiens chromosome 19, GRCh38.p14
+        Primary Assembly
+
+        CTCA
+
+
+        '
     headers:
       Access-Control-Allow-Origin:
       - '*'
@@ -409,20 +424,20 @@ interactions:
       Content-Type:
       - text/plain
       Date:
-      - Wed, 26 Jun 2024 11:58:48 GMT
+      - Tue, 05 Nov 2024 04:23:38 GMT
       Keep-Alive:
       - timeout=4, max=40
       NCBI-PHID:
-      - 322C2168844ED52500004B6261A52076.1.1.m_5
+      - D0BD5FC90C0C9E550000340597697E94.1.1.m_5
       NCBI-SID:
-      - 4D83F50ED8EB562C_4BE4SID
+      - AA00BBF35F9996C5_F848SID
       Referrer-Policy:
       - origin-when-cross-origin
       Server:
       - Finatra
       Set-Cookie:
-      - ncbi_sid=4D83F50ED8EB562C_4BE4SID; domain=.nih.gov; path=/; expires=Thu, 26
-        Jun 2025 11:58:48 GMT
+      - ncbi_sid=AA00BBF35F9996C5_F848SID; domain=.nih.gov; path=/; expires=Wed, 05
+        Nov 2025 04:23:38 GMT
       Strict-Transport-Security:
       - max-age=31536000; includeSubDomains; preload
       Transfer-Encoding:
