@@ -35,7 +35,9 @@ All known issues are listed there. Please report any issues you find.
 ### Prerequisites
 
 - Python >= 3.10
-  - _Note: Python 3.12 is required for developers contributing to VRS-Python_
+  - _Note: Python 3.12 is required for developers contributing to VRS-Python. The
+    Makefile sets up a virtual environment in `venv/3.12` and expects Python to be
+    available as `python3.12`._
 - libpq
 - postgresql
 
