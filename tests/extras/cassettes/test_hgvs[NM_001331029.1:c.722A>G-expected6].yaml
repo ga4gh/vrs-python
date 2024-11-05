@@ -28,9 +28,9 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Wed, 26 Jun 2024 11:58:43 GMT
+      - Tue, 05 Nov 2024 04:24:18 GMT
       Server:
-      - Werkzeug/2.2.2 Python/3.10.4
+      - Werkzeug/2.2.3 Python/3.10.12
     status:
       code: 200
       message: OK
@@ -49,10 +49,13 @@ interactions:
     uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nucleotide&id=NM_001331029.1&rettype=fasta&seq_start=872&seq_stop=872&tool=bioutils&email=biocommons-dev@googlegroups.com
   response:
     body:
-      string: !!binary |
-        H4sIAAAAAAAAAAzGsQrCMBAG4D1P8Y8KVXLpYHUQ6uRiCX0BOSXYQJuE3FXw7e3wwXcdHk9rqW3J
-        uvORLt3JHTa45yVDuMSQBKVmDTGhTFnKxMoSQKjhs86suf4g62tNUUHuhp33nsZt+wZaOcm7xqL4
-        co2cFF2DZRx60xvzBwAA//8DADLRQFd8AAAA
+      string: '>NM_001331029.1:872-872 Homo sapiens protein phosphatase 1 regulatory
+        subunit 12B (PPP1R12B), transcript variant 8, mRNA
+
+        A
+
+
+        '
     headers:
       Access-Control-Allow-Origin:
       - '*'
@@ -69,20 +72,20 @@ interactions:
       Content-Type:
       - text/plain
       Date:
-      - Wed, 26 Jun 2024 11:58:43 GMT
+      - Tue, 05 Nov 2024 04:24:18 GMT
       Keep-Alive:
       - timeout=4, max=40
       NCBI-PHID:
-      - 322C2168844ED5250000296249020435.1.1.m_5
+      - D0BD5FC90C0C9E5500004F05FBFB7A74.1.1.m_5
       NCBI-SID:
-      - 6387644963D1849D_457DSID
+      - D8704C96D061E458_F364SID
       Referrer-Policy:
       - origin-when-cross-origin
       Server:
       - Finatra
       Set-Cookie:
-      - ncbi_sid=6387644963D1849D_457DSID; domain=.nih.gov; path=/; expires=Thu, 26
-        Jun 2025 11:58:43 GMT
+      - ncbi_sid=D8704C96D061E458_F364SID; domain=.nih.gov; path=/; expires=Wed, 05
+        Nov 2025 04:24:19 GMT
       Strict-Transport-Security:
       - max-age=31536000; includeSubDomains; preload
       Transfer-Encoding:
@@ -129,9 +132,9 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Wed, 26 Jun 2024 11:58:43 GMT
+      - Tue, 05 Nov 2024 04:24:19 GMT
       Server:
-      - Werkzeug/2.2.2 Python/3.10.4
+      - Werkzeug/2.2.3 Python/3.10.12
     status:
       code: 200
       message: OK
@@ -159,9 +162,9 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Wed, 26 Jun 2024 11:58:43 GMT
+      - Tue, 05 Nov 2024 04:24:19 GMT
       Server:
-      - Werkzeug/2.2.2 Python/3.10.4
+      - Werkzeug/2.2.3 Python/3.10.12
     status:
       code: 200
       message: OK
@@ -180,10 +183,13 @@ interactions:
     uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nucleotide&id=NM_001331029.1&rettype=fasta&seq_start=872&seq_stop=892&tool=bioutils&email=biocommons-dev@googlegroups.com
   response:
     body:
-      string: !!binary |
-        H4sIAAAAAAAAAAzGsQrCMBQF0L1fcUeFKk062DoIsUNdLKFkl6cEG7BJSF4E/95O51ym+6NpRNuK
-        RvZHce5O8tD1ErewBmSKzvqMmAJb5xGXkONCTNlCINl3+RCH9EMuz+IdQ8grdlprMW/b1+BEPr+S
-        i4wvJUee0dVY50lVyoxKDWZQW8zGOCpjquoPAAD//wMAQOE1ipAAAAA=
+      string: '>NM_001331029.1:872-892 Homo sapiens protein phosphatase 1 regulatory
+        subunit 12B (PPP1R12B), transcript variant 8, mRNA
+
+        ATGAACTCAATGTTCAGGATT
+
+
+        '
     headers:
       Access-Control-Allow-Origin:
       - '*'
@@ -200,20 +206,20 @@ interactions:
       Content-Type:
       - text/plain
       Date:
-      - Wed, 26 Jun 2024 11:58:44 GMT
+      - Tue, 05 Nov 2024 04:24:20 GMT
       Keep-Alive:
       - timeout=4, max=40
       NCBI-PHID:
-      - 322C2168844ED52500004B624D2E170E.1.1.m_5
+      - D0BD5FC90C0C9E5500005D05FE75DCD1.1.1.m_5
       NCBI-SID:
-      - CB5784147FC0F267_B834SID
+      - B75D46DA90AB6D72_06CBSID
       Referrer-Policy:
       - origin-when-cross-origin
       Server:
       - Finatra
       Set-Cookie:
-      - ncbi_sid=CB5784147FC0F267_B834SID; domain=.nih.gov; path=/; expires=Thu, 26
-        Jun 2025 11:58:44 GMT
+      - ncbi_sid=B75D46DA90AB6D72_06CBSID; domain=.nih.gov; path=/; expires=Wed, 05
+        Nov 2025 04:24:20 GMT
       Strict-Transport-Security:
       - max-age=31536000; includeSubDomains; preload
       Transfer-Encoding:
@@ -221,7 +227,7 @@ interactions:
       X-RateLimit-Limit:
       - '3'
       X-RateLimit-Remaining:
-      - '1'
+      - '2'
       X-UA-Compatible:
       - IE=Edge
       X-XSS-Protection:
