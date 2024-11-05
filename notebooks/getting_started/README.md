@@ -1,13 +1,52 @@
 # VRS Python Getting Started Notebook Series
 
-This series of notebooks is intended to be the fastest way to becoming productive with the
-[vrs-python](https://github.com/ga4gh/vrs-python) package. The
-intent of each notebook in this series is to be an interactive introduction to functionally contained in the vrs-python package.
+This series of notebooks is intended to be the fastest way to becoming productive with
+the [vrs-python](https://github.com/ga4gh/vrs-python) package. The intent of each
+notebook in this series is to be an interactive introduction to functionally contained
+in the vrs-python package.
 
-A beginning developer level of familiarity with python, jupyter notebooks is assumed in order to run this notebook series.
-You should be familiar with installing packages and running commands in your execution environment.
+A beginning developer level of familiarity with python, jupyter notebooks is assumed in
+order to run this notebook series. You should be familiar with installing packages and
+running commands in your execution environment.
 
-## Prerequisites
+## Development Environment Setup
+
+We provide you two options for setting up your development environment: using a Python
+[virtual environment](#virtual-environment) or leveraging
+[VS Code Dev Containers](#dev-containers) (useful for non-macOS users).
+
+### Fork the Repo
+
+Fork the repo at <https://github.com/ga4gh/vrs-python/> and initialize a development
+environment.
+
+```shell
+git clone --recurse-submodules git@github.com:YOUR_GITHUB_ID/vrs-python.git
+cd vrs-python
+```
+
+### Virtual Environment
+
+You must first install python@3.12, if not already installed.
+
+Next, run the following:
+
+```shell
+make nbready
+source venv/3.12/bin/activate
+```
+
+#### Virtual Environment: Selecting the Kernel
+
+When opening a notebook with this option, click `Select Kernel`,
+`Python Environments...`, and select the first option:
+`3.12 (Python 3.12.z) venv/3.12/bin/python`
+
+_Note: Patch version may vary._
+
+### Dev Containers
+
+#### Prerequisites
 
 For your convenience, this section is copied from the
 [VS Code Dev Containers Tutorial](https://code.visualstudio.com/docs/devcontainers/tutorial#_prerequisites).
@@ -51,7 +90,7 @@ For your convenience, this section is copied from the
 
   [Marketplace Link](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) (if viewing from browser)
 
-## Creating the Dev Container
+#### Creating the Dev Container
 
 Open the VS Code Command Palette: Shift + Command + P (Mac) / Ctrl + Shift + P (Windows/Linux)
 
@@ -61,12 +100,15 @@ The Dev Container will be created and install the dependencies needed.
 
 You should see `Dev Container: VRS-Python Notebooks @ desktop-linux` on the bottom left hand corner of VS Code.
 
+#### Dev Containers: Selecting the Kernel
+
+When opening a notebook with this option, click `Select Kernel`,
+`Python Environments...`, and select the first option:
+`Python 3.12.z /usr/local/bin/python`
+
+_Note: Patch version may vary._
+
 ## Notebooks
-
-### Selecting the kernel
-
-When opening a notebook, click `Select Kernel` and select the first option:
-`Python 3.12.7 /usr/local/bin/python`
 
 ### 1 Quick Start
 
