@@ -197,17 +197,17 @@ class Syntax(str, Enum):
     SPDI = "spdi"
 
 
-def _recurse_ga4gh_serialize(obj):
+def _recurse_ga4gh_serialize(obj, store_digest: bool = True):
     if isinstance(obj, _Ga4ghIdentifiableObject):
-        return obj.get_or_create_digest()
+        return obj.get_or_create_digest(store=store_digest)
     elif isinstance(obj, _ValueObject):
         return obj.ga4gh_serialize()
     elif isinstance(obj, RootModel):
-        return _recurse_ga4gh_serialize(obj.model_dump())
+        return _recurse_ga4gh_serialize(obj.model_dump(), store_digest)
     elif isinstance(obj, str):
         return obj
     elif isinstance(obj, list):
-        return [_recurse_ga4gh_serialize(x) for x in obj]
+        return [_recurse_ga4gh_serialize(x, store_digest) for x in obj]
     else:
         return obj
 
@@ -220,11 +220,11 @@ class _ValueObject(Entity, ABC):
     def __hash__(self):
         return encode_canonical_json(self.ga4gh_serialize()).decode("utf-8").__hash__()
 
-    def ga4gh_serialize(self) -> Dict:
+    def ga4gh_serialize(self, store_digest: bool = True) -> Dict:
         out = OrderedDict()
         for k in self.ga4gh.keys:
             v = getattr(self, k)
-            out[k] = _recurse_ga4gh_serialize(v)
+            out[k] = _recurse_ga4gh_serialize(v, store_digest=store_digest)
         return out
 
     class ga4gh:
@@ -257,7 +257,7 @@ class _Ga4ghIdentifiableObject(_ValueObject, ABC):
     def has_valid_ga4gh_id(self):
         return self.id and GA4GH_IR_REGEXP.match(self.id) is not None
 
-    def compute_digest(self, store=True, as_version: PrevVrsVersion | None = None) -> str:
+    def compute_digest(self, store: bool = True, as_version: PrevVrsVersion | None = None) -> str:
         """A sha512t24u digest created using the VRS Computed Identifier algorithm.
 
         Stores the digest in the object if ``store`` is ``True``.
@@ -266,7 +266,7 @@ class _Ga4ghIdentifiableObject(_ValueObject, ABC):
         returned following the conventions of the VRS version indicated by ``as_version_``.
         """
         if as_version is None:
-            digest = sha512t24u(encode_canonical_json(self.ga4gh_serialize()))
+            digest = sha512t24u(encode_canonical_json(self.ga4gh_serialize(store_digest=store)))
             if store:
                 self.digest = digest
         else:
@@ -276,7 +276,12 @@ class _Ga4ghIdentifiableObject(_ValueObject, ABC):
                 raise AttributeError('This class does not support prior version identifiers.')
         return digest
 
-    def get_or_create_ga4gh_identifier(self, in_place='default', recompute=False, as_version=None) -> str:
+    def get_or_create_ga4gh_identifier(
+        self,
+        in_place: str = 'default',
+        recompute: bool = False,
+        as_version: PrevVrsVersion | None = None,
+    ) -> str:
         """Sets and returns a GA4GH Computed Identifier for the object.
         Overwrites the existing identifier if overwrite is True.
 
@@ -291,47 +296,61 @@ class _Ga4ghIdentifiableObject(_ValueObject, ABC):
 
         Digests will be recalculated even if present if recompute is True.
 
-        If ``as_version`` is provided, other parameters are ignored and an identifier is
-        returned following the conventions of the VRS version indicated by
-        ``as_version_``.
+        :param in_place:
+        :param recompute:
+        :param as_version: If provided, other parameters are ignored and a computed
+            identifier is returned following the conventions of the given VRS version.
         """
+        store_digest = in_place != 'never'
         if as_version is not None:
             return self.compute_ga4gh_identifier(as_version=as_version)
 
         if in_place == 'default':
             if self.id is None:
-                self.id = self.compute_ga4gh_identifier(recompute)
+                self.id = self.compute_ga4gh_identifier(recompute, store_digest=store_digest)
         elif in_place == 'always':
-            self.id = self.compute_ga4gh_identifier(recompute)
+            self.id = self.compute_ga4gh_identifier(recompute, store_digest=store_digest)
         elif in_place == 'never':
-            return self.compute_ga4gh_identifier(recompute)
+            return self.compute_ga4gh_identifier(recompute, store_digest=store_digest)
         else:
             raise ValueError("Expected 'in_place' to be one of 'default', 'always', or 'never'")
 
         if self.has_valid_ga4gh_id():
             return self.id
         else:
-            return self.compute_ga4gh_identifier(recompute)
+            return self.compute_ga4gh_identifier(recompute, store_digest=store_digest)
 
-    def compute_ga4gh_identifier(self, recompute=False, as_version=None):
+    def compute_ga4gh_identifier(
+        self,
+        recompute: bool = False,
+        as_version: PrevVrsVersion | None = None,
+        store_digest: bool = True,
+    ) -> str:
         """Returns a GA4GH Computed Identifier.
 
-        If ``as_version`` is provided, other parameters are ignored and a computed
-        identifier is returned following the conventions of the VRS version indicated by
-        ``as_version_``.
+        :param recompute:
+        :param as_version: If provided, other parameters are ignored and a computed
+            identifier is returned following the conventions of the given VRS version.
+        :param store_digest: if ``False``, don't set the object's ``digest`` field.
         """
         if as_version is None:
-            self.get_or_create_digest(recompute)
+            self.get_or_create_digest(recompute, store=store_digest)
             return f'{CURIE_NAMESPACE}{CURIE_SEP}{self.ga4gh.prefix}{GA4GH_PREFIX_SEP}{self.digest}'
         else:
-            digest = self.compute_digest(as_version=as_version)
+            digest = self.compute_digest(store=store_digest, as_version=as_version)
             return f'{CURIE_NAMESPACE}{CURIE_SEP}{self.ga4gh.priorPrefix[as_version]}{GA4GH_PREFIX_SEP}{digest}'
 
-    def get_or_create_digest(self, recompute=False) -> str:
-        """Sets and returns a sha512t24u digest of the GA4GH Identifiable Object, or creates
-        the digest if it does not exist."""
+    def get_or_create_digest(self, recompute: bool = False, store: bool = True) -> str:
+        """Get a ``sha512t24u`` digest of the GA4GH Identifiable Object, or create it
+        if it doesn't exist
+
+        :param recompute: if ``True``, force regeneration of the digest regardless
+            of whether it's already set
+        :param store: if ``False``, don't set the object's ``digest`` field.
+        :return: computed digest
+        """
         if self.digest is None or recompute:
-            return self.compute_digest()
+            return self.compute_digest(store=store)
         return self.digest
 
     class ga4gh(_ValueObject.ga4gh):
@@ -654,8 +673,8 @@ class CisPhasedBlock(_VariationBase):
     )
     sequenceReference: Optional[SequenceReference] = Field(None, description="An optional Sequence Reference on which all of the in-cis Alleles are found. When defined, this may be used to implicitly define the `sequenceReference` attribute for each of the CisPhasedBlock member Alleles.")
 
-    def ga4gh_serialize(self) -> Dict:
-        out = _ValueObject.ga4gh_serialize(self)
+    def ga4gh_serialize(self, store_digest: bool = True) -> Dict:
+        out = _ValueObject.ga4gh_serialize(self, store_digest=store_digest)
         out["members"] = sorted(out["members"])
         return out
 
