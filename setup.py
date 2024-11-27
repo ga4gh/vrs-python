@@ -10,13 +10,9 @@ class VrsSubmoduleFetchError(Exception):
 def get_vrs_submodule_info():
     """Retrieve the commit hash and tag from the vrs submodule."""
     try:
-        try:
-            tag = subprocess.check_output(
-                ["git", "describe", "--tags", "--abbrev=0"], cwd="submodules/vrs", text=True
-            ).strip()
-        except subprocess.CalledProcessError:
-            raise VrsSubmoduleFetchError
-        return tag
+        return subprocess.check_output(
+            ["git", "describe", "--tags", "--abbrev=0"], cwd="submodules/vrs", text=True
+        ).strip()
     except Exception as e:
         raise VrsSubmoduleFetchError from e
 
