@@ -17,7 +17,7 @@ def _get_vrs_submodule_info() -> tuple[str, str, int]:
         commit = subprocess.check_output(
             ["git", "rev-parse", "HEAD"], cwd=vrs_path, text=True
         ).strip()
-        subprocess.run(["git", "fetch", "--tags"], cwd=vrs_path)
+        subprocess.run(["git", "fetch", "--all", "--tags"], cwd=vrs_path)
         tag = subprocess.check_output(
             ["git", "describe", "--tags", "--abbrev=0"], cwd=vrs_path, text=True
         ).strip()
