@@ -14,13 +14,17 @@ def _get_vrs_submodule_info() -> tuple[str, str, int]:
     """
     try:
         vrs_path = "submodules/vrs"
+        print("debug 1")
         commit = subprocess.check_output(
             ["git", "rev-parse", "HEAD"], cwd=vrs_path, text=True
         ).strip()
+        print("debug 2")
         subprocess.run(["git", "fetch", "--all", "--tags"], cwd=vrs_path)
+        print("debug 3")
         tag = subprocess.check_output(
             ["git", "describe", "--tags", "--abbrev=0"], cwd=vrs_path, text=True
         ).strip()
+        print("debug 4")
         distance =  subprocess.check_output(
             ["git", "rev-list", f"{tag}..HEAD", "--count"],
             cwd=vrs_path,
