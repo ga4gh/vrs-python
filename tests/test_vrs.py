@@ -308,6 +308,8 @@ def test_compute_identifiers_when():
     # when id property is missing
     vo_a = models.Allele(**a)
     assert ga4gh_identify(vo_a, in_place='never') == correct_id
+    assert vo_a.digest is None
+    assert vo_a.location.digest is None
     with use_ga4gh_compute_identifier_when(VrsObjectIdentifierIs.ANY):
         assert ga4gh_identify(vo_a, in_place='never') == correct_id
     with use_ga4gh_compute_identifier_when(VrsObjectIdentifierIs.GA4GH_INVALID):
@@ -319,6 +321,8 @@ def test_compute_identifiers_when():
     a["id"] = None
     vo_a = models.Allele(**a)
     assert ga4gh_identify(vo_a, in_place='never') == correct_id
+    assert vo_a.digest is None
+    assert vo_a.location.digest is None
     with use_ga4gh_compute_identifier_when(VrsObjectIdentifierIs.ANY):
         assert ga4gh_identify(vo_a, in_place='never') == correct_id
     with use_ga4gh_compute_identifier_when(VrsObjectIdentifierIs.GA4GH_INVALID):
@@ -330,6 +334,8 @@ def test_compute_identifiers_when():
     a["id"] = ""
     vo_a = models.Allele(**a)
     assert ga4gh_identify(vo_a, in_place='never') == correct_id
+    assert vo_a.digest is None
+    assert vo_a.location.digest is None
     with use_ga4gh_compute_identifier_when(VrsObjectIdentifierIs.ANY):
         assert ga4gh_identify(vo_a, in_place='never') == correct_id
     with use_ga4gh_compute_identifier_when(VrsObjectIdentifierIs.GA4GH_INVALID):
@@ -341,6 +347,8 @@ def test_compute_identifiers_when():
     a["id"] = syntax_invalid_id
     vo_a = models.Allele(**a)
     assert ga4gh_identify(vo_a, in_place='never') == correct_id
+    assert vo_a.digest is None
+    assert vo_a.location.digest is None
     with use_ga4gh_compute_identifier_when(VrsObjectIdentifierIs.ANY):
         assert ga4gh_identify(vo_a, in_place='never') == correct_id
     with use_ga4gh_compute_identifier_when(VrsObjectIdentifierIs.GA4GH_INVALID):
@@ -352,6 +360,8 @@ def test_compute_identifiers_when():
     a["id"] = syntax_valid_id
     vo_a = models.Allele(**a)
     assert ga4gh_identify(vo_a, in_place='never') == correct_id
+    assert vo_a.digest is None
+    assert vo_a.location.digest is None
     with use_ga4gh_compute_identifier_when(VrsObjectIdentifierIs.ANY):
         assert ga4gh_identify(vo_a, in_place='never') == correct_id
     with use_ga4gh_compute_identifier_when(VrsObjectIdentifierIs.GA4GH_INVALID):
@@ -364,6 +374,8 @@ def test_compute_identifiers_when():
     vo_a = models.Allele(**a)
     assert ga4gh_identify(vo_a, in_place='never') == correct_id
     assert ga4gh_identify(vo_a, in_place='never') is not correct_id
+    assert vo_a.digest is None
+    assert vo_a.location.digest is None
     with use_ga4gh_compute_identifier_when(VrsObjectIdentifierIs.ANY):
         assert ga4gh_identify(vo_a, in_place='never') == correct_id
         assert ga4gh_identify(vo_a, in_place='never') is not correct_id

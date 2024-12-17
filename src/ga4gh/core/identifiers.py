@@ -113,7 +113,11 @@ def is_ga4gh_identifier(ir):
     return str(get_pydantic_root(ir)).startswith(NS_W_SEP)
 
 
-def ga4gh_identify(vro, in_place: str = 'default', as_version: PrevVrsVersion | None = None) -> str | None:
+def ga4gh_identify(
+    vro,
+    in_place: str = 'default',
+    as_version: PrevVrsVersion | None = None
+) -> str | None:
     """Return the GA4GH digest-based id for the object, as a CURIE
     (string).  Returns None if object is not identifiable.
 
