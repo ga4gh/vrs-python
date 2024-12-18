@@ -208,7 +208,7 @@ class Syntax(str, Enum):
 
 
 def _recurse_ga4gh_serialize(obj):
-    if isinstance(obj, _Ga4ghIdentifiableObject):
+    if isinstance(obj, Ga4ghIdentifiableObject):
         return obj.get_or_create_digest()
     elif isinstance(obj, (_ValueObject, MappableConcept)):
         return obj.ga4gh_serialize()
@@ -245,7 +245,7 @@ class _ValueObject(Entity, ABC):
         return False
 
 
-class _Ga4ghIdentifiableObject(_ValueObject, ABC):
+class Ga4ghIdentifiableObject(_ValueObject, ABC):
     """A contextual value object for which a GA4GH computed identifier can be created.
     All GA4GH Identifiable Objects may have computed digests from the VRS Computed
     Identifier algorithm.
@@ -511,7 +511,7 @@ class SequenceReference(_ValueObject):
         ]
 
 
-class SequenceLocation(_Ga4ghIdentifiableObject):
+class SequenceLocation(Ga4ghIdentifiableObject):
     """A `Location` defined by an interval on a referenced `Sequence`."""
 
     type: Literal["SequenceLocation"] = Field(VrsType.SEQ_LOC.value, description=f'MUST be "{VrsType.SEQ_LOC.value}"')
@@ -587,7 +587,7 @@ class SequenceLocation(_Ga4ghIdentifiableObject):
         else:
             return None
 
-    class ga4gh(_Ga4ghIdentifiableObject.ga4gh):
+    class ga4gh(Ga4ghIdentifiableObject.ga4gh):
         prefix = 'SL'
         priorPrefix = {PrevVrsVersion.V1_3.value: 'VSL'}
         keys = [
@@ -602,7 +602,7 @@ class SequenceLocation(_Ga4ghIdentifiableObject):
 #########################################
 
 
-class _VariationBase(_Ga4ghIdentifiableObject, ABC):
+class _VariationBase(Ga4ghIdentifiableObject, ABC):
     """Base class for variation"""
 
     expressions: Optional[List[Expression]] = None
@@ -645,7 +645,7 @@ class Allele(_VariationBase):
             return f'{{"location":"{location_digest}","state":{{"sequence":"{sequence}","type":"LiteralSequenceExpression"}},"type":"Allele"}}'
 
 
-    class ga4gh(_Ga4ghIdentifiableObject.ga4gh):
+    class ga4gh(Ga4ghIdentifiableObject.ga4gh):
         prefix = 'VA'
         priorPrefix = {PrevVrsVersion.V1_3.value: 'VA'}
         keys = [
@@ -671,7 +671,7 @@ class CisPhasedBlock(_VariationBase):
         out["members"] = sorted(out["members"])
         return out
 
-    class ga4gh(_Ga4ghIdentifiableObject.ga4gh):
+    class ga4gh(Ga4ghIdentifiableObject.ga4gh):
         prefix = 'CPB'
         keys = [
             'members',
@@ -716,7 +716,7 @@ class Adjacency(_VariationBase):
         return v
 
 
-    class ga4gh(_Ga4ghIdentifiableObject.ga4gh):
+    class ga4gh(Ga4ghIdentifiableObject.ga4gh):
         prefix = 'AJ'
         keys = [
             'adjoinedSequences',
@@ -734,7 +734,7 @@ class Terminus(_VariationBase):
     type: Literal["Terminus"] = Field(VrsType.TERMINUS.value, description=f'MUST be "{VrsType.TERMINUS.value}".')
     location: Union[iriReference, SequenceLocation] = Field(..., description="The location of the terminus.")
 
-    class ga4gh(_Ga4ghIdentifiableObject.ga4gh):
+    class ga4gh(Ga4ghIdentifiableObject.ga4gh):
         prefix = "TM"
         keys = [
             "location",
@@ -781,7 +781,7 @@ class DerivativeMolecule(_VariationBase):
     )
     circular: Optional[bool] = Field(None, description="A boolean indicating whether the molecule represented by the sequence is circular (true) or linear (false).")
 
-    class ga4gh(_Ga4ghIdentifiableObject.ga4gh):
+    class ga4gh(Ga4ghIdentifiableObject.ga4gh):
         prefix = "DM"
         keys = [
             "components",
@@ -808,7 +808,7 @@ class CopyNumberCount(_VariationBase):
         ..., description='The integral number of copies of the subject in a system'
     )
 
-    class ga4gh(_Ga4ghIdentifiableObject.ga4gh):
+    class ga4gh(Ga4ghIdentifiableObject.ga4gh):
         prefix = 'CN'
         keys = [
             'copies',
@@ -853,7 +853,7 @@ class CopyNumberChange(_VariationBase):
 
         return v
 
-    class ga4gh(_Ga4ghIdentifiableObject.ga4gh):
+    class ga4gh(Ga4ghIdentifiableObject.ga4gh):
         prefix = 'CX'
         keys = [
             'copyChange',
