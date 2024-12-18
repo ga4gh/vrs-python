@@ -703,12 +703,16 @@ class Adjacency(_VariationBase):
     homology: Optional[bool] = Field(None, description="A flag indicating if coordinate ambiguity in the adjoined sequences is from sequence homology (true) or other uncertainty, such as instrument ambiguity (false).")
 
     @field_validator("adjoinedSequences", mode="after")
-    def validate_adjoined_sequences(cls, v):
-        """Ensure ``adjoinedSequences`` does not have both ``start`` and ``end``"""
-        if isinstance(v, SequenceLocation):
-            if v.start and v.end:
-                err_msg = "Must not have both `start` and `end`."
-                raise err_msg
+    def validate_adjoined_sequences(cls, v) -> List[Union[iriReference, SequenceLocation]]:
+        """Ensure ``adjoinedSequences`` do not have both ``start`` and ``end``
+
+        :raises ValueError: If an adjoined sequence has both ``start`` and ``end``
+        """
+        for adjoined_seq in v:
+            if isinstance(adjoined_seq, SequenceLocation):
+                if adjoined_seq.start and adjoined_seq.end:
+                    err_msg = "Adjoined sequence must not have both `start` and `end`."
+                    raise ValueError(err_msg)
         return v
 
 
@@ -829,6 +833,25 @@ class CopyNumberChange(_VariationBase):
         ...,
         description='MUST use a `primaryCode` representing one of "EFO:0030069" (complete genomic loss), "EFO:0020073" (high-level loss), "EFO:0030068" (low-level loss), "EFO:0030067" (loss), "EFO:0030064" (regional base ploidy), "EFO:0030070" (gain), "EFO:0030071" (low-level gain), "EFO:0030072" (high-level gain).',
     )
+
+    @field_validator("copyChange", mode="after")
+    def validate_copy_change(cls, v) -> MappableConcept:
+        """Validate that copyChange.primaryCode is an EFO code
+
+        :raises ValueError: If `primaryCode` is not provided or if its not a valid
+            EFO code
+        """
+        if v.primaryCode is None:
+            err_msg = "`primaryCode` is required."
+            raise ValueError(err_msg)
+
+        try:
+            CopyChange(v.primaryCode.root)
+        except ValueError:
+            err_msg = f"`primaryCode` must be one of: {[v.value for v in CopyChange.__members__.values()]}."
+            raise ValueError(err_msg)
+
+        return v
 
     class ga4gh(_Ga4ghIdentifiableObject.ga4gh):
         prefix = 'CX'

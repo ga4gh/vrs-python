@@ -117,3 +117,27 @@ def test_valid_types():
                 assert not found_type_mismatch, f"Found mismatch in type literal: {enum_val} vs {error['ctx']['expected']}"
         else:
             assert False, f"{str(models)} class not found: {enum_val}"
+
+
+def test_mappable_concept():
+    """Test the MappableConcept model validator"""
+    # Does not provide required fields
+    with pytest.raises(ValueError, match="`One of label` or `primaryCode` must be provided."):
+        core_models.MappableConcept(conceptType="test")
+
+    # Valid models
+    assert core_models.MappableConcept(label="Primary Label")
+    assert core_models.MappableConcept(primaryCode="EFO:0030067")
+
+
+def test_copy_number_change():
+    """Test the CopyNumberChange field validator"""
+    location = core_models.iriReference("location.json#/1")
+
+    # Primary code not provided
+    with pytest.raises(ValueError, match="`primaryCode` is required."):
+        models.CopyNumberChange(location=location, copyChange=core_models.MappableConcept(label="test"))
+
+    # Primary code not valid EFO
+    with pytest.raises(ValueError, match="`primaryCode` must be one of:"):
+        models.CopyNumberChange(location=location, copyChange=core_models.MappableConcept(primaryCode="test"))

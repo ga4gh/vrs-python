@@ -90,7 +90,7 @@ class date(RootModel):
 
 class datetime(RootModel):
     """A string is valid against this format if it represents a date-time in the
-    following format: YYYY:MM::DDThh:mm:ss.sTZD..
+    following format: YYYY:MM::DDThh:mm:ss.sTZD.
     """
 
     root: datetime_datetime = Field(
@@ -212,7 +212,7 @@ class Extension(Element):
 
 
 class MappableConcept(Element):
-    """A concept label that may be mapped to one or more :ref:`Codings <Coding>`."""
+    """A concept label that may be mapped to one or more `Codings`."""
 
     conceptType: Optional[str] = Field(
         None,
@@ -232,7 +232,7 @@ class MappableConcept(Element):
     def require_label_or_primary_code(cls, v):
         """Ensure that ``label`` or ``primaryCode`` is provided"""
         if v.primaryCode is None and v.label is None:
-            err_msg = "`label` or `primaryCode` must be provided."
+            err_msg = "`One of label` or `primaryCode` must be provided."
             raise ValueError(err_msg)
         return v
 
