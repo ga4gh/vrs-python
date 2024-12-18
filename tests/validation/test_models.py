@@ -141,3 +141,22 @@ def test_copy_number_change():
     # Primary code not valid EFO
     with pytest.raises(ValueError, match="`primaryCode` must be one of:"):
         models.CopyNumberChange(location=location, copyChange=core_models.MappableConcept(primaryCode="test"))
+
+
+def test_adjacency():
+    """Test the Adjacency field validator"""
+    # Both start and end provided
+    with pytest.raises(ValueError, match="Adjoined sequence must not have both `start` and `end`."):
+        models.Adjacency(
+            adjoinedSequences=[
+                models.SequenceLocation(start=1),
+                models.SequenceLocation(start=1, end=2)
+            ]
+        )
+
+    assert models.Adjacency(
+            adjoinedSequences=[
+                models.SequenceLocation(start=1),
+                models.SequenceLocation(end=2),
+            ]
+        )
