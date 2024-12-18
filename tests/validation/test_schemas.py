@@ -77,7 +77,8 @@ def test_schema_models_in_pydantic(gks_schema, pydantic_models):
     for schema_model in (
         mapping.base_classes | mapping.concrete_classes | mapping.primitives
     ):
-        assert getattr(pydantic_models, schema_model, False), schema_model
+        if schema_model not in {"date", "datetime"}:  # since we leverage datetime module
+            assert getattr(pydantic_models, schema_model, False), schema_model
 
 
 @pytest.mark.parametrize(

@@ -3,8 +3,6 @@
 from __future__ import annotations
 
 from abc import ABC
-from datetime import date as datetime_date
-from datetime import datetime as datetime_datetime
 from enum import Enum
 from typing import Annotated, Any, Dict, List, Optional, Union
 
@@ -73,30 +71,6 @@ class iriReference(RootModel):
         ...,
         json_schema_extra={
             "description": "An IRI Reference (either an IRI or a relative-reference), according to `RFC3986 section 4.1 <https://datatracker.ietf.org/doc/html/rfc3986#section-4.1>`_ and `RFC3987 section 2.1 <https://datatracker.ietf.org/doc/html/rfc3987#section-2.1>`_. MAY be a JSON Pointer as an IRI fragment, as described by `RFC6901 section 6 <https://datatracker.ietf.org/doc/html/rfc6901#section-6>`_.",
-        },
-    )
-
-
-class date(RootModel):
-    """A string is valid against this format if it represents a date in the following format: YYYY-MM-DD."""
-
-    root: datetime_date = Field(
-        ...,
-        json_schema_extra={
-            "description": "A string is valid against this format if it represents a date in the following format: YYYY-MM-DD."
-        },
-    )
-
-
-class datetime(RootModel):
-    """A string is valid against this format if it represents a date-time in the
-    following format: YYYY:MM::DDThh:mm:ss.sTZD.
-    """
-
-    root: datetime_datetime = Field(
-        ...,
-        json_schema_extra={
-            "description": "A string is valid against this format if it represents a date-time in the following format: YYYY:MM::DDThh:mm:ss.sTZD."
         },
     )
 
