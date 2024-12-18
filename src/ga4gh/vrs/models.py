@@ -502,7 +502,7 @@ class SequenceReference(_ValueObject):
     residueAlphabet: Optional[ResidueAlphabet] = Field(None, description='The interpretation of the character codes referred to by the refget accession, where "aa" specifies an amino acid character set, and "na" specifies a nucleic acid character set.')
     circular: Optional[bool] = Field(None, description="A boolean indicating whether the molecule represented by the sequence is circular (true) or linear (false).")
     sequence: Optional[sequenceString] = Field(None, description="A sequenceString that is a literal representation of the referenced sequence.")
-    moleculeType: Optional[MoleculeType] = Field(None, description="Molecule types as [defined by RefSeq](https://www.ncbi.nlm.nih.gov/books/NBK21091/) (see Table 1).")
+    moleculeType: Optional[MoleculeType] = Field(None, description="Molecule types as [defined by RefSeq](https://www.ncbi.nlm.nih.gov/books/NBK21091/) (see Table 1). MUST be one of 'genomic', 'RNA', 'mRNA', or 'protein'.")
 
     class ga4gh(_ValueObject.ga4gh):
         keys = [
@@ -520,11 +520,11 @@ class SequenceLocation(_Ga4ghIdentifiableObject):
     )
     start: Optional[Union[Range, int]] = Field(
         None,
-        description='The start coordinate or range of the SequenceLocation. The minimum value of this coordinate or range is 0. MUST represent a coordinate or range less than or equal to the value of `end`.',
+        description='The start coordinate or range of the SequenceLocation. The minimum value of this coordinate or range is 0. For locations on linear sequences, this MUST represent a coordinate or range  less than or equal to the value of `end`. For circular sequences, `start` is greater than `end` when the location spans the sequence 0 coordinate.',
     )
     end: Optional[Union[Range, int]] = Field(
         None,
-        description='The end coordinate or range of the SequenceLocation. The minimum value of this coordinate or range is 0. MUST represent a coordinate or range greater than or equal to the value of `start`.',
+        description='The end coordinate or range of the SequenceLocation. The minimum value of this coordinate or range is 0. For locations on linear sequences, this MUST represent a coordinate or range  grater than or equal to the value of `start`. For circular sequences, `end` is less than `start` when the location spans the sequence 0 coordinate.',
 
     )
     sequence: Optional[sequenceString] = Field(None, description="The literal sequence encoded by the `sequenceReference` at these coordinates.")
