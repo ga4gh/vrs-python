@@ -117,11 +117,11 @@ def test_schema_class_fields(gks_schema, pydantic_models):
 
 
 def test_ga4gh_keys():
-    """Ensure ga4gh inherit defined in schema model exist in corresponding Pydantic model"""
+    """Ensure ga4gh inherent defined in schema model exist in corresponding Pydantic model"""
     vrs_mapping = GKS_SCHEMA_MAPPING[GKSSchema.VRS]
     for vrs_class in vrs_mapping.concrete_classes:
         if (
-            vrs_mapping.schema[vrs_class].get("ga4gh", {}).get("inherit", None)
+            vrs_mapping.schema[vrs_class].get("ga4gh", {}).get("inherent", None)
             is None
         ):
             continue
@@ -134,7 +134,7 @@ def test_ga4gh_keys():
             raise AttributeError(vrs_class) from e
 
         assert set(pydantic_model_digest_keys) == set(
-            vrs_mapping.schema[vrs_class]["ga4gh"]["inherit"]
+            vrs_mapping.schema[vrs_class]["ga4gh"]["inherent"]
         ), vrs_class
         assert pydantic_model_digest_keys == sorted(
             pydantic_model.ga4gh.keys
