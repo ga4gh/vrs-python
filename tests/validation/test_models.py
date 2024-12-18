@@ -8,7 +8,7 @@ from pydantic import ValidationError
 import pytest
 import yaml
 
-from ga4gh.core import ga4gh_serialize, ga4gh_digest, ga4gh_identify, PrevVrsVersion, entity_models, CommonDomainType, domain_models
+from ga4gh.core import ga4gh_serialize, ga4gh_digest, ga4gh_identify, PrevVrsVersion, models
 from ga4gh.vrs import models, VrsType
 
 def ga4gh_1_3_identify(*args, **kwargs):
@@ -76,7 +76,7 @@ def test_prev_vrs_version():
     invalid_vrs_version_msg = f"Expected `PrevVrsVersion`, but got {invalid_vrs_version}"
 
     loc_no_seq_ref = models.SequenceLocation(start=44908821, end=44908822)
-    loc_iri = models.SequenceLocation(start=44908821, end=44908822, sequenceReference=entity_models.IRI("sequenceReferences.json#example1"))
+    loc_iri = models.SequenceLocation(start=44908821, end=44908822, sequenceReference=models.iriReference("sequenceReferences.json#example1"))
     allele_rle_no_seq = models.Allele(location=loc, state=models.ReferenceLengthExpression(length=11, repeatSubunitLength=3))
     allele_le = models.Allele(location=loc, state=models.LengthExpression(length=2))
     loc_seq_ref_msg = "Must provide `sequenceReference` and it must be a valid `SequenceReference`"
@@ -103,18 +103,17 @@ def test_prev_vrs_version():
 
 def test_valid_types():
     """Ensure that type enums values correct. Values should correspond to class"""
-    for gks_models, gks_enum in [(models, VrsType), (domain_models, CommonDomainType)]:
-        for enum_val in gks_enum.__members__.values():
-            enum_val = enum_val.value
-            if hasattr(gks_models, enum_val):
-                gks_class = getattr(gks_models, enum_val)
-                try:
-                    assert gks_class(type=enum_val)
-                except ValidationError as e:
-                    found_type_mismatch = False
-                    for error in e.errors():
-                        if error["loc"] == ("type",):
-                            found_type_mismatch = True
-                    assert not found_type_mismatch, f"Found mismatch in type literal: {enum_val} vs {error['ctx']['expected']}"
-            else:
-                assert False, f"{str(gks_models)} class not found: {enum_val}"
+    for enum_val in VrsType.__members__.values():
+        enum_val = enum_val.value
+        if hasattr(models, enum_val):
+            gks_class = getattr(models, enum_val)
+            try:
+                assert gks_class(type=enum_val)
+            except ValidationError as e:
+                found_type_mismatch = False
+                for error in e.errors():
+                    if error["loc"] == ("type",):
+                        found_type_mismatch = True
+                assert not found_type_mismatch, f"Found mismatch in type literal: {enum_val} vs {error['ctx']['expected']}"
+        else:
+            assert False, f"{str(models)} class not found: {enum_val}"

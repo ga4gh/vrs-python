@@ -190,7 +190,7 @@ def test_cpb():
 
 
 def test_ga4gh_iri():
-    iri = models.IRI.model_construct("ga4gh:VA.Hy2XU_-rp4IMh6I_1NXNecBo8Qx8n0oE")
+    iri = models.iriReference.model_construct("ga4gh:VA.Hy2XU_-rp4IMh6I_1NXNecBo8Qx8n0oE")
     assert is_curie_type(iri)
     assert iri.root == pydantic_copy(iri).root
     assert ga4gh_serialize(iri) == b'"Hy2XU_-rp4IMh6I_1NXNecBo8Qx8n0oE"'
@@ -277,7 +277,6 @@ def test_class_refatt_map():
     class_refatt_map_expected = {
         'Allele': ['location'],
         'CisPhasedBlock': ['members'],
-        '_CopyNumber': ['location'],
         'CopyNumberCount': ['location'],
         'CopyNumberChange': ['location'],
         'Adjacency': ['adjoinedSequences'],
