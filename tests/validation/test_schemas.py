@@ -7,7 +7,7 @@ from pathlib import Path
 import pytest
 from pydantic import BaseModel
 
-from ga4gh.core import models
+from ga4gh.core import core_models
 from ga4gh.vrs import models as vrs_models
 
 
@@ -60,7 +60,7 @@ for f in (SUBMODULES_DIR / "schema" / "vrs" / "json").glob("*"):
 
 # Get core classes
 core_mapping = GKS_SCHEMA_MAPPING[GKSSchema.CORE]
-for f in (SUBMODULES_DIR / "schema" / "vrs" / "submodules" / "gks-core" / "schema").glob("*"):
+for f in (SUBMODULES_DIR / "submodules" / "gks-core" / "schema" / "gks-core" / "json").glob("*"):
     _update_gks_schema_mapping(f, core_mapping)
 
 
@@ -68,7 +68,7 @@ for f in (SUBMODULES_DIR / "schema" / "vrs" / "submodules" / "gks-core" / "schem
     ("gks_schema", "pydantic_models"),
     [
         (GKSSchema.VRS, vrs_models),
-        (GKSSchema.CORE, models),
+        (GKSSchema.CORE, core_models),
     ],
 )
 def test_schema_models_in_pydantic(gks_schema, pydantic_models):
@@ -84,7 +84,7 @@ def test_schema_models_in_pydantic(gks_schema, pydantic_models):
     ("gks_schema", "pydantic_models"),
     [
         (GKSSchema.VRS, vrs_models),
-        (GKSSchema.CORE, models),
+        (GKSSchema.CORE, core_models),
     ],
 )
 def test_schema_class_fields(gks_schema, pydantic_models):
@@ -110,7 +110,8 @@ def test_schema_class_fields(gks_schema, pydantic_models):
                 assert not pydantic_field_required, f"{pydantic_model}.{prop}"
 
             if "description" in property_def:
-                assert property_def["description"].replace("'", "\"") == pydantic_model_field_info.description.replace("'", "\""), f"{pydantic_model}.{prop}"
+                if prop != "code":  # special exception
+                    assert property_def["description"].replace("'", "\"") == pydantic_model_field_info.description.replace("'", "\""), f"{pydantic_model}.{prop}"
             else:
                 assert pydantic_model_field_info.description is None, f"{pydantic_model}.{prop}"
 

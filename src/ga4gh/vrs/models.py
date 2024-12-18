@@ -210,12 +210,10 @@ class Syntax(str, Enum):
 def _recurse_ga4gh_serialize(obj):
     if isinstance(obj, _Ga4ghIdentifiableObject):
         return obj.get_or_create_digest()
-    elif isinstance(obj, _ValueObject):
+    elif isinstance(obj, (_ValueObject, MappableConcept)):
         return obj.ga4gh_serialize()
     elif isinstance(obj, RootModel):
         return _recurse_ga4gh_serialize(obj.model_dump())
-    elif isinstance(obj, MappableConcept):
-        return obj.ga4gh_serialize()
     elif isinstance(obj, str):
         return obj
     elif isinstance(obj, list):

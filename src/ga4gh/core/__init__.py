@@ -15,7 +15,7 @@ from .identifiers import (
 from .pydantic import (
     is_pydantic_instance, is_curie_type, pydantic_copy
 )
-from . import models
+from . import models as core_models
 
 __all__ = [
     "sha512t24u",
@@ -36,7 +36,7 @@ __all__ = [
     "is_pydantic_instance",
     "is_curie_type",
     "pydantic_copy",
-    "models",
+    "core_models",
 ]
 
 try:

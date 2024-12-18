@@ -279,6 +279,7 @@ def test_class_refatt_map():
         'CisPhasedBlock': ['members'],
         'CopyNumberCount': ['location'],
         'CopyNumberChange': ['location'],
+        'DerivativeMolecule': ['components'],
         'Adjacency': ['adjoinedSequences'],
         'TraversalBlock': ['component'],
         'Terminus': ['location']
