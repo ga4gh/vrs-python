@@ -13,7 +13,7 @@ from ga4gh.vrs.extras.decorators import lazy_property
 import logging
 import re
 
-from ga4gh.core import ga4gh_identify
+from ga4gh.core import ga4gh_identify, core_models
 from ga4gh.vrs import models, normalize
 from ga4gh.vrs.utils.hgvs_tools import HgvsTools
 
@@ -470,7 +470,7 @@ class CnvTranslator(_Translator):
             copy_change = kwargs.get("copy_change")
             if not copy_change:
                 copy_change = models.CopyChange.EFO_0030067 if sv_type == "del" else models.CopyChange.EFO_0030070
-            cnv = models.CopyNumberChange(location=location, copyChange=copy_change)
+            cnv = models.CopyNumberChange(location=location, copyChange=core_models.MappableConcept(primaryCode=copy_change))
 
         cnv =self._post_process_imported_cnv(cnv)
         return cnv

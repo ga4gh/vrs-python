@@ -155,7 +155,7 @@ def _normalize_allele(input_allele, data_proxy, rle_seq_limit=50):
         new_allele.location.end = _get_new_allele_location_pos(
             trim_ival[1], end.pos_type
         )
-        new_allele.state.sequence = models.SequenceString(trim_alleles[1])
+        new_allele.state.sequence = models.sequenceString(trim_alleles[1])
         return new_allele
     elif len_trimmed_ref:
         seed_length = len_trimmed_ref
@@ -185,7 +185,7 @@ def _normalize_allele(input_allele, data_proxy, rle_seq_limit=50):
         # Return a new Allele with the trimmed alternate sequence as a Literal
         # Sequence Expression
         new_allele.state = models.LiteralSequenceExpression(
-            sequence=models.SequenceString(extended_alt_seq)
+            sequence=models.sequenceString(extended_alt_seq)
         )
         return new_allele
 
@@ -215,7 +215,7 @@ def _normalize_allele(input_allele, data_proxy, rle_seq_limit=50):
                     new_allele, len_extended_alt, cycle_length, rle_seq_limit, extended_alt_seq)
 
     new_allele.state = models.LiteralSequenceExpression(
-        sequence=models.SequenceString(extended_alt_seq)
+        sequence=models.sequenceString(extended_alt_seq)
     )
     return new_allele
 
@@ -242,7 +242,7 @@ def _define_rle_allele(allele, length, repeat_subunit_length, rle_seq_limit, ext
     )
 
     if (rle_seq_limit and length <= rle_seq_limit) or (rle_seq_limit is None):
-        allele.state.sequence = models.SequenceString(extended_alt_seq)
+        allele.state.sequence = models.sequenceString(extended_alt_seq)
 
     return allele
 
