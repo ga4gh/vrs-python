@@ -707,6 +707,7 @@ class Adjacency(_VariationBase):
         """Ensure ``adjoinedSequences`` do not have both ``start`` and ``end``
 
         :raises ValueError: If an adjoined sequence has both ``start`` and ``end``
+        :return: Adjoined sequences represented as iri reference or sequence location
         """
         for adjoined_seq in v:
             if isinstance(adjoined_seq, SequenceLocation):
@@ -840,6 +841,7 @@ class CopyNumberChange(_VariationBase):
 
         :raises ValueError: If `primaryCode` is not provided or if its not a valid
             EFO code
+        :return: Copy change represented as mappable concept
         """
         if v.primaryCode is None:
             err_msg = "`primaryCode` is required."
