@@ -493,7 +493,7 @@ def test_rle_seq_limit(tlr):
 
 @pytest.mark.vcr
 def test_to_hgvs_iri_ref_keyerror(tlr):
-    # IRI is passed
+    # iriReference is passed
     iri_vo = models.Allele(
         **{
             "location": {

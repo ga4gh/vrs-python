@@ -25,7 +25,7 @@ def is_curie_type(o: Any) -> bool:
     """
     Returns true if the object is a str-like matching the CURIE pattern.
     If object is a Pydantic custom root type, extracts the value first,
-    which enables (for example) a GA4GH IRI pydantic model object to be passed.
+    which enables (for example) a GA4GH iriReference pydantic model object to be passed.
     """
     if isinstance(o, RootModel):
         o = o.root
