@@ -6,8 +6,8 @@ authors = [
     {name = "Andreas Prlic", email = "andreas.prlic@gmail.com"},
     {name = "Alex Wagner", email = "alex.wagner@nationwidechildrens.org"},
 ]
-readme = "README.md"
 description = "GA4GH Variation Representation Specification (VRS) reference implementation"
+readme = "README.md"
 license = {file = "LICENSE"}
 classifiers = [
     "Development Status :: 3 - Alpha",
