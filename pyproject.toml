@@ -51,6 +51,8 @@ extras = [
     "click",
 ]
 dev = [
+    # testing
+    "urllib3==2.2.3",
     # tests
     "pytest",
     "pytest-cov",
