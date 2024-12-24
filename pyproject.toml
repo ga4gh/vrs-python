@@ -57,6 +57,7 @@ dev = [
     "pytest-vcr",
     "vcrpy",
     "pyyaml",
+    "urllib3<2.3.0",  # TODO pending resolution of issue #472
     # style
     "pre-commit>=4.0.1",
     "pylint",
