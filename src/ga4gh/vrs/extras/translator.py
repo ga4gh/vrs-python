@@ -1,14 +1,14 @@
-"""Translates various external formats into VRS models.
+"""Provide translator classes from converting various variation representation schematics
+to and from VRS models.
 
 Input formats: VRS (serialized), hgvs, spdi, gnomad (vcf), beacon
 Output formats: VRS (serialized), hgvs, spdi, gnomad (vcf)
-
 """
 
 from abc import ABC
 from collections.abc import Mapping
-from typing import Optional, Union
-from ga4gh.vrs.dataproxy import create_dataproxy, _DataProxy
+from enum import Enum
+from ga4gh.vrs.dataproxy import _DataProxy, SeqRepoDataProxy, SeqRepoRESTDataProxy
 from ga4gh.vrs.extras.decorators import lazy_property
 import logging
 import re
@@ -19,12 +19,28 @@ from ga4gh.vrs.utils.hgvs_tools import HgvsTools
 
 _logger = logging.getLogger(__name__)
 
+
+class TranslatorFormat(str, Enum):
+    """Constrain known variation format types.
+
+    Note that invidual translator methods do not necessarily implement support
+    for all legal format values. Refer to the docstring for the individual class
+    and method in question for more information.
+    """
+
+    BEACON = "beacon"
+    GNOMAD = "gnomad"
+    HGVS = "hgvs"
+    SPDI = "spdi"
+    VRS = "vrs"
+
+
 class _Translator(ABC):
-    """abstract class / interface for VRS to/from translation needs
+    """Abstract class / interface for VRS to/from translation needs
 
      Translates various variation formats to and from GA4GH VRS models
 
-    All `from_` methods follow this pattern:
+    All `from_` methods should follow this pattern:
     * If the argument does not appear to be an appropriate type, None is returned
     * Otherwise, the argument is expected to be of the correct type.  If an error occurs during processing,
       an exception is raised.
@@ -42,9 +58,9 @@ class _Translator(ABC):
     def __init__(
         self,
         data_proxy: _DataProxy,
-        default_assembly_name="GRCh38",
-        identify=True,
-        rle_seq_limit: Optional[int] = 50
+        default_assembly_name: str = "GRCh38",
+        identify: bool = True,
+        rle_seq_limit: int | None = 50
     ):
         self.default_assembly_name = default_assembly_name
         self.data_proxy = data_proxy
@@ -54,13 +70,16 @@ class _Translator(ABC):
         self.to_translators = {}
         return
 
-    def translate_from(self, var, fmt=None, **kwargs):
-        """Translate variation `var` to VRS object
+    def translate_from(self, var: str , fmt: TranslatorFormat | None = None, **kwargs) -> models.Variation:
+        """Translate variation `var` to VRS object.
 
-        If `fmt` is None, guess the appropriate format and return the variant.
-        If `fmt` is specified, try only that format.
+        More specific information is given in respective `from_` methods for each format.
 
-        See also notes about `from_` and `to_` methods.
+        :param var: raw string representation of variant
+        :param fmt: known format of `var`. Otherwise, this method will try to match
+            against all known formats.
+        :return: an identifiable variation object.
+        :raise ValueError: if unable to find valid format for `var` input.
 
         kwargs:
             For CnvTranslator
@@ -87,10 +106,21 @@ class _Translator(ABC):
             try:
                 t = self.from_translators[fmt]
             except KeyError:
+                _logger.error(
+                    "Tried to translate variation %s to unsupported format %s -- must be one of %s",
+                    var,
+                    fmt,
+                    list(self.from_translators.keys())
+                )
                 raise NotImplementedError(f"{fmt} is not supported")
             else:
                 o = t(var, **kwargs)
                 if o is None:
+                    _logger.error(
+                        "Unable to parse %s as %s variation",
+                        var,
+                        fmt
+                    )
                     raise ValueError(f"Unable to parse data as {fmt} variation")
                 return o
 
@@ -99,11 +129,15 @@ class _Translator(ABC):
             if o:
                 return o
 
-        formats = list(self.from_translators.keys())
-        raise ValueError(f"Unable to parse data as {', '.join(formats)}")
+        raise ValueError(f"Unable to parse data as {list(self.from_translators.keys())}")
 
-    def translate_to(self, vo, fmt):
-        """translate vrs object `vo` to named format `fmt`"""
+    def translate_to(self, vo: models.Variation, fmt: TranslatorFormat) -> str:
+        """translate vrs object `vo` to named format `fmt`
+
+        :param vo: VRS variation object
+        :param fmt: target format
+        :return: string representation of given variation in target format
+        """
         t = self.to_translators[fmt]
         return t(vo)
 
@@ -115,7 +149,7 @@ class _Translator(ABC):
         """instantiates and returns an HgvsTools instance"""
         return HgvsTools(self.data_proxy)
 
-    def _from_vrs(self, var):
+    def _from_vrs(self, var: Mapping) -> models.Variation | None:
         """convert from dict representation of VRS JSON to VRS object"""
         if not isinstance(var, Mapping):
             return None
@@ -131,25 +165,35 @@ class AlleleTranslator(_Translator):
     """Class for translating formats to and from VRS Alleles"""
 
     def __init__(
-        self, data_proxy, default_assembly_name="GRCh38", identify=True
+        self,
+        data_proxy: SeqRepoDataProxy | SeqRepoRESTDataProxy,
+        default_assembly_name: str = "GRCh38",
+        identify: bool = True
     ):
-        """Initialize AlleleTranslator class"""
+        """Initialize AlleleTranslator class.
+
+        :param data_proxy: SeqRepo dataproxy instance
+        :param default_assembly_name: name of genomic assembly to use as default
+            during translation
+        :param identify: if `True`, add GA4GH identifiers to all VRS objects in
+            `translate_from` methods
+        """
         super().__init__(data_proxy, default_assembly_name, identify)
 
         self.from_translators = {
-            "beacon": self._from_beacon,
-            "gnomad": self._from_gnomad,
-            "hgvs": self._from_hgvs,
-            "spdi": self._from_spdi,
-            "vrs": self._from_vrs,
+            TranslatorFormat.BEACON: self._from_beacon,
+            TranslatorFormat.GNOMAD: self._from_gnomad,
+            TranslatorFormat.HGVS: self._from_hgvs,
+            TranslatorFormat.SPDI: self._from_spdi,
+            TranslatorFormat.VRS: self._from_vrs,
         }
 
         self.to_translators = {
-            "hgvs": self._to_hgvs,
-            "spdi": self._to_spdi,
+            TranslatorFormat.HGVS: self._to_hgvs,
+            TranslatorFormat.SPDI: self._to_spdi,
         }
 
-    def _create_allele(self, values: dict, **kwargs):
+    def _create_allele(self, values: dict, **kwargs) -> models.Allele:
         """
         Create an allele object with the given parameters.
 
@@ -171,7 +215,7 @@ class AlleleTranslator(_Translator):
         allele = self._post_process_imported_allele(allele, **kwargs)
         return allele
 
-    def _from_beacon(self, beacon_expr, **kwargs):
+    def _from_beacon(self, beacon_expr: str, **kwargs) -> models.Allele | None:
         """Parse beacon expression into VRS Allele
 
         kwargs:
@@ -204,7 +248,6 @@ class AlleleTranslator(_Translator):
         }
 
         """
-
         if not isinstance(beacon_expr, str):
             return None
 
@@ -230,7 +273,7 @@ class AlleleTranslator(_Translator):
 
         return allele
 
-    def _from_gnomad(self, gnomad_expr, **kwargs):
+    def _from_gnomad(self, gnomad_expr: str, **kwargs) -> models.Allele | None:
         """Parse gnomAD-style VCF expression into VRS Allele
 
         kwargs:
@@ -300,14 +343,14 @@ class AlleleTranslator(_Translator):
         allele = self._create_allele(values, **kwargs)
         return allele
 
-    def _from_hgvs(self, hgvs_expr: str, **kwargs):
+    def _from_hgvs(self, hgvs_expr: str, **kwargs) -> models.Allele | None:
         allele_values = self.hgvs_tools.extract_allele_values(hgvs_expr)
         if allele_values:
             return self._create_allele(allele_values, **kwargs)
         else:
             return None
 
-    def _from_spdi(self, spdi_expr, **kwargs):
+    def _from_spdi(self, spdi_expr: str, **kwargs) -> models.Allele | None:
         """Parse SPDI expression in to a GA4GH Allele
 
         kwargs:
@@ -338,7 +381,6 @@ class AlleleTranslator(_Translator):
           'type': 'Allele'
         }
         """
-
         if not isinstance(spdi_expr, str):
             return None
 
@@ -364,10 +406,10 @@ class AlleleTranslator(_Translator):
         allele = self._create_allele(values, **kwargs)
         return allele
 
-    def _to_hgvs(self, vo, namespace="refseq"):
+    def _to_hgvs(self, vo: models.Allele, namespace: str | None = "refseq") -> str:
         return self.hgvs_tools.from_allele(vo, namespace)
 
-    def _to_spdi(self, vo, namespace="refseq"):
+    def _to_spdi(self, vo: models.Allele, namespace: str | None = "refseq") -> list[str]:
         """generates a *list* of SPDI expressions for VRS Allele.
 
         If `namespace` is not None, returns SPDI strings for the
@@ -393,7 +435,11 @@ class AlleleTranslator(_Translator):
         spdis = [a + spdi_tail for a in aliases]
         return spdis
 
-    def _post_process_imported_allele(self, allele, **kwargs):
+    def _post_process_imported_allele(
+        self,
+        allele: models.Allele,
+        **kwargs
+    ) -> models.Allele:
         """Provide common post-processing for imported Alleles IN-PLACE.
 
         :param allele: VRS Allele object
@@ -424,15 +470,22 @@ class CnvTranslator(_Translator):
     """Class for translating formats from format to VRS Copy Number"""
 
     def __init__(
-        self, data_proxy, default_assembly_name="GRCh38", identify=True
+        self,
+        data_proxy: SeqRepoDataProxy | SeqRepoRESTDataProxy,
+        default_assembly_name: str = "GRCh38",
+        identify: bool = True
     ):
         """Initialize CnvTranslator class"""
         super().__init__(data_proxy, default_assembly_name, identify)
         self.from_translators = {
-            "hgvs": self._from_hgvs,
+            TranslatorFormat.HGVS: self._from_hgvs,
         }
 
-    def _from_hgvs(self, hgvs_dup_del_expr: str, **kwargs):
+    def _from_hgvs(
+        self,
+        hgvs_dup_del_expr: str,
+        **kwargs
+    ) -> models.CopyNumberCount | models.CopyNumberChange | None:
         """parse hgvs into a VRS CNV Object
 
         kwargs:
@@ -441,7 +494,6 @@ class CnvTranslator(_Translator):
             copy_change: Copy change. If not provided, default is EFO:0030067 for
                 deletions and EFO:0030070 for duplications
         """
-        # sv = self._get_parsed_hgvs(hgvs_dup_del_expr)
         sv = self.hgvs_tools.parse(hgvs_dup_del_expr)
         if not sv:
             return None
@@ -475,7 +527,10 @@ class CnvTranslator(_Translator):
         cnv =self._post_process_imported_cnv(cnv)
         return cnv
 
-    def _post_process_imported_cnv(self, copy_number):
+    def _post_process_imported_cnv(
+        self,
+        copy_number: models.CopyNumberCount | models.CopyNumberChange
+    ) -> models.CopyNumberChange | models.CopyNumberCount:
         """Provide common post-processing for imported Copy Numbers IN-PLACE."""
         if self.identify:
             copy_number.id = ga4gh_identify(copy_number)

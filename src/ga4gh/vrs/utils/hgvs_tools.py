@@ -167,7 +167,7 @@ class HgvsTools():
         retval = {"refget_accession": refget_accession, "start": start, "end": end, "literal_sequence": state}
         return retval
 
-    def from_allele(self, vo, namespace=None):
+    def from_allele(self, vo: models.Allele, namespace: bool | None = None) -> list[str]:
         """generates a *list* of HGVS expressions for VRS Allele.
 
         If `namespace` is not None, returns HGVS strings for the
