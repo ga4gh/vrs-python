@@ -152,11 +152,8 @@ duplication_output_normalized = {
 
 
 def test_from_invalid(tlr):
-    try:
+    with pytest.raises(ValueError, match="Unable to parse data as beacon, gnomad, hgvs, spdi, vrs"):
         tlr.translate_from("BRAF amplication")
-        assert "Expected exception to be thrown" is None
-    except ValueError as e:
-        assert e.args[0] == "Unable to parse data as beacon, gnomad, hgvs, spdi, vrs"
 
 
 @pytest.mark.vcr
@@ -263,7 +260,7 @@ def test_to_spdi(tlr):
     spdiexpr = snv_inputs["spdi"]
     allele = tlr.translate_from(spdiexpr, "spdi")
     to_spdi = tlr.translate_to(allele, "spdi")
-    assert 1 == len(to_spdi)
+    assert len(to_spdi) == 1
     assert spdiexpr == to_spdi[0]
 
 
@@ -481,7 +478,7 @@ hgvs_tests_to_hgvs_map = {
 }
 
 
-@pytest.mark.parametrize("hgvsexpr,expected", hgvs_tests)
+@pytest.mark.parametrize(("hgvsexpr", "expected"), hgvs_tests)
 @pytest.mark.vcr
 def test_hgvs(tlr, hgvsexpr, expected):
     # do_normalize defaults to true
@@ -540,7 +537,7 @@ def test_rle_seq_limit(tlr):
 def test_to_hgvs_iri_ref_keyerror(tlr):
     # iriReference is passed
     iri_vo = models.Allele(
-        **{
+        **{  # noqa: PIE804
             "location": {
                 "end": 1263,
                 "start": 1262,
