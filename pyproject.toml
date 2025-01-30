@@ -209,6 +209,10 @@ exclude = [
     "ANN101",
     "ANN2",
 ]
+"src/ga4gh/vrs/extras/object_store.py" = [
+    "ANN",
+    "D",
+]
 
 [tool.ruff.lint.flake8-annotations]
 mypy-init-return = true
