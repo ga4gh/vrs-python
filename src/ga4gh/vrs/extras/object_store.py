@@ -14,11 +14,7 @@ class Sqlite3MutableMapping(MutableMapping):
     If not used as a contextmanager, user must call commit and/or close.
     """
 
-    def __init__(
-            self,
-            sqlite3_db: Union[str, sqlite3.Connection],
-            autocommit=True
-    ):
+    def __init__(self, sqlite3_db: Union[str, sqlite3.Connection], autocommit=True):
         """
         Connect to the sqlite3 database specified by an existing sqlite3.Connection
         or a connection string.
@@ -27,9 +23,7 @@ class Sqlite3MutableMapping(MutableMapping):
                 Significant performance implication (>10X speedup)
         """
         if isinstance(sqlite3_db, str):
-            sqlite3_db = sqlite3.connect(
-                sqlite3_db,
-                check_same_thread=True)
+            sqlite3_db = sqlite3.connect(sqlite3_db, check_same_thread=True)
         self.db = sqlite3_db
         self.autocommit = autocommit
         self._closed_lock = Lock()
@@ -39,12 +33,8 @@ class Sqlite3MutableMapping(MutableMapping):
     def _create_schema(self):
         cur = self.db.cursor()
         try:
-            cur.execute(
-                "create table if not exists mapping "
-                "(key text, value blob)")
-            cur.execute(
-                "create unique index if not exists mapping_key_idx "
-                "on mapping (key)")
+            cur.execute("create table if not exists mapping (key text, value blob)")
+            cur.execute("create unique index if not exists mapping_key_idx on mapping (key)")
             self.commit()
         finally:
             cur.close()
@@ -58,9 +48,7 @@ class Sqlite3MutableMapping(MutableMapping):
         # Delete if found
         cur = self.db.cursor()
         try:
-            cur.execute(
-                "delete from mapping where key = ?",
-                (key,))
+            cur.execute("delete from mapping where key = ?", (key,))
             if self.autocommit:
                 self.commit()
         finally:
@@ -70,10 +58,7 @@ class Sqlite3MutableMapping(MutableMapping):
         cur = self.db.cursor()
         try:
             ser = dill.dumps(value)
-            cur.execute(
-                "insert or replace into mapping(key, value) "
-                "values (?, ?)",
-                (key, sqlite3.Binary(ser)))
+            cur.execute("insert or replace into mapping(key, value) values (?, ?)", (key, sqlite3.Binary(ser)))
             if self.autocommit:
                 self.commit()
         finally:
@@ -82,9 +67,7 @@ class Sqlite3MutableMapping(MutableMapping):
     def __getitem__(self, key: Any) -> Any:
         cur = self.db.cursor()
         try:
-            rows = cur.execute(
-                "select value from mapping where key = ?",
-                (key,))
+            rows = cur.execute("select value from mapping where key = ?", (key,))
             row0 = next(rows)
             if row0:
                 des = dill.loads(row0[0])

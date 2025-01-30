@@ -3,6 +3,7 @@
 See https://vrs.ga4gh.org/en/stable/impl-guide/normalization.html
 
 """
+
 import itertools
 import logging
 from enum import IntEnum
@@ -33,9 +34,7 @@ class LocationPos(NamedTuple):
     pos_type: PosType
 
 
-def _get_allele_location_pos(
-    allele_vo: models.Allele, use_start: bool = True
-) -> Optional[LocationPos]:
+def _get_allele_location_pos(allele_vo: models.Allele, use_start: bool = True) -> Optional[LocationPos]:
     """Get a representative position for Alleles with Location start or end defined by Range
 
     :param allele_vo: VRS Allele object
@@ -65,9 +64,7 @@ def _get_allele_location_pos(
     return LocationPos(value=val, pos_type=pos_type)
 
 
-def _get_new_allele_location_pos(
-    new_pos_val: int, pos_type: PosType
-) -> Union[int, models.Range]:
+def _get_new_allele_location_pos(new_pos_val: int, pos_type: PosType) -> Union[int, models.Range]:
     """Get updated location pos on normalized allele
 
     :param new_pos_val: New position after normalization
@@ -137,7 +134,7 @@ def _normalize_allele(input_allele, data_proxy, rle_seq_limit=50):
         len_trimmed_ref = len_trimmed_alt = 0
         # TODO: Return RLE for ref agree Alleles
     else:
-        trim_ref_seq = ref_seq[trim_ival[0]: trim_ival[1]]
+        trim_ref_seq = ref_seq[trim_ival[0] : trim_ival[1]]
         trim_alt_seq = trim_alleles[1]
         len_trimmed_ref = len(trim_ref_seq)
         len_trimmed_alt = len(trim_alt_seq)
@@ -149,12 +146,8 @@ def _normalize_allele(input_allele, data_proxy, rle_seq_limit=50):
     new_allele = pydantic_copy(input_allele)
 
     if len_trimmed_ref and len_trimmed_alt:
-        new_allele.location.start = _get_new_allele_location_pos(
-            trim_ival[0], start.pos_type
-        )
-        new_allele.location.end = _get_new_allele_location_pos(
-            trim_ival[1], end.pos_type
-        )
+        new_allele.location.start = _get_new_allele_location_pos(trim_ival[0], start.pos_type)
+        new_allele.location.end = _get_new_allele_location_pos(trim_ival[1], end.pos_type)
         new_allele.state.sequence = models.sequenceString(trim_alleles[1])
         return new_allele
     elif len_trimmed_ref:
@@ -163,30 +156,19 @@ def _normalize_allele(input_allele, data_proxy, rle_seq_limit=50):
         seed_length = len_trimmed_alt
 
     # Determine bounds of ambiguity
-    new_ival, new_alleles = _normalize(
-        ref_seq,
-        trim_ival,
-        (None, trim_alleles[1]),
-        mode=NormalizationMode.EXPAND
-    )
+    new_ival, new_alleles = _normalize(ref_seq, trim_ival, (None, trim_alleles[1]), mode=NormalizationMode.EXPAND)
 
-    new_allele.location.start = _get_new_allele_location_pos(
-        new_ival[0], start.pos_type
-    )
-    new_allele.location.end = _get_new_allele_location_pos(
-        new_ival[1], end.pos_type
-    )
+    new_allele.location.start = _get_new_allele_location_pos(new_ival[0], start.pos_type)
+    new_allele.location.end = _get_new_allele_location_pos(new_ival[1], end.pos_type)
 
-    extended_ref_seq = ref_seq[new_ival[0]: new_ival[1]]
+    extended_ref_seq = ref_seq[new_ival[0] : new_ival[1]]
     extended_alt_seq = new_alleles[1]
 
     if not extended_ref_seq:
         # If the reference sequence is empty this is an unambiguous insertion.
         # Return a new Allele with the trimmed alternate sequence as a Literal
         # Sequence Expression
-        new_allele.state = models.LiteralSequenceExpression(
-            sequence=models.sequenceString(extended_alt_seq)
-        )
+        new_allele.state = models.LiteralSequenceExpression(sequence=models.sequenceString(extended_alt_seq))
         return new_allele
 
     # Otherwise, determine if this is reference-derived (an RLE allele).
@@ -211,12 +193,9 @@ def _normalize_allele(input_allele, data_proxy, rle_seq_limit=50):
                 continue
             cycle_start = len_extended_ref - cycle_length
             if _is_valid_cycle(cycle_start, extended_ref_seq, extended_alt_seq):
-                return _define_rle_allele(
-                    new_allele, len_extended_alt, cycle_length, rle_seq_limit, extended_alt_seq)
+                return _define_rle_allele(new_allele, len_extended_alt, cycle_length, rle_seq_limit, extended_alt_seq)
 
-    new_allele.state = models.LiteralSequenceExpression(
-        sequence=models.sequenceString(extended_alt_seq)
-    )
+    new_allele.state = models.LiteralSequenceExpression(sequence=models.sequenceString(extended_alt_seq))
     return new_allele
 
 
@@ -226,8 +205,8 @@ def _factor_gen(n):
     i = 1
     while i * i <= n:
         if n % i == 0:
-            yield n//i
-            if n//i != i:
+            yield n // i
+            if n // i != i:
                 lower_factors.append(i)
         i += 1
     for factor in reversed(lower_factors):
@@ -236,10 +215,7 @@ def _factor_gen(n):
 
 def _define_rle_allele(allele, length, repeat_subunit_length, rle_seq_limit, extended_alt_seq):
     # Otherwise, create the Allele as an RLE
-    allele.state = models.ReferenceLengthExpression(
-        length=length,
-        repeatSubunitLength=repeat_subunit_length
-    )
+    allele.state = models.ReferenceLengthExpression(length=length, repeatSubunitLength=repeat_subunit_length)
 
     if (rle_seq_limit and length <= rle_seq_limit) or (rle_seq_limit is None):
         allele.state.sequence = models.sequenceString(extended_alt_seq)
@@ -249,16 +225,16 @@ def _define_rle_allele(allele, length, repeat_subunit_length, rle_seq_limit, ext
 
 def _is_valid_cycle(template_start, template, target):
     cycle = itertools.cycle(template[template_start:])
-    for char in target[len(template):]:
+    for char in target[len(template) :]:
         if char != next(cycle):
             return False
     return True
+
 
 # TODO _normalize_genotype?
 
 
 def _normalize_cis_phased_block(o, data_proxy=None):
-
     o.members = sorted(o.members, key=ga4gh_digest)
     return o
 

@@ -14,10 +14,7 @@ def dataproxy():
 
 @pytest.fixture(scope="session")
 def rest_dataproxy():
-    return SeqRepoRESTDataProxy(
-        base_url=os.environ.get(
-            "SEQREPO_REST_URL",
-            "http://localhost:5000/seqrepo"))
+    return SeqRepoRESTDataProxy(base_url=os.environ.get("SEQREPO_REST_URL", "http://localhost:5000/seqrepo"))
 
 
 # See https://github.com/ga4gh/vrs-python/issues/24

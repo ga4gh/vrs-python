@@ -21,7 +21,7 @@ def sha512t24u(blob):
         * encode using base64url encoding
 
     Examples:
-    >>> sha512t24u(b'')
+    >>> sha512t24u(b"")
     'z4PhNX7vuL3xVChQ1m2AB9Yg5AULVxXc'
 
     >>> sha512t24u(b"ACGT")

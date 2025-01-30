@@ -95,12 +95,8 @@ class Entity(BaseModel, ABC):
         description="The name of the class that is instantiated by a data object representing the Entity.",
     )
     label: Optional[str] = Field(None, description="A primary name for the entity.")
-    description: Optional[str] = Field(
-        None, description="A free-text description of the Entity."
-    )
-    alternativeLabels: Optional[List[str]] = Field(
-        None, description="Alternative name(s) for the Entity."
-    )
+    description: Optional[str] = Field(None, description="A free-text description of the Entity.")
+    alternativeLabels: Optional[List[str]] = Field(None, description="Alternative name(s) for the Entity.")
     extensions: Optional[List[Extension]] = Field(
         None,
         description="A list of extensions to the Entity, that allow for capture of information not directly supported by elements defined in the model.",
@@ -212,7 +208,7 @@ class MappableConcept(Element):
 
     def ga4gh_serialize(self) -> Optional[str]:
         if self.primaryCode:
-          return self.primaryCode.root
+            return self.primaryCode.root
         return None
 
 

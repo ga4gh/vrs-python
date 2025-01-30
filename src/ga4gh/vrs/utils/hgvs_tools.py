@@ -13,7 +13,8 @@ from ga4gh.vrs import models
 
 _logger = logging.getLogger(__name__)
 
-class HgvsTools():
+
+class HgvsTools:
     """
     A convenience class that exposes only the tools needed by vrs-python for working with HGVS (Human Genome Variation Society) notation.
 
@@ -24,16 +25,15 @@ class HgvsTools():
         variant_mapper: The HGVS variant mapper object.
         data_proxy (_DataProxy): The data proxy object.
     """
+
     hgvs_re = re.compile(r"[^:]+:[cgmnpr]\.")
 
-    def __init__(self,data_proxy: _DataProxy = None):
+    def __init__(self, data_proxy: _DataProxy = None):
         self.parser = hgvs.parser.Parser()
         self.uta_conn = hgvs.dataproviders.uta.connect()
         self.normalizer = hgvs.normalizer.Normalizer(self.uta_conn, validate=True)
         self.variant_mapper = hgvs.variantmapper.VariantMapper(self.uta_conn)
         self.data_proxy = data_proxy
-
-
 
     def close(self):
         # TODO These should only be closed if they are owned by this instance
@@ -69,9 +69,8 @@ class HgvsTools():
             bool: True if the SequenceVariant is intronic, False otherwise.
         """
         if isinstance(sv.posedit.pos, hgvs.location.BaseOffsetInterval):
-            return (sv.posedit.pos.start.is_intronic or sv.posedit.pos.end.is_intronic)
+            return sv.posedit.pos.start.is_intronic or sv.posedit.pos.end.is_intronic
         return False
-
 
     def get_edit_type(self, sv: hgvs.sequencevariant.SequenceVariant):
         if sv is None or sv.posedit is None or sv.posedit.edit is None:
@@ -101,7 +100,9 @@ class HgvsTools():
             start = sv.posedit.pos.start.base - 1
             end = sv.posedit.pos.end.base
             if sv.posedit.edit.type == "identity":
-                state = self.data_proxy.get_sequence(sv.ac, start=sv.posedit.pos.start.base - 1, end=sv.posedit.pos.end.base)
+                state = self.data_proxy.get_sequence(
+                    sv.ac, start=sv.posedit.pos.start.base - 1, end=sv.posedit.pos.end.base
+                )
             else:
                 state = sv.posedit.edit.alt or ""
 
@@ -115,6 +116,7 @@ class HgvsTools():
             raise ValueError(f"HGVS variant type {sv.posedit.edit.type} is unsupported")
 
         return start, end, state
+
     def extract_allele_values(self, hgvs_expr: str):
         """parse hgvs into a VRS Allele Object
 
@@ -162,7 +164,7 @@ class HgvsTools():
         if sv.type == "c":
             sv = self.c_to_n(sv)
 
-        (start,end,state) = self.get_position_and_state(sv)
+        (start, end, state) = self.get_position_and_state(sv)
 
         retval = {"refget_accession": refget_accession, "start": start, "end": end, "literal_sequence": state}
         return retval
@@ -210,7 +212,9 @@ class HgvsTools():
             if ns.startswith("GRC") and namespace is None:
                 continue
 
-            if not (any(accession.startswith(pfx) for pfx in ("NM", "NP", "NC", "NG", "NR", "NW", "NT", "XM", "XR", "XP"))):
+            if not (
+                any(accession.startswith(pfx) for pfx in ("NM", "NP", "NC", "NG", "NR", "NW", "NT", "XM", "XR", "XP"))
+            ):
                 continue
 
             sequence_type = self.data_proxy.extract_sequence_type(alias)
@@ -223,25 +227,24 @@ class HgvsTools():
 
     def _to_sequence_variant(self, vo, sequence_type, sequence, accession):
         """Creates a SequenceVariant object from an Allele object."""
-          # build interval and edit depending on sequence type
+        # build interval and edit depending on sequence type
         if sequence_type == "p":
             raise ValueError("Only nucleic acid variation is currently supported")
             # ival = hgvs.location.Interval(start=start, end=end)
             # edit = hgvs.edit.AARefAlt(ref=None, alt=vo.state.sequence)
-        else:                   # pylint: disable=no-else-raise
+        else:  # pylint: disable=no-else-raise
             start, end = vo.location.start, vo.location.end
             # ib: 0 1 2 3 4 5
             #  h:  1 2 3 4 5
-            if start == end:    # insert: hgvs uses *exclusive coords*
+            if start == end:  # insert: hgvs uses *exclusive coords*
                 ref = None
                 end += 1
-            else:               # else: hgvs uses *inclusive coords*
+            else:  # else: hgvs uses *inclusive coords*
                 ref = self.data_proxy.get_sequence(sequence, start, end)
                 start += 1
 
             ival = hgvs.location.Interval(
-                start=hgvs.location.SimplePosition(start),
-                end=hgvs.location.SimplePosition(end)
+                start=hgvs.location.SimplePosition(start), end=hgvs.location.SimplePosition(end)
             )
             alt = str(vo.state.sequence.root) or None  # "" => None
             edit = hgvs.edit.NARefAlt(ref=ref, alt=alt)
@@ -251,8 +254,9 @@ class HgvsTools():
             ac=accession,
             # at this point, use `n.` because the positions are absolute (not CDS),
             # this will subsequently be converted back to `c.` after hgvs normalization
-            type='n' if sequence_type == 'c' else sequence_type,
-            posedit=posedit)
+            type="n" if sequence_type == "c" else sequence_type,
+            posedit=posedit,
+        )
 
         try:
             # if the namespace is GRC, can't normalize, since hgvs can't deal with it
@@ -277,10 +281,11 @@ class HgvsTools():
     def c_to_n(self, hgvs):
         return self.variant_mapper.c_to_n(hgvs)
 
-if __name__ == "__main__":
 
+if __name__ == "__main__":
     import os
     import json
+
     seqrepo_uri = os.environ.get("SEQREPO_URI", "seqrepo+file:///usr/local/share/seqrepo/latest")
     if seqrepo_uri is None:
         raise ValueError("SEQREPO_URI environment variable must be set to a valid seqrepo URI")
@@ -295,15 +300,12 @@ if __name__ == "__main__":
             "digest": "HyEEyTvdJrfsElsTXRG-43Y_tID4QYFt",
             "sequenceReference": {
                 "type": "SequenceReference",
-                "refgetAccession": "SQ.gg9z_DUcgwhfRz29BS3zq2jim59tOrA9"
+                "refgetAccession": "SQ.gg9z_DUcgwhfRz29BS3zq2jim59tOrA9",
             },
             "start": 874,
-            "end": 875
+            "end": 875,
         },
-        "state": {
-            "type": "LiteralSequenceExpression",
-            "sequence": "G"
-        }
+        "state": {"type": "LiteralSequenceExpression", "sequence": "G"},
     }
 
     vrs_allele = models.Allele.parse_obj(allele_dict)

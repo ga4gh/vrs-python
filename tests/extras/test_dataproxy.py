@@ -1,7 +1,7 @@
 import pytest
 
 
-@pytest.mark.parametrize("dp", ("rest_dataproxy","dataproxy"))
+@pytest.mark.parametrize("dp", ("rest_dataproxy", "dataproxy"))
 @pytest.mark.vcr
 def test_data_proxies(dp, request):
     dataproxy = request.getfixturevalue(dp)

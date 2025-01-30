@@ -10,28 +10,20 @@ Instead, users should use one of the following:
   * `import ga4gh.vrs`, and refer to models using the fully-qualified
     module name, e.g., `ga4gh.vrs.models.Allele`
 """
+
 from abc import ABC
 from typing import List, Literal, Optional, Union, Dict, Annotated
 from collections import OrderedDict
 from enum import Enum
 import inspect
 import sys
-from ga4gh.core import (
-    sha512t24u,
-    GA4GH_PREFIX_SEP,
-    CURIE_SEP,
-    CURIE_NAMESPACE,
-    GA4GH_IR_REGEXP,
-    PrevVrsVersion
-)
+from ga4gh.core import sha512t24u, GA4GH_PREFIX_SEP, CURIE_SEP, CURIE_NAMESPACE, GA4GH_IR_REGEXP, PrevVrsVersion
 from ga4gh.core.pydantic import get_pydantic_root
 
 from canonicaljson import encode_canonical_json
 from pydantic import BaseModel, Field, RootModel, StringConstraints, ConfigDict, ValidationInfo, field_validator
 
-from ga4gh.core.pydantic import (
-    getattr_in
-)
+from ga4gh.core.pydantic import getattr_in
 from ga4gh.core.models import iriReference, Entity, MappableConcept, Element
 
 
@@ -39,12 +31,14 @@ def flatten(vals):
     """
     Flattens vals recursively, lazily using yield
     """
+
     def is_coll(thing):
         """
         Return True if the thing looks like a collection.
         This is not exhaustive, do not use in general.
         """
         return type(thing) in [list, set]
+
     if is_coll(vals):
         for x in vals:
             for fx in flatten(x):
@@ -57,11 +51,10 @@ def flatten_type(t):
     """
     Flattens a complex type into a list of constituent types.
     """
-    if hasattr(t, '__dict__') and '__origin__' in t.__dict__:
+    if hasattr(t, "__dict__") and "__origin__" in t.__dict__:
         if t.__origin__ == Literal:
             return list(t.__args__)
-        elif (t.__origin__ == Union
-              or issubclass(t.__origin__, List)):
+        elif t.__origin__ == Union or issubclass(t.__origin__, List):
             return list(flatten([flatten_type(sub_t) for sub_t in t.__args__]))
     return [t]
 
@@ -84,19 +77,18 @@ def pydantic_class_refatt_map():
     # Things defined here that are classes that inherit from BaseModel
     this_module = sys.modules[__name__]
     global_map = globals()
-    model_classes = list(filter(
-        lambda c: (inspect.isclass(c)
-                   and issubclass(c, BaseModel)
-                   and inspect.getmodule(c) == this_module),
-        [gl_name_value[1] for gl_name_value in global_map.items()]
-    ))
+    model_classes = list(
+        filter(
+            lambda c: (inspect.isclass(c) and issubclass(c, BaseModel) and inspect.getmodule(c) == this_module),
+            [gl_name_value[1] for gl_name_value in global_map.items()],
+        )
+    )
     # Types directly reffable
-    reffable_classes = list(filter(
-        lambda c: ('id' in c.model_fields
-                   and getattr(c, "is_ga4gh_identifiable", lambda: False)()
-                   ),
-        model_classes
-    ))
+    reffable_classes = list(
+        filter(
+            lambda c: ("id" in c.model_fields and getattr(c, "is_ga4gh_identifiable", lambda: False)()), model_classes
+        )
+    )
     # Types reffable because they are a union of reffable types
     union_reffable_classes = []
     for model_class in model_classes:
@@ -111,27 +103,22 @@ def pydantic_class_refatt_map():
         fields = model_class.model_fields
         class_reffable_fields = []
         for fieldname, field in fields.items():
-            if fieldname == 'root':
+            if fieldname == "root":
                 continue
             field_type = field.annotation  # a typing or normal annotation like str
             # types can be raw class type annotation (int, str, dict, etc)
             # typing.Literal, typing.Union, typing.Optional
             # Use flatten_type to simplify these
-            if any([rc in flatten_type(field_type)
-                    for rc in (reffable_classes
-                               + union_reffable_classes)]):
+            if any([rc in flatten_type(field_type) for rc in (reffable_classes + union_reffable_classes)]):
                 class_reffable_fields.append(fieldname)
         if len(class_reffable_fields) > 0:
             reffable_fields[model_class.__name__] = class_reffable_fields
     class_keys = {}
     for model_class in model_classes:
-        keys = getattr_in(model_class, ['ga4gh', 'keys'])
+        keys = getattr_in(model_class, ["ga4gh", "keys"])
         if keys and len(keys) > 0:
             class_keys[model_class.__name__] = keys
-    return (reffable_classes,
-            union_reffable_classes,
-            reffable_fields,
-            class_keys)
+    return (reffable_classes, union_reffable_classes, reffable_fields, class_keys)
 
 
 class VrsType(str, Enum):
@@ -165,8 +152,8 @@ class ResidueAlphabet(str, Enum):
     character set.
     """
 
-    AA = 'aa'
-    NA = 'na'
+    AA = "aa"
+    NA = "na"
 
 
 class MoleculeType(str, Enum):
@@ -181,14 +168,14 @@ class MoleculeType(str, Enum):
 class CopyChange(str, Enum):
     """Define constraints for copy change"""
 
-    EFO_0030069 = 'EFO:0030069'
-    EFO_0020073 = 'EFO:0020073'
-    EFO_0030068 = 'EFO:0030068'
-    EFO_0030067 = 'EFO:0030067'
-    EFO_0030064 = 'EFO:0030064'
-    EFO_0030070 = 'EFO:0030070'
-    EFO_0030071 = 'EFO:0030071'
-    EFO_0030072 = 'EFO:0030072'
+    EFO_0030069 = "EFO:0030069"
+    EFO_0020073 = "EFO:0020073"
+    EFO_0030068 = "EFO:0030068"
+    EFO_0030067 = "EFO:0030067"
+    EFO_0030064 = "EFO:0030064"
+    EFO_0030070 = "EFO:0030070"
+    EFO_0030071 = "EFO:0030071"
+    EFO_0030072 = "EFO:0030072"
 
 
 class Syntax(str, Enum):
@@ -252,9 +239,9 @@ class Ga4ghIdentifiableObject(_ValueObject, ABC):
     """
 
     type: str
-    digest: Optional[Annotated[str, StringConstraints(pattern=r'^[0-9A-Za-z_\-]{32}$')]] = Field(
+    digest: Optional[Annotated[str, StringConstraints(pattern=r"^[0-9A-Za-z_\-]{32}$")]] = Field(
         None,
-        description='A sha512t24u digest created using the VRS Computed Identifier algorithm.',
+        description="A sha512t24u digest created using the VRS Computed Identifier algorithm.",
     )
 
     def __lt__(self, other):
@@ -283,10 +270,10 @@ class Ga4ghIdentifiableObject(_ValueObject, ABC):
             try:
                 digest = sha512t24u(self.ga4gh_serialize_as_version(as_version).encode("utf-8"))
             except AttributeError:
-                raise AttributeError('This class does not support prior version identifiers.')
+                raise AttributeError("This class does not support prior version identifiers.")
         return digest
 
-    def get_or_create_ga4gh_identifier(self, in_place='default', recompute=False, as_version=None) -> str:
+    def get_or_create_ga4gh_identifier(self, in_place="default", recompute=False, as_version=None) -> str:
         """Sets and returns a GA4GH Computed Identifier for the object.
         Overwrites the existing identifier if overwrite is True.
 
@@ -308,12 +295,12 @@ class Ga4ghIdentifiableObject(_ValueObject, ABC):
         if as_version is not None:
             return self.compute_ga4gh_identifier(as_version=as_version)
 
-        if in_place == 'default':
+        if in_place == "default":
             if self.id is None:
                 self.id = self.compute_ga4gh_identifier(recompute)
-        elif in_place == 'always':
+        elif in_place == "always":
             self.id = self.compute_ga4gh_identifier(recompute)
-        elif in_place == 'never':
+        elif in_place == "never":
             return self.compute_ga4gh_identifier(recompute)
         else:
             raise ValueError("Expected 'in_place' to be one of 'default', 'always', or 'never'")
@@ -332,10 +319,10 @@ class Ga4ghIdentifiableObject(_ValueObject, ABC):
         """
         if as_version is None:
             self.get_or_create_digest(recompute)
-            return f'{CURIE_NAMESPACE}{CURIE_SEP}{self.ga4gh.prefix}{GA4GH_PREFIX_SEP}{self.digest}'
+            return f"{CURIE_NAMESPACE}{CURIE_SEP}{self.ga4gh.prefix}{GA4GH_PREFIX_SEP}{self.digest}"
         else:
             digest = self.compute_digest(as_version=as_version)
-            return f'{CURIE_NAMESPACE}{CURIE_SEP}{self.ga4gh.priorPrefix[as_version]}{GA4GH_PREFIX_SEP}{digest}'
+            return f"{CURIE_NAMESPACE}{CURIE_SEP}{self.ga4gh.priorPrefix[as_version]}{GA4GH_PREFIX_SEP}{digest}"
 
     def get_or_create_digest(self, recompute=False) -> str:
         """Sets and returns a sha512t24u digest of the GA4GH Identifiable Object, or creates
@@ -347,6 +334,7 @@ class Ga4ghIdentifiableObject(_ValueObject, ABC):
     class ga4gh(_ValueObject.ga4gh):
         prefix: str
 
+
 class Expression(Element):
     """Representation of a variation by a specified nomenclature or syntax for a
     Variation object. Common examples of expressions for the description of molecular
@@ -355,23 +343,30 @@ class Expression(Element):
 
     model_config = ConfigDict(use_enum_values=True)
 
-    syntax: Syntax = Field(..., description="The syntax used to describe the variation. The value should be one of the supported syntaxes.")
-    value: str = Field(..., description="The expression of the variation in the specified syntax. The value should be a valid expression in the specified syntax.")
-    syntax_version: Optional[str] = Field(None, description="The version of the syntax used to describe the variation. This is particularly important for HGVS expressions, as the syntax has evolved over time.")
+    syntax: Syntax = Field(
+        ..., description="The syntax used to describe the variation. The value should be one of the supported syntaxes."
+    )
+    value: str = Field(
+        ...,
+        description="The expression of the variation in the specified syntax. The value should be a valid expression in the specified syntax.",
+    )
+    syntax_version: Optional[str] = Field(
+        None,
+        description="The version of the syntax used to describe the variation. This is particularly important for HGVS expressions, as the syntax has evolved over time.",
+    )
 
 
 #########################################
 # vrs numerics, comparators, and ranges
 #########################################
 
+
 class Range(RootModel):
     """An inclusive range of values bounded by one or more integers."""
 
     root: List[Optional[int]] = Field(
         ...,
-        json_schema_extra={
-            'description': 'An inclusive range of values bounded by one or more integers.'
-        },
+        json_schema_extra={"description": "An inclusive range of values bounded by one or more integers."},
         max_length=2,
         min_length=2,
     )
@@ -396,6 +391,7 @@ class Range(RootModel):
 
         return v
 
+
 class residue(RootModel):
     """A character representing a specific residue (i.e., molecular species) or
     groupings of these ("ambiguity codes"), using `one-letter IUPAC abbreviations
@@ -403,10 +399,10 @@ class residue(RootModel):
     for nucleic acids and amino acids.
     """
 
-    root: Annotated[str, StringConstraints(pattern=r'[A-Z*\-]')] = Field(
+    root: Annotated[str, StringConstraints(pattern=r"[A-Z*\-]")] = Field(
         ...,
         json_schema_extra={
-            'description': 'A character representing a specific residue (i.e., molecular species) or groupings of these ("ambiguity codes"), using [one-letter IUPAC abbreviations](https://en.wikipedia.org/wiki/International_Union_of_Pure_and_Applied_Chemistry#Amino_acid_and_nucleotide_base_codes) for nucleic acids and amino acids.'
+            "description": 'A character representing a specific residue (i.e., molecular species) or groupings of these ("ambiguity codes"), using [one-letter IUPAC abbreviations](https://en.wikipedia.org/wiki/International_Union_of_Pure_and_Applied_Chemistry#Amino_acid_and_nucleotide_base_codes) for nucleic acids and amino acids.'
         },
     )
 
@@ -418,10 +414,10 @@ class sequenceString(RootModel):
     Sequence Strings.
     """
 
-    root: Annotated[str, StringConstraints(pattern=r'^[A-Z*\-]*$')] = Field(
+    root: Annotated[str, StringConstraints(pattern=r"^[A-Z*\-]*$")] = Field(
         ...,
         json_schema_extra={
-            'description': "A character string of Residues that represents a biological sequence using the conventional sequence order (5'-to-3' for nucleic acid sequences, and amino-to-carboxyl for amino acid sequences). IUPAC ambiguity codes are permitted in Sequence Strings."
+            "description": "A character string of Residues that represents a biological sequence using the conventional sequence order (5'-to-3' for nucleic acid sequences, and amino-to-carboxyl for amino acid sequences). IUPAC ambiguity codes are permitted in Sequence Strings."
         },
     )
 
@@ -434,16 +430,11 @@ class sequenceString(RootModel):
 class LengthExpression(_ValueObject):
     """A sequence expressed only by its length."""
 
-    type: Literal["LengthExpression"] = Field(
-        VrsType.LEN_EXPR.value, description=f'MUST be "{VrsType.LEN_EXPR.value}"'
-    )
+    type: Literal["LengthExpression"] = Field(VrsType.LEN_EXPR.value, description=f'MUST be "{VrsType.LEN_EXPR.value}"')
     length: Optional[Union[Range, int]] = Field(None, description="The length of the sequence.")
 
     class ga4gh(_ValueObject.ga4gh):
-        keys = [
-            'length',
-            'type'
-        ]
+        keys = ["length", "type"]
 
 
 class ReferenceLengthExpression(_ValueObject):
@@ -452,22 +443,14 @@ class ReferenceLengthExpression(_ValueObject):
     type: Literal["ReferenceLengthExpression"] = Field(
         VrsType.REF_LEN_EXPR.value, description=f'MUST be "{VrsType.REF_LEN_EXPR.value}"'
     )
-    length: Union[Range, int] = Field(
-        ..., description='The number of residues in the expressed sequence.'
-    )
+    length: Union[Range, int] = Field(..., description="The number of residues in the expressed sequence.")
     sequence: Optional[sequenceString] = Field(
-        None, description='the literal Sequence encoded by the Reference Length Expression.'
+        None, description="the literal Sequence encoded by the Reference Length Expression."
     )
-    repeatSubunitLength: int = Field(
-        ..., description='The number of residues in the repeat subunit.'
-    )
+    repeatSubunitLength: int = Field(..., description="The number of residues in the repeat subunit.")
 
     class ga4gh(_ValueObject.ga4gh):
-        keys = [
-            'length',
-            'repeatSubunitLength',
-            'type'
-        ]
+        keys = ["length", "repeatSubunitLength", "type"]
 
 
 class LiteralSequenceExpression(_ValueObject):
@@ -476,13 +459,11 @@ class LiteralSequenceExpression(_ValueObject):
     type: Literal["LiteralSequenceExpression"] = Field(
         VrsType.LIT_SEQ_EXPR.value, description=f'MUST be "{VrsType.LIT_SEQ_EXPR.value}"'
     )
-    sequence: sequenceString = Field(..., description='the literal sequence')
+    sequence: sequenceString = Field(..., description="the literal sequence")
 
     class ga4gh(_ValueObject.ga4gh):
-        keys = [
-            'sequence',
-            'type'
-        ]
+        keys = ["sequence", "type"]
+
 
 #########################################
 # vrs location
@@ -495,20 +476,28 @@ class SequenceReference(_ValueObject):
     model_config = ConfigDict(use_enum_values=True)
 
     type: Literal["SequenceReference"] = Field(VrsType.SEQ_REF.value, description=f'MUST be "{VrsType.SEQ_REF.value}"')
-    refgetAccession: Annotated[str, StringConstraints(pattern=r'^SQ.[0-9A-Za-z_\-]{32}$')] = Field(
+    refgetAccession: Annotated[str, StringConstraints(pattern=r"^SQ.[0-9A-Za-z_\-]{32}$")] = Field(
         ...,
-        description='A [GA4GH RefGet](http://samtools.github.io/hts-specs/refget.html) identifier for the referenced sequence, using the sha512t24u digest.',
+        description="A [GA4GH RefGet](http://samtools.github.io/hts-specs/refget.html) identifier for the referenced sequence, using the sha512t24u digest.",
     )
-    residueAlphabet: Optional[ResidueAlphabet] = Field(None, description='The interpretation of the character codes referred to by the refget accession, where "aa" specifies an amino acid character set, and "na" specifies a nucleic acid character set.')
-    circular: Optional[bool] = Field(None, description="A boolean indicating whether the molecule represented by the sequence is circular (true) or linear (false).")
-    sequence: Optional[sequenceString] = Field(None, description="A sequenceString that is a literal representation of the referenced sequence.")
-    moleculeType: Optional[MoleculeType] = Field(None, description="Molecule types as [defined by RefSeq](https://www.ncbi.nlm.nih.gov/books/NBK21091/) (see Table 1). MUST be one of 'genomic', 'RNA', 'mRNA', or 'protein'.")
+    residueAlphabet: Optional[ResidueAlphabet] = Field(
+        None,
+        description='The interpretation of the character codes referred to by the refget accession, where "aa" specifies an amino acid character set, and "na" specifies a nucleic acid character set.',
+    )
+    circular: Optional[bool] = Field(
+        None,
+        description="A boolean indicating whether the molecule represented by the sequence is circular (true) or linear (false).",
+    )
+    sequence: Optional[sequenceString] = Field(
+        None, description="A sequenceString that is a literal representation of the referenced sequence."
+    )
+    moleculeType: Optional[MoleculeType] = Field(
+        None,
+        description="Molecule types as [defined by RefSeq](https://www.ncbi.nlm.nih.gov/books/NBK21091/) (see Table 1). MUST be one of 'genomic', 'RNA', 'mRNA', or 'protein'.",
+    )
 
     class ga4gh(_ValueObject.ga4gh):
-        keys = [
-            'refgetAccession',
-            'type'
-        ]
+        keys = ["refgetAccession", "type"]
 
 
 class SequenceLocation(Ga4ghIdentifiableObject):
@@ -516,18 +505,19 @@ class SequenceLocation(Ga4ghIdentifiableObject):
 
     type: Literal["SequenceLocation"] = Field(VrsType.SEQ_LOC.value, description=f'MUST be "{VrsType.SEQ_LOC.value}"')
     sequenceReference: Optional[Union[iriReference, SequenceReference]] = Field(
-        None, description='A reference to a Sequence on which the location is defined.'
+        None, description="A reference to a Sequence on which the location is defined."
     )
     start: Optional[Union[Range, int]] = Field(
         None,
-        description='The start coordinate or range of the SequenceLocation. The minimum value of this coordinate or range is 0. For locations on linear sequences, this MUST represent a coordinate or range  less than or equal to the value of `end`. For circular sequences, `start` is greater than `end` when the location spans the sequence 0 coordinate.',
+        description="The start coordinate or range of the SequenceLocation. The minimum value of this coordinate or range is 0. For locations on linear sequences, this MUST represent a coordinate or range  less than or equal to the value of `end`. For circular sequences, `start` is greater than `end` when the location spans the sequence 0 coordinate.",
     )
     end: Optional[Union[Range, int]] = Field(
         None,
-        description='The end coordinate or range of the SequenceLocation. The minimum value of this coordinate or range is 0. For locations on linear sequences, this MUST represent a coordinate or range  grater than or equal to the value of `start`. For circular sequences, `end` is less than `start` when the location spans the sequence 0 coordinate.',
-
+        description="The end coordinate or range of the SequenceLocation. The minimum value of this coordinate or range is 0. For locations on linear sequences, this MUST represent a coordinate or range  grater than or equal to the value of `start`. For circular sequences, `end` is less than `start` when the location spans the sequence 0 coordinate.",
     )
-    sequence: Optional[sequenceString] = Field(None, description="The literal sequence encoded by the `sequenceReference` at these coordinates.")
+    sequence: Optional[sequenceString] = Field(
+        None, description="The literal sequence encoded by the `sequenceReference` at these coordinates."
+    )
 
     @field_validator("start", "end", mode="after")
     def validate_start_end(cls, v: Optional[Union[Range, int]], info: ValidationInfo) -> Optional[Union[Range, int]]:
@@ -575,7 +565,7 @@ class SequenceLocation(Ga4ghIdentifiableObject):
                     else:
                         result = f'{{"max":{value[1]},"min":{value[0]},"type":"DefiniteRange"}}'
                 else:
-                    raise ValueError(f'{value} is not int or list.')
+                    raise ValueError(f"{value} is not int or list.")
                 out.append(result)
             return f'{{"interval":{{"end":{out[1]},"start":{out[0]},"type":"SequenceInterval"}},"sequence_id":"{self.sequenceReference.refgetAccession.split(".")[1]}","type":"SequenceLocation"}}'
 
@@ -588,14 +578,10 @@ class SequenceLocation(Ga4ghIdentifiableObject):
             return None
 
     class ga4gh(Ga4ghIdentifiableObject.ga4gh):
-        prefix = 'SL'
-        priorPrefix = {PrevVrsVersion.V1_3.value: 'VSL'}
-        keys = [
-            'end',
-            'sequenceReference',
-            'start',
-            'type'
-        ]
+        prefix = "SL"
+        priorPrefix = {PrevVrsVersion.V1_3.value: "VSL"}
+        keys = ["end", "sequenceReference", "start", "type"]
+
 
 #########################################
 # base variation
@@ -607,6 +593,7 @@ class _VariationBase(Ga4ghIdentifiableObject, ABC):
 
     expressions: Optional[List[Expression]] = None
 
+
 #########################################
 # vrs molecular variation
 #########################################
@@ -616,11 +603,9 @@ class Allele(_VariationBase):
     """The state of a molecule at a `Location`."""
 
     type: Literal["Allele"] = Field(VrsType.ALLELE.value, description=f'MUST be "{VrsType.ALLELE.value}"')
-    location: Union[iriReference, SequenceLocation] = Field(
-        ..., description='The location of the Allele'
-    )
+    location: Union[iriReference, SequenceLocation] = Field(..., description="The location of the Allele")
     state: Union[LiteralSequenceExpression, ReferenceLengthExpression, LengthExpression] = Field(
-        ..., description='An expression of the sequence state'
+        ..., description="An expression of the sequence state"
     )
 
     def ga4gh_serialize_as_version(self, as_version: PrevVrsVersion):
@@ -639,32 +624,32 @@ class Allele(_VariationBase):
         sequence = get_pydantic_root(self.state.sequence)
 
         if sequence is None:
-            raise ValueError('State sequence attribute must be defined.')
+            raise ValueError("State sequence attribute must be defined.")
 
         if as_version == PrevVrsVersion.V1_3:
             return f'{{"location":"{location_digest}","state":{{"sequence":"{sequence}","type":"LiteralSequenceExpression"}},"type":"Allele"}}'
 
-
     class ga4gh(Ga4ghIdentifiableObject.ga4gh):
-        prefix = 'VA'
-        priorPrefix = {PrevVrsVersion.V1_3.value: 'VA'}
-        keys = [
-            'location',
-            'state',
-            'type'
-        ]
+        prefix = "VA"
+        priorPrefix = {PrevVrsVersion.V1_3.value: "VA"}
+        keys = ["location", "state", "type"]
 
 
 class CisPhasedBlock(_VariationBase):
     """An ordered set of co-occurring `Variation` on the same molecule."""
 
-    type: Literal["CisPhasedBlock"] = Field(VrsType.CIS_PHASED_BLOCK.value, description=f'MUST be "{VrsType.CIS_PHASED_BLOCK.value}"')
+    type: Literal["CisPhasedBlock"] = Field(
+        VrsType.CIS_PHASED_BLOCK.value, description=f'MUST be "{VrsType.CIS_PHASED_BLOCK.value}"'
+    )
     members: List[Union[Allele, iriReference]] = Field(
         ...,
-        description='A list of Alleles that are found in-cis on a shared molecule.',
+        description="A list of Alleles that are found in-cis on a shared molecule.",
         min_length=2,
     )
-    sequenceReference: Optional[SequenceReference] = Field(None, description="An optional Sequence Reference on which all of the in-cis Alleles are found. When defined, this may be used to implicitly define the `sequenceReference` attribute for each of the CisPhasedBlock member Alleles.")
+    sequenceReference: Optional[SequenceReference] = Field(
+        None,
+        description="An optional Sequence Reference on which all of the in-cis Alleles are found. When defined, this may be used to implicitly define the `sequenceReference` attribute for each of the CisPhasedBlock member Alleles.",
+    )
 
     def ga4gh_serialize(self) -> Dict:
         out = _ValueObject.ga4gh_serialize(self)
@@ -672,11 +657,8 @@ class CisPhasedBlock(_VariationBase):
         return out
 
     class ga4gh(Ga4ghIdentifiableObject.ga4gh):
-        prefix = 'CPB'
-        keys = [
-            'members',
-            'type'
-        ]
+        prefix = "CPB"
+        keys = ["members", "type"]
 
 
 #########################################
@@ -697,10 +679,12 @@ class Adjacency(_VariationBase):
         max_length=2,
     )
     linker: Optional[Union[LiteralSequenceExpression, ReferenceLengthExpression, LengthExpression]] = Field(
-        None,
-        description="The sequence found between adjoined sequences."
+        None, description="The sequence found between adjoined sequences."
     )
-    homology: Optional[bool] = Field(None, description="A flag indicating if coordinate ambiguity in the adjoined sequences is from sequence homology (true) or other uncertainty, such as instrument ambiguity (false).")
+    homology: Optional[bool] = Field(
+        None,
+        description="A flag indicating if coordinate ambiguity in the adjoined sequences is from sequence homology (true) or other uncertainty, such as instrument ambiguity (false).",
+    )
 
     @field_validator("adjoinedSequences", mode="after")
     def validate_adjoined_sequences(cls, v) -> List[Union[iriReference, SequenceLocation]]:
@@ -716,14 +700,9 @@ class Adjacency(_VariationBase):
                     raise ValueError(err_msg)
         return v
 
-
     class ga4gh(Ga4ghIdentifiableObject.ga4gh):
-        prefix = 'AJ'
-        keys = [
-            'adjoinedSequences',
-            'linker',
-            'type'
-        ]
+        prefix = "AJ"
+        keys = ["adjoinedSequences", "linker", "type"]
 
 
 class Terminus(_VariationBase):
@@ -737,10 +716,8 @@ class Terminus(_VariationBase):
 
     class ga4gh(Ga4ghIdentifiableObject.ga4gh):
         prefix = "TM"
-        keys = [
-            "location",
-            "type"
-        ]
+        keys = ["location", "type"]
+
 
 class TraversalBlock(_ValueObject):
     """A component used to describe the orientation of applicable molecular variation
@@ -753,41 +730,34 @@ class TraversalBlock(_ValueObject):
         VrsType.TRAVERSAL_BLOCK.value, description=f'MUST be "{VrsType.TRAVERSAL_BLOCK.value}".'
     )
     orientation: Optional[Orientation] = Field(
-        None,
-        description='The orientation of the molecular variation component.'
+        None, description="The orientation of the molecular variation component."
     )
 
-    component: Optional[Adjacency] = Field(
-        None,
-        description="The unoriented molecular variation component."
-    )
+    component: Optional[Adjacency] = Field(None, description="The unoriented molecular variation component.")
 
     class ga4gh(_ValueObject.ga4gh):
-        keys = [
-            'component',
-            'orientation',
-            'type'
-        ]
+        keys = ["component", "orientation", "type"]
+
 
 class DerivativeMolecule(_VariationBase):
     """The "Derivative Molecule" data class is a structure for describing a derivate
     molecule composed from multiple sequence components.
     """
 
-    type: Literal["DerivativeMolecule"] = Field(VrsType.DERIVATIVE_MOL.value, description=f'MUST be "{VrsType.DERIVATIVE_MOL.value}".')
-    components: List[Union[iriReference, Allele, CisPhasedBlock, Terminus, TraversalBlock]] = Field(
-        ...,
-        description="The molecular components that constitute the derivative molecule.",
-        min_length=2
+    type: Literal["DerivativeMolecule"] = Field(
+        VrsType.DERIVATIVE_MOL.value, description=f'MUST be "{VrsType.DERIVATIVE_MOL.value}".'
     )
-    circular: Optional[bool] = Field(None, description="A boolean indicating whether the molecule represented by the sequence is circular (true) or linear (false).")
+    components: List[Union[iriReference, Allele, CisPhasedBlock, Terminus, TraversalBlock]] = Field(
+        ..., description="The molecular components that constitute the derivative molecule.", min_length=2
+    )
+    circular: Optional[bool] = Field(
+        None,
+        description="A boolean indicating whether the molecule represented by the sequence is circular (true) or linear (false).",
+    )
 
     class ga4gh(Ga4ghIdentifiableObject.ga4gh):
         prefix = "DM"
-        keys = [
-            "components",
-            "type"
-        ]
+        keys = ["components", "type"]
 
 
 #########################################
@@ -803,19 +773,13 @@ class CopyNumberCount(_VariationBase):
     type: Literal["CopyNumberCount"] = Field(VrsType.CN_COUNT.value, description=f'MUST be "{VrsType.CN_COUNT.value}"')
     location: Union[iriReference, SequenceLocation] = Field(
         ...,
-        description='The location of the subject of the copy count.',
+        description="The location of the subject of the copy count.",
     )
-    copies: Union[Range, int] = Field(
-        ..., description='The integral number of copies of the subject in a system'
-    )
+    copies: Union[Range, int] = Field(..., description="The integral number of copies of the subject in a system")
 
     class ga4gh(Ga4ghIdentifiableObject.ga4gh):
-        prefix = 'CN'
-        keys = [
-            'copies',
-            'location',
-            'type'
-        ]
+        prefix = "CN"
+        keys = ["copies", "location", "type"]
 
 
 class CopyNumberChange(_VariationBase):
@@ -825,10 +789,12 @@ class CopyNumberChange(_VariationBase):
 
     model_config = ConfigDict(use_enum_values=True)
 
-    type: Literal["CopyNumberChange"] = Field(VrsType.CN_CHANGE.value, description=f'MUST be "{VrsType.CN_CHANGE.value}"')
+    type: Literal["CopyNumberChange"] = Field(
+        VrsType.CN_CHANGE.value, description=f'MUST be "{VrsType.CN_CHANGE.value}"'
+    )
     location: Union[iriReference, SequenceLocation] = Field(
         ...,
-        description='The location of the subject of the copy change.',
+        description="The location of the subject of the copy change.",
     )
     copyChange: MappableConcept = Field(
         ...,
@@ -856,12 +822,8 @@ class CopyNumberChange(_VariationBase):
         return v
 
     class ga4gh(Ga4ghIdentifiableObject.ga4gh):
-        prefix = 'CX'
-        keys = [
-            'copyChange',
-            'location',
-            'type'
-        ]
+        prefix = "CX"
+        keys = ["copyChange", "location", "type"]
 
 
 #########################################
@@ -873,20 +835,15 @@ class MolecularVariation(RootModel):
     """A `variation` on a contiguous molecule."""
 
     root: Union[Allele, CisPhasedBlock, Adjacency, Terminus, DerivativeMolecule] = Field(
-        ...,
-        json_schema_extra={
-            'description': 'A `variation` on a contiguous molecule.'
-        },
-        discriminator='type'
+        ..., json_schema_extra={"description": "A `variation` on a contiguous molecule."}, discriminator="type"
     )
+
 
 class SequenceExpression(RootModel):
     """An expression describing a `Sequence`."""
 
     root: Union[LiteralSequenceExpression, ReferenceLengthExpression, LengthExpression] = Field(
-        ...,
-        json_schema_extra={'description': 'An expression describing a `Sequence`.'},
-        discriminator='type'
+        ..., json_schema_extra={"description": "An expression describing a `Sequence`."}, discriminator="type"
     )
 
 
@@ -895,22 +852,20 @@ class Location(RootModel):
 
     root: SequenceLocation = Field(
         ...,
-        json_schema_extra={
-            'description': 'A contiguous segment of a biological sequence.'
-        },
-        discriminator='type',
+        json_schema_extra={"description": "A contiguous segment of a biological sequence."},
+        discriminator="type",
     )
 
 
 class Variation(RootModel):
     """A representation of the state of one or more biomolecules."""
 
-    root: Union[Allele, CisPhasedBlock, Adjacency, Terminus, DerivativeMolecule, CopyNumberChange, CopyNumberCount] = Field(
-        ...,
-        json_schema_extra={
-            'description': 'A representation of the state of one or more biomolecules.'
-        },
-        discriminator='type',
+    root: Union[Allele, CisPhasedBlock, Adjacency, Terminus, DerivativeMolecule, CopyNumberChange, CopyNumberCount] = (
+        Field(
+            ...,
+            json_schema_extra={"description": "A representation of the state of one or more biomolecules."},
+            discriminator="type",
+        )
     )
 
 
@@ -922,16 +877,11 @@ class SystemicVariation(RootModel):
     root: Union[CopyNumberChange, CopyNumberCount] = Field(
         ...,
         json_schema_extra={
-            'description': 'A Variation of multiple molecules in the context of a system, e.g. a genome, sample, or homologous chromosomes.'
+            "description": "A Variation of multiple molecules in the context of a system, e.g. a genome, sample, or homologous chromosomes."
         },
-        discriminator='type',
+        discriminator="type",
     )
 
 
 # At end so classes exist
-(
-    reffable_classes,
-    union_reffable_classes,
-    class_refatt_map,
-    class_keys
-) = pydantic_class_refatt_map()
+(reffable_classes, union_reffable_classes, class_refatt_map, class_keys) = pydantic_class_refatt_map()

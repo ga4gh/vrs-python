@@ -12,10 +12,7 @@ def test_simple(tmp_path):
     db_path = str(tmp_path) + "/test_simple.sqlite3"
     object_store = Sqlite3MutableMapping(db_path)
 
-    kvp = {
-        chr(ord("A") + i): i
-        for i in range(10)
-    }
+    kvp = {chr(ord("A") + i): i for i in range(10)}
 
     assert len(object_store) == 0
     for k, v in kvp.items():
@@ -40,20 +37,7 @@ def test_simple(tmp_path):
 def test_complex(tmp_path):
     db_path = str(tmp_path) + "/test_complex.sqlite3"
 
-    kvp = {
-        "A": "A-value",
-        "B": {
-            "B-1": "B-1-value",
-            "B-2": {
-                "B-2-1": [
-                    "B-2-1-1",
-                    "B-2-1-2",
-                    "B-2-1-3"
-                ],
-                "B-3": 12345
-            }
-        }
-    }
+    kvp = {"A": "A-value", "B": {"B-1": "B-1-value", "B-2": {"B-2-1": ["B-2-1-1", "B-2-1-2", "B-2-1-3"], "B-3": 12345}}}
 
     object_store = Sqlite3MutableMapping(db_path)
     assert len(object_store) == 0
@@ -122,6 +106,7 @@ def test_classes(tmp_path):
 #     object_store = Sqlite3MutableMapping(db_path)
 #     for i in range(value_count):
 #         assert object_store[f"key{i}"] == f"value{i}"
+
 
 def test_commit(tmp_path):
     db_path = str(tmp_path) + "/test_commit.sqlite3"

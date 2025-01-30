@@ -19,6 +19,7 @@ from ga4gh.vrs.utils.hgvs_tools import HgvsTools
 
 _logger = logging.getLogger(__name__)
 
+
 class _Translator(ABC):
     """abstract class / interface for VRS to/from translation needs
 
@@ -34,17 +35,12 @@ class _Translator(ABC):
 
     beacon_re = re.compile(r"(?P<chr>[^-]+)\s*:\s*(?P<pos>\d+)\s*(?P<ref>\w+)\s*>\s*(?P<alt>\w+)")
     gnomad_re = re.compile(
-        r"(?P<chr>[^-]+)-(?P<pos>\d+)-(?P<ref>[ACGTURYKMSWBDHVN]+)-(?P<alt>[ACGTURYKMSWBDHVN]+)",
-        re.IGNORECASE
+        r"(?P<chr>[^-]+)-(?P<pos>\d+)-(?P<ref>[ACGTURYKMSWBDHVN]+)-(?P<alt>[ACGTURYKMSWBDHVN]+)", re.IGNORECASE
     )
     spdi_re = re.compile(r"(?P<ac>[^:]+):(?P<pos>\d+):(?P<del_len_or_seq>\w*):(?P<ins_seq>\w*)")
 
     def __init__(
-        self,
-        data_proxy: _DataProxy,
-        default_assembly_name="GRCh38",
-        identify=True,
-        rle_seq_limit: Optional[int] = 50
+        self, data_proxy: _DataProxy, default_assembly_name="GRCh38", identify=True, rle_seq_limit: Optional[int] = 50
     ):
         self.default_assembly_name = default_assembly_name
         self.data_proxy = data_proxy
@@ -127,12 +123,11 @@ class _Translator(ABC):
             return None
         return model(**var)
 
+
 class AlleleTranslator(_Translator):
     """Class for translating formats to and from VRS Alleles"""
 
-    def __init__(
-        self, data_proxy, default_assembly_name="GRCh38", identify=True
-    ):
+    def __init__(self, data_proxy, default_assembly_name="GRCh38", identify=True):
         """Initialize AlleleTranslator class"""
         super().__init__(data_proxy, default_assembly_name, identify)
 
@@ -289,11 +284,7 @@ class AlleleTranslator(_Translator):
 
         # validation checks
         self.data_proxy.validate_ref_seq(
-            sequence,
-            start,
-            end,
-            ref,
-            require_validation=kwargs.get("require_validation", True)
+            sequence, start, end, ref, require_validation=kwargs.get("require_validation", True)
         )
 
         values = {"refget_accession": refget_accession, "start": start, "end": end, "literal_sequence": ins_seq}
@@ -389,7 +380,7 @@ class AlleleTranslator(_Translator):
         aliases = self.data_proxy.translate_sequence_identifier(sequence, namespace)
         aliases = [a.split(":")[1] for a in aliases]
         start, end = vo.location.start, vo.location.end
-        spdi_tail = f":{start}:{end-start}:{vo.state.sequence.root}"
+        spdi_tail = f":{start}:{end - start}:{vo.state.sequence.root}"
         spdis = [a + spdi_tail for a in aliases]
         return spdis
 
@@ -407,11 +398,7 @@ class AlleleTranslator(_Translator):
                 performed. `False` otherwise. Defaults to `True`
         """
         if kwargs.get("do_normalize", True):
-            allele = normalize(
-                allele,
-                self.data_proxy,
-                rle_seq_limit=kwargs.get("rle_seq_limit", self.rle_seq_limit)
-            )
+            allele = normalize(allele, self.data_proxy, rle_seq_limit=kwargs.get("rle_seq_limit", self.rle_seq_limit))
 
         if self.identify:
             allele.id = ga4gh_identify(allele)
@@ -423,9 +410,7 @@ class AlleleTranslator(_Translator):
 class CnvTranslator(_Translator):
     """Class for translating formats from format to VRS Copy Number"""
 
-    def __init__(
-        self, data_proxy, default_assembly_name="GRCh38", identify=True
-    ):
+    def __init__(self, data_proxy, default_assembly_name="GRCh38", identify=True):
         """Initialize CnvTranslator class"""
         super().__init__(data_proxy, default_assembly_name, identify)
         self.from_translators = {
@@ -460,7 +445,7 @@ class CnvTranslator(_Translator):
         location = models.SequenceLocation(
             sequenceReference=models.SequenceReference(refgetAccession=refget_accession),
             start=sv.posedit.pos.start.base - 1,
-            end=sv.posedit.pos.end.base
+            end=sv.posedit.pos.end.base,
         )
 
         copies = kwargs.get("copies")
@@ -470,9 +455,11 @@ class CnvTranslator(_Translator):
             copy_change = kwargs.get("copy_change")
             if not copy_change:
                 copy_change = models.CopyChange.EFO_0030067 if sv_type == "del" else models.CopyChange.EFO_0030070
-            cnv = models.CopyNumberChange(location=location, copyChange=core_models.MappableConcept(primaryCode=copy_change))
+            cnv = models.CopyNumberChange(
+                location=location, copyChange=core_models.MappableConcept(primaryCode=copy_change)
+            )
 
-        cnv =self._post_process_imported_cnv(cnv)
+        cnv = self._post_process_imported_cnv(cnv)
         return cnv
 
     def _post_process_imported_cnv(self, copy_number):

@@ -8,14 +8,11 @@ typically be generated from the schema by
 build_class_referable_attribute_map() in .models.py.
 
 """
+
 import logging
 
 from .identifiers import ga4gh_identify, is_ga4gh_identifier
-from .pydantic import (
-    is_pydantic_instance,
-    is_curie_type,
-    get_pydantic_root,
-    pydantic_copy)
+from .pydantic import is_pydantic_instance, is_curie_type, get_pydantic_root, pydantic_copy
 
 _logger = logging.getLogger(__name__)
 
@@ -32,6 +29,7 @@ def ga4gh_enref(o, cra_map, object_store=None, return_id_obj_tuple=False):
     (or None), referenced objects will not be stored.
 
     """
+
     def _id_and_store(o):
         _id = ga4gh_identify(o)
         if _id and object_store is not None:
@@ -47,7 +45,7 @@ def ga4gh_enref(o, cra_map, object_store=None, return_id_obj_tuple=False):
                 setattr(o, ran, [_enref(o2) for o2 in v])
             elif isinstance(v, str):
                 pass
-            elif is_curie_type(v):    # already a reference
+            elif is_curie_type(v):  # already a reference
                 assert is_ga4gh_identifier(v), "Identifiable attribute CURIE is contains an invalid identifier"
             elif v is not None:
                 _id = _id_and_store(v)
@@ -77,6 +75,7 @@ def ga4gh_deref(o, cra_map, object_store):
     Raises KeyError if any object cannot be dereferenced
 
     """
+
     def _deref(o):
         """depth-first recursive, in-place deref of object; returns id of object"""
         if o.type not in cra_map:
@@ -93,7 +92,7 @@ def ga4gh_deref(o, cra_map, object_store):
                 dereffed_identifier = object_store[str(v)]
                 setattr(o, ran, _deref(dereffed_identifier))
             else:
-                pass    # some object; pass as-is
+                pass  # some object; pass as-is
 
         return o
 

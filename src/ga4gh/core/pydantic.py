@@ -30,7 +30,7 @@ def is_curie_type(o: Any) -> bool:
     if isinstance(o, RootModel):
         o = o.root
     if isinstance(o, str):
-        return re.match(r'[a-zA-Z0-9.]+:\S+', o)
+        return re.match(r"[a-zA-Z0-9.]+:\S+", o)
     return False
 
 

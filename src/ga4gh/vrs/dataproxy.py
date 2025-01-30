@@ -18,7 +18,6 @@ from bioutils.accessions import coerce_namespace
 import requests
 
 
-
 _logger = logging.getLogger(__name__)
 
 
@@ -151,8 +150,7 @@ class _DataProxy(ABC):
         return refget_accession
 
     def validate_ref_seq(
-        self, sequence_id: str, start_pos: int, end_pos: int, ref: str,
-        require_validation: bool = True
+        self, sequence_id: str, start_pos: int, end_pos: int, ref: str, require_validation: bool = True
     ) -> None:
         """Determine whether or not the expected reference sequence matches the actual
         reference sequence. Returns ``None``, but invalid results are logged at level
@@ -181,6 +179,7 @@ class _DataProxy(ABC):
 
             if require_validation:
                 raise DataProxyValidationError(err_msg)
+
 
 class _SeqRepoDataProxyBase(_DataProxy):
     # wraps seqreqpo classes in order to provide translation to/from
@@ -229,7 +228,7 @@ class SeqRepoDataProxy(_SeqRepoDataProxyBase):
             "alphabet": seqinfo["alpha"],
             "added": _isoformat(seqinfo["added"]),
             "aliases": [f"{a['namespace']}:{a['alias']}" for a in aliases],
-            }
+        }
         return md
 
 
@@ -285,17 +284,14 @@ class SequenceProxy(Sequence):
         raise NotImplementedError("Reversed iteration of a SequenceProxy is not implemented")
 
     def __getitem__(self, key):
-        """return sequence for key (slice), fetching if necessary
-
-        """
+        """return sequence for key (slice), fetching if necessary"""
 
         if isinstance(key, int):
-            key = slice(key, key+1)
+            key = slice(key, key + 1)
         if key.step is not None:
             raise ValueError("Only contiguous sequence slices are supported")
 
         return self.dp.get_sequence(self.alias, key.start, key.stop)
-
 
 
 def _isoformat(o):
@@ -316,12 +312,14 @@ def _isoformat(o):
     # eg: '2015-09-25T23:14:42.588601Z'
     return o.isoformat("T") + "Z"
 
+
 # Future implementations
 # * The RefGetDataProxy is waiting on support for sequence lookup by alias
 # class RefGetDataProxy(_DataProxy):
 #     def __init__(self, base_url):
 #         super().__init__()
 #         self.base_url = base_url
+
 
 def create_dataproxy(uri: str = None) -> _DataProxy:
     """Create a dataproxy from uri or GA4GH_VRS_DATAPROXY_URI
@@ -335,8 +333,7 @@ def create_dataproxy(uri: str = None) -> _DataProxy:
 
     """
 
-    uri = (uri
-           or os.environ.get("GA4GH_VRS_DATAPROXY_URI", None))
+    uri = uri or os.environ.get("GA4GH_VRS_DATAPROXY_URI", None)
 
     if uri is None:
         raise ValueError("No data proxy URI provided or found in GA4GH_VRS_DATAPROXY_URI")
@@ -353,10 +350,11 @@ def create_dataproxy(uri: str = None) -> _DataProxy:
         if proto in ("", "file"):
             # pylint: disable=import-error, import-outside-toplevel
             from biocommons.seqrepo import SeqRepo
+
             sr = SeqRepo(root_dir=parsed_uri.path)
             dp = SeqRepoDataProxy(sr)
         elif proto in ("http", "https"):
-            dp = SeqRepoRESTDataProxy(uri[len(provider)+1:])
+            dp = SeqRepoRESTDataProxy(uri[len(provider) + 1 :])
         else:
             raise ValueError(f"SeqRepo URI scheme {parsed_uri.scheme} not implemented")
 

@@ -1,6 +1,4 @@
-"""execute models validation tests from the VRS repo
-
-"""
+"""execute models validation tests from the VRS repo"""
 
 import os
 
@@ -11,17 +9,21 @@ import yaml
 from ga4gh.core import ga4gh_serialize, ga4gh_digest, ga4gh_identify, PrevVrsVersion, core_models
 from ga4gh.vrs import models, VrsType
 
+
 def ga4gh_1_3_identify(*args, **kwargs):
-    kwargs['as_version'] = PrevVrsVersion.V1_3
+    kwargs["as_version"] = PrevVrsVersion.V1_3
     return ga4gh_identify(*args, **kwargs)
 
+
 def ga4gh_1_3_digest(*args, **kwargs):
-    kwargs['as_version'] = PrevVrsVersion.V1_3
+    kwargs["as_version"] = PrevVrsVersion.V1_3
     return ga4gh_digest(*args, **kwargs)
 
+
 def ga4gh_1_3_serialize(*args, **kwargs):
-    kwargs['as_version'] = PrevVrsVersion.V1_3
+    kwargs["as_version"] = PrevVrsVersion.V1_3
     return ga4gh_serialize(*args, **kwargs)
+
 
 fxs = {
     "ga4gh_serialize": ga4gh_serialize,
@@ -29,7 +31,7 @@ fxs = {
     "ga4gh_identify": ga4gh_identify,
     "ga4gh_1_3_digest": ga4gh_1_3_digest,
     "ga4gh_1_3_identify": ga4gh_1_3_identify,
-    "ga4gh_1_3_serialize": ga4gh_1_3_serialize
+    "ga4gh_1_3_serialize": ga4gh_1_3_serialize,
 }
 
 validation_fn = os.path.join(os.path.dirname(__file__), "data", "models.yaml")
@@ -52,8 +54,8 @@ def flatten_tests(vts):
                 yield pytest.param(cls, t["in"], fn, exp, id=test_name)
 
 
-#tests, ids = zip(*list(flatten_tests(validation_tests)))
-#import IPython; IPython.embed()	  ### TODO: Remove IPython.embed()
+# tests, ids = zip(*list(flatten_tests(validation_tests)))
+# import IPython; IPython.embed()	  ### TODO: Remove IPython.embed()
 
 
 @pytest.mark.parametrize("cls,data,fn,exp", flatten_tests(validation_tests))
@@ -67,7 +69,11 @@ def test_validation(cls, data, fn, exp):
 
 def test_prev_vrs_version():
     """Ensure that support to previous VRS digest/identifiers works correctly"""
-    loc = models.SequenceLocation(start=44908821, end=44908822, sequenceReference=models.SequenceReference(refgetAccession="SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl"))
+    loc = models.SequenceLocation(
+        start=44908821,
+        end=44908822,
+        sequenceReference=models.SequenceReference(refgetAccession="SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl"),
+    )
 
     # string representation should work as well
     ga4gh_identify(loc, as_version="1.3")
@@ -76,8 +82,12 @@ def test_prev_vrs_version():
     invalid_vrs_version_msg = f"Expected `PrevVrsVersion`, but got {invalid_vrs_version}"
 
     loc_no_seq_ref = models.SequenceLocation(start=44908821, end=44908822)
-    loc_iri = models.SequenceLocation(start=44908821, end=44908822, sequenceReference=core_models.iriReference("sequenceReferences.json#example1"))
-    allele_rle_no_seq = models.Allele(location=loc, state=models.ReferenceLengthExpression(length=11, repeatSubunitLength=3))
+    loc_iri = models.SequenceLocation(
+        start=44908821, end=44908822, sequenceReference=core_models.iriReference("sequenceReferences.json#example1")
+    )
+    allele_rle_no_seq = models.Allele(
+        location=loc, state=models.ReferenceLengthExpression(length=11, repeatSubunitLength=3)
+    )
     allele_le = models.Allele(location=loc, state=models.LengthExpression(length=2))
     loc_seq_ref_msg = "Must provide `sequenceReference` and it must be a valid `SequenceReference`"
     for ga4gh_func in [ga4gh_identify, ga4gh_digest, ga4gh_serialize]:
@@ -97,7 +107,10 @@ def test_prev_vrs_version():
         allele_rlse_seq.state.sequence = "C"
         assert ga4gh_func(allele_rlse_seq, as_version=PrevVrsVersion.V1_3)
 
-        with pytest.raises(ValueError, match="Only `LiteralSequenceExpression` and `ReferenceLengthExpression` are supported for previous versions of VRS"):
+        with pytest.raises(
+            ValueError,
+            match="Only `LiteralSequenceExpression` and `ReferenceLengthExpression` are supported for previous versions of VRS",
+        ):
             ga4gh_func(allele_le, as_version=PrevVrsVersion.V1_3)
 
 
@@ -114,7 +127,9 @@ def test_valid_types():
                 for error in e.errors():
                     if error["loc"] == ("type",):
                         found_type_mismatch = True
-                assert not found_type_mismatch, f"Found mismatch in type literal: {enum_val} vs {error['ctx']['expected']}"
+                assert not found_type_mismatch, (
+                    f"Found mismatch in type literal: {enum_val} vs {error['ctx']['expected']}"
+                )
         else:
             assert False, f"{str(models)} class not found: {enum_val}"
 
@@ -147,16 +162,11 @@ def test_adjacency():
     """Test the Adjacency field validator"""
     # Both start and end provided
     with pytest.raises(ValueError, match="Adjoined sequence must not have both `start` and `end`."):
-        models.Adjacency(
-            adjoinedSequences=[
-                models.SequenceLocation(start=1),
-                models.SequenceLocation(start=1, end=2)
-            ]
-        )
+        models.Adjacency(adjoinedSequences=[models.SequenceLocation(start=1), models.SequenceLocation(start=1, end=2)])
 
     assert models.Adjacency(
-            adjoinedSequences=[
-                models.SequenceLocation(start=1),
-                models.SequenceLocation(end=2),
-            ]
-        )
+        adjoinedSequences=[
+            models.SequenceLocation(start=1),
+            models.SequenceLocation(end=2),
+        ]
+    )
