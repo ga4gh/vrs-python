@@ -7,14 +7,14 @@ See https://vrs.ga4gh.org/en/stable/impl-guide/normalization.html
 import itertools
 import logging
 from enum import IntEnum
-from typing import NamedTuple, Optional, Union
+from typing import NamedTuple
 
-from bioutils.normalize import normalize as _normalize, NormalizationMode
-from ga4gh.core import is_pydantic_instance, ga4gh_digest, pydantic_copy
+from bioutils.normalize import NormalizationMode
+from bioutils.normalize import normalize as _normalize
 
-from . import models
-from .dataproxy import SequenceProxy
-
+from ga4gh.core import ga4gh_digest, is_pydantic_instance, pydantic_copy
+from ga4gh.vrs import models
+from ga4gh.vrs.dataproxy import SequenceProxy, _DataProxy
 
 _logger = logging.getLogger(__name__)
 
@@ -34,7 +34,7 @@ class LocationPos(NamedTuple):
     pos_type: PosType
 
 
-def _get_allele_location_pos(allele_vo: models.Allele, use_start: bool = True) -> Optional[LocationPos]:
+def _get_allele_location_pos(allele_vo: models.Allele, use_start: bool = True) -> LocationPos | None:
     """Get a representative position for Alleles with Location start or end defined by Range
 
     :param allele_vo: VRS Allele object
@@ -43,10 +43,7 @@ def _get_allele_location_pos(allele_vo: models.Allele, use_start: bool = True) -
     :return: A `LocationPos` if using integer or indefinite range. Otherwise return
         `None`
     """
-    if use_start:
-        pos = allele_vo.location.start
-    else:
-        pos = allele_vo.location.end
+    pos = allele_vo.location.start if use_start else allele_vo.location.end
 
     if isinstance(pos, int):
         val = pos
@@ -64,7 +61,7 @@ def _get_allele_location_pos(allele_vo: models.Allele, use_start: bool = True) -
     return LocationPos(value=val, pos_type=pos_type)
 
 
-def _get_new_allele_location_pos(new_pos_val: int, pos_type: PosType) -> Union[int, models.Range]:
+def _get_new_allele_location_pos(new_pos_val: int, pos_type: PosType) -> int | models.Range:
     """Get updated location pos on normalized allele
 
     :param new_pos_val: New position after normalization
@@ -100,7 +97,6 @@ def _normalize_allele(input_allele, data_proxy, rle_seq_limit=50):
     Does not attempt to normalize Alleles with definite ranges and will instead return the
         `input_allele`
     """
-
     if isinstance(input_allele.location.sequenceReference, models.SequenceReference):
         alias = f"ga4gh:{input_allele.location.sequenceReference.refgetAccession}"
     else:
@@ -121,10 +117,7 @@ def _normalize_allele(input_allele, data_proxy, rle_seq_limit=50):
         return input_allele
 
     ival = (start.value, end.value)
-    if input_allele.state.sequence:
-        alleles = (None, input_allele.state.sequence.root)
-    else:
-        alleles = (None, "")
+    alleles = (None, input_allele.state.sequence.root) if input_allele.state.sequence else (None, "")
 
     # Trim common flanking sequence from Allele sequences.
     try:
@@ -150,10 +143,7 @@ def _normalize_allele(input_allele, data_proxy, rle_seq_limit=50):
         new_allele.location.end = _get_new_allele_location_pos(trim_ival[1], end.pos_type)
         new_allele.state.sequence = models.sequenceString(trim_alleles[1])
         return new_allele
-    elif len_trimmed_ref:
-        seed_length = len_trimmed_ref
-    else:
-        seed_length = len_trimmed_alt
+    seed_length = len_trimmed_ref if len_trimmed_ref else len_trimmed_alt
 
     # Determine bounds of ambiguity
     new_ival, new_alleles = _normalize(ref_seq, trim_ival, (None, trim_alleles[1]), mode=NormalizationMode.EXPAND)
@@ -200,7 +190,7 @@ def _normalize_allele(input_allele, data_proxy, rle_seq_limit=50):
 
 
 def _factor_gen(n):
-    """Yields all factors of an integer `n`, in descending order"""
+    """Yield all factors of an integer `n`, in descending order"""
     lower_factors = []
     i = 1
     while i * i <= n:
@@ -209,8 +199,7 @@ def _factor_gen(n):
             if n // i != i:
                 lower_factors.append(i)
         i += 1
-    for factor in reversed(lower_factors):
-        yield factor
+    yield from reversed(lower_factors)
 
 
 def _define_rle_allele(allele, length, repeat_subunit_length, rle_seq_limit, extended_alt_seq):
@@ -225,7 +214,7 @@ def _define_rle_allele(allele, length, repeat_subunit_length, rle_seq_limit, ext
 
 def _is_valid_cycle(template_start, template, target):
     cycle = itertools.cycle(template[template_start:])
-    for char in target[len(template) :]:
+    for char in target[len(template) :]:  # noqa: SIM110
         if char != next(cycle):
             return False
     return True
@@ -234,7 +223,7 @@ def _is_valid_cycle(template_start, template, target):
 # TODO _normalize_genotype?
 
 
-def _normalize_cis_phased_block(o, data_proxy=None):
+def _normalize_cis_phased_block[T](o: T, data_proxy: _DataProxy | None =None) -> T:  # noqa: ARG001
     o.members = sorted(o.members, key=ga4gh_digest)
     return o
 
@@ -245,15 +234,14 @@ handlers = {
 }
 
 
-def normalize(vo, data_proxy=None, **kwargs):
-    """normalize given vrs object, regardless of type
+def normalize(vo, data_proxy: _DataProxy | None =None, **kwargs):
+    """Normalize given vrs object, regardless of type
 
     kwargs:
         rle_seq_limit: If RLE is set as the new state, set the limit for the length
             of the `sequence`. To exclude `state.sequence`, set to 0.
     """
-
-    assert is_pydantic_instance(vo)
+    assert is_pydantic_instance(vo)  # noqa: S101
     vo_type = vo.type
 
     if vo_type in handlers:
