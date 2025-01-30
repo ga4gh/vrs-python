@@ -1,7 +1,7 @@
 """Test that VRS-Python Pydantic models match VRS and GKS-Common schemas"""
 
-from enum import Enum
 import json
+from enum import Enum
 from pathlib import Path
 
 import pytest

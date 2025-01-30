@@ -58,7 +58,7 @@ def flatten_tests(vts):
 # import IPython; IPython.embed()	  ### TODO: Remove IPython.embed()
 
 
-@pytest.mark.parametrize("cls,data,fn,exp", flatten_tests(validation_tests))
+@pytest.mark.parametrize(("cls","data","fn","exp"), flatten_tests(validation_tests))
 def test_validation(cls, data, fn, exp):
     o = getattr(models, cls)(**data)
     fx = fxs[fn]
@@ -131,7 +131,7 @@ def test_valid_types():
                     f"Found mismatch in type literal: {enum_val} vs {error['ctx']['expected']}"
                 )
         else:
-            assert False, f"{str(models)} class not found: {enum_val}"
+            pytest.fail(f"{models!r} class not found: {enum_val}")
 
 
 def test_mappable_concept():

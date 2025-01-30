@@ -1,9 +1,10 @@
 import os
+from pathlib import Path
 
 import vcr as vcrpy
 
-test_dir = os.path.dirname(__file__)
-test_data_dir = os.path.join(test_dir, "data", "cassettes")
+test_dir = Path(__file__).parent
+test_data_dir = Path(test_dir) / "data" / "cassettes"
 
 vcr = vcrpy.VCR(
     cassette_library_dir=test_data_dir,
