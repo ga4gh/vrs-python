@@ -1,13 +1,13 @@
 """execute models validation tests from the VRS repo"""
 
-import os
+from pathlib import Path
 
-from pydantic import ValidationError
 import pytest
 import yaml
+from pydantic import ValidationError
 
-from ga4gh.core import ga4gh_serialize, ga4gh_digest, ga4gh_identify, PrevVrsVersion, core_models
-from ga4gh.vrs import models, VrsType
+from ga4gh.core import PrevVrsVersion, core_models, ga4gh_digest, ga4gh_identify, ga4gh_serialize
+from ga4gh.vrs import VrsType, models
 
 
 def ga4gh_1_3_identify(*args, **kwargs):
@@ -34,17 +34,15 @@ fxs = {
     "ga4gh_1_3_serialize": ga4gh_1_3_serialize,
 }
 
-validation_fn = os.path.join(os.path.dirname(__file__), "data", "models.yaml")
-validation_tests = yaml.load(open(validation_fn), Loader=yaml.SafeLoader)
+validation_fn = Path(__file__).parent / "data" / "models.yaml"
+validation_tests = yaml.load(Path(validation_fn).open(), Loader=yaml.SafeLoader)  # noqa: SIM115
 
 
-def flatten_tests(vts):
-    """flatten tests to (class, data, function name, exp out) tuples
+def flatten_tests(vts):  # noqa: ARG001
+    """Flatten tests to (class, data, function name, exp out) tuples
 
     Each tuple is a test in which an object of the specified class is
-    created with data, evaluated with the named function, and compared
-    with the expected output.
-
+    created with data, evaluated with the named function, and compared with the expected output.
     """
     for cls, tests in validation_tests.items():
         for t in tests:

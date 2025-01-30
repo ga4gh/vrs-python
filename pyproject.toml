@@ -140,6 +140,7 @@ select = [
     "RUF",  # https://docs.astral.sh/ruff/rules/#ruff-specific-rules-ruf
 ]
 fixable = ["ALL"]
+# ANN002 - missing-type-args
 # ANN003 - missing-type-kwargs
 # D203 - one-blank-line-before-class
 # D205 - blank-line-after-summary
@@ -157,7 +158,7 @@ fixable = ["ALL"]
 # PLC0206 - dict-index-missing-items
 # *ignored for compatibility with formatter
 ignore = [
-    "ANN003",
+    "ANN002", "ANN003",
     "D203", "D205", "D206", "D213", "D300", "D400", "D415",
     "E111", "E114", "E117", "E501",
     "W191",
