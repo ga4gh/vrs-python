@@ -12,12 +12,12 @@ build_class_referable_attribute_map() in .models.py.
 import logging
 
 from .identifiers import ga4gh_identify, is_ga4gh_identifier
-from .pydantic import is_pydantic_instance, is_curie_type, get_pydantic_root, pydantic_copy
+from .pydantic import get_pydantic_root, is_curie_type, is_pydantic_instance, pydantic_copy
 
 _logger = logging.getLogger(__name__)
 
 
-def ga4gh_enref(o, cra_map, object_store=None, return_id_obj_tuple=False):
+def ga4gh_enref(o, cra_map, object_store=None, return_id_obj_tuple=False) -> tuple:  # noqa: ANN001
     """Recursively convert "referable attributes" from inlined to
     referenced form.  Returns a new object.
 
@@ -30,13 +30,13 @@ def ga4gh_enref(o, cra_map, object_store=None, return_id_obj_tuple=False):
 
     """
 
-    def _id_and_store(o):
+    def _id_and_store(o):  # noqa: ANN202 ANN001
         _id = ga4gh_identify(o)
         if _id and object_store is not None:
             object_store[_id] = o
         return _id
 
-    def _enref(o):
+    def _enref(o):  # noqa: ANN202 ANN001
         """depth-first recursive, in-place enref of object; returns id of object"""
         ref_att_names = cra_map.get(o.type, [])
         for ran in ref_att_names:
@@ -46,7 +46,7 @@ def ga4gh_enref(o, cra_map, object_store=None, return_id_obj_tuple=False):
             elif isinstance(v, str):
                 pass
             elif is_curie_type(v):  # already a reference
-                assert is_ga4gh_identifier(v), "Identifiable attribute CURIE is contains an invalid identifier"
+                assert is_ga4gh_identifier(v), "Identifiable attribute CURIE is contains an invalid identifier"  # noqa: S101
             elif v is not None:
                 _id = _id_and_store(v)
                 if _id:
@@ -55,9 +55,11 @@ def ga4gh_enref(o, cra_map, object_store=None, return_id_obj_tuple=False):
         return _id_and_store(o)
 
     if not is_pydantic_instance(o):
-        raise ValueError("Called ga4gh_enref() with non-pydantic instance")
+        msg = "Called ga4gh_enref() with non-pydantic instance"
+        raise ValueError(msg)
     if not o.is_ga4gh_identifiable():
-        raise ValueError("Called ga4gh_enref() with non-identifiable object")
+        msg = "Called ga4gh_enref() with non-identifiable object"
+        raise ValueError(msg)
 
     # in-place replacement on object copy
     o = pydantic_copy(o)
@@ -65,7 +67,7 @@ def ga4gh_enref(o, cra_map, object_store=None, return_id_obj_tuple=False):
     return (_id, o) if return_id_obj_tuple else o
 
 
-def ga4gh_deref(o, cra_map, object_store):
+def ga4gh_deref(o, cra_map, object_store):  # noqa: ANN201 ANN001
     """Convert "referable attributes" in-place from referenced to inlined
     form.
 
@@ -76,10 +78,10 @@ def ga4gh_deref(o, cra_map, object_store):
 
     """
 
-    def _deref(o):
+    def _deref(o):  # noqa: ANN202 ANN001
         """depth-first recursive, in-place deref of object; returns id of object"""
         if o.type not in cra_map:
-            _logger.warning(f"{o.type} not in cra_map {cra_map}")
+            _logger.warning("%s not in cra_map %s", o.type, cra_map)
             return o
 
         ref_att_names = cra_map[o.type]
@@ -97,9 +99,11 @@ def ga4gh_deref(o, cra_map, object_store):
         return o
 
     if not is_pydantic_instance(o):
-        raise ValueError("Called ga4gh_deref() with non-pydantic instance")
+        msg = "Called ga4gh_deref() with non-pydantic instance"
+        raise ValueError(msg)
     if not o.is_ga4gh_identifiable():
-        raise ValueError("Called ga4gh_deref() with non-identifiable object")
+        msg = "Called ga4gh_deref() with non-identifiable object"
+        raise ValueError(msg)
 
     # in-place replacement on object copy
     o = pydantic_copy(o)
