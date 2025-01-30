@@ -1,4 +1,5 @@
 import pytest
+
 from ga4gh.vrs import models, normalize
 
 # >>> dp.get_sequence("refseq:NC_000019.10", 44908820, 44908830)

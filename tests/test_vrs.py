@@ -1,18 +1,18 @@
-from pydantic import ValidationError
 import pytest
+from pydantic import ValidationError
 
 from ga4gh.core import (
-    sha512t24u,
-    ga4gh_digest,
-    ga4gh_serialize,
-    ga4gh_identify,
-    is_pydantic_instance,
-    is_curie_type,
-    pydantic_copy,
-    use_ga4gh_compute_identifier_when,
     VrsObjectIdentifierIs,
+    ga4gh_digest,
+    ga4gh_identify,
+    ga4gh_serialize,
+    is_curie_type,
+    is_pydantic_instance,
+    pydantic_copy,
+    sha512t24u,
+    use_ga4gh_compute_identifier_when,
 )
-from ga4gh.vrs import models, vrs_enref, vrs_deref
+from ga4gh.vrs import models, vrs_deref, vrs_enref
 
 allele_dict = {
     "location": {
@@ -70,7 +70,7 @@ cpb_431012 = models.CisPhasedBlock(**cpb_431012_dict)
 
 
 @pytest.mark.parametrize(
-    "vrs_model, expected_err_msg",
+    ("vrs_model", "expected_err_msg"),
     [
         (lambda: models.Range(root=[None, None]), "Must provide at least one integer."),
         (lambda: models.Range(root=[2, 1]), "The first integer must be less than or equal to the second integer."),
@@ -86,9 +86,8 @@ cpb_431012 = models.CisPhasedBlock(**cpb_431012_dict)
 )
 def test_model_validation_errors(vrs_model, expected_err_msg):
     """Test that invalid VRS models raise errors"""
-    with pytest.raises(ValueError) as e:
+    with pytest.raises(ValueError, match=expected_err_msg):
         vrs_model()
-    assert str(e.value.errors()[0]["ctx"]["error"]) == expected_err_msg
 
 
 def test_vr():
@@ -127,38 +126,33 @@ def test_vr():
 
     with pytest.raises(ValidationError):
         models.Allele(
-            **{
-                "type": "Allele",
-                "location": {
-                    "type": "SequenceLocation",
-                    "sequenceReference": {
-                        "type": "SequenceReference",
-                        # refgetAccession can't include a namespace prefix
-                        "refgetAccession": "ga4gh:SQ.KEO-4XBcm1cxeo_DIQ8_ofqGUkp4iZhI",
-                    },
-                    "start": 128325834,
-                    "end": 128325835,
+            type="Allele",
+            location={
+                "type": "SequenceLocation",
+                "sequenceReference": {
+                    "type": "SequenceReference",
+                    # refgetAccession can't include a namespace prefix
+                    "refgetAccession": "ga4gh:SQ.KEO-4XBcm1cxeo_DIQ8_ofqGUkp4iZhI",
                 },
-                "state": {"type": "LiteralSequenceExpression", "sequence": "T"},
-            }
+                "start": 128325834,
+                "end": 128325835,
+            },
+            state={"type": "LiteralSequenceExpression", "sequence": "T"},
         )
     with pytest.raises(ValidationError):
         models.Allele(
-            **{
-                "type": "Allele",
-                "location": {
-                    "type": "SequenceLocation",
-                    "sequenceReference": {
-                        "type": "SequenceReference",
-                        "refgetAccession": "SQ.KEO-4XBcm1cxeo_DIQ8_ofqGUkp4iZhI",
-                    },
-                    "start": 128325834,
-                    "end": 128325835,
+            type="Allele",
+            location={
+                "type": "SequenceLocation",
+                "sequenceReference": {
+                    "type": "SequenceReference",
+                    "refgetAccession": "SQ.KEO-4XBcm1cxeo_DIQ8_ofqGUkp4iZhI",
                 },
-                "state": {"type": "LiteralSequenceExpression", "sequence": "T"},
-                # digest can't include a namespace prefix
-                "digest": "ga4gh:734G5mtNwe40do8F6GKuqQP4QxyjBqVp",
-            }
+                "start": 128325834,
+                "end": 128325835,
+            },
+            state={"type": "LiteralSequenceExpression", "sequence": "T"},
+            digest="ga4gh:734G5mtNwe40do8F6GKuqQP4QxyjBqVp",
         )
 
 
