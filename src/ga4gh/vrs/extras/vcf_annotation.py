@@ -4,10 +4,10 @@ $ vrs-annotate vcf input.vcf.gz --vcf_out output.vcf.gz --vrs_pickle_out vrs_obj
 
 """
 
-from collections.abc import Callable
-import pathlib
 import logging
+import pathlib
 import pickle
+from collections.abc import Callable
 from enum import Enum
 from timeit import default_timer as timer
 
@@ -17,15 +17,14 @@ from biocommons.seqrepo import SeqRepo
 from pydantic import ValidationError
 
 from ga4gh.core import VrsObjectIdentifierIs, use_ga4gh_compute_identifier_when
-from ga4gh.vrs.dataproxy import SeqRepoDataProxy, SeqRepoRESTDataProxy, DataProxyValidationError
+from ga4gh.vrs.dataproxy import DataProxyValidationError, SeqRepoDataProxy, SeqRepoRESTDataProxy
 from ga4gh.vrs.extras.translator import AlleleTranslator
-
 
 _logger = logging.getLogger(__name__)
 _logger.setLevel(logging.DEBUG)
 
 
-class VCFAnnotatorException(Exception):
+class VCFAnnotatorException(Exception):  # noqa: N818
     """Custom exceptions for VCF Annotator tool"""
 
 
@@ -64,7 +63,7 @@ def _log_level_option(func: Callable) -> Callable:
     :return: same command, wrapped with log level option
     """
 
-    def _set_log_level(ctx: dict, param: str, value: _LogLevel) -> None:  # pylint: disable=unused-argument
+    def _set_log_level(ctx: dict, param: str, value: _LogLevel) -> None:  # noqa: ARG001
         level_map = {
             _LogLevel.DEBUG: logging.DEBUG,
             _LogLevel.INFO: logging.INFO,
@@ -74,7 +73,7 @@ def _log_level_option(func: Callable) -> Callable:
         }
         logging.getLogger(__name__).setLevel(level_map[value])
 
-    wrapped_func = click.option(
+    return click.option(
         "--log_level",
         type=click.Choice([v.value for v in _LogLevel.__members__.values()]),
         default="info",
@@ -83,7 +82,6 @@ def _log_level_option(func: Callable) -> Callable:
         expose_value=False,
         is_eager=True,
     )(func)
-    return wrapped_func
 
 
 @_cli.command(name="vcf")
@@ -204,7 +202,7 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
     VRS_STATES_FIELD = "VRS_States"
     VRS_ERROR_FIELD = "VRS_Error"
     # VCF character escape map
-    VCF_ESCAPE_MAP = [
+    VCF_ESCAPE_MAP = [  # noqa: RUF012
         ("%", "%25"),
         (";", "%3B"),
         (",", "%2C"),
@@ -261,7 +259,8 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
             logged as warnings regardless.
         """
         if not any((vcf_out, vrs_pickle_out)):
-            raise VCFAnnotatorException("Must provide one of: `vcf_out` or `vrs_pickle_out`")
+            msg = "Must provide one of: `vcf_out` or `vrs_pickle_out`"
+            raise VCFAnnotatorException(msg)
 
         info_field_num = "R" if compute_for_ref else "A"
         info_field_desc = "REF and ALT" if compute_for_ref else "ALT"
@@ -388,22 +387,22 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
             validation checks fail. Defaults to `True`.
         """
         try:
-            vrs_obj = self.tlr._from_gnomad(vcf_coords, assembly_name=assembly, require_validation=require_validation)
-        except (ValidationError, DataProxyValidationError) as e:
+            vrs_obj = self.tlr._from_gnomad(vcf_coords, assembly_name=assembly, require_validation=require_validation)  # noqa: SLF001
+        except (ValidationError, DataProxyValidationError):
             vrs_obj = None
-            _logger.error("ValidationError when translating %s from gnomad: %s", vcf_coords, str(e))
+            _logger.exception("ValidationError when translating %s from gnomad", vcf_coords)
             raise
-        except KeyError as e:
+        except KeyError:
             vrs_obj = None
-            _logger.error("KeyError when translating %s from gnomad: %s", vcf_coords, str(e))
+            _logger.exception("KeyError when translating %s from gnomad", vcf_coords)
             raise
-        except AssertionError as e:
+        except AssertionError:
             vrs_obj = None
-            _logger.error("AssertionError when translating %s from gnomad: %s", vcf_coords, str(e))
+            _logger.exception("AssertionError when translating %s from gnomad", vcf_coords)
             raise
-        except Exception as e:  # pylint: disable=broad-except
+        except Exception:  # pylint: disable=broad-except
             vrs_obj = None
-            _logger.error("Unhandled Exception when translating %s from gnomad: %s", vcf_coords, str(e))
+            _logger.exception("Unhandled Exception when translating %s from gnomad", vcf_coords)
             raise
         else:
             if not vrs_obj:
@@ -421,10 +420,7 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
                 if vrs_obj:
                     start = str(vrs_obj.location.start)
                     end = str(vrs_obj.location.end)
-                    if vrs_obj.state.sequence:
-                        alt = str(vrs_obj.state.sequence.root)
-                    else:
-                        alt = ""
+                    alt = str(vrs_obj.state.sequence.root) if vrs_obj.state.sequence else ""
                 else:
                     start = ""
                     end = ""

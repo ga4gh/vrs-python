@@ -165,6 +165,9 @@ ignore = [
     "S321",
     "PLC0206",
 ]
+exclude = [
+    "src/ga4gh/vrs/models.py",  # there be monsters here
+]
 
 [tool.ruff.lint.per-file-ignores]
 # ANN001 - missing-type-function-argument
@@ -197,6 +200,9 @@ ignore = [
     "ANN001",
     "ANN201",
     "ANN202",
+]
+"src/ga4gh/vrs/extras/vcf_annotation.py" = [
+    "PTH123",  # see https://github.com/ga4gh/vrs-python/issues/482
 ]
 
 [tool.ruff.lint.flake8-annotations]

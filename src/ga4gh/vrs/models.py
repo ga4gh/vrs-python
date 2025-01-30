@@ -27,13 +27,11 @@ from ga4gh.core.pydantic import get_pydantic_root, getattr_in
 
 
 def flatten(vals):
-    """
-    Flattens vals recursively, lazily using yield
-    """
+    """Flatten vals recursively, lazily using yield"""
 
     def is_coll(thing):
-        """
-        Return True if the thing looks like a collection.
+        """Return True if the thing looks like a collection.
+
         This is not exhaustive, do not use in general.
         """
         return type(thing) in [list, set]
@@ -47,30 +45,27 @@ def flatten(vals):
 
 
 def flatten_type(t):
-    """
-    Flattens a complex type into a list of constituent types.
-    """
+    """Flatten a complex type into a list of constituent types."""
     if hasattr(t, "__dict__") and "__origin__" in t.__dict__:
         if t.__origin__ == Literal:
             return list(t.__args__)
-        elif t.__origin__ == Union or issubclass(t.__origin__, List):
+        if t.__origin__ == Union or issubclass(t.__origin__, List):
             return list(flatten([flatten_type(sub_t) for sub_t in t.__args__]))
     return [t]
 
 
 def overlaps(a: list, b: list):
-    """
-    Returns true if there are any elements in common between a and b
-    """
+    """Return true if there are any elements in common between a and b"""
     return len(set(a).intersection(set(b))) > 0
 
 
 def pydantic_class_refatt_map():
-    """
-    Builds a map of class names to their field names that are referable types.
-    As in, types with an identifier that can be referred to elsewhere,
-    collapsed to that identifier and dereferenced.
+    """Build a map of class names to their field names that are referable types.
+
+    As in, types with an identifier that can be referred to elsewhere, collapsed to that identifier and dereferenced.
+
     Returns a map like:
+
     {"Allele": ["location"], ...}
     """
     # Things defined here that are classes that inherit from BaseModel
@@ -196,16 +191,15 @@ class Syntax(str, Enum):
 def _recurse_ga4gh_serialize(obj):
     if isinstance(obj, Ga4ghIdentifiableObject):
         return obj.get_or_create_digest()
-    elif isinstance(obj, (_ValueObject, MappableConcept)):
+    if isinstance(obj, (_ValueObject, MappableConcept)):
         return obj.ga4gh_serialize()
-    elif isinstance(obj, RootModel):
+    if isinstance(obj, RootModel):
         return _recurse_ga4gh_serialize(obj.model_dump())
-    elif isinstance(obj, str):
+    if isinstance(obj, str):
         return obj
-    elif isinstance(obj, list):
+    if isinstance(obj, list):
         return [_recurse_ga4gh_serialize(x) for x in obj]
-    else:
-        return obj
+    return obj
 
 
 class _ValueObject(Entity, ABC):
@@ -223,11 +217,11 @@ class _ValueObject(Entity, ABC):
             out[k] = _recurse_ga4gh_serialize(v)
         return out
 
-    class ga4gh:
+    class ga4gh:  # noqa: N801
         keys: List[str]
 
     @staticmethod
-    def is_ga4gh_identifiable():
+    def is_ga4gh_identifiable() -> bool:
         return False
 
 
@@ -247,14 +241,14 @@ class Ga4ghIdentifiableObject(_ValueObject, ABC):
         return self.get_or_create_digest() < other.get_or_create_digest()
 
     @staticmethod
-    def is_ga4gh_identifiable():
+    def is_ga4gh_identifiable() -> bool:
         return True
 
     def has_valid_ga4gh_id(self):
         return self.id and GA4GH_IR_REGEXP.match(self.id) is not None
 
-    def compute_digest(self, store=True, as_version: PrevVrsVersion | None = None) -> str:
-        """A sha512t24u digest created using the VRS Computed Identifier algorithm.
+    def compute_digest(self, store: bool = True, as_version: PrevVrsVersion | None = None) -> str:
+        """Compute a sha512t24u digest, created using the VRS Computed Identifier algorithm.
 
         Stores the digest in the object if ``store`` is ``True``.
 
@@ -268,11 +262,14 @@ class Ga4ghIdentifiableObject(_ValueObject, ABC):
         else:
             try:
                 digest = sha512t24u(self.ga4gh_serialize_as_version(as_version).encode("utf-8"))
-            except AttributeError:
-                raise AttributeError("This class does not support prior version identifiers.")
+            except AttributeError as e:
+                msg = "This class does not support prior version identifiers."
+                raise AttributeError(msg) from e
         return digest
 
-    def get_or_create_ga4gh_identifier(self, in_place="default", recompute=False, as_version=None) -> str:
+    def get_or_create_ga4gh_identifier(
+        self, in_place: str = "default", recompute: bool = False, as_version=None
+    ) -> str:
         """Sets and returns a GA4GH Computed Identifier for the object.
         Overwrites the existing identifier if overwrite is True.
 
@@ -302,15 +299,16 @@ class Ga4ghIdentifiableObject(_ValueObject, ABC):
         elif in_place == "never":
             return self.compute_ga4gh_identifier(recompute)
         else:
-            raise ValueError("Expected 'in_place' to be one of 'default', 'always', or 'never'")
+            msg = "Expected 'in_place' to be one of 'default', 'always', or 'never'"
+            raise ValueError(msg)
 
         if self.has_valid_ga4gh_id():
             return self.id
         else:
             return self.compute_ga4gh_identifier(recompute)
 
-    def compute_ga4gh_identifier(self, recompute=False, as_version=None):
-        """Returns a GA4GH Computed Identifier.
+    def compute_ga4gh_identifier(self, recompute: bool =False, as_version=None):
+        """Return a GA4GH Computed Identifier.
 
         If ``as_version`` is provided, other parameters are ignored and a computed
         identifier is returned following the conventions of the VRS version indicated by
@@ -323,14 +321,15 @@ class Ga4ghIdentifiableObject(_ValueObject, ABC):
             digest = self.compute_digest(as_version=as_version)
             return f"{CURIE_NAMESPACE}{CURIE_SEP}{self.ga4gh.priorPrefix[as_version]}{GA4GH_PREFIX_SEP}{digest}"
 
-    def get_or_create_digest(self, recompute=False) -> str:
-        """Sets and returns a sha512t24u digest of the GA4GH Identifiable Object, or creates
-        the digest if it does not exist."""
+    def get_or_create_digest(self, recompute: bool = False) -> str:
+        """Set and returns a sha512t24u digest of the GA4GH Identifiable Object, or create
+        the digest if it does not exist.
+        """
         if self.digest is None or recompute:
             return self.compute_digest()
         return self.digest
 
-    class ga4gh(_ValueObject.ga4gh):
+    class ga4gh(_ValueObject.ga4gh):  # noqa: N801
         prefix: str
 
 
@@ -371,7 +370,7 @@ class Range(RootModel):
     )
 
     @field_validator("root", mode="after")
-    def validate_range(cls, v: List[Optional[int]]) -> List[Optional[int]]:
+    def validate_range(cls, v: List[Optional[int]]) -> List[Optional[int]]:  # noqa: N805
         """Validate range values
 
         :param v: Root value
@@ -383,10 +382,9 @@ class Range(RootModel):
             err_msg = "Must provide at least one integer."
             raise ValueError(err_msg)
 
-        if v[0] is not None and v[1] is not None:
-            if v[0] > v[1]:
-                err_msg = "The first integer must be less than or equal to the second integer."
-                raise ValueError(err_msg)
+        if (v[0] is not None and v[1] is not None) and (v[0] > v[1]):
+            err_msg = "The first integer must be less than or equal to the second integer."
+            raise ValueError(err_msg)
 
         return v
 
@@ -539,9 +537,8 @@ class SequenceLocation(Ga4ghIdentifiableObject):
         return v
 
     def ga4gh_serialize_as_version(self, as_version: PrevVrsVersion):
-        """This method will return a serialized string following the conventions for
-        SequenceLocation serialization as defined in the VRS version specified by
-        ``as_version``.
+        """Return a serialized string following the conventions for SequenceLocation
+        serialization as defined in the VRS version specified by ``as_version``.
 
         :raises ValueError: If ``sequenceReference`` is not a ``SequenceReference``
             object; ``start`` or ``end`` are not an int or list.
@@ -564,21 +561,23 @@ class SequenceLocation(Ga4ghIdentifiableObject):
                     else:
                         result = f'{{"max":{value[1]},"min":{value[0]},"type":"DefiniteRange"}}'
                 else:
-                    raise ValueError(f"{value} is not int or list.")
+                    msg = f"{value} is not int or list."
+                    raise ValueError(msg)
                 out.append(result)
             return f'{{"interval":{{"end":{out[1]},"start":{out[0]},"type":"SequenceInterval"}},"sequence_id":"{self.sequenceReference.refgetAccession.split(".")[1]}","type":"SequenceLocation"}}'
+        msg = f"Received an unexpected value for `as_version`: {as_version}. MUST be an instance of `PrevVrsVersion`."
+        raise TypeError(msg)
 
     def get_refget_accession(self):
         if isinstance(self.sequenceReference, SequenceReference):
             return self.sequenceReference.refgetAccession
-        elif isinstance(self.sequenceReference, iriReference):
+        if isinstance(self.sequenceReference, iriReference):
             return self.sequenceReference.root
-        else:
-            return None
+        return None
 
-    class ga4gh(Ga4ghIdentifiableObject.ga4gh):
+    class ga4gh(Ga4ghIdentifiableObject.ga4gh):  # noqa: N801
         prefix = "SL"
-        priorPrefix = {PrevVrsVersion.V1_3.value: "VSL"}
+        priorPrefix = {PrevVrsVersion.V1_3.value: "VSL"}  # noqa: N815
         keys = ["end", "sequenceReference", "start", "type"]
 
 
@@ -608,7 +607,7 @@ class Allele(_VariationBase):
     )
 
     def ga4gh_serialize_as_version(self, as_version: PrevVrsVersion):
-        """This method will return a serialized string following the conventions for
+        """Return a serialized string following the conventions for
         Allele serialization as defined in the VRS version specified by 'as_version`.
 
         :raises ValueError: If ``state`` is not a ``LiteralSequenceExpression`` or
@@ -627,10 +626,12 @@ class Allele(_VariationBase):
 
         if as_version == PrevVrsVersion.V1_3:
             return f'{{"location":"{location_digest}","state":{{"sequence":"{sequence}","type":"LiteralSequenceExpression"}},"type":"Allele"}}'
+        msg = f"Received an unexpected value for `as_version`: {as_version}. MUST be an instance of `PrevVrsVersion`."
+        raise TypeError(msg)
 
-    class ga4gh(Ga4ghIdentifiableObject.ga4gh):
+    class ga4gh(Ga4ghIdentifiableObject.ga4gh):  # noqa: N801
         prefix = "VA"
-        priorPrefix = {PrevVrsVersion.V1_3.value: "VA"}
+        priorPrefix = {PrevVrsVersion.V1_3.value: "VA"}  # noqa: N815
         keys = ["location", "state", "type"]
 
 
@@ -713,7 +714,7 @@ class Terminus(_VariationBase):
     type: Literal["Terminus"] = Field(VrsType.TERMINUS.value, description=f'MUST be "{VrsType.TERMINUS.value}".')
     location: Union[iriReference, SequenceLocation] = Field(..., description="The location of the terminus.")
 
-    class ga4gh(Ga4ghIdentifiableObject.ga4gh):
+    class ga4gh(Ga4ghIdentifiableObject.ga4gh):  # noqa: N815
         prefix = "TM"
         keys = ["location", "type"]
 
@@ -754,7 +755,7 @@ class DerivativeMolecule(_VariationBase):
         description="A boolean indicating whether the molecule represented by the sequence is circular (true) or linear (false).",
     )
 
-    class ga4gh(Ga4ghIdentifiableObject.ga4gh):
+    class ga4gh(Ga4ghIdentifiableObject.ga4gh):  # noqa: N815
         prefix = "DM"
         keys = ["components", "type"]
 
@@ -776,7 +777,7 @@ class CopyNumberCount(_VariationBase):
     )
     copies: Union[Range, int] = Field(..., description="The integral number of copies of the subject in a system")
 
-    class ga4gh(Ga4ghIdentifiableObject.ga4gh):
+    class ga4gh(Ga4ghIdentifiableObject.ga4gh):  # noqa: N815
         prefix = "CN"
         keys = ["copies", "location", "type"]
 
