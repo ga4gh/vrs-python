@@ -11,20 +11,19 @@ Instead, users should use one of the following:
     module name, e.g., `ga4gh.vrs.models.Allele`
 """
 
-from abc import ABC
-from typing import List, Literal, Optional, Union, Dict, Annotated
-from collections import OrderedDict
-from enum import Enum
 import inspect
 import sys
-from ga4gh.core import sha512t24u, GA4GH_PREFIX_SEP, CURIE_SEP, CURIE_NAMESPACE, GA4GH_IR_REGEXP, PrevVrsVersion
-from ga4gh.core.pydantic import get_pydantic_root
+from abc import ABC
+from collections import OrderedDict
+from enum import Enum
+from typing import Annotated, Dict, List, Literal, Optional, Union
 
 from canonicaljson import encode_canonical_json
-from pydantic import BaseModel, Field, RootModel, StringConstraints, ConfigDict, ValidationInfo, field_validator
+from pydantic import BaseModel, ConfigDict, Field, RootModel, StringConstraints, ValidationInfo, field_validator
 
-from ga4gh.core.pydantic import getattr_in
-from ga4gh.core.models import iriReference, Entity, MappableConcept, Element
+from ga4gh.core import CURIE_NAMESPACE, CURIE_SEP, GA4GH_IR_REGEXP, GA4GH_PREFIX_SEP, PrevVrsVersion, sha512t24u
+from ga4gh.core.models import Element, Entity, MappableConcept, iriReference
+from ga4gh.core.pydantic import get_pydantic_root, getattr_in
 
 
 def flatten(vals):
