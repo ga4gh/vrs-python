@@ -15,17 +15,17 @@ For that reason, they are implemented here in one file.
 
 """
 
-from canonicaljson import encode_canonical_json
 import contextvars
 import re
 from contextlib import ContextDecorator
 from enum import Enum, IntEnum
-from typing import Optional
+
+from canonicaljson import encode_canonical_json
 from pydantic import BaseModel
 
 from ga4gh.core.pydantic import get_pydantic_root
 
-__all__ = "ga4gh_digest ga4gh_identify ga4gh_serialize is_ga4gh_identifier".split()
+__all__= ["ga4gh_digest", "ga4gh_identify", "ga4gh_serialize", "is_ga4gh_identifier"]
 
 CURIE_NAMESPACE = "ga4gh"
 CURIE_SEP = ":"
@@ -38,8 +38,7 @@ NS_W_SEP = f"{CURIE_NAMESPACE}{CURIE_SEP}"
 
 
 class VrsObjectIdentifierIs(IntEnum):
-    """
-    Defines the state for when the `ga4gh_identify` method should compute
+    """Defines the state for when the `ga4gh_identify` method should compute
     an identifier ('id' attribute) for the specified object.  The options are:
       ANY - Always compute the identifier (this is the default behavior)
       GA4GH_INVALID - Compute the identifier if it is missing or is present but syntactically invalid
@@ -64,7 +63,7 @@ class PrevVrsVersion(str, Enum):
     V1_3 = "1.3"
 
     @classmethod
-    def validate(cls, version):
+    def validate(cls, version) -> None:  # noqa: ANN001
         if version is not None and version not in cls.__members__.values():
             err_msg = f"Expected `PrevVrsVersion`, but got {version}"
             raise ValueError(err_msg)
@@ -73,9 +72,8 @@ class PrevVrsVersion(str, Enum):
 ga4gh_compute_identifier_when = contextvars.ContextVar("ga4gh_compute_identifier_when")
 
 
-class use_ga4gh_compute_identifier_when(ContextDecorator):
-    """
-    Context manager that defines when to compute identifiers
+class use_ga4gh_compute_identifier_when(ContextDecorator):  # noqa: N801
+    """Context manager that defines when to compute identifiers
     for all operations within the context.  For example:
 
     with use_ga4gh_compute_identifier_when(VrsObjectIdentifierIs.GA4GH_INVALID):
@@ -91,15 +89,15 @@ class use_ga4gh_compute_identifier_when(ContextDecorator):
         self.when = when
         self.token = None
 
-    def __enter__(self):
+    def __enter__(self):  # noqa: ANN204
         self.token = ga4gh_compute_identifier_when.set(self.when)
 
-    def __exit__(self, exc_type, exc, exc_tb):
+    def __exit__(self, exc_type, exc, exc_tb):  # noqa: ANN204 ANN001
         ga4gh_compute_identifier_when.reset(self.token)
 
 
-def is_ga4gh_identifier(ir):
-    """
+def is_ga4gh_identifier(ir: str) -> bool:
+    """Check whether a string is a valid GA4GH identifier
 
     >>> is_ga4gh_identifier("ga4gh:SQ.0123abcd")
     True
@@ -114,7 +112,7 @@ def is_ga4gh_identifier(ir):
     return str(get_pydantic_root(ir)).startswith(NS_W_SEP)
 
 
-def ga4gh_identify(vro, in_place: str = "default", as_version: PrevVrsVersion | None = None) -> str | None:
+def ga4gh_identify(vro, in_place: str = "default", as_version: PrevVrsVersion | None = None) -> str | None:  # noqa: ANN001
     """Return the GA4GH digest-based id for the object, as a CURIE
     (string).  Returns None if object is not identifiable.
 
@@ -188,14 +186,12 @@ def ga4gh_digest(vro: BaseModel, overwrite: bool = False, as_version: PrevVrsVer
     if vro.is_ga4gh_identifiable():
         if as_version is None:
             return vro.get_or_create_digest(overwrite)
-        else:
-            return vro.compute_digest(as_version=as_version)
-    else:
-        return None
+        return vro.compute_digest(as_version=as_version)
+    return None
 
 
-def ga4gh_serialize(obj: BaseModel, as_version: PrevVrsVersion | None = None) -> Optional[bytes]:
-    """Serializes an object for use in computed digest computation.
+def ga4gh_serialize(obj: BaseModel, as_version: PrevVrsVersion | None = None) -> bytes | None:
+    """Serialize an object for use in computed digest computation.
 
     If ``as_version`` is provided, the returned serialization follows
     the conventions of the VRS version indicated by ``as_version_``.
@@ -204,5 +200,4 @@ def ga4gh_serialize(obj: BaseModel, as_version: PrevVrsVersion | None = None) ->
 
     if as_version is None:
         return encode_canonical_json(obj.ga4gh_serialize())
-    else:
-        return obj.ga4gh_serialize_as_version(as_version)
+    return obj.ga4gh_serialize_as_version(as_version)

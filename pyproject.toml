@@ -223,6 +223,9 @@ exclude = [
 "src/ga4gh/core/pydantic.py" = [
     "ANN401",
 ]
+"src/ga4gh/core/models.py" = [
+    "UP007",
+]
 
 [tool.ruff.lint.flake8-annotations]
 mypy-init-return = true
