@@ -9,8 +9,8 @@ import base64
 import hashlib
 
 
-def sha512t24u(blob):
-    """generate a base64url-encode, truncated SHA-512 digest for given
+def sha512t24u(blob: bytes) -> str:
+    """Generate a base64url-encode, truncated SHA-512 digest for given
     binary data
 
     The sha512t24u digest is a convention for constructing and
@@ -28,7 +28,6 @@ def sha512t24u(blob):
     'aKF498dAxcJAqme6QYQ7EZ07-fiw8Kw2'
 
     """
-
     digest_size = 24
     digest = hashlib.sha512(blob).digest()
     tdigest_b64us = base64.urlsafe_b64encode(digest[:digest_size])
