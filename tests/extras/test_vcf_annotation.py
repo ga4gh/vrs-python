@@ -1,8 +1,8 @@
 """Ensure proper functionality of VCFAnnotator"""
 
 import gzip
-import os
 import re
+from pathlib import Path
 
 import pytest
 
@@ -31,12 +31,12 @@ def test_annotate_vcf_grch38_noattrs(vcf_annotator, vcr_cassette):
         out_vcf_lines = out_vcf.readlines()
     with gzip.open(expected_vcf_no_vrs_attrs, "rt") as expected_output:
         expected_output_lines = expected_output.readlines()
-    for actual_line, expected_line in zip(out_vcf_lines, expected_output_lines):
+    for actual_line, expected_line in zip(out_vcf_lines, expected_output_lines, strict=False):
         assert actual_line == expected_line
-    assert os.path.exists(output_vrs_pkl)
+    assert Path(output_vrs_pkl).exists()
     assert vcr_cassette.all_played
-    os.remove(output_vcf)
-    os.remove(output_vrs_pkl)
+    Path(output_vcf).unlink()
+    Path(output_vrs_pkl).unlink()
 
 
 @pytest.mark.vcr
@@ -53,12 +53,12 @@ def test_annotate_vcf_grch38_attrs(vcf_annotator, vcr_cassette):
         out_vcf_lines = out_vcf.readlines()
     with gzip.open(expected_vcf, "rt") as expected_output:
         expected_output_lines = expected_output.readlines()
-    for actual_line, expected_line in zip(out_vcf_lines, expected_output_lines):
+    for actual_line, expected_line in zip(out_vcf_lines, expected_output_lines, strict=False):
         assert actual_line == expected_line
-    assert os.path.exists(output_vrs_pkl)
+    assert Path(output_vrs_pkl).exists()
     assert vcr_cassette.all_played
-    os.remove(output_vcf)
-    os.remove(output_vrs_pkl)
+    Path(output_vcf).unlink()
+    Path(output_vrs_pkl).unlink()
 
 
 @pytest.mark.vcr
@@ -75,12 +75,12 @@ def test_annotate_vcf_grch38_attrs_altsonly(vcf_annotator, vcr_cassette):
         out_vcf_lines = out_vcf.readlines()
     with gzip.open(expected_altsonly_vcf, "rt") as expected_output:
         expected_output_lines = expected_output.readlines()
-    for actual_line, expected_line in zip(out_vcf_lines, expected_output_lines):
+    for actual_line, expected_line in zip(out_vcf_lines, expected_output_lines, strict=False):
         assert actual_line == expected_line
-    assert os.path.exists(output_vrs_pkl)
+    assert Path(output_vrs_pkl).exists()
     assert vcr_cassette.all_played
-    os.remove(output_vcf)
-    os.remove(output_vrs_pkl)
+    Path(output_vcf).unlink()
+    Path(output_vrs_pkl).unlink()
 
 
 @pytest.mark.vcr
@@ -98,10 +98,10 @@ def test_annotate_vcf_grch37_attrs(vcf_annotator, vcr_cassette):
     with gzip.open(expected_vcf, "rt") as expected_output:
         expected_output_lines = expected_output.readlines()
     assert out_vcf_lines != expected_output_lines
-    assert os.path.exists(output_vrs_pkl)
+    assert Path(output_vrs_pkl).exists()
     assert vcr_cassette.all_played
-    os.remove(output_vcf)
-    os.remove(output_vrs_pkl)
+    Path(output_vcf).unlink()
+    Path(output_vrs_pkl).unlink()
 
 
 @pytest.mark.vcr
@@ -113,10 +113,10 @@ def test_annotate_vcf_pickle_only(vcf_annotator, vcr_cassette):
 
     # Test only pickle output
     vcf_annotator.annotate(input_vcf, vrs_pickle_out=output_vrs_pkl, vrs_attributes=True)
-    assert os.path.exists(output_vrs_pkl)
-    assert not os.path.exists(output_vcf)
+    assert Path(output_vrs_pkl).exists()
+    assert not Path(output_vcf).exists()
     assert vcr_cassette.all_played
-    os.remove(output_vrs_pkl)
+    Path(output_vrs_pkl).unlink()
 
 
 @pytest.mark.vcr
@@ -135,8 +135,8 @@ def test_annotate_vcf_vcf_only(vcf_annotator, vcr_cassette):
         expected_output_lines = expected_output.readlines()
     assert out_vcf_lines == expected_output_lines
     assert vcr_cassette.all_played
-    assert not os.path.exists(output_vrs_pkl)
-    os.remove(output_vcf)
+    assert not Path(output_vrs_pkl).exists()
+    Path(output_vcf).unlink()
 
 
 def test_annotate_vcf_input_validation(vcf_annotator):
