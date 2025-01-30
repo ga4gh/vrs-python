@@ -1,9 +1,4 @@
-import tempfile
-import ast
-import os
 import pytest
-import shutil
-import sys
 
 from ga4gh.vrs.extras.object_store import Sqlite3MutableMapping
 
@@ -19,7 +14,7 @@ def test_simple(tmp_path):
         object_store[k] = v
 
     assert len(kvp) == len(object_store)
-    assert set([k for k, v in kvp.items()]) == set(object_store.keys())
+    assert set(kvp.keys()) == set(object_store.keys())
 
     for k_act, v_act in object_store.items():
         assert kvp[k_act] == v_act
@@ -30,7 +25,7 @@ def test_simple(tmp_path):
     with pytest.raises(KeyError):
         del object_store["A"]
     while len(object_store) > 0:
-        del object_store[list(object_store.keys())[0]]
+        del object_store[next(iter(object_store.keys()))[0]]
     assert len(object_store) == 0
 
 
@@ -46,7 +41,7 @@ def test_complex(tmp_path):
         object_store[k] = v
 
     assert len(kvp) == len(object_store)
-    assert set([k for k, v in kvp.items()]) == set(object_store.keys())
+    assert set(kvp.keys()) == set(object_store.keys())
 
     for k_act, v_act in object_store.items():
         assert kvp[k_act] == v_act
@@ -57,9 +52,9 @@ def test_complex(tmp_path):
 def test_classes(tmp_path):
     db_path = str(tmp_path) + "/test_complex.sqlite3"
 
-    class TestClass(object):
-        def __init__(self, id):
-            self.id = id
+    class TestClass:
+        def __init__(self, id_value):
+            self.id = id_value
             self.A = "A"
             self.B = ["B1", "B2", 3]
             self.C = {"C1": "C1-value"}
