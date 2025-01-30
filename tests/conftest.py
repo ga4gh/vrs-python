@@ -1,9 +1,9 @@
 import os
 
 import pytest
-
 from biocommons.seqrepo import SeqRepo
-from ga4gh.vrs.dataproxy import SeqRepoRESTDataProxy, SeqRepoDataProxy
+
+from ga4gh.vrs.dataproxy import SeqRepoDataProxy, SeqRepoRESTDataProxy
 
 
 @pytest.fixture(scope="session")
