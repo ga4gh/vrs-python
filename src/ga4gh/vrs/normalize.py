@@ -277,7 +277,9 @@ def normalize(vo, data_proxy=None, **kwargs):
             of the `sequence`. To exclude `state.sequence`, set to 0.
     """
 
-    assert is_pydantic_instance(vo)
+    if not is_pydantic_instance(vo):
+        msg = f"Object is of class {vo.__class__} (with parents {vo.__class__.__mro__}), but normalize requires objects that inherit from pydantic.BaseModel."
+        raise TypeError(msg)
     vo_type = vo.type
 
     if vo_type in handlers:

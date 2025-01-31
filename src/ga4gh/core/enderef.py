@@ -48,7 +48,9 @@ def ga4gh_enref(o, cra_map, object_store=None, return_id_obj_tuple=False):
             elif isinstance(v, str):
                 pass
             elif is_curie_type(v):    # already a reference
-                assert is_ga4gh_identifier(v), "Identifiable attribute CURIE is contains an invalid identifier"
+                if not is_ga4gh_identifier(v):
+                    msg = "Identifiable attribute CURIE is contains an invalid identifier"
+                    raise TypeError(msg)
             elif v is not None:
                 _id = _id_and_store(v)
                 if _id:

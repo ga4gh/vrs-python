@@ -308,7 +308,8 @@ def _isoformat(o):
     """
 
     # stolen from connexion flask_app.py
-    assert isinstance(o, datetime.datetime)
+    if not isinstance(o, datetime.datetime):
+        raise TypeError
     if o.tzinfo:
         # eg: '2015-09-25T23:14:42.588601+00:00'
         return o.isoformat("T")
