@@ -223,7 +223,7 @@ def _is_valid_cycle(template_start, template, target):
 # TODO _normalize_genotype?
 
 
-def _normalize_cis_phased_block[T](o: T, data_proxy: _DataProxy | None = None) -> T:  # noqa: ARG001
+def _normalize_cis_phased_block(o, data_proxy: _DataProxy | None = None):  # noqa: ARG001
     o.members = sorted(o.members, key=ga4gh_digest)
     return o
 
