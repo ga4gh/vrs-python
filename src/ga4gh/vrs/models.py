@@ -307,7 +307,7 @@ class Ga4ghIdentifiableObject(_ValueObject, ABC):
         else:
             return self.compute_ga4gh_identifier(recompute)
 
-    def compute_ga4gh_identifier(self, recompute: bool =False, as_version=None):
+    def compute_ga4gh_identifier(self, recompute: bool = False, as_version=None):
         """Return a GA4GH Computed Identifier.
 
         If ``as_version`` is provided, other parameters are ignored and a computed

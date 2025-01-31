@@ -1,4 +1,5 @@
 """Provide helpful methods related to pydantic objects."""
+
 import re
 from typing import Any
 

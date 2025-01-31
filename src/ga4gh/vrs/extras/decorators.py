@@ -1,6 +1,5 @@
 """decorators for vrs-python"""
 
-
 from collections.abc import Callable
 
 

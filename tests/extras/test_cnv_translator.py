@@ -101,7 +101,7 @@ from_hgvs_cx_tests = (
 )
 
 
-@pytest.mark.parametrize(("hgvsexpr" ,"copy_change", "expected"), from_hgvs_cx_tests)
+@pytest.mark.parametrize(("hgvsexpr", "copy_change", "expected"), from_hgvs_cx_tests)
 @pytest.mark.vcr
 def test_from_hgvs_cx(tlr, hgvsexpr, copy_change, expected):
     """Test that _from_hgvs works correctly for copy number change"""
@@ -155,7 +155,7 @@ from_hgvs_cn_tests = (
 )
 
 
-@pytest.mark.parametrize(("hgvsexpr", "copies" ,"expected"), from_hgvs_cn_tests)
+@pytest.mark.parametrize(("hgvsexpr", "copies", "expected"), from_hgvs_cn_tests)
 @pytest.mark.vcr
 def test_from_hgvs_cn(tlr, hgvsexpr, copies, expected):
     """Test that _from_hgvs works correctly for copy number count"""

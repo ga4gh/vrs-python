@@ -13,7 +13,7 @@ class Sqlite3MutableMapping(MutableMapping):
     If not used as a contextmanager, user must call commit and/or close.
     """
 
-    def __init__(self, sqlite3_db: str | sqlite3.Connection, autocommit: bool =True):
+    def __init__(self, sqlite3_db: str | sqlite3.Connection, autocommit: bool = True):
         """Connect to the sqlite3 database specified by an existing sqlite3.Connection
         or a connection string.
 

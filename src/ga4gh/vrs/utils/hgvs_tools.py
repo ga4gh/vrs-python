@@ -1,4 +1,5 @@
 """Provide extra tools for working with hgvs expressions."""
+
 import logging
 import re
 
@@ -254,9 +255,7 @@ class HgvsTools:
             ref = self.data_proxy.get_sequence(sequence, start, end)
             start += 1
 
-        ival = hgvs.location.Interval(
-            start=hgvs.location.SimplePosition(start), end=hgvs.location.SimplePosition(end)
-        )
+        ival = hgvs.location.Interval(start=hgvs.location.SimplePosition(start), end=hgvs.location.SimplePosition(end))
         alt = str(vo.state.sequence.root) or None  # "" => None
         edit = hgvs.edit.NARefAlt(ref=ref, alt=alt)
 
