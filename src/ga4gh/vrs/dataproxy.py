@@ -352,7 +352,6 @@ def create_dataproxy(uri: str | None = None) -> _DataProxy:
 
     if provider == "seqrepo":
         if proto in ("", "file"):
-            # pylint: disable=import-error, import-outside-toplevel
             from biocommons.seqrepo import SeqRepo
 
             sr = SeqRepo(root_dir=parsed_uri.path)

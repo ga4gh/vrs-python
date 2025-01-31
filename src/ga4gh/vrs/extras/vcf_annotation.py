@@ -145,7 +145,7 @@ def _log_level_option(func: Callable) -> Callable:
     help="Require validation checks to pass to construct a VRS object.",
 )
 @click.option("--silent", "-s", is_flag=True, default=False, help="Suppress messages printed to stdout")
-def _annotate_vcf_cli(  # pylint: disable=too-many-arguments
+def _annotate_vcf_cli(
     vcf_in: pathlib.Path,
     vcf_out: pathlib.Path | None,
     vrs_pickle_out: pathlib.Path | None,
@@ -188,7 +188,7 @@ def _annotate_vcf_cli(  # pylint: disable=too-many-arguments
         click.echo(msg)
 
 
-class VCFAnnotator:  # pylint: disable=too-few-public-methods
+class VCFAnnotator:
     """Annotate VCFs with VRS allele IDs.
 
     Uses pysam to read, store, and (optionally) output VCFs. Alleles are translated
@@ -231,7 +231,7 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
         self.tlr = AlleleTranslator(self.dp)
 
     @use_ga4gh_compute_identifier_when(VrsObjectIdentifierIs.MISSING)
-    def annotate(  # pylint: disable=too-many-arguments,too-many-locals
+    def annotate(
         self,
         vcf_in: str,
         vcf_out: str | None = None,
@@ -266,7 +266,7 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
         info_field_desc = "REF and ALT" if compute_for_ref else "ALT"
 
         vrs_data = {}
-        vcf_in = pysam.VariantFile(filename=vcf_in)  # pylint: disable=no-member
+        vcf_in = pysam.VariantFile(filename=vcf_in)
         vcf_in.header.info.add(
             self.VRS_ALLELE_IDS_FIELD,
             info_field_num,
@@ -310,7 +310,7 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
             )
 
         if vcf_out:
-            vcf_out = pysam.VariantFile(vcf_out, "w", header=vcf_in.header)  # pylint: disable=no-member
+            vcf_out = pysam.VariantFile(vcf_out, "w", header=vcf_in.header)
 
         output_vcf = bool(vcf_out)
         output_pickle = bool(vrs_pickle_out)
@@ -355,7 +355,7 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
             with open(vrs_pickle_out, "wb") as wf:
                 pickle.dump(vrs_data, wf)
 
-    def _get_vrs_object(  # pylint: disable=too-many-arguments,too-many-locals
+    def _get_vrs_object(
         self,
         vcf_coords: str,
         vrs_data: dict,
@@ -400,7 +400,7 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
             vrs_obj = None
             _logger.exception("AssertionError when translating %s from gnomad", vcf_coords)
             raise
-        except Exception:  # pylint: disable=broad-except
+        except Exception:
             vrs_obj = None
             _logger.exception("Unhandled Exception when translating %s from gnomad", vcf_coords)
             raise
@@ -430,11 +430,11 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
                 vrs_field_data[self.VRS_ENDS_FIELD].append(end)
                 vrs_field_data[self.VRS_STATES_FIELD].append(alt)
 
-    def _get_vrs_data(  # pylint: disable=too-many-arguments,too-many-locals
+    def _get_vrs_data(
         self,
         record: pysam.VariantRecord,
         vrs_data: dict,
-        assembly: str,  # pylint: disable=no-member
+        assembly: str,
         additional_info_fields: list[str],
         vrs_attributes: bool = False,
         output_pickle: bool = True,
