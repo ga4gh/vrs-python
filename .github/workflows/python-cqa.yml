@@ -2,21 +2,34 @@ name: Python CQA
 
 on: [push, pull_request]
 
-
-# TODO: separate lint and test jobs; lint first, test "needs" lint
-# https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobs
-
 jobs:
-  test:
-
+  lint:
     runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: actions/setup-python@v5
+      - name: Update pip and setuptools
+        run: |
+          python -m pip install --upgrade pip setuptools
+      - name: Install dependencies
+        run: pip install -e '.[dev]'
+      - name: Check style
+        run: python3 -m ruff check --output-format=github
+      - name: Check formatting
+        run: python3 -m ruff format --check
+
+  test:
+    runs-on: ubuntu-latest
+    needs:
+      - lint
     strategy:
       fail-fast: false
       matrix:
         python-version: ["3.10", "3.11", "3.12"]
     env:
       SEQREPO_ROOT_DIR: ./tests/data/seqrepo/latest
-
     steps:
     - uses: actions/checkout@v4
       with:
@@ -43,7 +56,15 @@ jobs:
 
   precommit_hooks:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        cmd:
+          - "end-of-file-fixer"
+          - "trailing-whitespace"
+          - "mixed-line-ending"
     steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-python@v5
-    - uses: pre-commit/action@v3.0.1
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+      - uses: pre-commit/action@v3.0.1
+        with:
+          extra_args: ${{ matrix.cmd }} --all-files

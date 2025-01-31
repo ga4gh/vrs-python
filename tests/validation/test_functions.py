@@ -1,13 +1,12 @@
-import os
+from pathlib import Path
 
 import pytest
-import vcr
 import yaml
 
 from ga4gh.core import sha512t24u
 
-validation_fn = os.path.join(os.path.dirname(__file__), "data", "functions.yaml")
-validation_tests = yaml.load(open(validation_fn), Loader=yaml.SafeLoader)
+validation_fn = Path(__file__).parent / "data" / "functions.yaml"
+validation_tests = yaml.load(Path(validation_fn).open(), Loader=yaml.SafeLoader)  # noqa: SIM115
 
 
 @pytest.mark.parametrize("test", validation_tests["sha512t24u"])

@@ -59,8 +59,7 @@ dev = [
     "pyyaml",
     # style
     "pre-commit>=4.0.1",
-    "pylint",
-    "yapf",
+    "ruff==0.9.4",
     # docs
     "sphinx",
     "sphinx_rtd_theme",
@@ -96,9 +95,139 @@ addopts = "--cov-report=term-missing --cov=ga4gh"
 testpaths = ["tests", "src"]
 doctest_optionflags = "ALLOW_UNICODE ALLOW_BYTES ELLIPSIS IGNORE_EXCEPTION_DETAIL NORMALIZE_WHITESPACE"
 
-[tool.yapf]
-based_on_style = "pep8"
-column_limit = 120
-spaces_before_comment = 4
-split_before_logical_operator = true
-split_before_named_assigns = true
+[tool.ruff]
+src = ["src"]
+exclude = ["docs", "misc", "notebooks", "submodules"]
+
+[tool.ruff.lint]
+select = [
+    "F",  # https://docs.astral.sh/ruff/rules/#pyflakes-f
+    "E", "W",  # https://docs.astral.sh/ruff/rules/#pycodestyle-e-w
+    "I",  # https://docs.astral.sh/ruff/rules/#isort-i
+    "N",  # https://docs.astral.sh/ruff/rules/#pep8-naming-n
+    "D",  # https://docs.astral.sh/ruff/rules/#pydocstyle-d
+    "UP",  # https://docs.astral.sh/ruff/rules/#pyupgrade-up
+    "ANN",  # https://docs.astral.sh/ruff/rules/#flake8-annotations-ann
+    "ASYNC",  # https://docs.astral.sh/ruff/rules/#flake8-async-async
+    "S",  # https://docs.astral.sh/ruff/rules/#flake8-bandit-s
+    "B",  # https://docs.astral.sh/ruff/rules/#flake8-bugbear-b
+    "A",  # https://docs.astral.sh/ruff/rules/#flake8-builtins-a
+    "C4",  # https://docs.astral.sh/ruff/rules/#flake8-comprehensions-c4
+    "DTZ",  # https://docs.astral.sh/ruff/rules/#flake8-datetimez-dtz
+    "T10",  # https://docs.astral.sh/ruff/rules/#flake8-datetimez-dtz
+    "EM",  # https://docs.astral.sh/ruff/rules/#flake8-errmsg-em
+    "LOG",  # https://docs.astral.sh/ruff/rules/#flake8-logging-log
+    "G",  # https://docs.astral.sh/ruff/rules/#flake8-logging-format-g
+    "INP",  # https://docs.astral.sh/ruff/rules/#flake8-no-pep420-inp
+    "PIE",  # https://docs.astral.sh/ruff/rules/#flake8-pie-pie
+    "T20",  # https://docs.astral.sh/ruff/rules/#flake8-print-t20
+    "PT",  # https://docs.astral.sh/ruff/rules/#flake8-pytest-style-pt
+    "Q",  # https://docs.astral.sh/ruff/rules/#flake8-quotes-q
+    "RSE",  # https://docs.astral.sh/ruff/rules/#flake8-raise-rse
+    "RET",  # https://docs.astral.sh/ruff/rules/#flake8-return-ret
+    "SLF",  # https://docs.astral.sh/ruff/rules/#flake8-self-slf
+    "SLOT",  # https://docs.astral.sh/ruff/rules/#flake8-slots-slot
+    "SIM",  # https://docs.astral.sh/ruff/rules/#flake8-simplify-sim
+    "ARG",  # https://docs.astral.sh/ruff/rules/#flake8-unused-arguments-arg
+    "PTH",  # https://docs.astral.sh/ruff/rules/#flake8-use-pathlib-pth
+    "PGH",  # https://docs.astral.sh/ruff/rules/#pygrep-hooks-pgh
+    "PLC",  # https://docs.astral.sh/ruff/rules/#convention-c
+    "PLE",  # https://docs.astral.sh/ruff/rules/#error-e_1
+    "TRY",  # https://docs.astral.sh/ruff/rules/#tryceratops-try
+    "PERF",  # https://docs.astral.sh/ruff/rules/#perflint-perf
+    "FURB",  # https://docs.astral.sh/ruff/rules/#refurb-furb
+    "RUF",  # https://docs.astral.sh/ruff/rules/#ruff-specific-rules-ruf
+]
+fixable = ["ALL"]
+# ANN002 - missing-type-args
+# ANN003 - missing-type-kwargs
+# D203 - one-blank-line-before-class
+# D205 - blank-line-after-summary
+# D206 - indent-with-spaces*
+# D213 - multi-line-summary-second-line
+# D300 - triple-single-quotes*
+# D400 - ends-in-period
+# D415 - ends-in-punctuation
+# E111 - indentation-with-invalid-multiple*
+# E114 - indentation-with-invalid-multiple-comment*
+# E117 - over-indented*
+# E501 - line-too-long*
+# W191 - tab-indentation*
+# S321 - suspicious-ftp-lib-usage
+# PLC0206 - dict-index-missing-items
+# *ignored for compatibility with formatter
+ignore = [
+    "ANN002", "ANN003",
+    "D203", "D205", "D206", "D213", "D300", "D400", "D415",
+    "E111", "E114", "E117", "E501",
+    "W191",
+    "S321",
+    "PLC0206",
+]
+exclude = [
+    "src/ga4gh/vrs/models.py",  # there be monsters here
+]
+
+[tool.ruff.lint.per-file-ignores]
+# ANN001 - missing-type-function-argument
+# ANN2 - missing-return-type
+# D100 - undocumented-public-module
+# D102 - undocumented-public-class
+# D103 - undocumented-public-function
+# S101 - assert
+# B011 - assert-false
+# INP001 - implicit-namespace-package
+# SLF001 - private-member-access
+"tests/*" = [
+    "ANN001",
+    "ANN2",
+    "D100",
+    "D102",
+    "D103",
+    "S101",
+    "B011",
+    "INP001",
+    "SLF001",
+]
+"src/ga4gh/vrs/utils/hgvs_tools.py" = [
+    "ANN001",
+    "ANN201",
+    "ANN202",
+    "D102",
+]
+"src/ga4gh/vrs/normalize.py" = [
+    "ANN001",
+    "ANN201",
+    "ANN202",
+]
+"src/ga4gh/vrs/extras/vcf_annotation.py" = [
+    "PTH123",  # see https://github.com/ga4gh/vrs-python/issues/482
+]
+"src/ga4gh/vrs/extras/translator.py" = [
+    "ANN001",
+    "ANN101",
+    "ANN2",
+]
+"src/ga4gh/vrs/extras/object_store.py" = [
+    "ANN",
+    "D",
+]
+"src/ga4gh/vrs/enderef.py" = [
+    "ANN",
+    "D",
+]
+"src/ga4gh/vrs/dataproxy.py" = [
+    "B019",
+]
+"src/ga4gh/core/pydantic.py" = [
+    "ANN401",
+]
+"src/ga4gh/core/models.py" = [
+    "UP007",
+]
+
+[tool.ruff.lint.flake8-annotations]
+mypy-init-return = true
+
+[tool.ruff.format]
+docstring-code-format = true

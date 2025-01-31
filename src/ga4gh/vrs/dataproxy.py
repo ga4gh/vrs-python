@@ -5,19 +5,16 @@ See https://vr-spec.readthedocs.io/en/1.1/impl-guide/required_data.html
 
 """
 
-from abc import ABC, abstractmethod
-from typing import Tuple
-from collections.abc import Sequence
 import datetime
 import functools
 import logging
 import os
+from abc import ABC, abstractmethod
+from collections.abc import Sequence
 from urllib.parse import urlparse
 
-from bioutils.accessions import coerce_namespace
 import requests
-
-
+from bioutils.accessions import coerce_namespace
 
 _logger = logging.getLogger(__name__)
 
@@ -38,8 +35,10 @@ class _DataProxy(ABC):
     """
 
     @abstractmethod
-    def get_sequence(self, identifier, start=None, end=None):
-        """return the specified sequence or subsequence
+    def get_sequence(
+        self, identifier: str, start: int | None = None, end: int | None = None
+    ) -> str:
+        """Return the specified sequence or subsequence
 
         start and end are optional
 
@@ -51,8 +50,8 @@ class _DataProxy(ABC):
         """
 
     @abstractmethod
-    def get_metadata(self, identifier):
-        """for a given identifier, return a structure (dict) containing
+    def get_metadata(self, identifier: str) -> dict:
+        """For a given identifier, return a structure (dict) containing
         sequence length, aliases, and other optional info
 
         If the given sequence does not exist, KeyError is raised.
@@ -71,17 +70,16 @@ class _DataProxy(ABC):
         """
 
     @staticmethod
-    def extract_sequence_type(alias: str) -> str:
-        """
-        The purpose of this function is to provide a convenient way to extract the sequence type from an accession by matching its prefix to a known set of prefixes.
+    def extract_sequence_type(alias: str) -> str | None:
+        """Provide a convenient way to extract the sequence type from an accession by matching its prefix to a known set of prefixes.
 
         Args:
         alias (str): The accession string.
 
         Returns:
         str or None: The sequence type associated with the accession string, or None if no matching prefix is found.
-        """
 
+        """
         prefix_dict = {
             "refseq:NM_": "c",
             "refseq:NC_012920": "m",
@@ -102,8 +100,10 @@ class _DataProxy(ABC):
                 return seq_type
         return None
 
-    @functools.lru_cache()
-    def translate_sequence_identifier(self, identifier, namespace=None):
+    @functools.lru_cache
+    def translate_sequence_identifier(
+        self, identifier: str, namespace: str | None = None
+    ) -> list[str]:
         """Translate given identifier to a list of identifiers in the
         specified namespace.
 
@@ -114,7 +114,6 @@ class _DataProxy(ABC):
         identifier isn't found.
 
         """
-
         try:
             md = self.get_metadata(identifier)
         except (ValueError, KeyError, IndexError) as e:
@@ -125,13 +124,12 @@ class _DataProxy(ABC):
             aliases = [a for a in aliases if a.startswith(nsd)]
         return aliases
 
-    def derive_refget_accession(self, ac: str):
+    def derive_refget_accession(self, ac: str) -> str | None:
         """Derive the refget accession from a public accession identifier
 
         :param ac: public accession in simple or curie form from which to derive the refget accession
         :return: Refget Accession if found
         """
-
         if ac is None:
             return None
 
@@ -143,7 +141,7 @@ class _DataProxy(ABC):
         try:
             aliases = self.translate_sequence_identifier(ac, namespace="ga4gh")
         except KeyError:
-            _logger.error("KeyError when getting refget accession: %s", ac)
+            _logger.exception("KeyError when getting refget accession: %s", ac)
         else:
             if aliases:
                 refget_accession = aliases[0].split("ga4gh:")[-1]
@@ -151,8 +149,12 @@ class _DataProxy(ABC):
         return refget_accession
 
     def validate_ref_seq(
-        self, sequence_id: str, start_pos: int, end_pos: int, ref: str,
-        require_validation: bool = True
+        self,
+        sequence_id: str,
+        start_pos: int,
+        end_pos: int,
+        ref: str,
+        require_validation: bool = True,
     ) -> None:
         """Determine whether or not the expected reference sequence matches the actual
         reference sequence. Returns ``None``, but invalid results are logged at level
@@ -182,41 +184,52 @@ class _DataProxy(ABC):
             if require_validation:
                 raise DataProxyValidationError(err_msg)
 
+
 class _SeqRepoDataProxyBase(_DataProxy):
     # wraps seqreqpo classes in order to provide translation to/from
     # `ga4gh` identifiers.
 
-    @functools.lru_cache()
-    def get_metadata(self, identifier):
+    @functools.lru_cache
+    def get_metadata(self, identifier: str) -> dict:
         md = self._get_metadata(identifier)
-        md["aliases"] = list(a for a in md["aliases"])
+        md["aliases"] = list(a for a in md["aliases"])  # noqa: C400
         return md
 
-    @functools.lru_cache()
-    def get_sequence(self, identifier, start=None, end=None):
+    @functools.lru_cache
+    def get_sequence(
+        self, identifier: str, start: int | None = None, end: int | None = None
+    ) -> str:
         return self._get_sequence(identifier, start=start, end=end)
 
     @abstractmethod
-    def _get_metadata(self, identifier):  # pragma: no cover
+    def _get_metadata(self, identifier: str) -> dict:  # pragma: no cover
         pass
 
     @abstractmethod
-    def _get_sequence(self, identifier, start=None, end=None):  # pragma: no cover
+    def _get_sequence(
+        self, identifier: str, start: int | None = None, end: int | None = None
+    ) -> str:  # pragma: no cover
         pass
 
 
 class SeqRepoDataProxy(_SeqRepoDataProxyBase):
     """DataProxy based on a local instance of SeqRepo"""
 
-    def __init__(self, sr):
+    def __init__(self, sr) -> None:  # noqa: ANN001
+        """Initialize DataProxy instance.
+
+        :param sr: SeqRepo instance
+        """
         super().__init__()
         self.sr = sr
 
-    def _get_sequence(self, identifier, start=None, end=None):
+    def _get_sequence(
+        self, identifier: str, start: int | None = None, end: int | None = None
+    ) -> str:
         # fetch raises KeyError if not found
         return self.sr.fetch_uri(coerce_namespace(identifier), start, end)
 
-    def _get_metadata(self, identifier):
+    def _get_metadata(self, identifier: str) -> dict:
         ns, a = coerce_namespace(identifier).split(":", 2)
         r = list(self.sr.aliases.find_aliases(namespace=ns, alias=a))
         if len(r) == 0:
@@ -224,13 +237,12 @@ class SeqRepoDataProxy(_SeqRepoDataProxyBase):
         seq_id = r[0]["seq_id"]
         seqinfo = self.sr.sequences.fetch_seqinfo(seq_id)
         aliases = self.sr.aliases.find_aliases(seq_id=seq_id)
-        md = {
+        return {
             "length": seqinfo["len"],
             "alphabet": seqinfo["alpha"],
             "added": _isoformat(seqinfo["added"]),
             "aliases": [f"{a['namespace']}:{a['alias']}" for a in aliases],
-            }
-        return md
+        }
 
 
 class SeqRepoRESTDataProxy(_SeqRepoDataProxyBase):
@@ -238,29 +250,34 @@ class SeqRepoRESTDataProxy(_SeqRepoDataProxyBase):
 
     rest_version = "1"
 
-    def __init__(self, base_url):
+    def __init__(self, base_url: str):
+        """Initialize REST-based dataproxy instance.
+
+        :param base_url: root URL to server
+        """
         super().__init__()
         self.base_url = f"{base_url}/{self.rest_version}/"
 
-    def _get_sequence(self, identifier, start=None, end=None):
+    def _get_sequence(
+        self, identifier: str, start: int | None = None, end: int | None = None
+    ) -> str:
         url = self.base_url + f"sequence/{identifier}"
         _logger.info("Fetching %s", url)
         params = {"start": start, "end": end}
-        resp = requests.get(url, params=params)
+        resp = requests.get(url, params=params)  # noqa: S113
         if resp.status_code == 404:
             raise KeyError(identifier)
         resp.raise_for_status()
         return resp.text
 
-    def _get_metadata(self, identifier):
+    def _get_metadata(self, identifier: str) -> dict:
         url = self.base_url + f"metadata/{identifier}"
         _logger.info("Fetching %s", url)
-        resp = requests.get(url)
+        resp = requests.get(url)  # noqa: S113
         if resp.status_code == 404:
             raise KeyError(identifier)
         resp.raise_for_status()
-        data = resp.json()
-        return data
+        return resp.json()
 
 
 class SequenceProxy(Sequence):
@@ -270,51 +287,49 @@ class SequenceProxy(Sequence):
 
     """
 
-    def __init__(self, dp, alias):
+    def __init__(self, dp: _DataProxy, alias: str):  # noqa: D107
         self.dp = dp
         self.alias = alias
         self._md = self.dp.get_metadata(self.alias)
 
-    def __str__(self):
+    def __str__(self):  # noqa: D105 ANN204
         return self.dp.get_sequence(self.alias)
 
-    def __len__(self):
+    def __len__(self):  # noqa: D105 ANN204
         return self._md["length"]
 
-    def __reversed__(self):
-        raise NotImplementedError("Reversed iteration of a SequenceProxy is not implemented")
+    def __reversed__(self):  # noqa: D105 ANN204
+        msg = "Reversed iteration of a SequenceProxy is not implemented"
+        raise NotImplementedError(msg)
 
-    def __getitem__(self, key):
-        """return sequence for key (slice), fetching if necessary
-
-        """
-
+    def __getitem__(self, key):  # noqa: ANN001 ANN204
+        """Return sequence for key (slice), fetching if necessary"""
         if isinstance(key, int):
-            key = slice(key, key+1)
+            key = slice(key, key + 1)
         if key.step is not None:
-            raise ValueError("Only contiguous sequence slices are supported")
+            msg = "Only contiguous sequence slices are supported"
+            raise ValueError(msg)
 
         return self.dp.get_sequence(self.alias, key.start, key.stop)
 
 
-
-def _isoformat(o):
-    """convert datetime.datetime to iso formatted timestamp
+def _isoformat(o: datetime.datetime) -> str:
+    """Convert datetime.datetime to iso formatted timestamp
 
     >>> dt = datetime.datetime(2019, 10, 15, 10, 23, 41, 115927)
     >>> _isoformat(dt)
     '2019-10-15T10:23:41.115927Z'
 
     """
-
     # stolen from connexion flask_app.py
-    assert isinstance(o, datetime.datetime)
+    assert isinstance(o, datetime.datetime)  # noqa: S101
     if o.tzinfo:
         # eg: '2015-09-25T23:14:42.588601+00:00'
         return o.isoformat("T")
     # No timezone present - assume UTC.
     # eg: '2015-09-25T23:14:42.588601Z'
     return o.isoformat("T") + "Z"
+
 
 # Future implementations
 # * The RefGetDataProxy is waiting on support for sequence lookup by alias
@@ -323,7 +338,8 @@ def _isoformat(o):
 #         super().__init__()
 #         self.base_url = base_url
 
-def create_dataproxy(uri: str = None) -> _DataProxy:
+
+def create_dataproxy(uri: str | None = None) -> _DataProxy:
     """Create a dataproxy from uri or GA4GH_VRS_DATAPROXY_URI
 
     Currently accepted URI schemes:
@@ -334,33 +350,35 @@ def create_dataproxy(uri: str = None) -> _DataProxy:
     * seqrepo+https://somewhere:5000/seqrepo
 
     """
-
-    uri = (uri
-           or os.environ.get("GA4GH_VRS_DATAPROXY_URI", None))
+    uri = uri or os.environ.get("GA4GH_VRS_DATAPROXY_URI", None)
 
     if uri is None:
-        raise ValueError("No data proxy URI provided or found in GA4GH_VRS_DATAPROXY_URI")
+        msg = "No data proxy URI provided or found in GA4GH_VRS_DATAPROXY_URI"
+        raise ValueError(msg)
 
     parsed_uri = urlparse(uri)
     scheme = parsed_uri.scheme
 
     if "+" not in scheme:
-        raise ValueError("create_dataproxy scheme must include provider (e.g., `seqrepo+http:...`)")
+        msg = "create_dataproxy scheme must include provider (e.g., `seqrepo+http:...`)"
+        raise ValueError(msg)
 
     provider, proto = scheme.split("+")
 
     if provider == "seqrepo":
         if proto in ("", "file"):
-            # pylint: disable=import-error, import-outside-toplevel
             from biocommons.seqrepo import SeqRepo
+
             sr = SeqRepo(root_dir=parsed_uri.path)
             dp = SeqRepoDataProxy(sr)
         elif proto in ("http", "https"):
-            dp = SeqRepoRESTDataProxy(uri[len(provider)+1:])
+            dp = SeqRepoRESTDataProxy(uri[len(provider) + 1 :])
         else:
-            raise ValueError(f"SeqRepo URI scheme {parsed_uri.scheme} not implemented")
+            msg = f"SeqRepo URI scheme {parsed_uri.scheme} not implemented"
+            raise ValueError(msg)
 
     else:
-        raise ValueError(f"DataProxy provider {provider} not implemented")
+        msg = f"DataProxy provider {provider} not implemented"
+        raise ValueError(msg)
 
     return dp
