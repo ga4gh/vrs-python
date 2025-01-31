@@ -244,7 +244,6 @@ class HgvsTools:
             raise ValueError(msg)
             # ival = hgvs.location.Interval(start=start, end=end)
             # edit = hgvs.edit.AARefAlt(ref=None, alt=vo.state.sequence)
-        # pylint: disable=no-else-raise
         start, end = vo.location.start, vo.location.end
         # ib: 0 1 2 3 4 5
         #  h:  1 2 3 4 5
