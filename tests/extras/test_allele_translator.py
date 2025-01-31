@@ -26,7 +26,10 @@ snv_output = {
     "location": {
         "end": 44908822,
         "start": 44908821,
-        "sequenceReference": {"refgetAccession": "SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl", "type": "SequenceReference"},
+        "sequenceReference": {
+            "refgetAccession": "SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl",
+            "type": "SequenceReference",
+        },
         "type": "SequenceLocation",
     },
     "state": {"sequence": "T", "type": "LiteralSequenceExpression"},
@@ -45,7 +48,10 @@ mito_output = {
     "location": {
         "start": 10082,
         "end": 10083,
-        "sequenceReference": {"refgetAccession": "SQ.k3grVkjY-hoWcCUojHw6VU6GE3MZ8Sct", "type": "SequenceReference"},
+        "sequenceReference": {
+            "refgetAccession": "SQ.k3grVkjY-hoWcCUojHw6VU6GE3MZ8Sct",
+            "type": "SequenceReference",
+        },
         "type": "SequenceLocation",
     },
     "state": {"sequence": "G", "type": "LiteralSequenceExpression"},
@@ -63,7 +69,10 @@ deletion_output = {
     "location": {
         "end": 20003097,
         "start": 20003096,
-        "sequenceReference": {"refgetAccession": "SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT", "type": "SequenceReference"},
+        "sequenceReference": {
+            "refgetAccession": "SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT",
+            "type": "SequenceReference",
+        },
         "type": "SequenceLocation",
     },
     "state": {"sequence": "", "type": "LiteralSequenceExpression"},
@@ -74,7 +83,10 @@ gnomad_deletion_output = {
     "location": {
         "end": 20003097,
         "start": 20003095,
-        "sequenceReference": {"refgetAccession": "SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT", "type": "SequenceReference"},
+        "sequenceReference": {
+            "refgetAccession": "SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT",
+            "type": "SequenceReference",
+        },
         "type": "SequenceLocation",
     },
     "state": {"sequence": "A", "type": "LiteralSequenceExpression"},
@@ -85,10 +97,18 @@ deletion_output_normalized = {
     "location": {
         "end": 20003097,
         "start": 20003096,
-        "sequenceReference": {"refgetAccession": "SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT", "type": "SequenceReference"},
+        "sequenceReference": {
+            "refgetAccession": "SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT",
+            "type": "SequenceReference",
+        },
         "type": "SequenceLocation",
     },
-    "state": {"length": 0, "repeatSubunitLength": 1, "sequence": "", "type": "ReferenceLengthExpression"},
+    "state": {
+        "length": 0,
+        "repeatSubunitLength": 1,
+        "sequence": "",
+        "type": "ReferenceLengthExpression",
+    },
     "type": "Allele",
 }
 
@@ -103,7 +123,10 @@ insertion_output = {
     "location": {
         "end": 20003010,
         "start": 20003010,
-        "sequenceReference": {"refgetAccession": "SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT", "type": "SequenceReference"},
+        "sequenceReference": {
+            "refgetAccession": "SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT",
+            "type": "SequenceReference",
+        },
         "type": "SequenceLocation",
     },
     "state": {"sequence": "G", "type": "LiteralSequenceExpression"},
@@ -114,7 +137,10 @@ gnomad_insertion_output = {
     "location": {
         "end": 20003010,
         "start": 20003009,
-        "sequenceReference": {"refgetAccession": "SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT", "type": "SequenceReference"},
+        "sequenceReference": {
+            "refgetAccession": "SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT",
+            "type": "SequenceReference",
+        },
         "type": "SequenceLocation",
     },
     "state": {"sequence": "AG", "type": "LiteralSequenceExpression"},
@@ -132,7 +158,10 @@ duplication_output = {
     "location": {
         "end": 19993839,
         "start": 19993837,
-        "sequenceReference": {"refgetAccession": "SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT", "type": "SequenceReference"},
+        "sequenceReference": {
+            "refgetAccession": "SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT",
+            "type": "SequenceReference",
+        },
         "type": "SequenceLocation",
     },
     "state": {"sequence": "GTGT", "type": "LiteralSequenceExpression"},
@@ -143,59 +172,108 @@ duplication_output_normalized = {
     "location": {
         "end": 19993839,
         "start": 19993837,
-        "sequenceReference": {"refgetAccession": "SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT", "type": "SequenceReference"},
+        "sequenceReference": {
+            "refgetAccession": "SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT",
+            "type": "SequenceReference",
+        },
         "type": "SequenceLocation",
     },
-    "state": {"length": 4, "repeatSubunitLength": 2, "sequence": "GTGT", "type": "ReferenceLengthExpression"},
+    "state": {
+        "length": 4,
+        "repeatSubunitLength": 2,
+        "sequence": "GTGT",
+        "type": "ReferenceLengthExpression",
+    },
     "type": "Allele",
 }
 
 
 def test_from_invalid(tlr):
-    with pytest.raises(ValueError, match="Unable to parse data as beacon, gnomad, hgvs, spdi, vrs"):
+    with pytest.raises(
+        ValueError, match="Unable to parse data as beacon, gnomad, hgvs, spdi, vrs"
+    ):
         tlr.translate_from("BRAF amplication")
 
 
 @pytest.mark.vcr
 def test_from_beacon(tlr):
     do_normalize = False
-    assert tlr._from_beacon(snv_inputs["beacon"], do_normalize=do_normalize).model_dump(exclude_none=True) == snv_output
     assert (
-        tlr._from_beacon(mito_inputs["beacon"], do_normalize=do_normalize).model_dump(exclude_none=True) == mito_output
+        tlr._from_beacon(snv_inputs["beacon"], do_normalize=do_normalize).model_dump(
+            exclude_none=True
+        )
+        == snv_output
+    )
+    assert (
+        tlr._from_beacon(mito_inputs["beacon"], do_normalize=do_normalize).model_dump(
+            exclude_none=True
+        )
+        == mito_output
     )
 
 
 @pytest.mark.vcr
 def test_from_gnomad(tlr):
     do_normalize = False
-    assert tlr._from_gnomad(snv_inputs["gnomad"], do_normalize=do_normalize).model_dump(exclude_none=True) == snv_output
     assert (
-        tlr._from_gnomad(mito_inputs["gnomad"], do_normalize=do_normalize).model_dump(exclude_none=True) == mito_output
+        tlr._from_gnomad(snv_inputs["gnomad"], do_normalize=do_normalize).model_dump(
+            exclude_none=True
+        )
+        == snv_output
     )
     assert (
-        tlr._from_gnomad(deletion_inputs["gnomad"], do_normalize=do_normalize).model_dump(exclude_none=True)
+        tlr._from_gnomad(mito_inputs["gnomad"], do_normalize=do_normalize).model_dump(
+            exclude_none=True
+        )
+        == mito_output
+    )
+    assert (
+        tlr._from_gnomad(
+            deletion_inputs["gnomad"], do_normalize=do_normalize
+        ).model_dump(exclude_none=True)
         == gnomad_deletion_output
     )
     assert (
-        tlr._from_gnomad(insertion_inputs["gnomad"], do_normalize=do_normalize).model_dump(exclude_none=True)
+        tlr._from_gnomad(
+            insertion_inputs["gnomad"], do_normalize=do_normalize
+        ).model_dump(exclude_none=True)
         == gnomad_insertion_output
     )
     assert (
-        tlr._from_gnomad(duplication_inputs["gnomad"], do_normalize=do_normalize).model_dump(exclude_none=True)
+        tlr._from_gnomad(
+            duplication_inputs["gnomad"], do_normalize=do_normalize
+        ).model_dump(exclude_none=True)
         == duplication_output
     )
 
     # do_normalize defaults to true
-    assert tlr._from_gnomad(snv_inputs["gnomad"]).model_dump(exclude_none=True) == snv_output
-    assert tlr._from_gnomad(mito_inputs["gnomad"]).model_dump(exclude_none=True) == mito_output
-    assert tlr._from_gnomad(deletion_inputs["gnomad"]).model_dump(exclude_none=True) == deletion_output_normalized
-    assert tlr._from_gnomad(insertion_inputs["gnomad"]).model_dump(exclude_none=True) == insertion_output
-    assert tlr._from_gnomad(duplication_inputs["gnomad"]).model_dump(exclude_none=True) == duplication_output_normalized
+    assert (
+        tlr._from_gnomad(snv_inputs["gnomad"]).model_dump(exclude_none=True)
+        == snv_output
+    )
+    assert (
+        tlr._from_gnomad(mito_inputs["gnomad"]).model_dump(exclude_none=True)
+        == mito_output
+    )
+    assert (
+        tlr._from_gnomad(deletion_inputs["gnomad"]).model_dump(exclude_none=True)
+        == deletion_output_normalized
+    )
+    assert (
+        tlr._from_gnomad(insertion_inputs["gnomad"]).model_dump(exclude_none=True)
+        == insertion_output
+    )
+    assert (
+        tlr._from_gnomad(duplication_inputs["gnomad"]).model_dump(exclude_none=True)
+        == duplication_output_normalized
+    )
 
     assert tlr._from_gnomad("17-83129587-GTTGWCACATGA-G")
 
     # Test valid characters
-    assert tlr._from_gnomad("7-2-ACGTURYKMSWBDHVN-ACGTURYKMSWBDHVN", require_validation=False)
+    assert tlr._from_gnomad(
+        "7-2-ACGTURYKMSWBDHVN-ACGTURYKMSWBDHVN", require_validation=False
+    )
 
     # Invalid input. Ref does not match regex
     assert not tlr._from_gnomad("13-32936732-helloworld-C")
@@ -219,18 +297,34 @@ def test_from_gnomad(tlr):
 @pytest.mark.vcr
 def test_from_hgvs(tlr):
     do_normalize = False
-    assert tlr._from_hgvs(snv_inputs["hgvs"], do_normalize=do_normalize).model_dump(exclude_none=True) == snv_output
-    assert tlr._from_hgvs(mito_inputs["hgvs"], do_normalize=do_normalize).model_dump(exclude_none=True) == mito_output
     assert (
-        tlr._from_hgvs(deletion_inputs["hgvs"], do_normalize=do_normalize).model_dump(exclude_none=True)
+        tlr._from_hgvs(snv_inputs["hgvs"], do_normalize=do_normalize).model_dump(
+            exclude_none=True
+        )
+        == snv_output
+    )
+    assert (
+        tlr._from_hgvs(mito_inputs["hgvs"], do_normalize=do_normalize).model_dump(
+            exclude_none=True
+        )
+        == mito_output
+    )
+    assert (
+        tlr._from_hgvs(deletion_inputs["hgvs"], do_normalize=do_normalize).model_dump(
+            exclude_none=True
+        )
         == deletion_output
     )
     assert (
-        tlr._from_hgvs(insertion_inputs["hgvs"], do_normalize=do_normalize).model_dump(exclude_none=True)
+        tlr._from_hgvs(insertion_inputs["hgvs"], do_normalize=do_normalize).model_dump(
+            exclude_none=True
+        )
         == insertion_output
     )
     assert (
-        tlr._from_hgvs(duplication_inputs["hgvs"], do_normalize=do_normalize).model_dump(exclude_none=True)
+        tlr._from_hgvs(
+            duplication_inputs["hgvs"], do_normalize=do_normalize
+        ).model_dump(exclude_none=True)
         == duplication_output
     )
 
@@ -238,18 +332,36 @@ def test_from_hgvs(tlr):
 @pytest.mark.vcr
 def test_from_spdi(tlr):
     do_normalize = False
-    assert tlr._from_spdi(snv_inputs["spdi"], do_normalize=do_normalize).model_dump(exclude_none=True) == snv_output
-    assert tlr._from_spdi(mito_inputs["spdi"], do_normalize=do_normalize).model_dump(exclude_none=True) == mito_output
+    assert (
+        tlr._from_spdi(snv_inputs["spdi"], do_normalize=do_normalize).model_dump(
+            exclude_none=True
+        )
+        == snv_output
+    )
+    assert (
+        tlr._from_spdi(mito_inputs["spdi"], do_normalize=do_normalize).model_dump(
+            exclude_none=True
+        )
+        == mito_output
+    )
     for spdi_del_expr in deletion_inputs["spdi"]:
         assert (
-            tlr._from_spdi(spdi_del_expr, do_normalize=do_normalize).model_dump(exclude_none=True) == deletion_output
+            tlr._from_spdi(spdi_del_expr, do_normalize=do_normalize).model_dump(
+                exclude_none=True
+            )
+            == deletion_output
         ), spdi_del_expr
     for spdi_ins_expr in insertion_inputs["spdi"]:
         assert (
-            tlr._from_spdi(spdi_ins_expr, do_normalize=do_normalize).model_dump(exclude_none=True) == insertion_output
+            tlr._from_spdi(spdi_ins_expr, do_normalize=do_normalize).model_dump(
+                exclude_none=True
+            )
+            == insertion_output
         ), spdi_ins_expr
     assert (
-        tlr._from_spdi(duplication_inputs["spdi"], do_normalize=do_normalize).model_dump(exclude_none=True)
+        tlr._from_spdi(
+            duplication_inputs["spdi"], do_normalize=do_normalize
+        ).model_dump(exclude_none=True)
         == duplication_output
     )
 
@@ -321,7 +433,12 @@ hgvs_tests = (
                 "start": 55181219,
                 "type": "SequenceLocation",
             },
-            "state": {"length": 0, "repeatSubunitLength": 1, "sequence": "", "type": "ReferenceLengthExpression"},
+            "state": {
+                "length": 0,
+                "repeatSubunitLength": 1,
+                "sequence": "",
+                "type": "ReferenceLengthExpression",
+            },
             "type": "Allele",
         },
     ),
@@ -386,7 +503,12 @@ hgvs_tests = (
                 "start": 32316466,
                 "type": "SequenceLocation",
             },
-            "state": {"length": 2, "repeatSubunitLength": 1, "sequence": "AA", "type": "ReferenceLengthExpression"},
+            "state": {
+                "length": 2,
+                "repeatSubunitLength": 1,
+                "sequence": "AA",
+                "type": "ReferenceLengthExpression",
+            },
             "type": "Allele",
         },
     ),
@@ -447,7 +569,12 @@ hgvs_tests = (
                 "start": 289464,
                 "type": "SequenceLocation",
             },
-            "state": {"length": 6, "repeatSubunitLength": 2, "sequence": "CACACA", "type": "ReferenceLengthExpression"},
+            "state": {
+                "length": 6,
+                "repeatSubunitLength": 2,
+                "sequence": "CACACA",
+                "type": "ReferenceLengthExpression",
+            },
         },
     ),
     (
@@ -467,7 +594,12 @@ hgvs_tests = (
                 "start": 289480,
                 "type": "SequenceLocation",
             },
-            "state": {"length": 5, "repeatSubunitLength": 16, "sequence": "CGAGG", "type": "ReferenceLengthExpression"},
+            "state": {
+                "length": 5,
+                "repeatSubunitLength": 16,
+                "sequence": "CGAGG",
+                "type": "ReferenceLengthExpression",
+            },
         },
     ),
 )
@@ -487,7 +619,9 @@ def test_hgvs(tlr, hgvsexpr, expected):
     assert allele.model_dump(exclude_none=True) == expected
 
     to_hgvs = tlr.translate_to(allele, "hgvs")
-    assert (hgvsexpr in to_hgvs) or (hgvs_tests_to_hgvs_map.get(hgvsexpr, hgvsexpr) in to_hgvs)
+    assert (hgvsexpr in to_hgvs) or (
+        hgvs_tests_to_hgvs_map.get(hgvsexpr, hgvsexpr) in to_hgvs
+    )
 
 
 @pytest.mark.vcr
@@ -509,7 +643,11 @@ def test_rle_seq_limit(tlr):
             "start": 32331042,
             "type": "SequenceLocation",
         },
-        "state": {"length": 104, "repeatSubunitLength": 52, "type": "ReferenceLengthExpression"},
+        "state": {
+            "length": 104,
+            "repeatSubunitLength": 52,
+            "type": "ReferenceLengthExpression",
+        },
         "type": "Allele",
     }
     input_hgvs_expr = "NC_000013.11:g.32331043_32331094dup"
@@ -518,11 +656,15 @@ def test_rle_seq_limit(tlr):
     allele_no_seq = tlr.translate_from(input_hgvs_expr, fmt="hgvs")
     assert allele_no_seq.model_dump(exclude_none=True) == a_dict
 
-    with pytest.raises(AttributeError, match="'NoneType' object has no attribute 'root'"):
+    with pytest.raises(
+        AttributeError, match="'NoneType' object has no attribute 'root'"
+    ):
         tlr.translate_to(allele_no_seq, "hgvs")
 
     # set rle_seq_limit to None
-    allele_with_seq = tlr.translate_from(input_hgvs_expr, fmt="hgvs", rle_seq_limit=None)
+    allele_with_seq = tlr.translate_from(
+        input_hgvs_expr, fmt="hgvs", rle_seq_limit=None
+    )
     a_dict_with_seq = a_dict.copy()
     a_dict_with_seq["state"]["sequence"] = (
         "TTTAGTTGAACTACAGGTTTTTTTGTTGTTGTTGTTTTGATTTTTTTTTTTTTTTAGTTGAACTACAGGTTTTTTTGTTGTTGTTGTTTTGATTTTTTTTTTTT"

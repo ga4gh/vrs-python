@@ -27,7 +27,9 @@ class GKSSchemaMapping(BaseModel):
     schema: dict = {}
 
 
-def _update_gks_schema_mapping(f_path: Path, gks_schema_mapping: GKSSchemaMapping) -> None:
+def _update_gks_schema_mapping(
+    f_path: Path, gks_schema_mapping: GKSSchemaMapping
+) -> None:
     """Update ``gks_schema_mapping`` properties
 
     :param f_path: Path to JSON Schema file
@@ -58,7 +60,9 @@ for f in (SUBMODULES_DIR / "schema" / "vrs" / "json").glob("*"):
 
 # Get core classes
 core_mapping = GKS_SCHEMA_MAPPING[GKSSchema.CORE]
-for f in (SUBMODULES_DIR / "submodules" / "gks-core" / "schema" / "gks-core" / "json").glob("*"):
+for f in (
+    SUBMODULES_DIR / "submodules" / "gks-core" / "schema" / "gks-core" / "json"
+).glob("*"):
     _update_gks_schema_mapping(f, core_mapping)
 
 
@@ -72,8 +76,13 @@ for f in (SUBMODULES_DIR / "submodules" / "gks-core" / "schema" / "gks-core" / "
 def test_schema_models_in_pydantic(gks_schema, pydantic_models):
     """Ensure that each schema model has corresponding Pydantic model"""
     mapping = GKS_SCHEMA_MAPPING[gks_schema]
-    for schema_model in mapping.base_classes | mapping.concrete_classes | mapping.primitives:
-        if schema_model not in {"date", "datetime"}:  # since we leverage datetime module
+    for schema_model in (
+        mapping.base_classes | mapping.concrete_classes | mapping.primitives
+    ):
+        if schema_model not in {
+            "date",
+            "datetime",
+        }:  # since we leverage datetime module
             assert getattr(pydantic_models, schema_model, False), schema_model
 
 
@@ -110,9 +119,13 @@ def test_schema_class_fields(gks_schema, pydantic_models):
                 if prop != "code":  # special exception
                     assert property_def["description"].replace(
                         "'", '"'
-                    ) == pydantic_model_field_info.description.replace("'", '"'), f"{pydantic_model}.{prop}"
+                    ) == pydantic_model_field_info.description.replace("'", '"'), (
+                        f"{pydantic_model}.{prop}"
+                    )
             else:
-                assert pydantic_model_field_info.description is None, f"{pydantic_model}.{prop}"
+                assert pydantic_model_field_info.description is None, (
+                    f"{pydantic_model}.{prop}"
+                )
 
 
 def test_ga4gh_keys():
@@ -129,5 +142,9 @@ def test_ga4gh_keys():
         except AttributeError as e:
             raise AttributeError(vrs_class) from e
 
-        assert set(pydantic_model_digest_keys) == set(vrs_mapping.schema[vrs_class]["ga4gh"]["inherent"]), vrs_class
-        assert pydantic_model_digest_keys == sorted(pydantic_model.ga4gh.keys), vrs_class
+        assert set(pydantic_model_digest_keys) == set(
+            vrs_mapping.schema[vrs_class]["ga4gh"]["inherent"]
+        ), vrs_class
+        assert pydantic_model_digest_keys == sorted(pydantic_model.ga4gh.keys), (
+            vrs_class
+        )

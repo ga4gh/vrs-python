@@ -109,7 +109,9 @@ class HgvsTools:
             end = sv.posedit.pos.end.base
             if sv.posedit.edit.type == "identity":
                 state = self.data_proxy.get_sequence(
-                    sv.ac, start=sv.posedit.pos.start.base - 1, end=sv.posedit.pos.end.base
+                    sv.ac,
+                    start=sv.posedit.pos.start.base - 1,
+                    end=sv.posedit.pos.end.base,
                 )
             else:
                 state = sv.posedit.edit.alt or ""
@@ -117,7 +119,9 @@ class HgvsTools:
         elif sv.posedit.edit.type == "dup":
             start = sv.posedit.pos.start.base - 1
             end = sv.posedit.pos.end.base
-            ref = self.data_proxy.get_sequence(sv.ac, start=sv.posedit.pos.start.base - 1, end=sv.posedit.pos.end.base)
+            ref = self.data_proxy.get_sequence(
+                sv.ac, start=sv.posedit.pos.start.base - 1, end=sv.posedit.pos.end.base
+            )
             state = ref + ref
 
         else:
@@ -176,7 +180,12 @@ class HgvsTools:
 
         (start, end, state) = self.get_position_and_state(sv)
 
-        return {"refget_accession": refget_accession, "start": start, "end": end, "literal_sequence": state}
+        return {
+            "refget_accession": refget_accession,
+            "start": start,
+            "end": end,
+            "literal_sequence": state,
+        }
 
     def from_allele(self, vo, namespace=None):
         """Generate a *list* of HGVS expressions for VRS Allele.
@@ -224,7 +233,21 @@ class HgvsTools:
                 continue
 
             if not (
-                any(accession.startswith(pfx) for pfx in ("NM", "NP", "NC", "NG", "NR", "NW", "NT", "XM", "XR", "XP"))
+                any(
+                    accession.startswith(pfx)
+                    for pfx in (
+                        "NM",
+                        "NP",
+                        "NC",
+                        "NG",
+                        "NR",
+                        "NW",
+                        "NT",
+                        "XM",
+                        "XR",
+                        "XP",
+                    )
+                )
             ):
                 continue
 
@@ -254,7 +277,10 @@ class HgvsTools:
             ref = self.data_proxy.get_sequence(sequence, start, end)
             start += 1
 
-        ival = hgvs.location.Interval(start=hgvs.location.SimplePosition(start), end=hgvs.location.SimplePosition(end))
+        ival = hgvs.location.Interval(
+            start=hgvs.location.SimplePosition(start),
+            end=hgvs.location.SimplePosition(end),
+        )
         alt = str(vo.state.sequence.root) or None  # "" => None
         edit = hgvs.edit.NARefAlt(ref=ref, alt=alt)
 
@@ -294,7 +320,9 @@ class HgvsTools:
 if __name__ == "__main__":
     import os
 
-    seqrepo_uri = os.environ.get("SEQREPO_URI", "seqrepo+file:///usr/local/share/seqrepo/latest")
+    seqrepo_uri = os.environ.get(
+        "SEQREPO_URI", "seqrepo+file:///usr/local/share/seqrepo/latest"
+    )
     if seqrepo_uri is None:
         msg = "SEQREPO_URI environment variable must be set to a valid seqrepo URI"
         raise ValueError(msg)

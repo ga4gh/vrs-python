@@ -32,7 +32,9 @@ class Sqlite3MutableMapping(MutableMapping):
         cur = self.db.cursor()
         try:
             cur.execute("create table if not exists mapping (key text, value blob)")
-            cur.execute("create unique index if not exists mapping_key_idx on mapping (key)")
+            cur.execute(
+                "create unique index if not exists mapping_key_idx on mapping (key)"
+            )
             self.commit()
         finally:
             cur.close()
@@ -56,7 +58,10 @@ class Sqlite3MutableMapping(MutableMapping):
         cur = self.db.cursor()
         try:
             ser = dill.dumps(value)
-            cur.execute("insert or replace into mapping(key, value) values (?, ?)", (key, sqlite3.Binary(ser)))
+            cur.execute(
+                "insert or replace into mapping(key, value) values (?, ?)",
+                (key, sqlite3.Binary(ser)),
+            )
             if self.autocommit:
                 self.commit()
         finally:

@@ -96,7 +96,6 @@ testpaths = ["tests", "src"]
 doctest_optionflags = "ALLOW_UNICODE ALLOW_BYTES ELLIPSIS IGNORE_EXCEPTION_DETAIL NORMALIZE_WHITESPACE"
 
 [tool.ruff]
-line-length = 120
 src = ["src"]
 exclude = ["docs", "misc", "notebooks", "submodules"]
 

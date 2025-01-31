@@ -34,7 +34,9 @@ class LocationPos(NamedTuple):
     pos_type: PosType
 
 
-def _get_allele_location_pos(allele_vo: models.Allele, use_start: bool = True) -> LocationPos | None:
+def _get_allele_location_pos(
+    allele_vo: models.Allele, use_start: bool = True
+) -> LocationPos | None:
     """Get a representative position for Alleles with Location start or end defined by Range
 
     :param allele_vo: VRS Allele object
@@ -56,12 +58,16 @@ def _get_allele_location_pos(allele_vo: models.Allele, use_start: bool = True) -
             return None
 
         val = pos.root[0] or pos.root[1]
-        pos_type = PosType.RANGE_LT_OR_EQUAL if pos0_is_none else PosType.RANGE_GT_OR_EQUAL
+        pos_type = (
+            PosType.RANGE_LT_OR_EQUAL if pos0_is_none else PosType.RANGE_GT_OR_EQUAL
+        )
 
     return LocationPos(value=val, pos_type=pos_type)
 
 
-def _get_new_allele_location_pos(new_pos_val: int, pos_type: PosType) -> int | models.Range:
+def _get_new_allele_location_pos(
+    new_pos_val: int, pos_type: PosType
+) -> int | models.Range:
     """Get updated location pos on normalized allele
 
     :param new_pos_val: New position after normalization
@@ -117,11 +123,17 @@ def _normalize_allele(input_allele, data_proxy, rle_seq_limit=50):
         return input_allele
 
     ival = (start.value, end.value)
-    alleles = (None, input_allele.state.sequence.root) if input_allele.state.sequence else (None, "")
+    alleles = (
+        (None, input_allele.state.sequence.root)
+        if input_allele.state.sequence
+        else (None, "")
+    )
 
     # Trim common flanking sequence from Allele sequences.
     try:
-        trim_ival, trim_alleles = _normalize(ref_seq, ival, alleles, mode=None, trim=True)
+        trim_ival, trim_alleles = _normalize(
+            ref_seq, ival, alleles, mode=None, trim=True
+        )
     except ValueError:
         # Occurs for ref agree Alleles (when alt = ref)
         len_trimmed_ref = len_trimmed_alt = 0
@@ -139,16 +151,24 @@ def _normalize_allele(input_allele, data_proxy, rle_seq_limit=50):
     new_allele = pydantic_copy(input_allele)
 
     if len_trimmed_ref and len_trimmed_alt:
-        new_allele.location.start = _get_new_allele_location_pos(trim_ival[0], start.pos_type)
-        new_allele.location.end = _get_new_allele_location_pos(trim_ival[1], end.pos_type)
+        new_allele.location.start = _get_new_allele_location_pos(
+            trim_ival[0], start.pos_type
+        )
+        new_allele.location.end = _get_new_allele_location_pos(
+            trim_ival[1], end.pos_type
+        )
         new_allele.state.sequence = models.sequenceString(trim_alleles[1])
         return new_allele
     seed_length = len_trimmed_ref if len_trimmed_ref else len_trimmed_alt
 
     # Determine bounds of ambiguity
-    new_ival, new_alleles = _normalize(ref_seq, trim_ival, (None, trim_alleles[1]), mode=NormalizationMode.EXPAND)
+    new_ival, new_alleles = _normalize(
+        ref_seq, trim_ival, (None, trim_alleles[1]), mode=NormalizationMode.EXPAND
+    )
 
-    new_allele.location.start = _get_new_allele_location_pos(new_ival[0], start.pos_type)
+    new_allele.location.start = _get_new_allele_location_pos(
+        new_ival[0], start.pos_type
+    )
     new_allele.location.end = _get_new_allele_location_pos(new_ival[1], end.pos_type)
 
     extended_ref_seq = ref_seq[new_ival[0] : new_ival[1]]
@@ -158,7 +178,9 @@ def _normalize_allele(input_allele, data_proxy, rle_seq_limit=50):
         # If the reference sequence is empty this is an unambiguous insertion.
         # Return a new Allele with the trimmed alternate sequence as a Literal
         # Sequence Expression
-        new_allele.state = models.LiteralSequenceExpression(sequence=models.sequenceString(extended_alt_seq))
+        new_allele.state = models.LiteralSequenceExpression(
+            sequence=models.sequenceString(extended_alt_seq)
+        )
         return new_allele
 
     # Otherwise, determine if this is reference-derived (an RLE allele).
@@ -167,7 +189,9 @@ def _normalize_allele(input_allele, data_proxy, rle_seq_limit=50):
 
     if len_extended_alt < len_extended_ref:
         # If this is a deletion, it is reference-derived
-        return _define_rle_allele(new_allele, len_extended_alt, seed_length, rle_seq_limit, extended_alt_seq)
+        return _define_rle_allele(
+            new_allele, len_extended_alt, seed_length, rle_seq_limit, extended_alt_seq
+        )
 
     if len_extended_alt > len_extended_ref:
         # If this is an insertion, it may or may not be reference-derived.
@@ -183,9 +207,17 @@ def _normalize_allele(input_allele, data_proxy, rle_seq_limit=50):
                 continue
             cycle_start = len_extended_ref - cycle_length
             if _is_valid_cycle(cycle_start, extended_ref_seq, extended_alt_seq):
-                return _define_rle_allele(new_allele, len_extended_alt, cycle_length, rle_seq_limit, extended_alt_seq)
+                return _define_rle_allele(
+                    new_allele,
+                    len_extended_alt,
+                    cycle_length,
+                    rle_seq_limit,
+                    extended_alt_seq,
+                )
 
-    new_allele.state = models.LiteralSequenceExpression(sequence=models.sequenceString(extended_alt_seq))
+    new_allele.state = models.LiteralSequenceExpression(
+        sequence=models.sequenceString(extended_alt_seq)
+    )
     return new_allele
 
 
@@ -202,9 +234,13 @@ def _factor_gen(n):
     yield from reversed(lower_factors)
 
 
-def _define_rle_allele(allele, length, repeat_subunit_length, rle_seq_limit, extended_alt_seq):
+def _define_rle_allele(
+    allele, length, repeat_subunit_length, rle_seq_limit, extended_alt_seq
+):
     # Otherwise, create the Allele as an RLE
-    allele.state = models.ReferenceLengthExpression(length=length, repeatSubunitLength=repeat_subunit_length)
+    allele.state = models.ReferenceLengthExpression(
+        length=length, repeatSubunitLength=repeat_subunit_length
+    )
 
     if (rle_seq_limit and length <= rle_seq_limit) or (rle_seq_limit is None):
         allele.state.sequence = models.sequenceString(extended_alt_seq)

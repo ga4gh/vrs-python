@@ -17,7 +17,11 @@ from biocommons.seqrepo import SeqRepo
 from pydantic import ValidationError
 
 from ga4gh.core import VrsObjectIdentifierIs, use_ga4gh_compute_identifier_when
-from ga4gh.vrs.dataproxy import DataProxyValidationError, SeqRepoDataProxy, SeqRepoRESTDataProxy
+from ga4gh.vrs.dataproxy import (
+    DataProxyValidationError,
+    SeqRepoDataProxy,
+    SeqRepoRESTDataProxy,
+)
 from ga4gh.vrs.extras.translator import AlleleTranslator
 
 _logger = logging.getLogger(__name__)
@@ -39,7 +43,9 @@ class SeqRepoProxyType(str, Enum):
 def _cli() -> None:
     """Annotate input files with VRS variation objects."""
     logging.basicConfig(
-        filename="vrs-annotate.log", level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+        filename="vrs-annotate.log",
+        level=logging.INFO,
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     )
 
 
@@ -86,18 +92,26 @@ def _log_level_option(func: Callable) -> Callable:
 
 @_cli.command(name="vcf")
 @_log_level_option
-@click.argument("vcf_in", nargs=1, type=click.Path(exists=True, readable=True, dir_okay=False, path_type=pathlib.Path))
+@click.argument(
+    "vcf_in",
+    nargs=1,
+    type=click.Path(exists=True, readable=True, dir_okay=False, path_type=pathlib.Path),
+)
 @click.option(
     "--vcf_out",
     required=False,
     type=click.Path(writable=True, allow_dash=False, path_type=pathlib.Path),
-    help=("Declare save location for output annotated VCF. If not provided, must provide --vrs_pickle_out."),
+    help=(
+        "Declare save location for output annotated VCF. If not provided, must provide --vrs_pickle_out."
+    ),
 )
 @click.option(
     "--vrs_pickle_out",
     required=False,
     type=click.Path(writable=True, allow_dash=False, path_type=pathlib.Path),
-    help=("Declare save location for output VCF pickle. If not provided, must provide --vcf_out."),
+    help=(
+        "Declare save location for output VCF pickle. If not provided, must provide --vcf_out."
+    ),
 )
 @click.option(
     "--vrs_attributes",
@@ -109,7 +123,9 @@ def _log_level_option(func: Callable) -> Callable:
     "--seqrepo_dp_type",
     required=False,
     default=SeqRepoProxyType.LOCAL,
-    type=click.Choice([v.value for v in SeqRepoProxyType.__members__.values()], case_sensitive=True),
+    type=click.Choice(
+        [v.value for v in SeqRepoProxyType.__members__.values()], case_sensitive=True
+    ),
     help="Specify type of SeqRepo dataproxy to use.",
     show_default=True,
     show_choices=True,
@@ -137,14 +153,25 @@ def _log_level_option(func: Callable) -> Callable:
     help="Specify assembly that was used to create input VCF.",
     type=str,
 )
-@click.option("--skip_ref", is_flag=True, default=False, help="Skip VRS computation for REF alleles.")
+@click.option(
+    "--skip_ref",
+    is_flag=True,
+    default=False,
+    help="Skip VRS computation for REF alleles.",
+)
 @click.option(
     "--require_validation",
     is_flag=True,
     default=False,
     help="Require validation checks to pass to construct a VRS object.",
 )
-@click.option("--silent", "-s", is_flag=True, default=False, help="Suppress messages printed to stdout")
+@click.option(
+    "--silent",
+    "-s",
+    is_flag=True,
+    default=False,
+    help="Suppress messages printed to stdout",
+)
 def _annotate_vcf_cli(
     vcf_in: pathlib.Path,
     vcf_out: pathlib.Path | None,
@@ -164,9 +191,13 @@ def _annotate_vcf_cli(
 
     Note that at least one of --vcf_out or --vrs_pickle_out must be selected and defined.
     """
-    annotator = VCFAnnotator(seqrepo_dp_type, seqrepo_base_url, str(seqrepo_root_dir.absolute()))
+    annotator = VCFAnnotator(
+        seqrepo_dp_type, seqrepo_base_url, str(seqrepo_root_dir.absolute())
+    )
     vcf_out_str = str(vcf_out.absolute()) if vcf_out is not None else vcf_out
-    vrs_pkl_out_str = str(vrs_pickle_out.absolute()) if vrs_pickle_out is not None else vrs_pickle_out
+    vrs_pkl_out_str = (
+        str(vrs_pickle_out.absolute()) if vrs_pickle_out is not None else vrs_pickle_out
+    )
     start = timer()
     msg = f"Annotating {vcf_in} with the VCF Annotator..."
     _logger.info(msg)
@@ -277,7 +308,10 @@ class VCFAnnotator:
             ),
         )
         vcf_in.header.info.add(
-            self.VRS_ERROR_FIELD, ".", "String", ("If an error occurred computing a VRS Identifier, the error message")
+            self.VRS_ERROR_FIELD,
+            ".",
+            "String",
+            ("If an error occurred computing a VRS Identifier, the error message"),
         )
 
         if vrs_attributes:
@@ -318,7 +352,11 @@ class VCFAnnotator:
         for record in vcf_in:
             additional_info_fields = [self.VRS_ALLELE_IDS_FIELD]
             if vrs_attributes:
-                additional_info_fields += [self.VRS_STARTS_FIELD, self.VRS_ENDS_FIELD, self.VRS_STATES_FIELD]
+                additional_info_fields += [
+                    self.VRS_STARTS_FIELD,
+                    self.VRS_ENDS_FIELD,
+                    self.VRS_STATES_FIELD,
+                ]
             try:
                 vrs_field_data = self._get_vrs_data(
                     record,
@@ -339,7 +377,12 @@ class VCFAnnotator:
                 additional_info_fields = [self.VRS_ERROR_FIELD]
                 vrs_field_data = {self.VRS_ERROR_FIELD: [err_msg]}
 
-            _logger.debug("VCF record %s-%s generated vrs_field_data %s", record.chrom, record.pos, vrs_field_data)
+            _logger.debug(
+                "VCF record %s-%s generated vrs_field_data %s",
+                record.chrom,
+                record.pos,
+                vrs_field_data,
+            )
 
             if output_vcf:
                 for k in additional_info_fields:
@@ -387,10 +430,16 @@ class VCFAnnotator:
             validation checks fail. Defaults to `True`.
         """
         try:
-            vrs_obj = self.tlr._from_gnomad(vcf_coords, assembly_name=assembly, require_validation=require_validation)  # noqa: SLF001
+            vrs_obj = self.tlr._from_gnomad(  # noqa: SLF001
+                vcf_coords,
+                assembly_name=assembly,
+                require_validation=require_validation,
+            )
         except (ValidationError, DataProxyValidationError):
             vrs_obj = None
-            _logger.exception("ValidationError when translating %s from gnomad", vcf_coords)
+            _logger.exception(
+                "ValidationError when translating %s from gnomad", vcf_coords
+            )
             raise
         except KeyError:
             vrs_obj = None
@@ -398,15 +447,21 @@ class VCFAnnotator:
             raise
         except AssertionError:
             vrs_obj = None
-            _logger.exception("AssertionError when translating %s from gnomad", vcf_coords)
+            _logger.exception(
+                "AssertionError when translating %s from gnomad", vcf_coords
+            )
             raise
         except Exception:
             vrs_obj = None
-            _logger.exception("Unhandled Exception when translating %s from gnomad", vcf_coords)
+            _logger.exception(
+                "Unhandled Exception when translating %s from gnomad", vcf_coords
+            )
             raise
         else:
             if not vrs_obj:
-                _logger.debug("None was returned when translating %s from gnomad", vcf_coords)
+                _logger.debug(
+                    "None was returned when translating %s from gnomad", vcf_coords
+                )
 
         if output_pickle and vrs_obj:
             key = vrs_data_key if vrs_data_key else vcf_coords
@@ -420,7 +475,11 @@ class VCFAnnotator:
                 if vrs_obj:
                     start = str(vrs_obj.location.start)
                     end = str(vrs_obj.location.end)
-                    alt = str(vrs_obj.state.sequence.root) if vrs_obj.state.sequence else ""
+                    alt = (
+                        str(vrs_obj.state.sequence.root)
+                        if vrs_obj.state.sequence
+                        else ""
+                    )
                 else:
                     start = ""
                     end = ""
@@ -463,7 +522,9 @@ class VCFAnnotator:
             of associated values. If `output_vcf = False`, an empty dictionary will be
             returned.
         """
-        vrs_field_data = {field: [] for field in additional_info_fields} if output_vcf else {}
+        vrs_field_data = (
+            {field: [] for field in additional_info_fields} if output_vcf else {}
+        )
 
         # Get VRS data for reference allele
         gnomad_loc = f"{record.chrom}-{record.pos}"

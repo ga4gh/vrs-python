@@ -6,7 +6,13 @@ import pytest
 import yaml
 from pydantic import ValidationError
 
-from ga4gh.core import PrevVrsVersion, core_models, ga4gh_digest, ga4gh_identify, ga4gh_serialize
+from ga4gh.core import (
+    PrevVrsVersion,
+    core_models,
+    ga4gh_digest,
+    ga4gh_identify,
+    ga4gh_serialize,
+)
 from ga4gh.vrs import VrsType, models
 
 
@@ -70,24 +76,33 @@ def test_prev_vrs_version():
     loc = models.SequenceLocation(
         start=44908821,
         end=44908822,
-        sequenceReference=models.SequenceReference(refgetAccession="SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl"),
+        sequenceReference=models.SequenceReference(
+            refgetAccession="SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl"
+        ),
     )
 
     # string representation should work as well
     ga4gh_identify(loc, as_version="1.3")
 
     invalid_vrs_version = "0.0"
-    invalid_vrs_version_msg = f"Expected `PrevVrsVersion`, but got {invalid_vrs_version}"
+    invalid_vrs_version_msg = (
+        f"Expected `PrevVrsVersion`, but got {invalid_vrs_version}"
+    )
 
     loc_no_seq_ref = models.SequenceLocation(start=44908821, end=44908822)
     loc_iri = models.SequenceLocation(
-        start=44908821, end=44908822, sequenceReference=core_models.iriReference("sequenceReferences.json#example1")
+        start=44908821,
+        end=44908822,
+        sequenceReference=core_models.iriReference("sequenceReferences.json#example1"),
     )
     allele_rle_no_seq = models.Allele(
-        location=loc, state=models.ReferenceLengthExpression(length=11, repeatSubunitLength=3)
+        location=loc,
+        state=models.ReferenceLengthExpression(length=11, repeatSubunitLength=3),
     )
     allele_le = models.Allele(location=loc, state=models.LengthExpression(length=2))
-    loc_seq_ref_msg = "Must provide `sequenceReference` and it must be a valid `SequenceReference`"
+    loc_seq_ref_msg = (
+        "Must provide `sequenceReference` and it must be a valid `SequenceReference`"
+    )
     for ga4gh_func in [ga4gh_identify, ga4gh_digest, ga4gh_serialize]:
         with pytest.raises(ValueError, match=invalid_vrs_version_msg):
             ga4gh_func(loc, as_version=invalid_vrs_version_msg)
@@ -98,7 +113,9 @@ def test_prev_vrs_version():
         with pytest.raises(ValueError, match=loc_seq_ref_msg):
             ga4gh_func(loc_iri, as_version=PrevVrsVersion.V1_3)
 
-        with pytest.raises(ValueError, match="State sequence attribute must be defined."):
+        with pytest.raises(
+            ValueError, match="State sequence attribute must be defined."
+        ):
             ga4gh_func(allele_rle_no_seq, as_version=PrevVrsVersion.V1_3)
 
         allele_rlse_seq = allele_rle_no_seq.model_copy(deep=True)
@@ -135,7 +152,9 @@ def test_valid_types():
 def test_mappable_concept():
     """Test the MappableConcept model validator"""
     # Does not provide required fields
-    with pytest.raises(ValueError, match="`One of label` or `primaryCode` must be provided."):
+    with pytest.raises(
+        ValueError, match="`One of label` or `primaryCode` must be provided."
+    ):
         core_models.MappableConcept(conceptType="test")
 
     # Valid models
@@ -149,18 +168,30 @@ def test_copy_number_change():
 
     # Primary code not provided
     with pytest.raises(ValueError, match="`primaryCode` is required."):
-        models.CopyNumberChange(location=location, copyChange=core_models.MappableConcept(label="test"))
+        models.CopyNumberChange(
+            location=location, copyChange=core_models.MappableConcept(label="test")
+        )
 
     # Primary code not valid EFO
     with pytest.raises(ValueError, match="`primaryCode` must be one of:"):
-        models.CopyNumberChange(location=location, copyChange=core_models.MappableConcept(primaryCode="test"))
+        models.CopyNumberChange(
+            location=location,
+            copyChange=core_models.MappableConcept(primaryCode="test"),
+        )
 
 
 def test_adjacency():
     """Test the Adjacency field validator"""
     # Both start and end provided
-    with pytest.raises(ValueError, match="Adjoined sequence must not have both `start` and `end`."):
-        models.Adjacency(adjoinedSequences=[models.SequenceLocation(start=1), models.SequenceLocation(start=1, end=2)])
+    with pytest.raises(
+        ValueError, match="Adjoined sequence must not have both `start` and `end`."
+    ):
+        models.Adjacency(
+            adjoinedSequences=[
+                models.SequenceLocation(start=1),
+                models.SequenceLocation(start=1, end=2),
+            ]
+        )
 
     assert models.Adjacency(
         adjoinedSequences=[

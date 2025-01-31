@@ -8,13 +8,17 @@ from ga4gh.vrs.dataproxy import SeqRepoDataProxy, SeqRepoRESTDataProxy
 
 @pytest.fixture(scope="session")
 def dataproxy():
-    sr = SeqRepo(root_dir=os.environ.get("SEQREPO_ROOT_DIR", "/usr/local/share/seqrepo/latest"))
+    sr = SeqRepo(
+        root_dir=os.environ.get("SEQREPO_ROOT_DIR", "/usr/local/share/seqrepo/latest")
+    )
     return SeqRepoDataProxy(sr)
 
 
 @pytest.fixture(scope="session")
 def rest_dataproxy():
-    return SeqRepoRESTDataProxy(base_url=os.environ.get("SEQREPO_REST_URL", "http://localhost:5000/seqrepo"))
+    return SeqRepoRESTDataProxy(
+        base_url=os.environ.get("SEQREPO_REST_URL", "http://localhost:5000/seqrepo")
+    )
 
 
 # See https://github.com/ga4gh/vrs-python/issues/24

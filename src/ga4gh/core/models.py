@@ -96,8 +96,12 @@ class Entity(BaseModel, ABC):
         description="The name of the class that is instantiated by a data object representing the Entity.",
     )
     label: Optional[str] = Field(None, description="A primary name for the entity.")
-    description: Optional[str] = Field(None, description="A free-text description of the Entity.")
-    alternativeLabels: Optional[list[str]] = Field(None, description="Alternative name(s) for the Entity.")  # noqa: N815
+    description: Optional[str] = Field(
+        None, description="A free-text description of the Entity."
+    )
+    alternativeLabels: Optional[list[str]] = Field(  # noqa: N815
+        None, description="Alternative name(s) for the Entity."
+    )
     extensions: Optional[list[Extension]] = Field(
         None,
         description="A list of extensions to the Entity, that allow for capture of information not directly supported by elements defined in the model.",

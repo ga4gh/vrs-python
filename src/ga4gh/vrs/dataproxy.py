@@ -35,7 +35,9 @@ class _DataProxy(ABC):
     """
 
     @abstractmethod
-    def get_sequence(self, identifier: str, start: int | None = None, end: int | None = None) -> str:
+    def get_sequence(
+        self, identifier: str, start: int | None = None, end: int | None = None
+    ) -> str:
         """Return the specified sequence or subsequence
 
         start and end are optional
@@ -99,7 +101,9 @@ class _DataProxy(ABC):
         return None
 
     @functools.lru_cache
-    def translate_sequence_identifier(self, identifier: str, namespace: str | None = None) -> list[str]:
+    def translate_sequence_identifier(
+        self, identifier: str, namespace: str | None = None
+    ) -> list[str]:
         """Translate given identifier to a list of identifiers in the
         specified namespace.
 
@@ -145,7 +149,12 @@ class _DataProxy(ABC):
         return refget_accession
 
     def validate_ref_seq(
-        self, sequence_id: str, start_pos: int, end_pos: int, ref: str, require_validation: bool = True
+        self,
+        sequence_id: str,
+        start_pos: int,
+        end_pos: int,
+        ref: str,
+        require_validation: bool = True,
     ) -> None:
         """Determine whether or not the expected reference sequence matches the actual
         reference sequence. Returns ``None``, but invalid results are logged at level
@@ -187,7 +196,9 @@ class _SeqRepoDataProxyBase(_DataProxy):
         return md
 
     @functools.lru_cache
-    def get_sequence(self, identifier: str, start: int | None = None, end: int | None = None) -> str:
+    def get_sequence(
+        self, identifier: str, start: int | None = None, end: int | None = None
+    ) -> str:
         return self._get_sequence(identifier, start=start, end=end)
 
     @abstractmethod
@@ -212,7 +223,9 @@ class SeqRepoDataProxy(_SeqRepoDataProxyBase):
         super().__init__()
         self.sr = sr
 
-    def _get_sequence(self, identifier: str, start: int | None = None, end: int | None = None) -> str:
+    def _get_sequence(
+        self, identifier: str, start: int | None = None, end: int | None = None
+    ) -> str:
         # fetch raises KeyError if not found
         return self.sr.fetch_uri(coerce_namespace(identifier), start, end)
 
@@ -245,7 +258,9 @@ class SeqRepoRESTDataProxy(_SeqRepoDataProxyBase):
         super().__init__()
         self.base_url = f"{base_url}/{self.rest_version}/"
 
-    def _get_sequence(self, identifier: str, start: int | None = None, end: int | None = None) -> str:
+    def _get_sequence(
+        self, identifier: str, start: int | None = None, end: int | None = None
+    ) -> str:
         url = self.base_url + f"sequence/{identifier}"
         _logger.info("Fetching %s", url)
         params = {"start": start, "end": end}

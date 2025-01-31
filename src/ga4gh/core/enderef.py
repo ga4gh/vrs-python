@@ -12,7 +12,12 @@ build_class_referable_attribute_map() in .models.py.
 import logging
 
 from .identifiers import ga4gh_identify, is_ga4gh_identifier
-from .pydantic import get_pydantic_root, is_curie_type, is_pydantic_instance, pydantic_copy
+from .pydantic import (
+    get_pydantic_root,
+    is_curie_type,
+    is_pydantic_instance,
+    pydantic_copy,
+)
 
 _logger = logging.getLogger(__name__)
 
@@ -46,7 +51,9 @@ def ga4gh_enref(o, cra_map, object_store=None, return_id_obj_tuple=False) -> tup
             elif isinstance(v, str):
                 pass
             elif is_curie_type(v):  # already a reference
-                assert is_ga4gh_identifier(v), "Identifiable attribute CURIE is contains an invalid identifier"  # noqa: S101
+                assert is_ga4gh_identifier(v), (  # noqa: S101
+                    "Identifiable attribute CURIE is contains an invalid identifier"
+                )
             elif v is not None:
                 _id = _id_and_store(v)
                 if _id:

@@ -12,7 +12,10 @@ allele_dict = {
     "location": {
         "end": 26090951,
         "start": 26090950,
-        "sequenceReference": {"type": "SequenceReference", "refgetAccession": "SQ.0iKlIQk2oZLoeOG9P1riRU6hvL5Ux8TV"},
+        "sequenceReference": {
+            "type": "SequenceReference",
+            "refgetAccession": "SQ.0iKlIQk2oZLoeOG9P1riRU6hvL5Ux8TV",
+        },
         "type": "SequenceLocation",
     },
     "state": {"sequence": "C", "type": "LiteralSequenceExpression"},
@@ -24,7 +27,10 @@ allele_dict2 = {
     "type": "Allele",
     "location": {
         "type": "SequenceLocation",
-        "sequenceReference": {"type": "SequenceReference", "refgetAccession": "SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP"},
+        "sequenceReference": {
+            "type": "SequenceReference",
+            "refgetAccession": "SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP",
+        },
         "start": [None, 155980375],
         "end": [155980377, None],
     },
@@ -36,11 +42,18 @@ allele_dict2_normalized = {
     "type": "Allele",
     "location": {
         "type": "SequenceLocation",
-        "sequenceReference": {"type": "SequenceReference", "refgetAccession": "SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP"},
+        "sequenceReference": {
+            "type": "SequenceReference",
+            "refgetAccession": "SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP",
+        },
         "start": [None, 155980375],
         "end": [155980377, None],
     },
-    "state": {"length": 0, "repeatSubunitLength": 2, "type": "ReferenceLengthExpression"},
+    "state": {
+        "length": 0,
+        "repeatSubunitLength": 2,
+        "type": "ReferenceLengthExpression",
+    },
 }
 
 
@@ -48,7 +61,10 @@ allele_dict3 = {
     "type": "Allele",
     "location": {
         "type": "SequenceLocation",
-        "sequenceReference": {"type": "SequenceReference", "refgetAccession": "SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP"},
+        "sequenceReference": {
+            "type": "SequenceReference",
+            "refgetAccession": "SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP",
+        },
         "start": [155980374, 155980375],
         "end": [155980377, 155980378],
     },
@@ -60,7 +76,10 @@ allele_dict4 = {
     "type": "Allele",
     "location": {
         "type": "SequenceLocation",
-        "sequenceReference": {"type": "SequenceReference", "refgetAccession": "SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP"},
+        "sequenceReference": {
+            "type": "SequenceReference",
+            "refgetAccession": "SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP",
+        },
         "start": 155980373,
         "end": 155980375,
     },
@@ -71,18 +90,29 @@ allele_dict4_normalized = {
     "type": "Allele",
     "location": {
         "type": "SequenceLocation",
-        "sequenceReference": {"type": "SequenceReference", "refgetAccession": "SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP"},
+        "sequenceReference": {
+            "type": "SequenceReference",
+            "refgetAccession": "SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP",
+        },
         "start": 155980373,
         "end": 155980375,
     },
-    "state": {"length": 4, "repeatSubunitLength": 2, "sequence": "GTGT", "type": "ReferenceLengthExpression"},
+    "state": {
+        "length": 4,
+        "repeatSubunitLength": 2,
+        "sequence": "GTGT",
+        "type": "ReferenceLengthExpression",
+    },
 }
 
 allele_dict5 = {
     "location": {
         "end": 289464,
         "start": 289464,
-        "sequenceReference": {"type": "SequenceReference", "refgetAccession": "SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl"},
+        "sequenceReference": {
+            "type": "SequenceReference",
+            "refgetAccession": "SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl",
+        },
         "type": "SequenceLocation",
     },
     "state": {"sequence": "CAGCAG", "type": "LiteralSequenceExpression"},
@@ -93,11 +123,19 @@ allele_dict5_normalized = {
     "type": "Allele",
     "location": {
         "type": "SequenceLocation",
-        "sequenceReference": {"type": "SequenceReference", "refgetAccession": "SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl"},
+        "sequenceReference": {
+            "type": "SequenceReference",
+            "refgetAccession": "SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl",
+        },
         "start": 289464,
         "end": 289469,
     },
-    "state": {"type": "ReferenceLengthExpression", "length": 11, "sequence": "CAGCAGCAGCA", "repeatSubunitLength": 3},
+    "state": {
+        "type": "ReferenceLengthExpression",
+        "length": 11,
+        "sequence": "CAGCAGCAGCA",
+        "repeatSubunitLength": 3,
+    },
 }
 
 

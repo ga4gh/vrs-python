@@ -112,7 +112,11 @@ def is_ga4gh_identifier(ir: str) -> bool:
     return str(get_pydantic_root(ir)).startswith(NS_W_SEP)
 
 
-def ga4gh_identify(vro, in_place: str = "default", as_version: PrevVrsVersion | None = None) -> str | None:  # noqa: ANN001
+def ga4gh_identify(
+    vro,  # noqa: ANN001
+    in_place: str = "default",
+    as_version: PrevVrsVersion | None = None,
+) -> str | None:
     """Return the GA4GH digest-based id for the object, as a CURIE
     (string).  Returns None if object is not identifiable.
 
@@ -135,7 +139,9 @@ def ga4gh_identify(vro, in_place: str = "default", as_version: PrevVrsVersion | 
     >>> location = ga4gh.vrs.models.SequenceLocation(
     ...     start=44908821,
     ...     end=44908822,
-    ...     sequenceReference=ga4gh.vrs.models.SequenceReference(refgetAccession="SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul"),
+    ...     sequenceReference=ga4gh.vrs.models.SequenceReference(
+    ...         refgetAccession="SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul"
+    ...     ),
     ... )
     >>> ga4gh_identify(location)
     'ga4gh:SL.4t6JnYWqHwYw9WzBT_lmWBb3tLQNalkT'
@@ -162,7 +168,9 @@ def ga4gh_identify(vro, in_place: str = "default", as_version: PrevVrsVersion | 
     return None
 
 
-def ga4gh_digest(vro: BaseModel, overwrite: bool = False, as_version: PrevVrsVersion | None = None) -> str | None:
+def ga4gh_digest(
+    vro: BaseModel, overwrite: bool = False, as_version: PrevVrsVersion | None = None
+) -> str | None:
     """Return the GA4GH digest for the object.
 
     Only GA4GH identifiable objects are GA4GH digestible.
@@ -176,7 +184,9 @@ def ga4gh_digest(vro: BaseModel, overwrite: bool = False, as_version: PrevVrsVer
     >>> location = ga4gh.vrs.models.SequenceLocation(
     ...     start=44908821,
     ...     end=44908822,
-    ...     sequenceReference=ga4gh.vrs.models.SequenceReference(refgetAccession="SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul"),
+    ...     sequenceReference=ga4gh.vrs.models.SequenceReference(
+    ...         refgetAccession="SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul"
+    ...     ),
     ... )
     >>> ga4gh_digest(location)
     '4t6JnYWqHwYw9WzBT_lmWBb3tLQNalkT'
@@ -190,7 +200,9 @@ def ga4gh_digest(vro: BaseModel, overwrite: bool = False, as_version: PrevVrsVer
     return None
 
 
-def ga4gh_serialize(obj: BaseModel, as_version: PrevVrsVersion | None = None) -> bytes | None:
+def ga4gh_serialize(
+    obj: BaseModel, as_version: PrevVrsVersion | None = None
+) -> bytes | None:
     """Serialize an object for use in computed digest computation.
 
     If ``as_version`` is provided, the returned serialization follows

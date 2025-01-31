@@ -32,14 +32,23 @@ class _Translator(ABC):  # noqa: B024
 
     """
 
-    beacon_re = re.compile(r"(?P<chr>[^-]+)\s*:\s*(?P<pos>\d+)\s*(?P<ref>\w+)\s*>\s*(?P<alt>\w+)")
-    gnomad_re = re.compile(
-        r"(?P<chr>[^-]+)-(?P<pos>\d+)-(?P<ref>[ACGTURYKMSWBDHVN]+)-(?P<alt>[ACGTURYKMSWBDHVN]+)", re.IGNORECASE
+    beacon_re = re.compile(
+        r"(?P<chr>[^-]+)\s*:\s*(?P<pos>\d+)\s*(?P<ref>\w+)\s*>\s*(?P<alt>\w+)"
     )
-    spdi_re = re.compile(r"(?P<ac>[^:]+):(?P<pos>\d+):(?P<del_len_or_seq>\w*):(?P<ins_seq>\w*)")
+    gnomad_re = re.compile(
+        r"(?P<chr>[^-]+)-(?P<pos>\d+)-(?P<ref>[ACGTURYKMSWBDHVN]+)-(?P<alt>[ACGTURYKMSWBDHVN]+)",
+        re.IGNORECASE,
+    )
+    spdi_re = re.compile(
+        r"(?P<ac>[^:]+):(?P<pos>\d+):(?P<del_len_or_seq>\w*):(?P<ins_seq>\w*)"
+    )
 
     def __init__(
-        self, data_proxy: _DataProxy, default_assembly_name="GRCh38", identify=True, rle_seq_limit: int | None = 50
+        self,
+        data_proxy: _DataProxy,
+        default_assembly_name="GRCh38",
+        identify=True,
+        rle_seq_limit: int | None = 50,
     ):
         self.default_assembly_name = default_assembly_name
         self.data_proxy = data_proxy
@@ -162,7 +171,9 @@ class AlleleTranslator(_Translator):
 
         """
         seq_ref = models.SequenceReference(refgetAccession=values["refget_accession"])
-        location = models.SequenceLocation(sequenceReference=seq_ref, start=values["start"], end=values["end"])
+        location = models.SequenceLocation(
+            sequenceReference=seq_ref, start=values["start"], end=values["end"]
+        )
         state = models.LiteralSequenceExpression(sequence=values["literal_sequence"])
         allele = models.Allele(location=location, state=state)
         return self._post_process_imported_allele(allele, **kwargs)
@@ -220,7 +231,12 @@ class AlleleTranslator(_Translator):
         end = start + len(ref)
         ins_seq = alt
 
-        values = {"refget_accession": refget_accession, "start": start, "end": end, "literal_sequence": ins_seq}
+        values = {
+            "refget_accession": refget_accession,
+            "start": start,
+            "end": end,
+            "literal_sequence": ins_seq,
+        }
         return self._create_allele(values, **kwargs)
 
     def _from_gnomad(self, gnomad_expr, **kwargs):
@@ -281,10 +297,19 @@ class AlleleTranslator(_Translator):
 
         # validation checks
         self.data_proxy.validate_ref_seq(
-            sequence, start, end, ref, require_validation=kwargs.get("require_validation", True)
+            sequence,
+            start,
+            end,
+            ref,
+            require_validation=kwargs.get("require_validation", True),
         )
 
-        values = {"refget_accession": refget_accession, "start": start, "end": end, "literal_sequence": ins_seq}
+        values = {
+            "refget_accession": refget_accession,
+            "start": start,
+            "end": end,
+            "literal_sequence": ins_seq,
+        }
         return self._create_allele(values, **kwargs)
 
     def _from_hgvs(self, hgvs_expr: str, **kwargs):
@@ -344,7 +369,12 @@ class AlleleTranslator(_Translator):
         end = start + del_len
         ins_seq = g["ins_seq"]
 
-        values = {"refget_accession": refget_accession, "start": start, "end": end, "literal_sequence": ins_seq}
+        values = {
+            "refget_accession": refget_accession,
+            "start": start,
+            "end": end,
+            "literal_sequence": ins_seq,
+        }
 
         return self._create_allele(values, **kwargs)
 
@@ -389,7 +419,11 @@ class AlleleTranslator(_Translator):
                 performed. `False` otherwise. Defaults to `True`
         """
         if kwargs.get("do_normalize", True):
-            allele = normalize(allele, self.data_proxy, rle_seq_limit=kwargs.get("rle_seq_limit", self.rle_seq_limit))
+            allele = normalize(
+                allele,
+                self.data_proxy,
+                rle_seq_limit=kwargs.get("rle_seq_limit", self.rle_seq_limit),
+            )
 
         if self.identify:
             allele.id = ga4gh_identify(allele)
@@ -436,7 +470,9 @@ class CnvTranslator(_Translator):
             return None
 
         location = models.SequenceLocation(
-            sequenceReference=models.SequenceReference(refgetAccession=refget_accession),
+            sequenceReference=models.SequenceReference(
+                refgetAccession=refget_accession
+            ),
             start=sv.posedit.pos.start.base - 1,
             end=sv.posedit.pos.end.base,
         )
@@ -447,9 +483,14 @@ class CnvTranslator(_Translator):
         else:
             copy_change = kwargs.get("copy_change")
             if not copy_change:
-                copy_change = models.CopyChange.EFO_0030067 if sv_type == "del" else models.CopyChange.EFO_0030070
+                copy_change = (
+                    models.CopyChange.EFO_0030067
+                    if sv_type == "del"
+                    else models.CopyChange.EFO_0030070
+                )
             cnv = models.CopyNumberChange(
-                location=location, copyChange=core_models.MappableConcept(primaryCode=copy_change)
+                location=location,
+                copyChange=core_models.MappableConcept(primaryCode=copy_change),
             )
 
         return self._post_process_imported_cnv(cnv)
