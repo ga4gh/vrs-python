@@ -3,7 +3,6 @@ name: Python CQA
 on: [push, pull_request]
 
 jobs:
-
   lint:
     runs-on: ubuntu-latest
     steps:
@@ -23,6 +22,8 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
+    needs:
+      - lint
     strategy:
       fail-fast: false
       matrix:
