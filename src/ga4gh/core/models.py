@@ -15,7 +15,7 @@ from pydantic import (
     model_validator,
 )
 
-from ga4gh.core import GA4GH_IR_REGEXP
+from ga4gh.core.identifiers import GA4GH_IR_REGEXP
 
 
 class Relation(str, Enum):
