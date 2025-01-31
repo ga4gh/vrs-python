@@ -24,7 +24,7 @@ _logger = logging.getLogger(__name__)
 _logger.setLevel(logging.DEBUG)
 
 
-class VCFAnnotatorException(Exception):
+class VCFAnnotatorException(Exception):  # noqa: N818
     """Custom exceptions for VCF Annotator tool"""
 
 
