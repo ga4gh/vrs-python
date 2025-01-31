@@ -1,12 +1,13 @@
 """Annotate VCFs with VRS
 
-    $ vrs-annotate vcf input.vcf.gz --vcf_out output.vcf.gz --vrs_pickle_out vrs_objects.pkl
+$ vrs-annotate vcf input.vcf.gz --vcf_out output.vcf.gz --vrs_pickle_out vrs_objects.pkl
 
 """
-from collections.abc import Callable
-import pathlib
+
 import logging
+import pathlib
 import pickle
+from collections.abc import Callable
 from enum import Enum
 from timeit import default_timer as timer
 
@@ -16,15 +17,18 @@ from biocommons.seqrepo import SeqRepo
 from pydantic import ValidationError
 
 from ga4gh.core import VrsObjectIdentifierIs, use_ga4gh_compute_identifier_when
-from ga4gh.vrs.dataproxy import SeqRepoDataProxy, SeqRepoRESTDataProxy, DataProxyValidationError
+from ga4gh.vrs.dataproxy import (
+    DataProxyValidationError,
+    SeqRepoDataProxy,
+    SeqRepoRESTDataProxy,
+)
 from ga4gh.vrs.extras.translator import AlleleTranslator
-
 
 _logger = logging.getLogger(__name__)
 _logger.setLevel(logging.DEBUG)
 
 
-class VCFAnnotatorException(Exception):
+class VCFAnnotatorException(Exception):  # noqa: N818
     """Custom exceptions for VCF Annotator tool"""
 
 
@@ -34,18 +38,20 @@ class SeqRepoProxyType(str, Enum):
     LOCAL = "local"
     REST = "rest"
 
+
 @click.group()
 def _cli() -> None:
     """Annotate input files with VRS variation objects."""
     logging.basicConfig(
         filename="vrs-annotate.log",
         level=logging.INFO,
-        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     )
 
 
 class _LogLevel(str, Enum):
     """Define legal values for `--log_level` option."""
+
     DEBUG = "debug"
     INFO = "info"
     WARNING = "warning"
@@ -62,7 +68,8 @@ def _log_level_option(func: Callable) -> Callable:
     :param func: incoming click command
     :return: same command, wrapped with log level option
     """
-    def _set_log_level(ctx: dict, param: str, value: _LogLevel) -> None:  # pylint: disable=unused-argument
+
+    def _set_log_level(ctx: dict, param: str, value: _LogLevel) -> None:  # noqa: ARG001
         level_map = {
             _LogLevel.DEBUG: logging.DEBUG,
             _LogLevel.INFO: logging.INFO,
@@ -72,16 +79,15 @@ def _log_level_option(func: Callable) -> Callable:
         }
         logging.getLogger(__name__).setLevel(level_map[value])
 
-    wrapped_func = click.option(
+    return click.option(
         "--log_level",
         type=click.Choice([v.value for v in _LogLevel.__members__.values()]),
         default="info",
         help="Set the logging level.",
         callback=_set_log_level,
         expose_value=False,
-        is_eager=True
+        is_eager=True,
     )(func)
-    return wrapped_func
 
 
 @_cli.command(name="vcf")
@@ -89,21 +95,23 @@ def _log_level_option(func: Callable) -> Callable:
 @click.argument(
     "vcf_in",
     nargs=1,
-    type=click.Path(exists=True, readable=True, dir_okay=False, path_type=pathlib.Path)
+    type=click.Path(exists=True, readable=True, dir_okay=False, path_type=pathlib.Path),
 )
 @click.option(
     "--vcf_out",
     required=False,
     type=click.Path(writable=True, allow_dash=False, path_type=pathlib.Path),
-    help=("Declare save location for output annotated VCF. If not provided, must provide "
-          "--vrs_pickle_out.")
+    help=(
+        "Declare save location for output annotated VCF. If not provided, must provide --vrs_pickle_out."
+    ),
 )
 @click.option(
     "--vrs_pickle_out",
     required=False,
     type=click.Path(writable=True, allow_dash=False, path_type=pathlib.Path),
-    help=("Declare save location for output VCF pickle. If not provided, must provide "
-          "--vcf_out.")
+    help=(
+        "Declare save location for output VCF pickle. If not provided, must provide --vcf_out."
+    ),
 )
 @click.option(
     "--vrs_attributes",
@@ -115,11 +123,12 @@ def _log_level_option(func: Callable) -> Callable:
     "--seqrepo_dp_type",
     required=False,
     default=SeqRepoProxyType.LOCAL,
-    type=click.Choice([v.value for v in SeqRepoProxyType.__members__.values()],
-                      case_sensitive=True),
+    type=click.Choice(
+        [v.value for v in SeqRepoProxyType.__members__.values()], case_sensitive=True
+    ),
     help="Specify type of SeqRepo dataproxy to use.",
     show_default=True,
-    show_choices=True
+    show_choices=True,
 )
 @click.option(
     "--seqrepo_root_dir",
@@ -127,14 +136,14 @@ def _log_level_option(func: Callable) -> Callable:
     default=pathlib.Path("/usr/local/share/seqrepo/latest"),
     type=click.Path(path_type=pathlib.Path),
     help="Define root directory for local SeqRepo instance, if --seqrepo_dp_type=local.",
-    show_default=True
+    show_default=True,
 )
 @click.option(
     "--seqrepo_base_url",
     required=False,
     default="http://localhost:5000/seqrepo",
     help="Specify base URL for SeqRepo REST API, if --seqrepo_dp_type=rest.",
-    show_default=True
+    show_default=True,
 )
 @click.option(
     "--assembly",
@@ -142,31 +151,38 @@ def _log_level_option(func: Callable) -> Callable:
     default="GRCh38",
     show_default=True,
     help="Specify assembly that was used to create input VCF.",
-    type=str
+    type=str,
 )
 @click.option(
     "--skip_ref",
     is_flag=True,
     default=False,
-    help="Skip VRS computation for REF alleles."
+    help="Skip VRS computation for REF alleles.",
 )
 @click.option(
     "--require_validation",
     is_flag=True,
     default=False,
-    help="Require validation checks to pass to construct a VRS object."
+    help="Require validation checks to pass to construct a VRS object.",
 )
 @click.option(
     "--silent",
     "-s",
     is_flag=True,
     default=False,
-    help="Suppress messages printed to stdout"
+    help="Suppress messages printed to stdout",
 )
-def _annotate_vcf_cli(  # pylint: disable=too-many-arguments
-    vcf_in: pathlib.Path, vcf_out: pathlib.Path | None, vrs_pickle_out: pathlib.Path | None,
-    vrs_attributes: bool, seqrepo_dp_type: SeqRepoProxyType, seqrepo_root_dir: pathlib.Path,
-    seqrepo_base_url: str, assembly: str, skip_ref: bool, require_validation: bool,
+def _annotate_vcf_cli(
+    vcf_in: pathlib.Path,
+    vcf_out: pathlib.Path | None,
+    vrs_pickle_out: pathlib.Path | None,
+    vrs_attributes: bool,
+    seqrepo_dp_type: SeqRepoProxyType,
+    seqrepo_root_dir: pathlib.Path,
+    seqrepo_base_url: str,
+    assembly: str,
+    skip_ref: bool,
+    require_validation: bool,
     silent: bool,
 ) -> None:
     """Extract VRS objects from VCF located at VCF_IN.
@@ -175,18 +191,26 @@ def _annotate_vcf_cli(  # pylint: disable=too-many-arguments
 
     Note that at least one of --vcf_out or --vrs_pickle_out must be selected and defined.
     """
-    annotator = VCFAnnotator(seqrepo_dp_type, seqrepo_base_url, str(seqrepo_root_dir.absolute()))
+    annotator = VCFAnnotator(
+        seqrepo_dp_type, seqrepo_base_url, str(seqrepo_root_dir.absolute())
+    )
     vcf_out_str = str(vcf_out.absolute()) if vcf_out is not None else vcf_out
-    vrs_pkl_out_str = str(vrs_pickle_out.absolute()) if vrs_pickle_out is not None else vrs_pickle_out
+    vrs_pkl_out_str = (
+        str(vrs_pickle_out.absolute()) if vrs_pickle_out is not None else vrs_pickle_out
+    )
     start = timer()
     msg = f"Annotating {vcf_in} with the VCF Annotator..."
     _logger.info(msg)
     if not silent:
         click.echo(msg)
     annotator.annotate(
-        str(vcf_in.absolute()), vcf_out=vcf_out_str, vrs_pickle_out=vrs_pkl_out_str,
-        vrs_attributes=vrs_attributes, assembly=assembly,
-        compute_for_ref=(not skip_ref), require_validation=require_validation
+        str(vcf_in.absolute()),
+        vcf_out=vcf_out_str,
+        vrs_pickle_out=vrs_pkl_out_str,
+        vrs_attributes=vrs_attributes,
+        assembly=assembly,
+        compute_for_ref=(not skip_ref),
+        require_validation=require_validation,
     )
     end = timer()
     msg = f"VCF Annotator finished in {(end - start):.5f} seconds"
@@ -195,7 +219,7 @@ def _annotate_vcf_cli(  # pylint: disable=too-many-arguments
         click.echo(msg)
 
 
-class VCFAnnotator:  # pylint: disable=too-few-public-methods
+class VCFAnnotator:
     """Annotate VCFs with VRS allele IDs.
 
     Uses pysam to read, store, and (optionally) output VCFs. Alleles are translated
@@ -209,7 +233,7 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
     VRS_STATES_FIELD = "VRS_States"
     VRS_ERROR_FIELD = "VRS_Error"
     # VCF character escape map
-    VCF_ESCAPE_MAP = [
+    VCF_ESCAPE_MAP = [  # noqa: RUF012
         ("%", "%25"),
         (";", "%3B"),
         (",", "%2C"),
@@ -218,9 +242,12 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
         ("\t", "%09"),
     ]
 
-    def __init__(self, seqrepo_dp_type: SeqRepoProxyType = SeqRepoProxyType.LOCAL,
-                 seqrepo_base_url: str = "http://localhost:5000/seqrepo",
-                 seqrepo_root_dir: str = "/usr/local/share/seqrepo/latest") -> None:
+    def __init__(
+        self,
+        seqrepo_dp_type: SeqRepoProxyType = SeqRepoProxyType.LOCAL,
+        seqrepo_base_url: str = "http://localhost:5000/seqrepo",
+        seqrepo_root_dir: str = "/usr/local/share/seqrepo/latest",
+    ) -> None:
         """Initialize the VCFAnnotator class.
 
         :param seqrepo_dp_type: The type of SeqRepo Data Proxy to use
@@ -235,11 +262,15 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
         self.tlr = AlleleTranslator(self.dp)
 
     @use_ga4gh_compute_identifier_when(VrsObjectIdentifierIs.MISSING)
-    def annotate(  # pylint: disable=too-many-arguments,too-many-locals
-        self, vcf_in: str, vcf_out: str | None = None,
-        vrs_pickle_out: str | None = None, vrs_attributes: bool = False,
-        assembly: str = "GRCh38", compute_for_ref: bool = True,
-        require_validation: bool = True
+    def annotate(
+        self,
+        vcf_in: str,
+        vcf_out: str | None = None,
+        vrs_pickle_out: str | None = None,
+        vrs_attributes: bool = False,
+        assembly: str = "GRCh38",
+        compute_for_ref: bool = True,
+        require_validation: bool = True,
     ) -> None:
         """Given a VCF, produce an output VCF annotated with VRS allele IDs, and/or
         a pickle file containing the full VRS objects.
@@ -259,43 +290,61 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
             logged as warnings regardless.
         """
         if not any((vcf_out, vrs_pickle_out)):
-            raise VCFAnnotatorException(
-                "Must provide one of: `vcf_out` or `vrs_pickle_out`")
+            msg = "Must provide one of: `vcf_out` or `vrs_pickle_out`"
+            raise VCFAnnotatorException(msg)
 
         info_field_num = "R" if compute_for_ref else "A"
         info_field_desc = "REF and ALT" if compute_for_ref else "ALT"
 
         vrs_data = {}
-        vcf_in = pysam.VariantFile(filename=vcf_in)  # pylint: disable=no-member
+        vcf_in = pysam.VariantFile(filename=vcf_in)
         vcf_in.header.info.add(
-            self.VRS_ALLELE_IDS_FIELD, info_field_num, "String",
-            ("The computed identifiers for the GA4GH VRS Alleles corresponding to the "
-             f"GT indexes of the {info_field_desc} alleles")
+            self.VRS_ALLELE_IDS_FIELD,
+            info_field_num,
+            "String",
+            (
+                "The computed identifiers for the GA4GH VRS Alleles corresponding to the "
+                f"GT indexes of the {info_field_desc} alleles"
+            ),
         )
         vcf_in.header.info.add(
-            self.VRS_ERROR_FIELD, ".", "String",
-            ("If an error occurred computing a VRS Identifier, the error message")
+            self.VRS_ERROR_FIELD,
+            ".",
+            "String",
+            ("If an error occurred computing a VRS Identifier, the error message"),
         )
 
         if vrs_attributes:
             vcf_in.header.info.add(
-                self.VRS_STARTS_FIELD, info_field_num, "String",
-                ("Interresidue coordinates used as the location starts for the GA4GH "
-                 f"VRS Alleles corresponding to the GT indexes of the {info_field_desc} alleles")
+                self.VRS_STARTS_FIELD,
+                info_field_num,
+                "String",
+                (
+                    "Interresidue coordinates used as the location starts for the GA4GH "
+                    f"VRS Alleles corresponding to the GT indexes of the {info_field_desc} alleles"
+                ),
             )
             vcf_in.header.info.add(
-                self.VRS_ENDS_FIELD, info_field_num, "String",
-                ("Interresidue coordinates used as the location ends for the GA4GH VRS "
-                 f"Alleles corresponding to the GT indexes of the {info_field_desc} alleles")
+                self.VRS_ENDS_FIELD,
+                info_field_num,
+                "String",
+                (
+                    "Interresidue coordinates used as the location ends for the GA4GH VRS "
+                    f"Alleles corresponding to the GT indexes of the {info_field_desc} alleles"
+                ),
             )
             vcf_in.header.info.add(
-                self.VRS_STATES_FIELD, info_field_num, "String",
-                ("The literal sequence states used for the GA4GH VRS Alleles "
-                 f"corresponding to the GT indexes of the {info_field_desc} alleles")
+                self.VRS_STATES_FIELD,
+                info_field_num,
+                "String",
+                (
+                    "The literal sequence states used for the GA4GH VRS Alleles "
+                    f"corresponding to the GT indexes of the {info_field_desc} alleles"
+                ),
             )
 
         if vcf_out:
-            vcf_out = pysam.VariantFile(vcf_out, "w", header=vcf_in.header)  # pylint: disable=no-member
+            vcf_out = pysam.VariantFile(vcf_out, "w", header=vcf_in.header)
 
         output_vcf = bool(vcf_out)
         output_pickle = bool(vrs_pickle_out)
@@ -303,13 +352,22 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
         for record in vcf_in:
             additional_info_fields = [self.VRS_ALLELE_IDS_FIELD]
             if vrs_attributes:
-                additional_info_fields += [self.VRS_STARTS_FIELD, self.VRS_ENDS_FIELD, self.VRS_STATES_FIELD]
+                additional_info_fields += [
+                    self.VRS_STARTS_FIELD,
+                    self.VRS_ENDS_FIELD,
+                    self.VRS_STATES_FIELD,
+                ]
             try:
                 vrs_field_data = self._get_vrs_data(
-                    record, vrs_data, assembly, additional_info_fields,
-                    vrs_attributes=vrs_attributes, output_pickle=output_pickle,
-                    output_vcf=output_vcf, compute_for_ref=compute_for_ref,
-                    require_validation=require_validation
+                    record,
+                    vrs_data,
+                    assembly,
+                    additional_info_fields,
+                    vrs_attributes=vrs_attributes,
+                    output_pickle=output_pickle,
+                    output_vcf=output_vcf,
+                    compute_for_ref=compute_for_ref,
+                    require_validation=require_validation,
                 )
             except Exception as ex:
                 _logger.exception("VRS error on %s-%s", record.chrom, record.pos)
@@ -319,7 +377,12 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
                 additional_info_fields = [self.VRS_ERROR_FIELD]
                 vrs_field_data = {self.VRS_ERROR_FIELD: [err_msg]}
 
-            _logger.debug("VCF record %s-%s generated vrs_field_data %s", record.chrom, record.pos, vrs_field_data)
+            _logger.debug(
+                "VCF record %s-%s generated vrs_field_data %s",
+                record.chrom,
+                record.pos,
+                vrs_field_data,
+            )
 
             if output_vcf:
                 for k in additional_info_fields:
@@ -335,11 +398,17 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
             with open(vrs_pickle_out, "wb") as wf:
                 pickle.dump(vrs_data, wf)
 
-    def _get_vrs_object(  # pylint: disable=too-many-arguments,too-many-locals
-        self, vcf_coords: str, vrs_data: dict, vrs_field_data: dict, assembly: str,
-        vrs_data_key: str | None = None, output_pickle: bool = True,
-        output_vcf: bool = False, vrs_attributes: bool = False,
-        require_validation: bool = True
+    def _get_vrs_object(
+        self,
+        vcf_coords: str,
+        vrs_data: dict,
+        vrs_field_data: dict,
+        assembly: str,
+        vrs_data_key: str | None = None,
+        output_pickle: bool = True,
+        output_vcf: bool = False,
+        vrs_attributes: bool = False,
+        require_validation: bool = True,
     ) -> None:
         """Get VRS object given `vcf_coords`. `vrs_data` and `vrs_field_data` will
         be mutated.
@@ -361,30 +430,38 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
             validation checks fail. Defaults to `True`.
         """
         try:
-            vrs_obj = self.tlr._from_gnomad(
+            vrs_obj = self.tlr._from_gnomad(  # noqa: SLF001
                 vcf_coords,
                 assembly_name=assembly,
-                require_validation=require_validation
+                require_validation=require_validation,
             )
-        except (ValidationError, DataProxyValidationError) as e:
+        except (ValidationError, DataProxyValidationError):
             vrs_obj = None
-            _logger.error("ValidationError when translating %s from gnomad: %s", vcf_coords, str(e))
+            _logger.exception(
+                "ValidationError when translating %s from gnomad", vcf_coords
+            )
             raise
-        except KeyError as e:
+        except KeyError:
             vrs_obj = None
-            _logger.error("KeyError when translating %s from gnomad: %s", vcf_coords, str(e))
+            _logger.exception("KeyError when translating %s from gnomad", vcf_coords)
             raise
-        except AssertionError as e:
+        except AssertionError:
             vrs_obj = None
-            _logger.error("AssertionError when translating %s from gnomad: %s", vcf_coords, str(e))
+            _logger.exception(
+                "AssertionError when translating %s from gnomad", vcf_coords
+            )
             raise
-        except Exception as e:  # pylint: disable=broad-except
+        except Exception:
             vrs_obj = None
-            _logger.error("Unhandled Exception when translating %s from gnomad: %s", vcf_coords, str(e))
+            _logger.exception(
+                "Unhandled Exception when translating %s from gnomad", vcf_coords
+            )
             raise
         else:
             if not vrs_obj:
-                _logger.debug("None was returned when translating %s from gnomad", vcf_coords)
+                _logger.debug(
+                    "None was returned when translating %s from gnomad", vcf_coords
+                )
 
         if output_pickle and vrs_obj:
             key = vrs_data_key if vrs_data_key else vcf_coords
@@ -398,10 +475,11 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
                 if vrs_obj:
                     start = str(vrs_obj.location.start)
                     end = str(vrs_obj.location.end)
-                    if vrs_obj.state.sequence:
-                        alt = str(vrs_obj.state.sequence.root)
-                    else:
-                        alt = ""
+                    alt = (
+                        str(vrs_obj.state.sequence.root)
+                        if vrs_obj.state.sequence
+                        else ""
+                    )
                 else:
                     start = ""
                     end = ""
@@ -411,11 +489,17 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
                 vrs_field_data[self.VRS_ENDS_FIELD].append(end)
                 vrs_field_data[self.VRS_STATES_FIELD].append(alt)
 
-    def _get_vrs_data(  # pylint: disable=too-many-arguments,too-many-locals
-        self, record: pysam.VariantRecord, vrs_data: dict, assembly: str,  # pylint: disable=no-member
-        additional_info_fields: list[str], vrs_attributes: bool = False,
-        output_pickle: bool = True, output_vcf: bool = True,
-        compute_for_ref: bool = True, require_validation: bool = True
+    def _get_vrs_data(
+        self,
+        record: pysam.VariantRecord,
+        vrs_data: dict,
+        assembly: str,
+        additional_info_fields: list[str],
+        vrs_attributes: bool = False,
+        output_pickle: bool = True,
+        output_vcf: bool = True,
+        compute_for_ref: bool = True,
+        require_validation: bool = True,
     ) -> dict:
         """Get VRS data for record's reference and alt alleles.
 
@@ -438,16 +522,23 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
             of associated values. If `output_vcf = False`, an empty dictionary will be
             returned.
         """
-        vrs_field_data = {field: [] for field in additional_info_fields} if output_vcf else {}
+        vrs_field_data = (
+            {field: [] for field in additional_info_fields} if output_vcf else {}
+        )
 
         # Get VRS data for reference allele
         gnomad_loc = f"{record.chrom}-{record.pos}"
         if compute_for_ref:
             reference_allele = f"{gnomad_loc}-{record.ref}-{record.ref}"
             self._get_vrs_object(
-                reference_allele, vrs_data, vrs_field_data, assembly,
-                output_pickle=output_pickle, output_vcf=output_vcf,
-                vrs_attributes=vrs_attributes, require_validation=require_validation
+                reference_allele,
+                vrs_data,
+                vrs_field_data,
+                assembly,
+                output_pickle=output_pickle,
+                output_vcf=output_vcf,
+                vrs_attributes=vrs_attributes,
+                require_validation=require_validation,
             )
 
         # Get VRS data for alts
@@ -462,9 +553,15 @@ class VCFAnnotator:  # pylint: disable=too-few-public-methods
                         vrs_field_data[field].append("")
             else:
                 self._get_vrs_object(
-                    allele, vrs_data, vrs_field_data, assembly, vrs_data_key=data,
-                    output_pickle=output_pickle, output_vcf=output_vcf,
-                    vrs_attributes=vrs_attributes, require_validation=require_validation
+                    allele,
+                    vrs_data,
+                    vrs_field_data,
+                    assembly,
+                    vrs_data_key=data,
+                    output_pickle=output_pickle,
+                    output_vcf=output_vcf,
+                    vrs_attributes=vrs_attributes,
+                    require_validation=require_validation,
                 )
 
         return vrs_field_data

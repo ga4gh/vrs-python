@@ -1,47 +1,51 @@
-"""Python support used across GA4GH projects
+"""Python support used across GA4GH projects"""
 
-"""
+from importlib.metadata import PackageNotFoundError, version
 
-from importlib.metadata import version, PackageNotFoundError
-
-from .digests import sha512t24u
-from .enderef import ga4gh_enref, ga4gh_deref
-from .identifiers import (
-    ga4gh_digest, ga4gh_identify, ga4gh_serialize, is_ga4gh_identifier,
-    VrsObjectIdentifierIs, use_ga4gh_compute_identifier_when,
-    CURIE_NAMESPACE, CURIE_SEP, GA4GH_PREFIX_SEP, GA4GH_IR_REGEXP, GA4GH_DIGEST_REGEXP,
-    PrevVrsVersion
+import ga4gh.core.models as core_models
+from ga4gh.core.digests import sha512t24u
+from ga4gh.core.enderef import ga4gh_deref, ga4gh_enref
+from ga4gh.core.identifiers import (
+    CURIE_NAMESPACE,
+    CURIE_SEP,
+    GA4GH_DIGEST_REGEXP,
+    GA4GH_IR_REGEXP,
+    GA4GH_PREFIX_SEP,
+    PrevVrsVersion,
+    VrsObjectIdentifierIs,
+    ga4gh_digest,
+    ga4gh_identify,
+    ga4gh_serialize,
+    is_ga4gh_identifier,
+    use_ga4gh_compute_identifier_when,
 )
-from .pydantic import (
-    is_pydantic_instance, is_curie_type, pydantic_copy
-)
-from . import models as core_models
+from ga4gh.core.pydantic import is_curie_type, is_pydantic_instance, pydantic_copy
 
 __all__ = [
-    "sha512t24u",
-    "ga4gh_enref",
-    "ga4gh_deref",
-    "ga4gh_digest",
-    "ga4gh_identify",
-    "ga4gh_serialize",
-    "is_ga4gh_identifier",
-    "VrsObjectIdentifierIs",
-    "use_ga4gh_compute_identifier_when",
     "CURIE_NAMESPACE",
     "CURIE_SEP",
-    "GA4GH_PREFIX_SEP",
-    "GA4GH_IR_REGEXP",
     "GA4GH_DIGEST_REGEXP",
+    "GA4GH_IR_REGEXP",
+    "GA4GH_PREFIX_SEP",
     "PrevVrsVersion",
-    "is_pydantic_instance",
-    "is_curie_type",
-    "pydantic_copy",
+    "VrsObjectIdentifierIs",
     "core_models",
+    "ga4gh_deref",
+    "ga4gh_digest",
+    "ga4gh_enref",
+    "ga4gh_identify",
+    "ga4gh_serialize",
+    "is_curie_type",
+    "is_ga4gh_identifier",
+    "is_pydantic_instance",
+    "pydantic_copy",
+    "sha512t24u",
+    "use_ga4gh_compute_identifier_when",
 ]
 
 try:
     __version__ = version(__name__)
-except PackageNotFoundError:    # pragma: nocover
+except PackageNotFoundError:  # pragma: nocover
     __version__ = "unknown"
 finally:
     del version, PackageNotFoundError

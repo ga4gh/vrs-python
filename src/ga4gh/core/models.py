@@ -4,9 +4,8 @@ from __future__ import annotations
 
 from abc import ABC
 from enum import Enum
-from typing import Annotated, Any, Dict, List, Optional, Union
+from typing import Annotated, Any, Optional, Union
 
-from ga4gh.core import GA4GH_IR_REGEXP
 from pydantic import (
     BaseModel,
     ConfigDict,
@@ -15,6 +14,8 @@ from pydantic import (
     StringConstraints,
     model_validator,
 )
+
+from ga4gh.core.identifiers import GA4GH_IR_REGEXP
 
 
 class Relation(str, Enum):
@@ -34,7 +35,7 @@ class Relation(str, Enum):
 #########################################
 
 
-class code(RootModel):
+class code(RootModel):  # noqa: N801
     """Indicates that the value is taken from a set of controlled strings defined
     elsewhere. Technically, a code is restricted to a string which has at least one
     character and no leading or trailing whitespace, and where there is no whitespace
@@ -50,7 +51,7 @@ class code(RootModel):
     )
 
 
-class iriReference(RootModel):
+class iriReference(RootModel):  # noqa: N801
     """An IRI Reference (either an IRI or a relative-reference), according to `RFC3986
     section 4.1 <https://datatracker.ietf.org/doc/html/rfc3986#section-4.1>`_ and
     `RFC3987 section 2.1 <https://datatracker.ietf.org/doc/html/rfc3987#section-2.1>`_.
@@ -58,10 +59,10 @@ class iriReference(RootModel):
     <https://datatracker.ietf.org/doc/html/rfc6901#section-6>`_.
     """
 
-    def __hash__(self) -> int:
+    def __hash__(self) -> int:  # noqa: D105
         return self.root.__hash__()
 
-    def ga4gh_serialize(self) -> str:
+    def ga4gh_serialize(self) -> str:  # noqa: D102
         m = GA4GH_IR_REGEXP.match(self.root)
         if m is not None:
             return m["digest"]
@@ -98,10 +99,10 @@ class Entity(BaseModel, ABC):
     description: Optional[str] = Field(
         None, description="A free-text description of the Entity."
     )
-    alternativeLabels: Optional[List[str]] = Field(
+    alternativeLabels: Optional[list[str]] = Field(  # noqa: N815
         None, description="Alternative name(s) for the Entity."
     )
-    extensions: Optional[List[Extension]] = Field(
+    extensions: Optional[list[Extension]] = Field(
         None,
         description="A list of extensions to the Entity, that allow for capture of information not directly supported by elements defined in the model.",
     )
@@ -117,7 +118,7 @@ class Element(BaseModel, ABC):
         None,
         description="The 'logical' identifier of the data element in the system of record, e.g. a UUID.  This 'id' is unique within a given system, but may or may not be globally unique outside the system. It is used within a system to reference an object from another.",
     )
-    extensions: Optional[List[Extension]] = Field(
+    extensions: Optional[list[Extension]] = Field(
         None,
         description="A list of extensions to the Entity, that allow for capture of information not directly supported by elements defined in the model.",
     )
@@ -141,11 +142,11 @@ class Coding(Element):
         ...,
         description="The terminology/code system that defined the code. May be reported as a free-text name (e.g. 'Sequence Ontology'), but it is preferable to provide a uri/url for the system. When the 'code' is reported as a CURIE, the 'system' should be reported as the uri that the CURIE's prefix expands to (e.g. 'http://purl.obofoundry.org/so.owl/' for the Sequence Ontology).",
     )
-    systemVersion: Optional[str] = Field(
+    systemVersion: Optional[str] = Field(  # noqa: N815
         None,
         description="Version of the terminology or code system that provided the code.",
     )
-    code: "code"  # Cannot use Field due to PydanticUserError: field name and type annotation must not clash.
+    code: code  # Cannot use Field due to PydanticUserError: field name and type annotation must not clash.
 
 
 class ConceptMapping(Element):
@@ -175,7 +176,7 @@ class Extension(Element):
         ...,
         description="A name for the Extension. Should be indicative of its meaning and/or the type of information it value represents.",
     )
-    value: Optional[Union[float, str, bool, Dict[str, Any], List[Any]]] = Field(
+    value: Optional[Union[float, str, bool, dict[str, Any], list[Any]]] = Field(
         ...,
         description="The value of the Extension - can be any primitive or structured object",
     )
@@ -188,31 +189,31 @@ class Extension(Element):
 class MappableConcept(Element):
     """A concept label that may be mapped to one or more `Codings`."""
 
-    conceptType: Optional[str] = Field(
+    conceptType: Optional[str] = Field(  # noqa: N815
         None,
         description="A term indicating the type of concept being represented by the MappableConcept.",
     )
     label: Optional[str] = Field(None, description="A primary name for the concept.")
-    primaryCode: Optional[code] = Field(
+    primaryCode: Optional[code] = Field(  # noqa: N815
         None,
         description="A primary code for the concept that is used to identify the concept in a terminology or code system. If there is a public code system for the primaryCode then it should also be specified in the mappings array with a relation of 'exactMatch'. This attribute is provided to both allow a more technical code to be used when a public Coding with a system is not available as well as when it is available but should be identified as the primary code.",
     )
-    mappings: Optional[List[ConceptMapping]] = Field(
+    mappings: Optional[list[ConceptMapping]] = Field(
         None,
         description="A list of mappings to concepts in terminologies or code systems. Each mapping should include a coding and a relation.",
     )
 
     @model_validator(mode="after")
-    def require_label_or_primary_code(cls, v):
+    def require_label_or_primary_code(cls, v):  # noqa: ANN001 N805 ANN201
         """Ensure that ``label`` or ``primaryCode`` is provided"""
         if v.primaryCode is None and v.label is None:
             err_msg = "`One of label` or `primaryCode` must be provided."
             raise ValueError(err_msg)
         return v
 
-    def ga4gh_serialize(self) -> Optional[str]:
+    def ga4gh_serialize(self) -> Optional[str]:  # noqa: D102
         if self.primaryCode:
-          return self.primaryCode.root
+            return self.primaryCode.root
         return None
 
 

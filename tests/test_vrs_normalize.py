@@ -1,4 +1,5 @@
 import pytest
+
 from ga4gh.vrs import models, normalize
 
 # >>> dp.get_sequence("refseq:NC_000019.10", 44908820, 44908830)
@@ -13,15 +14,12 @@ allele_dict = {
         "start": 26090950,
         "sequenceReference": {
             "type": "SequenceReference",
-            "refgetAccession": "SQ.0iKlIQk2oZLoeOG9P1riRU6hvL5Ux8TV"
+            "refgetAccession": "SQ.0iKlIQk2oZLoeOG9P1riRU6hvL5Ux8TV",
         },
-        "type": "SequenceLocation"
+        "type": "SequenceLocation",
     },
-    "state": {
-        "sequence": "C",
-        "type": "LiteralSequenceExpression"
-      },
-    "type": "Allele"
+    "state": {"sequence": "C", "type": "LiteralSequenceExpression"},
+    "type": "Allele",
 }
 
 
@@ -31,15 +29,12 @@ allele_dict2 = {
         "type": "SequenceLocation",
         "sequenceReference": {
             "type": "SequenceReference",
-            "refgetAccession": "SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP"
+            "refgetAccession": "SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP",
         },
         "start": [None, 155980375],
-        "end": [155980377, None]
+        "end": [155980377, None],
     },
-    "state": {
-        "sequence": "",
-        "type": "LiteralSequenceExpression"
-    }
+    "state": {"sequence": "", "type": "LiteralSequenceExpression"},
 }
 
 
@@ -49,16 +44,16 @@ allele_dict2_normalized = {
         "type": "SequenceLocation",
         "sequenceReference": {
             "type": "SequenceReference",
-            "refgetAccession": "SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP"
+            "refgetAccession": "SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP",
         },
         "start": [None, 155980375],
-        "end": [155980377, None]
+        "end": [155980377, None],
     },
     "state": {
         "length": 0,
         "repeatSubunitLength": 2,
-        "type": "ReferenceLengthExpression"
-    }
+        "type": "ReferenceLengthExpression",
+    },
 }
 
 
@@ -68,15 +63,12 @@ allele_dict3 = {
         "type": "SequenceLocation",
         "sequenceReference": {
             "type": "SequenceReference",
-            "refgetAccession": "SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP"
+            "refgetAccession": "SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP",
         },
         "start": [155980374, 155980375],
-        "end": [155980377, 155980378]
+        "end": [155980377, 155980378],
     },
-    "state": {
-        "sequence": "",
-        "type": "LiteralSequenceExpression"
-    }
+    "state": {"sequence": "", "type": "LiteralSequenceExpression"},
 }
 
 
@@ -86,15 +78,12 @@ allele_dict4 = {
         "type": "SequenceLocation",
         "sequenceReference": {
             "type": "SequenceReference",
-            "refgetAccession": "SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP"
+            "refgetAccession": "SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP",
         },
         "start": 155980373,
-        "end": 155980375
+        "end": 155980375,
     },
-    "state": {
-        "sequence": "GTGT",
-        "type": "LiteralSequenceExpression"
-    }
+    "state": {"sequence": "GTGT", "type": "LiteralSequenceExpression"},
 }
 
 allele_dict4_normalized = {
@@ -103,48 +92,52 @@ allele_dict4_normalized = {
         "type": "SequenceLocation",
         "sequenceReference": {
             "type": "SequenceReference",
-            "refgetAccession": "SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP"
+            "refgetAccession": "SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP",
         },
         "start": 155980373,
-        "end": 155980375
+        "end": 155980375,
     },
     "state": {
         "length": 4,
         "repeatSubunitLength": 2,
         "sequence": "GTGT",
-        "type": "ReferenceLengthExpression"
-    }
+        "type": "ReferenceLengthExpression",
+    },
 }
 
 allele_dict5 = {
-    'location': {
-        'end': 289464,
-        'start': 289464,
-        'sequenceReference': {
-            'type': 'SequenceReference',
-            'refgetAccession': 'SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl'
+    "location": {
+        "end": 289464,
+        "start": 289464,
+        "sequenceReference": {
+            "type": "SequenceReference",
+            "refgetAccession": "SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl",
         },
-        'type': 'SequenceLocation'
+        "type": "SequenceLocation",
     },
-    'state': {
-        'sequence': 'CAGCAG',
-        'type': 'LiteralSequenceExpression'
-    },
-    'type': 'Allele'
+    "state": {"sequence": "CAGCAG", "type": "LiteralSequenceExpression"},
+    "type": "Allele",
 }
 
 allele_dict5_normalized = {
-    'type': 'Allele',
-    'location': {'type': 'SequenceLocation',
-                 'sequenceReference': {'type': 'SequenceReference',
-                                       'refgetAccession': 'SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl'},
-                 'start': 289464,
-                 'end': 289469},
-    'state': {'type': 'ReferenceLengthExpression',
-              'length': 11,
-              'sequence': 'CAGCAGCAGCA',
-              'repeatSubunitLength': 3}
+    "type": "Allele",
+    "location": {
+        "type": "SequenceLocation",
+        "sequenceReference": {
+            "type": "SequenceReference",
+            "refgetAccession": "SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl",
+        },
+        "start": 289464,
+        "end": 289469,
+    },
+    "state": {
+        "type": "ReferenceLengthExpression",
+        "length": 11,
+        "sequence": "CAGCAGCAGCA",
+        "repeatSubunitLength": 3,
+    },
 }
+
 
 @pytest.mark.vcr
 def test_normalize_allele(rest_dataproxy):
