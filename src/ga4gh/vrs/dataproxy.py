@@ -320,6 +320,9 @@ def _isoformat(o: datetime.datetime) -> str:
     >>> _isoformat(dt)
     '2019-10-15T10:23:41.115927Z'
 
+    :param o: date object to format
+    :return: ISO8601-formatted string equivalent
+    :raise TypeError: if object given isn't a Python datetime instance
     """
     # stolen from connexion flask_app.py
     if not isinstance(o, datetime.datetime):
