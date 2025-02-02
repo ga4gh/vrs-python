@@ -273,11 +273,16 @@ handlers = {
 def normalize(vo, data_proxy: _DataProxy | None = None, **kwargs):
     """Normalize given vrs object, regardless of type
 
-    kwargs:
-        rle_seq_limit: If RLE is set as the new state, set the limit for the length
-            of the `sequence`. To exclude `state.sequence`, set to 0.
+    :param vo:
+    :param data_proxy: GA4GH sequence dataproxy instance, if needed
+    :keyword rle_seq_limit: If RLE is set as the new state, set the limit for the length
+        of the `sequence`. To exclude `state.sequence`, set to 0.
+    :return: normalized object
+    :raise TypeError: if given object isn't a pydantic.BaseModel
     """
-    assert is_pydantic_instance(vo)  # noqa: S101
+    if not is_pydantic_instance(vo):
+        msg = f"Object is of class {vo.__class__} (with parents {vo.__class__.__mro__}), but normalize requires objects that inherit from pydantic.BaseModel."
+        raise TypeError(msg)
     vo_type = vo.type
 
     if vo_type in handlers:

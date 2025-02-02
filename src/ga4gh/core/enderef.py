@@ -26,13 +26,13 @@ def ga4gh_enref(o, cra_map, object_store=None, return_id_obj_tuple=False) -> tup
     """Recursively convert "referable attributes" from inlined to
     referenced form.  Returns a new object.
 
-    cra_map: class referrable-attribute map; { o.type: [attr, attr, ...] }
-
-    If `object_store` is provided, it must be an
-    collections.abc.MutableMapping subclass and will be used to store
-    objects as they are referenced.  If `object_store` is not provided
-    (or None), referenced objects will not be stored.
-
+    :param o: VRS object
+    :param cra_map: class referrable-attribute map; { o.type: [attr, attr, ...] }
+    :param object_store: `collections.abc.MutableMapping` subclass that stores
+        objects as they are referenced. If not given, referenced objects are not stored.
+    :param return_id_obj_tuple: include ID with return value or not
+    :return: new, enref'd object, as well as object ID if param set
+    :raise TypeError: if any object IDs are non-GA4GH CURIEs
     """
 
     def _id_and_store(o):  # noqa: ANN202 ANN001
@@ -51,9 +51,11 @@ def ga4gh_enref(o, cra_map, object_store=None, return_id_obj_tuple=False) -> tup
             elif isinstance(v, str):
                 pass
             elif is_curie_type(v):  # already a reference
-                assert is_ga4gh_identifier(v), (  # noqa: S101
-                    "Identifiable attribute CURIE is contains an invalid identifier"
-                )
+                if not is_ga4gh_identifier(v):
+                    msg = (
+                        "Identifiable attribute CURIE is contains an invalid identifier"
+                    )
+                    raise TypeError(msg)
             elif v is not None:
                 _id = _id_and_store(v)
                 if _id:
