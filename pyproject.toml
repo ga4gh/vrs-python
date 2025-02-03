@@ -189,12 +189,6 @@ exclude = [
     "INP001",
     "SLF001",
 ]
-"src/ga4gh/vrs/utils/hgvs_tools.py" = [
-    "ANN001",
-    "ANN201",
-    "ANN202",
-    "D102",
-]
 "src/ga4gh/vrs/normalize.py" = [
     "ANN001",
     "ANN201",
@@ -202,11 +196,6 @@ exclude = [
 ]
 "src/ga4gh/vrs/extras/vcf_annotation.py" = [
     "PTH123",  # see https://github.com/ga4gh/vrs-python/issues/482
-]
-"src/ga4gh/vrs/extras/translator.py" = [
-    "ANN001",
-    "ANN101",
-    "ANN2",
 ]
 "src/ga4gh/vrs/extras/object_store.py" = [
     "ANN",

@@ -46,8 +46,8 @@ class _Translator(ABC):  # noqa: B024
     def __init__(
         self,
         data_proxy: _DataProxy,
-        default_assembly_name="GRCh38",
-        identify=True,
+        default_assembly_name: str = "GRCh38",
+        identify: bool = True,
         rle_seq_limit: int | None = 50,
     ):
         self.default_assembly_name = default_assembly_name
@@ -56,9 +56,10 @@ class _Translator(ABC):  # noqa: B024
         self.rle_seq_limit = rle_seq_limit
         self.from_translators = {}
         self.to_translators = {}
-        return
 
-    def translate_from(self, var, fmt=None, **kwargs):
+    def translate_from(
+        self, var: str, fmt: str | None = None, **kwargs
+    ) -> models._VariationBase:
         """Translate variation `var` to VRS object
 
         If `fmt` is None, guess the appropriate format and return the variant.
@@ -109,7 +110,7 @@ class _Translator(ABC):  # noqa: B024
         msg = f"Unable to parse data as {', '.join(formats)}"
         raise ValueError(msg)
 
-    def translate_to(self, vo, fmt):
+    def translate_to(self, vo: models._VariationBase, fmt: str) -> str:
         """Translate vrs object `vo` to named format `fmt`"""
         t = self.to_translators[fmt]
         return t(vo)
@@ -118,11 +119,11 @@ class _Translator(ABC):  # noqa: B024
     # INTERNAL
 
     @lazy_property
-    def hgvs_tools(self):
+    def hgvs_tools(self) -> HgvsTools:
         """Instantiate and return an HgvsTools instance"""
         return HgvsTools(self.data_proxy)
 
-    def _from_vrs(self, var):
+    def _from_vrs(self, var: dict) -> models._VariationBase | None:
         """Convert from dict representation of VRS JSON to VRS object"""
         if not isinstance(var, Mapping):
             return None
@@ -138,7 +139,12 @@ class _Translator(ABC):  # noqa: B024
 class AlleleTranslator(_Translator):
     """Class for translating formats to and from VRS Alleles"""
 
-    def __init__(self, data_proxy, default_assembly_name="GRCh38", identify=True):
+    def __init__(
+        self,
+        data_proxy: _DataProxy,
+        default_assembly_name: str = "GRCh38",
+        identify: bool = True,
+    ):
         """Initialize AlleleTranslator class"""
         super().__init__(data_proxy, default_assembly_name, identify)
 
@@ -155,7 +161,7 @@ class AlleleTranslator(_Translator):
             "spdi": self._to_spdi,
         }
 
-    def _create_allele(self, values: dict, **kwargs):
+    def _create_allele(self, values: dict, **kwargs) -> models.Allele:
         """Create an allele object with the given parameters.
 
         Args:
@@ -178,7 +184,7 @@ class AlleleTranslator(_Translator):
         allele = models.Allele(location=location, state=state)
         return self._post_process_imported_allele(allele, **kwargs)
 
-    def _from_beacon(self, beacon_expr, **kwargs):
+    def _from_beacon(self, beacon_expr: str, **kwargs) -> models.Allele | None:
         """Parse beacon expression into VRS Allele
 
         kwargs:
@@ -239,7 +245,7 @@ class AlleleTranslator(_Translator):
         }
         return self._create_allele(values, **kwargs)
 
-    def _from_gnomad(self, gnomad_expr, **kwargs):
+    def _from_gnomad(self, gnomad_expr: str, **kwargs) -> models.Allele | None:
         """Parse gnomAD-style VCF expression into VRS Allele
 
         kwargs:
@@ -312,13 +318,13 @@ class AlleleTranslator(_Translator):
         }
         return self._create_allele(values, **kwargs)
 
-    def _from_hgvs(self, hgvs_expr: str, **kwargs):
+    def _from_hgvs(self, hgvs_expr: str, **kwargs) -> models.Allele | None:
         allele_values = self.hgvs_tools.extract_allele_values(hgvs_expr)
         if allele_values:
             return self._create_allele(allele_values, **kwargs)
         return None
 
-    def _from_spdi(self, spdi_expr, **kwargs):
+    def _from_spdi(self, spdi_expr: str, **kwargs) -> models.Allele | None:
         """Parse SPDI expression in to a GA4GH Allele
 
         kwargs:
@@ -378,10 +384,14 @@ class AlleleTranslator(_Translator):
 
         return self._create_allele(values, **kwargs)
 
-    def _to_hgvs(self, vo, namespace="refseq"):
+    def _to_hgvs(
+        self, vo: models.Allele, namespace: str | None = "refseq"
+    ) -> list[str]:
         return self.hgvs_tools.from_allele(vo, namespace)
 
-    def _to_spdi(self, vo, namespace="refseq"):
+    def _to_spdi(
+        self, vo: models.Allele, namespace: str | None = "refseq"
+    ) -> list[str]:
         """Generate a *list* of SPDI expressions for VRS Allele.
 
         If `namespace` is not None, returns SPDI strings for the
@@ -405,7 +415,9 @@ class AlleleTranslator(_Translator):
         spdi_tail = f":{start}:{end - start}:{vo.state.sequence.root}"
         return [a + spdi_tail for a in aliases]
 
-    def _post_process_imported_allele(self, allele, **kwargs):
+    def _post_process_imported_allele(
+        self, allele: models.Allele, **kwargs
+    ) -> models.Allele:
         """Provide common post-processing for imported Alleles IN-PLACE.
 
         :param allele: VRS Allele object
@@ -435,14 +447,21 @@ class AlleleTranslator(_Translator):
 class CnvTranslator(_Translator):
     """Class for translating formats from format to VRS Copy Number"""
 
-    def __init__(self, data_proxy, default_assembly_name="GRCh38", identify=True):
+    def __init__(
+        self,
+        data_proxy: _DataProxy,
+        default_assembly_name: str = "GRCh38",
+        identify: bool = True,
+    ):
         """Initialize CnvTranslator class"""
         super().__init__(data_proxy, default_assembly_name, identify)
         self.from_translators = {
             "hgvs": self._from_hgvs,
         }
 
-    def _from_hgvs(self, hgvs_dup_del_expr: str, **kwargs):
+    def _from_hgvs(
+        self, hgvs_dup_del_expr: str, **kwargs
+    ) -> models.CopyNumberChange | models.CopyNumberCount | None:
         """Parse hgvs into a VRS CNV Object
 
         kwargs:
@@ -495,7 +514,9 @@ class CnvTranslator(_Translator):
 
         return self._post_process_imported_cnv(cnv)
 
-    def _post_process_imported_cnv(self, copy_number):
+    def _post_process_imported_cnv(
+        self, copy_number: models.CopyNumberChange | models.CopyNumberCount
+    ) -> models.CopyNumberChange | models.CopyNumberCount:
         """Provide common post-processing for imported Copy Numbers IN-PLACE."""
         if self.identify:
             copy_number.id = ga4gh_identify(copy_number)
