@@ -7,12 +7,11 @@ import hgvs
 import hgvs.dataproviders.uta
 import hgvs.normalizer
 import hgvs.parser
-import hgvs.sequencevariant
 import hgvs.variantmapper
 from hgvs.sequencevariant import SequenceVariant as HgvsSequenceVariant
 
 from ga4gh.vrs import models
-from ga4gh.vrs.dataproxy import _DataProxy, create_dataproxy
+from ga4gh.vrs.dataproxy import _DataProxy
 
 _logger = logging.getLogger(__name__)
 
@@ -289,7 +288,7 @@ class HgvsTools:
         edit = hgvs.edit.NARefAlt(ref=ref, alt=alt)
 
         posedit = hgvs.posedit.PosEdit(pos=ival, edit=edit)
-        var = hgvs.sequencevariant.SequenceVariant(
+        var = HgvsSequenceVariant(
             ac=accession,
             # at this point, use `n.` because the positions are absolute (not CDS),
             # this will subsequently be converted back to `c.` after hgvs normalization
@@ -326,6 +325,8 @@ class HgvsTools:
 
 if __name__ == "__main__":
     import os
+
+    from ga4gh.vrs.dataproxy import create_dataproxy
 
     seqrepo_uri = os.environ.get(
         "SEQREPO_URI", "seqrepo+file:///usr/local/share/seqrepo/latest"
