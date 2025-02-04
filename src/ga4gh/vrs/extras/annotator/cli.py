@@ -12,6 +12,9 @@ from timeit import default_timer as timer
 
 import click
 
+from ga4gh.vrs.dataproxy import create_dataproxy
+from ga4gh.vrs.extras.annotator.vcf import VCFAnnotator
+
 _logger = logging.getLogger(__name__)
 
 
@@ -69,12 +72,12 @@ def _log_level_option(func: Callable) -> Callable:
 @_cli.command(name="vcf")
 @_log_level_option
 @click.argument(
-    "vcf_in",
+    "vcf-in",
     nargs=1,
     type=click.Path(exists=True, readable=True, dir_okay=False, path_type=Path),
 )
 @click.option(
-    "--vcf_out",
+    "--vcf-out",
     required=False,
     type=click.Path(writable=True, allow_dash=False, path_type=Path),
     help=(
@@ -82,7 +85,7 @@ def _log_level_option(func: Callable) -> Callable:
     ),
 )
 @click.option(
-    "--vrs_pickle_out",
+    "--pkl-out",
     required=False,
     type=click.Path(writable=True, allow_dash=False, path_type=Path),
     help=(
@@ -90,35 +93,16 @@ def _log_level_option(func: Callable) -> Callable:
     ),
 )
 @click.option(
-    "--vrs_attributes",
+    "--incl-vrs-attrs",
     is_flag=True,
     default=False,
     help="Include VRS_Start, VRS_End, and VRS_State fields in the VCF output INFO field.",
 )
 @click.option(
-    "--seqrepo_dp_type",
+    "--dataproxy-uri",
     required=False,
-    default=SeqRepoProxyType.LOCAL,
-    type=click.Choice(
-        [v.value for v in SeqRepoProxyType.__members__.values()], case_sensitive=True
-    ),
-    help="Specify type of SeqRepo dataproxy to use.",
-    show_default=True,
-    show_choices=True,
-)
-@click.option(
-    "--seqrepo_root_dir",
-    required=False,
-    default=Path("/usr/local/share/seqrepo/latest"),
-    type=click.Path(path_type=Path),
-    help="Define root directory for local SeqRepo instance, if --seqrepo_dp_type=local.",
-    show_default=True,
-)
-@click.option(
-    "--seqrepo_base_url",
-    required=False,
-    default="http://localhost:5000/seqrepo",
-    help="Specify base URL for SeqRepo REST API, if --seqrepo_dp_type=rest.",
+    default="seqrepo+http://localhost:5000/seqrepo",
+    help="URI declaring source of sequence data. See subcommand description for more information.",
     show_default=True,
 )
 @click.option(
@@ -130,13 +114,13 @@ def _log_level_option(func: Callable) -> Callable:
     type=str,
 )
 @click.option(
-    "--skip_ref",
+    "--incl-ref-allele",
     is_flag=True,
     default=False,
     help="Skip VRS computation for REF alleles.",
 )
 @click.option(
-    "--require_validation",
+    "--require-validation",
     is_flag=True,
     default=False,
     help="Require validation checks to pass to construct a VRS object.",
@@ -151,13 +135,11 @@ def _log_level_option(func: Callable) -> Callable:
 def _annotate_vcf_cli(
     vcf_in: Path,
     vcf_out: Path | None,
-    vrs_pickle_out: Path | None,
-    vrs_attributes: bool,
-    seqrepo_dp_type: SeqRepoProxyType,
-    seqrepo_root_dir: Path,
-    seqrepo_base_url: str,
+    pkl_out: Path | None,
+    dataproxy_uri: str,
     assembly: str,
-    skip_ref: bool,
+    incl_vrs_attrs: bool,
+    incl_ref_allele: bool,
     require_validation: bool,
     silent: bool,
 ) -> None:
@@ -166,26 +148,31 @@ def _annotate_vcf_cli(
         $ vrs-annotate vcf input.vcf.gz --vcf_out output.vcf.gz --vrs_pickle_out vrs_objects.pkl
 
     Note that at least one of --vcf_out or --vrs_pickle_out must be selected and defined.
-    """
-    annotator = VCFAnnotator(
-        seqrepo_dp_type, seqrepo_base_url, str(seqrepo_root_dir.absolute())
-    )
-    vcf_out_str = str(vcf_out.absolute()) if vcf_out is not None else vcf_out
-    vrs_pkl_out_str = (
-        str(vrs_pickle_out.absolute()) if vrs_pickle_out is not None else vrs_pickle_out
-    )
+
+    Sequence data from a provider such as SeqRepo is required. Use the `--dataproxy_api`
+    option or the environment variable `GA4GH_VRS_DATAPROXY_URI` to define its location.
+    Currently accepted URI schemes:
+
+    \b
+     * seqrepo+file:///path/to/seqrepo/root
+     * seqrepo+:../relative/path/to/seqrepo/root
+     * seqrepo+http://localhost:5000/seqrepo
+     * seqrepo+https://somewhere:5000/seqrepo
+    """  # noqa: D301
+    data_proxy = create_dataproxy(dataproxy_uri)
+    annotator = VCFAnnotator(data_proxy)
     start = timer()
     msg = f"Annotating {vcf_in} with the VCF Annotator..."
     _logger.info(msg)
     if not silent:
         click.echo(msg)
     annotator.annotate(
-        str(vcf_in.absolute()),
-        vcf_out=vcf_out_str,
-        vrs_pickle_out=vrs_pkl_out_str,
-        vrs_attributes=vrs_attributes,
+        vcf_in,
+        output_vcf_path=vcf_out,
+        output_pkl_path=pkl_out,
+        incl_vrs_attrs=incl_vrs_attrs,
+        incl_ref_allele=incl_ref_allele,
         assembly=assembly,
-        compute_for_ref=(not skip_ref),
         require_validation=require_validation,
     )
     end = timer()
