@@ -121,7 +121,7 @@ class VCFAnnotator:
             )
             raise
         else:
-            if not vrs_obj:
+            if vrs_obj is None:
                 _logger.debug(
                     "None was returned when translating %s from gnomad", vcf_coords
                 )
