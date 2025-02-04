@@ -23,7 +23,7 @@ def input_vcf():
 
 
 @pytest.mark.vcr
-def test_annotate_vcf_grch38_noattrs(
+def test_grch38_noattrs(
     vcf_annotator: VCFAnnotator, vcr_cassette, input_vcf: Path, tmp_path: Path
 ):
     vcr_cassette.allow_playback_repeats = False
@@ -48,7 +48,7 @@ def test_annotate_vcf_grch38_noattrs(
 
 
 @pytest.mark.vcr
-def test_annotate_vcf_grch38_attrs(
+def test_grch38_attrs(
     vcf_annotator: VCFAnnotator, vcr_cassette, input_vcf: Path, tmp_path: Path
 ):
     vcr_cassette.allow_playback_repeats = False
@@ -71,7 +71,7 @@ def test_annotate_vcf_grch38_attrs(
 
 
 @pytest.mark.vcr
-def test_annotate_vcf_grch38_attrs_altsonly(
+def test_grch38_attrs_altsonly(
     vcf_annotator: VCFAnnotator, vcr_cassette, input_vcf: Path, tmp_path: Path
 ):
     vcr_cassette.allow_playback_repeats = False
@@ -100,7 +100,7 @@ def test_annotate_vcf_grch38_attrs_altsonly(
 
 
 @pytest.mark.vcr
-def test_annotate_vcf_grch37_attrs(vcf_annotator, vcr_cassette):
+def test_grch37_attrs(vcf_annotator, vcr_cassette):
     vcr_cassette.allow_playback_repeats = False
     input_vcf = f"{TEST_DATA_DIR}/test_vcf_input.vcf"
     output_vcf = f"{TEST_DATA_DIR}/test_vcf_output_grch37_attrs.vcf.gz"
@@ -123,7 +123,7 @@ def test_annotate_vcf_grch37_attrs(vcf_annotator, vcr_cassette):
 
 
 @pytest.mark.vcr
-def test_annotate_vcf_pickle_only(vcf_annotator, vcr_cassette):
+def test_pickle_only(vcf_annotator, vcr_cassette):
     vcr_cassette.allow_playback_repeats = False
     input_vcf = f"{TEST_DATA_DIR}/test_vcf_input.vcf"
     output_vcf = f"{TEST_DATA_DIR}/test_vcf_output_pickle_only.vcf.gz"
@@ -140,7 +140,7 @@ def test_annotate_vcf_pickle_only(vcf_annotator, vcr_cassette):
 
 
 @pytest.mark.vcr
-def test_annotate_vcf_vcf_only(vcf_annotator, vcr_cassette):
+def test_vcf_only(vcf_annotator, vcr_cassette):
     vcr_cassette.allow_playback_repeats = False
     input_vcf = f"{TEST_DATA_DIR}/test_vcf_input.vcf"
     output_vcf = f"{TEST_DATA_DIR}/test_vcf_output_vcf_only.vcf.gz"
@@ -159,7 +159,7 @@ def test_annotate_vcf_vcf_only(vcf_annotator, vcr_cassette):
     Path(output_vcf).unlink()
 
 
-def test_annotate_vcf_input_validation(vcf_annotator):
+def test_input_validation(vcf_annotator):
     input_vcf = f"{TEST_DATA_DIR}/test_vcf_input.vcf"
 
     with pytest.raises(VCFAnnotatorError) as e:
