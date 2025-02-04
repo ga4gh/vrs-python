@@ -14,7 +14,7 @@ def dataproxy():
     return SeqRepoDataProxy(sr)
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def rest_dataproxy():
     return SeqRepoRESTDataProxy(
         base_url=os.environ.get("SEQREPO_REST_URL", "http://localhost:5000/seqrepo")
