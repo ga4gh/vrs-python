@@ -6,25 +6,31 @@ from pathlib import Path
 
 import pytest
 
-from ga4gh.vrs.dataproxy import DataProxyValidationError
-from ga4gh.vrs.extras.vcf_annotation import VCFAnnotator, VCFAnnotatorException
+from ga4gh.vrs.dataproxy import DataProxyValidationError, _DataProxy
+from ga4gh.vrs.extras.annotator.vcf import VCFAnnotator, VCFAnnotatorError
 
-TEST_DATA_DIR = "tests/extras/data"
+TEST_DATA_DIR = Path("tests/extras/data")
 
 
 @pytest.fixture
-def vcf_annotator():
-    return VCFAnnotator("rest")
+def vcf_annotator(rest_dataproxy: _DataProxy):
+    return VCFAnnotator(rest_dataproxy)
+
+
+@pytest.fixture
+def input_vcf():
+    return TEST_DATA_DIR / "test_vcf_input.vcf"
 
 
 @pytest.mark.vcr
-def test_annotate_vcf_grch38_noattrs(vcf_annotator, vcr_cassette):
+def test_annotate_vcf_grch38_noattrs(
+    vcf_annotator: VCFAnnotator, vcr_cassette, input_vcf: Path, tmp_path: Path
+):
     vcr_cassette.allow_playback_repeats = False
-    input_vcf = f"{TEST_DATA_DIR}/test_vcf_input.vcf"
-    output_vcf = f"{TEST_DATA_DIR}/test_vcf_output_grch38_noattrs.vcf.gz"
-    output_vrs_pkl = f"{TEST_DATA_DIR}/test_vcf_pkl_grch38_noattrs.pkl"
+    output_vcf = tmp_path / "test_vcf_output_grch38_noattrs.vcf.gz"
+    output_vrs_pkl = tmp_path / "test_vcf_pkl_grch38_noattrs.pkl"
     expected_vcf_no_vrs_attrs = (
-        f"{TEST_DATA_DIR}/test_vcf_expected_output_no_vrs_attrs.vcf.gz"
+        TEST_DATA_DIR / "test_vcf_expected_output_no_vrs_attrs.vcf.gz"
     )
 
     # Test GRCh38 assembly, which was used for input_vcf and no vrs attributes
@@ -37,22 +43,21 @@ def test_annotate_vcf_grch38_noattrs(vcf_annotator, vcr_cassette):
         out_vcf_lines, expected_output_lines, strict=False
     ):
         assert actual_line == expected_line
-    assert Path(output_vrs_pkl).exists()
+    assert output_vrs_pkl.exists()
     assert vcr_cassette.all_played
-    Path(output_vcf).unlink()
-    Path(output_vrs_pkl).unlink()
 
 
 @pytest.mark.vcr
-def test_annotate_vcf_grch38_attrs(vcf_annotator, vcr_cassette):
+def test_annotate_vcf_grch38_attrs(
+    vcf_annotator: VCFAnnotator, vcr_cassette, input_vcf: Path, tmp_path: Path
+):
     vcr_cassette.allow_playback_repeats = False
-    input_vcf = f"{TEST_DATA_DIR}/test_vcf_input.vcf"
-    output_vcf = f"{TEST_DATA_DIR}/test_vcf_output_grch38_attrs.vcf.gz"
-    output_vrs_pkl = f"{TEST_DATA_DIR}/test_vcf_pkl_grch38_attrs.pkl"
-    expected_vcf = f"{TEST_DATA_DIR}/test_vcf_expected_output.vcf.gz"
+    output_vcf = tmp_path / "test_vcf_output_grch38_attrs.vcf.gz"
+    output_vrs_pkl = tmp_path / "test_vcf_pkl_grch38_attrs.pkl"
+    expected_vcf = TEST_DATA_DIR / "test_vcf_expected_output.vcf.gz"
 
     # Test GRCh38 assembly, which was used for input_vcf and vrs attributes
-    vcf_annotator.annotate(input_vcf, output_vcf, output_vrs_pkl, vrs_attributes=True)
+    vcf_annotator.annotate(input_vcf, output_vcf, output_vrs_pkl, incl_vrs_attrs=True)
     with gzip.open(output_vcf, "rt") as out_vcf:
         out_vcf_lines = out_vcf.readlines()
     with gzip.open(expected_vcf, "rt") as expected_output:
@@ -61,27 +66,26 @@ def test_annotate_vcf_grch38_attrs(vcf_annotator, vcr_cassette):
         out_vcf_lines, expected_output_lines, strict=False
     ):
         assert actual_line == expected_line
-    assert Path(output_vrs_pkl).exists()
+    assert output_vrs_pkl.exists()
     assert vcr_cassette.all_played
-    Path(output_vcf).unlink()
-    Path(output_vrs_pkl).unlink()
 
 
 @pytest.mark.vcr
-def test_annotate_vcf_grch38_attrs_altsonly(vcf_annotator, vcr_cassette):
+def test_annotate_vcf_grch38_attrs_altsonly(
+    vcf_annotator: VCFAnnotator, vcr_cassette, input_vcf: Path, tmp_path: Path
+):
     vcr_cassette.allow_playback_repeats = False
-    input_vcf = f"{TEST_DATA_DIR}/test_vcf_input.vcf"
-    output_vcf = f"{TEST_DATA_DIR}/test_vcf_output_grch38_attrs_altsonly.vcf.gz"
-    output_vrs_pkl = f"{TEST_DATA_DIR}/test_vcf_pkl_grch38_attrs_altsonly.pkl"
-    expected_altsonly_vcf = f"{TEST_DATA_DIR}/test_vcf_expected_altsonly_output.vcf.gz"
+    output_vcf = tmp_path / "test_vcf_output_grch38_attrs_altsonly.vcf.gz"
+    output_vrs_pkl = tmp_path / "test_vcf_pkl_grch38_attrs_altsonly.pkl"
+    expected_altsonly_vcf = TEST_DATA_DIR / "test_vcf_expected_altsonly_output.vcf.gz"
 
     # Test GRCh38 assembly with VRS computed for ALTs only, which was used for input_vcf and vrs attributes
     vcf_annotator.annotate(
         input_vcf,
         output_vcf,
         output_vrs_pkl,
-        vrs_attributes=True,
-        compute_for_ref=False,
+        incl_vrs_attrs=True,
+        incl_ref_allele=False,
     )
     with gzip.open(output_vcf, "rt") as out_vcf:
         out_vcf_lines = out_vcf.readlines()
@@ -91,10 +95,8 @@ def test_annotate_vcf_grch38_attrs_altsonly(vcf_annotator, vcr_cassette):
         out_vcf_lines, expected_output_lines, strict=False
     ):
         assert actual_line == expected_line
-    assert Path(output_vrs_pkl).exists()
+    assert output_vrs_pkl.exists()
     assert vcr_cassette.all_played
-    Path(output_vcf).unlink()
-    Path(output_vrs_pkl).unlink()
 
 
 @pytest.mark.vcr
@@ -160,7 +162,7 @@ def test_annotate_vcf_vcf_only(vcf_annotator, vcr_cassette):
 def test_annotate_vcf_input_validation(vcf_annotator):
     input_vcf = f"{TEST_DATA_DIR}/test_vcf_input.vcf"
 
-    with pytest.raises(VCFAnnotatorException) as e:
+    with pytest.raises(VCFAnnotatorError) as e:
         vcf_annotator.annotate(input_vcf)
     assert str(e.value) == "Must provide one of: `vcf_out` or `vrs_pickle_out`"
 

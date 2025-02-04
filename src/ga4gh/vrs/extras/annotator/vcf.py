@@ -1,8 +1,4 @@
-"""Annotate VCFs with VRS
-
-$ vrs-annotate vcf input.vcf.gz --vcf_out output.vcf.gz --vrs_pickle_out vrs_objects.pkl
-
-"""
+"""Annotate VCFs with VRS."""
 
 import logging
 import pickle
@@ -10,10 +6,9 @@ from pathlib import Path
 from typing import ClassVar
 
 import pysam
-from pydantic import ValidationError
 
 from ga4gh.core import VrsObjectIdentifierIs, use_ga4gh_compute_identifier_when
-from ga4gh.vrs.dataproxy import DataProxyValidationError, _DataProxy
+from ga4gh.vrs.dataproxy import _DataProxy
 from ga4gh.vrs.extras.translator import AlleleTranslator
 
 _logger = logging.getLogger(__name__)
@@ -97,6 +92,66 @@ class VCFAnnotator:
                 f"The literal sequence states used for the GA4GH VRS Alleles corresponding to the GT indexes of the {info_field_desc} alleles",
             )
 
+    def _process_allele(
+        self,
+        vcf_coords: str,
+        vrs_data: dict,
+        annotations: dict,
+        assembly: str,
+        vrs_data_key: str | None = None,
+        output_pickle: bool = True,
+        vrs_attributes: bool = False,
+        require_validation: bool = True,
+    ) -> None:
+        """Get VRS object given `vcf_coords`. `vrs_data` and `vrs_field_data` will
+        be mutated.
+
+        # TODO update
+        """
+        try:
+            vrs_obj = self.tlr._from_gnomad(  # noqa: SLF001
+                vcf_coords,
+                assembly_name=assembly,
+                require_validation=require_validation,
+            )
+        except Exception:
+            vrs_obj = None
+            _logger.exception(
+                "Exception encountered during translation of variation: %s", vcf_coords
+            )
+            raise
+        else:
+            if not vrs_obj:
+                _logger.debug(
+                    "None was returned when translating %s from gnomad", vcf_coords
+                )
+
+        if output_pickle and vrs_obj:
+            key = vrs_data_key if vrs_data_key else vcf_coords
+            vrs_data[key] = str(vrs_obj.model_dump(exclude_none=True))
+
+        if annotations:
+            allele_id = vrs_obj.id if vrs_obj else ""
+            annotations[self.VRS_ALLELE_IDS_FIELD].append(allele_id)
+
+            if vrs_attributes:
+                if vrs_obj:
+                    start = str(vrs_obj.location.start)
+                    end = str(vrs_obj.location.end)
+                    alt = (
+                        str(vrs_obj.state.sequence.root)
+                        if vrs_obj.state.sequence
+                        else ""
+                    )
+                else:
+                    start = ""
+                    end = ""
+                    alt = ""
+
+                annotations[self.VRS_STARTS_FIELD].append(start)
+                annotations[self.VRS_ENDS_FIELD].append(end)
+                annotations[self.VRS_STATES_FIELD].append(alt)
+
     def _process_vcf_row(
         self,
         record: pysam.VariantRecord,
@@ -114,38 +169,19 @@ class VCFAnnotator:
         INFO field values to annotate VCF row with.
 
         # TODO update these
-        :param record: A row in the VCF file
-        :param vrs_data: Dictionary containing the VRS object information for the VCF.
-            Will be mutated if `output_pickle = True`
-        :param assembly: The assembly used in `record`
-        :param additional_info_fields: Additional VRS fields to add in INFO field
-        :param vrs_attributes: If `True` will include VRS_Start, VRS_End, VRS_State
-            fields in the INFO field. If `False` will not include these fields. Only
-            used if `output_vcf` set to `True`.
-        :param output_pickle: If `True`, VRS pickle file will be output.
-        :param output_vcf: If `True`, annotated VCF file will be output.
-        :param compute_for_ref: If true, compute VRS IDs for the reference allele
-        :param require_validation: If `True` then validation checks must pass in
-            order to return a VRS object. A `DataProxyValidationError` will be raised if
-            validation checks fail. If `False` then VRS object will be returned even if
-            validation checks fail. Defaults to `True`.
-        :return: If `output_vcf = True`, a dictionary containing VRS Fields and list
-            of associated values. If `output_vcf = False`, an empty dictionary will be
-            returned.
         """
-        vrs_info_field_data = {field: [] for field in vrs_info_fields}
+        info_field_annotations = {field: [] for field in vrs_info_fields}
 
         # Get VRS data for reference allele
         gnomad_loc = f"{record.chrom}-{record.pos}"
         if incl_ref_allele:
             reference_allele = f"{gnomad_loc}-{record.ref}-{record.ref}"
-            self._get_vrs_object(
+            self._process_allele(
                 reference_allele,
                 vrs_data,
-                vrs_info_field_data,
+                info_field_annotations,
                 assembly,
                 output_pickle=output_pickle,
-                output_vcf=output_vcf,
                 vrs_attributes=incl_vrs_attrs,
                 require_validation=require_validation,
             )
@@ -153,27 +189,25 @@ class VCFAnnotator:
         # Get VRS data for alts
         alts = record.alts or []
         alleles = [f"{gnomad_loc}-{record.ref}-{a}" for a in [*alts]]
-        data = f"{record.chrom}\t{record.pos}\t{record.ref}\t{record.alts}"
+        data_key = f"{record.chrom}\t{record.pos}\t{record.ref}\t{record.alts}"
         for allele in alleles:
             if "*" in allele:
                 _logger.debug("Star allele found: %s", allele)
-                if output_vcf:
-                    for field in vrs_info_fields:
-                        vrs_info_field_data[field].append("")
+                for field in vrs_info_fields:
+                    info_field_annotations[field].append("")
             else:
-                self._get_vrs_object(
+                self._process_allele(
                     allele,
                     vrs_data,
-                    vrs_info_field_data,
+                    info_field_annotations,
                     assembly,
-                    vrs_data_key=data,
+                    vrs_data_key=data_key,
                     output_pickle=output_pickle,
-                    output_vcf=output_vcf,
                     vrs_attributes=incl_vrs_attrs,
                     require_validation=require_validation,
                 )
 
-        return vrs_info_field_data
+        return info_field_annotations
 
     @use_ga4gh_compute_identifier_when(VrsObjectIdentifierIs.MISSING)
     def annotate(
@@ -218,6 +252,7 @@ class VCFAnnotator:
             if output_vcf_path
             else None
         )
+        create_pkl = bool(output_pkl_path)
 
         vrs_data = {}
         for record in vcf:
@@ -230,17 +265,17 @@ class VCFAnnotator:
                         self.VRS_STATES_FIELD,
                     ]
             else:
+                # no info fields are necessary if we aren't producing an annotated VCF
                 vrs_info_fields = []
             try:
-                vrs_field_data = self._process_vcf_row(
+                vrs_info_field_annotations = self._process_vcf_row(
                     record,
                     vrs_data,
                     assembly,
                     vrs_info_fields,
                     incl_vrs_attrs=incl_vrs_attrs,
                     incl_ref_allele=incl_ref_allele,
-                    output_pickle=output_pickle,
-                    output_vcf=output_vcf,
+                    output_pickle=create_pkl,
                     require_validation=require_validation,
                 )
             except Exception as ex:
@@ -248,17 +283,19 @@ class VCFAnnotator:
                 err_msg = f"{ex}" or f"{type(ex)}"
                 err_msg = err_msg.translate(self.VCF_ESCAPE_MAP)
                 vrs_info_fields = [self.VRS_ERROR_FIELD]
-                vrs_field_data = {self.VRS_ERROR_FIELD: [err_msg]}
+                vrs_info_field_annotations = {self.VRS_ERROR_FIELD: [err_msg]}
 
             _logger.debug(
                 "VCF record %s-%s generated vrs_field_data %s",
                 record.chrom,
                 record.pos,
-                vrs_field_data,
+                vrs_info_field_annotations,
             )
             if output_vcf_path and vcf_out:
                 for k in vrs_info_fields:
-                    record.info[k] = [value or "." for value in vrs_field_data[k]]
+                    record.info[k] = [
+                        value or "." for value in vrs_info_field_annotations[k]
+                    ]
                 vcf_out.write(record)
 
         vcf.close()
@@ -268,94 +305,3 @@ class VCFAnnotator:
         if output_pkl_path:
             with output_pkl_path.open("wb") as wf:
                 pickle.dump(vrs_data, wf)
-
-    def _get_vrs_object(
-        self,
-        vcf_coords: str,
-        vrs_data: dict,
-        vrs_field_data: dict,
-        assembly: str,
-        vrs_data_key: str | None = None,
-        output_pickle: bool = True,
-        output_vcf: bool = False,
-        vrs_attributes: bool = False,
-        require_validation: bool = True,
-    ) -> None:
-        """Get VRS object given `vcf_coords`. `vrs_data` and `vrs_field_data` will
-        be mutated.
-
-        :param vcf_coords: Allele to get VRS object for. Format is chr-pos-ref-alt
-        :param vrs_data: Dictionary containing the VRS object information for the VCF
-        :param vrs_field_data: If `output_vcf`, keys are VRS Fields and values are list
-            of VRS data. Empty otherwise.
-        :param assembly: The assembly used in `vcf_coords`
-        :param vrs_data_key: The key to update in `vrs_data`. If not provided, will use
-            `vcf_coords` as the key.
-        :param output_pickle: If `True`, VRS pickle file will be output.
-        :param output_vcf: If `True`, annotated VCF file will be output.
-        :param vrs_attributes: If `True` will include VRS_Start, VRS_End, VRS_State
-            fields in the INFO field. If `False` will not include these fields. Only
-            used if `output_vcf` set to `True`.
-        :param require_validation: If `True` then validation checks must pass in order
-            to return a VRS object. If `False` then VRS object will be returned even if
-            validation checks fail. Defaults to `True`.
-        """
-        try:
-            vrs_obj = self.tlr._from_gnomad(  # noqa: SLF001
-                vcf_coords,
-                assembly_name=assembly,
-                require_validation=require_validation,
-            )
-        except (ValidationError, DataProxyValidationError):
-            vrs_obj = None
-            _logger.exception(
-                "ValidationError when translating %s from gnomad", vcf_coords
-            )
-            raise
-        except KeyError:
-            vrs_obj = None
-            _logger.exception("KeyError when translating %s from gnomad", vcf_coords)
-            raise
-        except AssertionError:
-            vrs_obj = None
-            _logger.exception(
-                "AssertionError when translating %s from gnomad", vcf_coords
-            )
-            raise
-        except Exception:
-            vrs_obj = None
-            _logger.exception(
-                "Unhandled Exception when translating %s from gnomad", vcf_coords
-            )
-            raise
-        else:
-            if not vrs_obj:
-                _logger.debug(
-                    "None was returned when translating %s from gnomad", vcf_coords
-                )
-
-        if output_pickle and vrs_obj:
-            key = vrs_data_key if vrs_data_key else vcf_coords
-            vrs_data[key] = str(vrs_obj.model_dump(exclude_none=True))
-
-        if output_vcf:
-            allele_id = vrs_obj.id if vrs_obj else ""
-            vrs_field_data[self.VRS_ALLELE_IDS_FIELD].append(allele_id)
-
-            if vrs_attributes:
-                if vrs_obj:
-                    start = str(vrs_obj.location.start)
-                    end = str(vrs_obj.location.end)
-                    alt = (
-                        str(vrs_obj.state.sequence.root)
-                        if vrs_obj.state.sequence
-                        else ""
-                    )
-                else:
-                    start = ""
-                    end = ""
-                    alt = ""
-
-                vrs_field_data[self.VRS_STARTS_FIELD].append(start)
-                vrs_field_data[self.VRS_ENDS_FIELD].append(end)
-                vrs_field_data[self.VRS_STATES_FIELD].append(alt)
