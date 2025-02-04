@@ -23,7 +23,7 @@ def input_vcf():
 
 
 @pytest.mark.vcr
-def test_grch38_noattrs(
+def test_annotate_vcf_grch38_noattrs(
     vcf_annotator: VCFAnnotator, vcr_cassette, input_vcf: Path, tmp_path: Path
 ):
     vcr_cassette.allow_playback_repeats = False
@@ -48,7 +48,7 @@ def test_grch38_noattrs(
 
 
 @pytest.mark.vcr
-def test_grch38_attrs(
+def test_annotate_vcf_grch38_attrs(
     vcf_annotator: VCFAnnotator, vcr_cassette, input_vcf: Path, tmp_path: Path
 ):
     vcr_cassette.allow_playback_repeats = False
@@ -71,7 +71,7 @@ def test_grch38_attrs(
 
 
 @pytest.mark.vcr
-def test_grch38_attrs_altsonly(
+def test_annotate_vcf_grch38_attrs_altsonly(
     vcf_annotator: VCFAnnotator, vcr_cassette, input_vcf: Path, tmp_path: Path
 ):
     vcr_cassette.allow_playback_repeats = False
@@ -100,16 +100,17 @@ def test_grch38_attrs_altsonly(
 
 
 @pytest.mark.vcr
-def test_grch37_attrs(vcf_annotator, vcr_cassette):
+def test_annotate_vcf_grch37_attrs(
+    vcf_annotator: VCFAnnotator, vcr_cassette, input_vcf: Path, tmp_path: Path
+):
     vcr_cassette.allow_playback_repeats = False
-    input_vcf = f"{TEST_DATA_DIR}/test_vcf_input.vcf"
-    output_vcf = f"{TEST_DATA_DIR}/test_vcf_output_grch37_attrs.vcf.gz"
-    output_vrs_pkl = f"{TEST_DATA_DIR}/test_vcf_pkl_grch37_attrs.pkl"
-    expected_vcf = f"{TEST_DATA_DIR}/test_vcf_expected_output.vcf.gz"
+    output_vcf = tmp_path / "test_vcf_output_grch37_attrs.vcf.gz"
+    output_vrs_pkl = tmp_path / "test_vcf_pkl_grch37_attrs.pkl"
+    expected_vcf = TEST_DATA_DIR / "test_vcf_expected_output.vcf.gz"
 
     # Test GRCh37 assembly, which was not used for input_vcf
     vcf_annotator.annotate(
-        input_vcf, output_vcf, output_vrs_pkl, vrs_attributes=True, assembly="GRCh37"
+        input_vcf, output_vcf, output_vrs_pkl, incl_vrs_attrs=True, assembly="GRCh37"
     )
     with gzip.open(output_vcf, "rt") as out_vcf:
         out_vcf_lines = out_vcf.readlines()
@@ -118,37 +119,36 @@ def test_grch37_attrs(vcf_annotator, vcr_cassette):
     assert out_vcf_lines != expected_output_lines
     assert Path(output_vrs_pkl).exists()
     assert vcr_cassette.all_played
-    Path(output_vcf).unlink()
-    Path(output_vrs_pkl).unlink()
 
 
 @pytest.mark.vcr
-def test_pickle_only(vcf_annotator, vcr_cassette):
+def test_annotate_vcf_pickle_only(
+    vcf_annotator: VCFAnnotator, vcr_cassette, input_vcf: Path, tmp_path: Path
+):
     vcr_cassette.allow_playback_repeats = False
-    input_vcf = f"{TEST_DATA_DIR}/test_vcf_input.vcf"
-    output_vcf = f"{TEST_DATA_DIR}/test_vcf_output_pickle_only.vcf.gz"
-    output_vrs_pkl = f"{TEST_DATA_DIR}/test_vcf_pkl_pickle_only.pkl"
+    output_vcf = tmp_path / "test_vcf_output_pickle_only.vcf.gz"
+    output_vrs_pkl = tmp_path / "test_vcf_pkl_pickle_only.pkl"
 
     # Test only pickle output
     vcf_annotator.annotate(
-        input_vcf, vrs_pickle_out=output_vrs_pkl, vrs_attributes=True
+        input_vcf, output_pkl_path=output_vrs_pkl, incl_vrs_attrs=True
     )
     assert Path(output_vrs_pkl).exists()
     assert not Path(output_vcf).exists()
     assert vcr_cassette.all_played
-    Path(output_vrs_pkl).unlink()
 
 
 @pytest.mark.vcr
-def test_vcf_only(vcf_annotator, vcr_cassette):
+def test_annotate_vcf_vcf_only(
+    vcf_annotator: VCFAnnotator, vcr_cassette, input_vcf: Path, tmp_path: Path
+):
     vcr_cassette.allow_playback_repeats = False
-    input_vcf = f"{TEST_DATA_DIR}/test_vcf_input.vcf"
-    output_vcf = f"{TEST_DATA_DIR}/test_vcf_output_vcf_only.vcf.gz"
-    output_vrs_pkl = f"{TEST_DATA_DIR}/test_vcf_pkl_vcf_only.pkl"
-    expected_vcf = f"{TEST_DATA_DIR}/test_vcf_expected_output.vcf.gz"
+    output_vcf = tmp_path / "test_vcf_output_vcf_only.vcf.gz"
+    output_vrs_pkl = tmp_path / "test_vcf_pkl_vcf_only.pkl"
+    expected_vcf = TEST_DATA_DIR / "test_vcf_expected_output.vcf.gz"
 
     # Test only VCF output
-    vcf_annotator.annotate(input_vcf, vcf_out=output_vcf, vrs_attributes=True)
+    vcf_annotator.annotate(input_vcf, output_vcf_path=output_vcf, incl_vrs_attrs=True)
     with gzip.open(output_vcf, "rt") as out_vcf:
         out_vcf_lines = out_vcf.readlines()
     with gzip.open(expected_vcf, "rt") as expected_output:
@@ -156,50 +156,49 @@ def test_vcf_only(vcf_annotator, vcr_cassette):
     assert out_vcf_lines == expected_output_lines
     assert vcr_cassette.all_played
     assert not Path(output_vrs_pkl).exists()
-    Path(output_vcf).unlink()
 
 
-def test_input_validation(vcf_annotator):
-    input_vcf = f"{TEST_DATA_DIR}/test_vcf_input.vcf"
-
-    with pytest.raises(VCFAnnotatorError) as e:
+def test_annotate_vcf_input_validation(vcf_annotator: VCFAnnotator, input_vcf: Path):
+    with pytest.raises(
+        VCFAnnotatorError,
+        match="Must provide one of: `output_vcf_path` or `output_pkl_path`",
+    ):
         vcf_annotator.annotate(input_vcf)
-    assert str(e.value) == "Must provide one of: `vcf_out` or `vrs_pickle_out`"
 
 
 @pytest.mark.vcr
-def test_get_vrs_object_invalid_input(vcf_annotator, caplog):
+def test_get_vrs_object_invalid_input(vcf_annotator: VCFAnnotator, caplog):
     """Test that _get_vrs_object method works as expected with invalid input"""
     # No CHROM
-    vcf_annotator._get_vrs_object(".-140753336-A-T", {}, [], "GRCh38")
+    vcf_annotator._process_allele(".-140753336-A-T", {}, {}, "GRCh38")
     assert "KeyError when getting refget accession: GRCh38:." in caplog.text
 
     # No POS
-    vcf_annotator._get_vrs_object("7-.-A-T", {}, [], "GRCh38")
+    vcf_annotator._process_allele("7-.-A-T", {}, {}, "GRCh38")
     assert "None was returned when translating 7-.-A-T from gnomad" in caplog.text
 
     # No REF
-    vcf_annotator._get_vrs_object("7-140753336-.-T", {}, [], "GRCh38")
+    vcf_annotator._process_allele("7-140753336-.-T", {}, {}, "GRCh38")
     assert (
         "None was returned when translating 7-140753336-.-T from gnomad" in caplog.text
     )
 
     # No ALT
-    vcf_annotator._get_vrs_object("7-140753336-A-.", {}, [], "GRCh38")
+    vcf_annotator._process_allele("7-140753336-A-.", {}, {}, "GRCh38")
     assert (
         "None was returned when translating 7-140753336-A-. from gnomad" in caplog.text
     )
 
     # Invalid ref, but not requiring validation checks so no error is raised
-    vcf_annotator._get_vrs_object(
-        "7-140753336-G-T", {}, [], "GRCh38", require_validation=False
+    vcf_annotator._process_allele(
+        "7-140753336-G-T", {}, {}, "GRCh38", require_validation=False
     )
     assert "" in caplog.text
 
     # Invalid ref, but requiring validation checks so an error is raised
     invalid_ref_seq_msg = "Expected reference sequence C on GRCh38:7 at positions (140753335, 140753336) but found A"
     with pytest.raises(DataProxyValidationError, match=re.escape(invalid_ref_seq_msg)):
-        vcf_annotator._get_vrs_object(
-            "7-140753336-C-T", {}, [], "GRCh38", require_validation=True
+        vcf_annotator._process_allele(
+            "7-140753336-C-T", {}, {}, "GRCh38", require_validation=True
         )
     assert invalid_ref_seq_msg in caplog.text
