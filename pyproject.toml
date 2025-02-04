@@ -189,21 +189,10 @@ exclude = [
     "INP001",
     "SLF001",
 ]
-"src/ga4gh/vrs/utils/hgvs_tools.py" = [
-    "ANN001",
-    "ANN201",
-    "ANN202",
-    "D102",
-]
 "src/ga4gh/vrs/normalize.py" = [
     "ANN001",
     "ANN201",
     "ANN202",
-]
-"src/ga4gh/vrs/extras/translator.py" = [
-    "ANN001",
-    "ANN101",
-    "ANN2",
 ]
 "src/ga4gh/vrs/extras/object_store.py" = [
     "ANN",

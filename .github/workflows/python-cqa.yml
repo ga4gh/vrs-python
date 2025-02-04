@@ -52,7 +52,7 @@ jobs:
         pip install -e .[dev,extras]
     - name: Test with pytest
       run: |
-        python -m pytest
+        python -m pytest --vcr-record=none
 
   precommit_hooks:
     runs-on: ubuntu-latest

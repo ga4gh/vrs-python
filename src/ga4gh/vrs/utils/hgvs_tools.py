@@ -7,11 +7,11 @@ import hgvs
 import hgvs.dataproviders.uta
 import hgvs.normalizer
 import hgvs.parser
-import hgvs.sequencevariant
 import hgvs.variantmapper
+from hgvs.sequencevariant import SequenceVariant as HgvsSequenceVariant
 
 from ga4gh.vrs import models
-from ga4gh.vrs.dataproxy import _DataProxy, create_dataproxy
+from ga4gh.vrs.dataproxy import _DataProxy
 
 _logger = logging.getLogger(__name__)
 
@@ -53,7 +53,7 @@ class HgvsTools:
             self.uta_conn.close()
 
     # convenience methods for hgvs parsing, normalization, and some mappings
-    def parse(self, hgvs_str):
+    def parse(self, hgvs_str: str) -> HgvsSequenceVariant | None:
         """Parse the given HGVS string and returns the corresponding variant.
 
         Args:
@@ -67,7 +67,7 @@ class HgvsTools:
             return None
         return self.parser.parse_hgvs_variant(hgvs_str)
 
-    def is_intronic(self, sv: hgvs.sequencevariant.SequenceVariant):
+    def is_intronic(self, sv: HgvsSequenceVariant) -> bool:
         """Check if the given SequenceVariant is intronic.
 
         Args:
@@ -81,12 +81,13 @@ class HgvsTools:
             return sv.posedit.pos.start.is_intronic or sv.posedit.pos.end.is_intronic
         return False
 
-    def get_edit_type(self, sv: hgvs.sequencevariant.SequenceVariant):
+    def get_edit_type(self, sv: HgvsSequenceVariant) -> str | None:
+        """Safely extract ``type`` property from SequenceVariant"""
         if sv is None or sv.posedit is None or sv.posedit.edit is None:
             return None
         return sv.posedit.edit.type
 
-    def get_position_and_state(self, sv: hgvs.sequencevariant.SequenceVariant):
+    def get_position_and_state(self, sv: HgvsSequenceVariant) -> tuple[int, int, str]:
         """Get the details of a sequence variant.
 
         Args:
@@ -130,7 +131,7 @@ class HgvsTools:
 
         return start, end, state
 
-    def extract_allele_values(self, hgvs_expr: str):
+    def extract_allele_values(self, hgvs_expr: str) -> dict | None:
         """Parse hgvs into a VRS Allele Object
 
         kwargs:
@@ -187,7 +188,7 @@ class HgvsTools:
             "literal_sequence": state,
         }
 
-    def from_allele(self, vo, namespace=None):
+    def from_allele(self, vo: models.Allele, namespace: str | None = None) -> list[str]:
         """Generate a *list* of HGVS expressions for VRS Allele.
 
         If `namespace` is not None, returns HGVS strings for the
@@ -259,7 +260,9 @@ class HgvsTools:
 
         return list(set(hgvs_exprs))
 
-    def _to_sequence_variant(self, vo, sequence_type, sequence, accession):
+    def _to_sequence_variant(
+        self, vo: models.Allele, sequence_type: str, sequence: str, accession: str
+    ) -> HgvsSequenceVariant:
         """Create a SequenceVariant object from an Allele object."""
         # build interval and edit depending on sequence type
         if sequence_type == "p":
@@ -285,7 +288,7 @@ class HgvsTools:
         edit = hgvs.edit.NARefAlt(ref=ref, alt=alt)
 
         posedit = hgvs.posedit.PosEdit(pos=ival, edit=edit)
-        var = hgvs.sequencevariant.SequenceVariant(
+        var = HgvsSequenceVariant(
             ac=accession,
             # at this point, use `n.` because the positions are absolute (not CDS),
             # this will subsequently be converted back to `c.` after hgvs normalization
@@ -307,18 +310,23 @@ class HgvsTools:
 
         return var
 
-    def normalize(self, hgvs):
+    def normalize(self, hgvs: HgvsSequenceVariant) -> HgvsSequenceVariant:
+        """Perform hgvs library `normalize()` method"""
         return self.normalizer.normalize(hgvs)
 
-    def n_to_c(self, hgvs):
+    def n_to_c(self, hgvs: HgvsSequenceVariant) -> HgvsSequenceVariant:
+        """Perform hgvs library `n_to_c` method"""
         return self.variant_mapper.n_to_c(hgvs)
 
-    def c_to_n(self, hgvs):
+    def c_to_n(self, hgvs: HgvsSequenceVariant) -> HgvsSequenceVariant:
+        """Perform hgvs library `c_to_n` method"""
         return self.variant_mapper.c_to_n(hgvs)
 
 
 if __name__ == "__main__":
     import os
+
+    from ga4gh.vrs.dataproxy import create_dataproxy
 
     seqrepo_uri = os.environ.get(
         "SEQREPO_URI", "seqrepo+file:///usr/local/share/seqrepo/latest"
@@ -345,7 +353,7 @@ if __name__ == "__main__":
         "state": {"type": "LiteralSequenceExpression", "sequence": "G"},
     }
 
-    vrs_allele = models.Allele.parse_obj(allele_dict)
+    vrs_allele = models.Allele.model_validate(allele_dict)
     dp = create_dataproxy(seqrepo_uri)
     hgvs_tools = HgvsTools(dp)
     hgvs_expr = hgvs_tools.from_allele(vrs_allele, namespace="refseq")

@@ -3,7 +3,7 @@
 from collections.abc import Callable
 
 
-def lazy_property(fn: Callable):  # noqa: ANN201
+def lazy_property(fn: Callable) -> property:
     """Provide a decorator that makes a property lazy-evaluated.
 
     [mv]
