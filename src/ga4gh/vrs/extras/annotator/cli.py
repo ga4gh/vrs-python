@@ -172,19 +172,15 @@ def _annotate_vcf_cli(
     annotator = VCFAnnotator(
         seqrepo_dp_type, seqrepo_base_url, str(seqrepo_root_dir.absolute())
     )
-    vcf_out_str = str(vcf_out.absolute()) if vcf_out is not None else vcf_out
-    vrs_pkl_out_str = (
-        str(vrs_pickle_out.absolute()) if vrs_pickle_out is not None else vrs_pickle_out
-    )
     start = timer()
     msg = f"Annotating {vcf_in} with the VCF Annotator..."
     _logger.info(msg)
     if not silent:
         click.echo(msg)
     annotator.annotate(
-        str(vcf_in.absolute()),
-        output_vcf_path=vcf_out_str,
-        output_pkl_path=vrs_pkl_out_str,
+        vcf_in.absolute(),
+        output_vcf_path=vcf_out,
+        output_pkl_path=vrs_pickle_out,
         vrs_attributes=vrs_attributes,
         assembly=assembly,
         compute_for_ref=(not skip_ref),
