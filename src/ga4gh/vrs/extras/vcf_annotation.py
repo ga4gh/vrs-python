@@ -28,7 +28,7 @@ _logger = logging.getLogger(__name__)
 _logger.setLevel(logging.DEBUG)
 
 
-class VCFAnnotatorException(Exception):  # noqa: N818
+class VCFAnnotatorError(Exception):
     """Custom exceptions for VCF Annotator tool"""
 
 
@@ -291,7 +291,7 @@ class VCFAnnotator:
         """
         if not any((vcf_out, vrs_pickle_out)):
             msg = "Must provide one of: `vcf_out` or `vrs_pickle_out`"
-            raise VCFAnnotatorException(msg)
+            raise VCFAnnotatorError(msg)
 
         info_field_num = "R" if compute_for_ref else "A"
         info_field_desc = "REF and ALT" if compute_for_ref else "ALT"
