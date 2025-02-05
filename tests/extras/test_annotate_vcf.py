@@ -19,16 +19,16 @@ TEST_DATA_DIR = Path("tests/extras/data")
 
 
 @pytest.fixture
-def rest_dataproxy():
-    """REST dataproxy scoped to individual test cases, rather than the entire session"""
+def rest_dataproxy_fn_scope():
+    """REST dataproxy scoped to individual test functions, rather than the entire session"""
     return SeqRepoRESTDataProxy(
         base_url=os.environ.get("SEQREPO_REST_URL", "http://localhost:5000/seqrepo")
     )
 
 
 @pytest.fixture
-def vcf_annotator(rest_dataproxy: _DataProxy):
-    return VCFAnnotator(rest_dataproxy)
+def vcf_annotator(rest_dataproxy_fn_scope: _DataProxy):
+    return VCFAnnotator(rest_dataproxy_fn_scope)
 
 
 @pytest.fixture

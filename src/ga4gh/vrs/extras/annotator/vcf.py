@@ -46,7 +46,7 @@ class VCFAnnotator:
     def __init__(self, data_proxy: _DataProxy) -> None:
         """Initialize the VCFAnnotator class.
 
-        :param data_proxy:
+        :param data_proxy: GA4GH sequence dataproxy instance.
         """
         self.data_proxy = data_proxy
         self.tlr = AlleleTranslator(self.data_proxy)
@@ -57,6 +57,13 @@ class VCFAnnotator:
         incl_ref_allele: bool,
         incl_vrs_attrs: bool,
     ) -> None:
+        """Add new fields to VCF header
+
+        :param vcf: pysam VCF object to annotate
+        :param incl_ref_allele: whether VRS alleles will be calculated for REFs
+        :param incl_vrs_attrs: whether INFO properties should be defined for VRS attributes
+            (normalized coordinates/state)
+        """
         info_field_num = "R" if incl_ref_allele else "A"
         info_field_desc = "REF and ALT" if incl_ref_allele else "ALT"
         vcf.header.info.add(
@@ -99,8 +106,8 @@ class VCFAnnotator:
         annotations: dict,
         assembly: str,
         vrs_data_key: str | None = None,
-        output_pickle: bool = True,
-        vrs_attributes: bool = False,
+        create_pickle: bool = True,
+        incl_vrs_attrs: bool = False,
         require_validation: bool = True,
     ) -> None:
         """Get VRS object given `vcf_coords`. `vrs_data` and `vrs_field_data` will
@@ -125,7 +132,7 @@ class VCFAnnotator:
                 "None was returned when translating %s from gnomad", vcf_coords
             )
 
-        if output_pickle and vrs_obj:
+        if create_pickle and vrs_obj:
             key = vrs_data_key if vrs_data_key else vcf_coords
             vrs_data[key] = str(vrs_obj.model_dump(exclude_none=True))
 
@@ -133,7 +140,7 @@ class VCFAnnotator:
             allele_id = vrs_obj.id if vrs_obj else ""
             annotations[self.VRS_ALLELE_IDS_FIELD].append(allele_id)
 
-            if vrs_attributes:
+            if incl_vrs_attrs:
                 if vrs_obj:
                     start = str(vrs_obj.location.start)
                     end = str(vrs_obj.location.end)
@@ -143,9 +150,7 @@ class VCFAnnotator:
                         else ""
                     )
                 else:
-                    start = ""
-                    end = ""
-                    alt = ""
+                    start = end = alt = ""
 
                 annotations[self.VRS_STARTS_FIELD].append(start)
                 annotations[self.VRS_ENDS_FIELD].append(end)
@@ -159,7 +164,7 @@ class VCFAnnotator:
         vrs_info_fields: list[str],
         incl_vrs_attrs: bool,
         incl_ref_allele: bool,
-        output_pickle: bool,
+        create_pickle: bool,
         require_validation: bool,
     ) -> dict:
         """Compute VRS objects for a VCF row.
@@ -180,8 +185,8 @@ class VCFAnnotator:
                 vrs_data,
                 info_field_annotations,
                 assembly,
-                output_pickle=output_pickle,
-                vrs_attributes=incl_vrs_attrs,
+                create_pickle=create_pickle,
+                incl_vrs_attrs=incl_vrs_attrs,
                 require_validation=require_validation,
             )
 
@@ -201,8 +206,8 @@ class VCFAnnotator:
                     info_field_annotations,
                     assembly,
                     vrs_data_key=data_key,
-                    output_pickle=output_pickle,
-                    vrs_attributes=incl_vrs_attrs,
+                    create_pickle=create_pickle,
+                    incl_vrs_attrs=incl_vrs_attrs,
                     require_validation=require_validation,
                 )
 
@@ -274,7 +279,7 @@ class VCFAnnotator:
                     vrs_info_fields,
                     incl_vrs_attrs=incl_vrs_attrs,
                     incl_ref_allele=incl_ref_allele,
-                    output_pickle=create_pkl,
+                    create_pickle=create_pkl,
                     require_validation=require_validation,
                 )
             except Exception as ex:
