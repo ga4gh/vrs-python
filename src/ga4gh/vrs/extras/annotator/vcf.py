@@ -33,28 +33,31 @@ class SeqRepoProxyType(str, Enum):
     REST = "rest"
 
 
+# Field names for VCF
+VRS_ALLELE_IDS_FIELD = "VRS_Allele_IDs"
+VRS_STARTS_FIELD = "VRS_Starts"
+VRS_ENDS_FIELD = "VRS_Ends"
+VRS_STATES_FIELD = "VRS_States"
+VRS_ERROR_FIELD = "VRS_Error"
+
+# VCF character escape map
+VCF_ESCAPE_MAP = str.maketrans(
+    {
+        "%": "%25",
+        ";": "%3B",
+        ",": "%2C",
+        "\r": "%0D",
+        "\n": "%0A",
+    }
+)
+
+
 class VCFAnnotator:
     """Annotate VCFs with VRS allele IDs.
 
     Uses pysam to read, store, and (optionally) output VCFs. Alleles are translated
     into VRS IDs using the VRS-Python translator class.
     """
-
-    # Field names for VCF
-    VRS_ALLELE_IDS_FIELD = "VRS_Allele_IDs"
-    VRS_STARTS_FIELD = "VRS_Starts"
-    VRS_ENDS_FIELD = "VRS_Ends"
-    VRS_STATES_FIELD = "VRS_States"
-    VRS_ERROR_FIELD = "VRS_Error"
-    # VCF character escape map
-    VCF_ESCAPE_MAP = [  # noqa: RUF012
-        ("%", "%25"),
-        (";", "%3B"),
-        (",", "%2C"),
-        ("\r", "%0D"),
-        ("\n", "%0A"),
-        ("\t", "%09"),
-    ]
 
     def __init__(
         self,
@@ -113,7 +116,7 @@ class VCFAnnotator:
         vrs_data = {}
         vcf_in = pysam.VariantFile(filename=vcf_in)
         vcf_in.header.info.add(
-            self.VRS_ALLELE_IDS_FIELD,
+            VRS_ALLELE_IDS_FIELD,
             info_field_num,
             "String",
             (
@@ -122,7 +125,7 @@ class VCFAnnotator:
             ),
         )
         vcf_in.header.info.add(
-            self.VRS_ERROR_FIELD,
+            VRS_ERROR_FIELD,
             ".",
             "String",
             ("If an error occurred computing a VRS Identifier, the error message"),
@@ -130,7 +133,7 @@ class VCFAnnotator:
 
         if vrs_attributes:
             vcf_in.header.info.add(
-                self.VRS_STARTS_FIELD,
+                VRS_STARTS_FIELD,
                 info_field_num,
                 "String",
                 (
@@ -139,7 +142,7 @@ class VCFAnnotator:
                 ),
             )
             vcf_in.header.info.add(
-                self.VRS_ENDS_FIELD,
+                VRS_ENDS_FIELD,
                 info_field_num,
                 "String",
                 (
@@ -148,7 +151,7 @@ class VCFAnnotator:
                 ),
             )
             vcf_in.header.info.add(
-                self.VRS_STATES_FIELD,
+                VRS_STATES_FIELD,
                 info_field_num,
                 "String",
                 (
@@ -164,12 +167,12 @@ class VCFAnnotator:
         output_pickle = bool(vrs_pickle_out)
 
         for record in vcf_in:
-            additional_info_fields = [self.VRS_ALLELE_IDS_FIELD]
+            additional_info_fields = [VRS_ALLELE_IDS_FIELD]
             if vrs_attributes:
                 additional_info_fields += [
-                    self.VRS_STARTS_FIELD,
-                    self.VRS_ENDS_FIELD,
-                    self.VRS_STATES_FIELD,
+                    VRS_STARTS_FIELD,
+                    VRS_ENDS_FIELD,
+                    VRS_STATES_FIELD,
                 ]
             try:
                 vrs_field_data = self._get_vrs_data(
@@ -186,10 +189,9 @@ class VCFAnnotator:
             except Exception as ex:
                 _logger.exception("VRS error on %s-%s", record.chrom, record.pos)
                 err_msg = f"{ex}" or f"{type(ex)}"
-                for search_repl in VCFAnnotator.VCF_ESCAPE_MAP:
-                    err_msg = err_msg.replace(search_repl[0], search_repl[1])
-                additional_info_fields = [self.VRS_ERROR_FIELD]
-                vrs_field_data = {self.VRS_ERROR_FIELD: [err_msg]}
+                err_msg = err_msg.translate(VCF_ESCAPE_MAP)
+                additional_info_fields = [VRS_ERROR_FIELD]
+                vrs_field_data = {VRS_ERROR_FIELD: [err_msg]}
 
             _logger.debug(
                 "VCF record %s-%s generated vrs_field_data %s",
@@ -299,9 +301,9 @@ class VCFAnnotator:
                     end = ""
                     alt = ""
 
-                vrs_field_data[self.VRS_STARTS_FIELD].append(start)
-                vrs_field_data[self.VRS_ENDS_FIELD].append(end)
-                vrs_field_data[self.VRS_STATES_FIELD].append(alt)
+                vrs_field_data[VRS_STARTS_FIELD].append(start)
+                vrs_field_data[VRS_ENDS_FIELD].append(end)
+                vrs_field_data[VRS_STATES_FIELD].append(alt)
 
     def _get_vrs_data(
         self,
