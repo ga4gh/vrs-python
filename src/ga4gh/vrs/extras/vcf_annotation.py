@@ -5,7 +5,7 @@ $ vrs-annotate vcf input.vcf.gz --vcf_out output.vcf.gz --vrs_pickle_out vrs_obj
 """
 
 import logging
-import pathlib
+from pathlib import Path
 import pickle
 from collections.abc import Callable
 from enum import Enum
@@ -95,12 +95,12 @@ def _log_level_option(func: Callable) -> Callable:
 @click.argument(
     "vcf_in",
     nargs=1,
-    type=click.Path(exists=True, readable=True, dir_okay=False, path_type=pathlib.Path),
+    type=click.Path(exists=True, readable=True, dir_okay=False, path_type=Path),
 )
 @click.option(
     "--vcf_out",
     required=False,
-    type=click.Path(writable=True, allow_dash=False, path_type=pathlib.Path),
+    type=click.Path(writable=True, allow_dash=False, path_type=Path),
     help=(
         "Declare save location for output annotated VCF. If not provided, must provide --vrs_pickle_out."
     ),
@@ -108,7 +108,7 @@ def _log_level_option(func: Callable) -> Callable:
 @click.option(
     "--vrs_pickle_out",
     required=False,
-    type=click.Path(writable=True, allow_dash=False, path_type=pathlib.Path),
+    type=click.Path(writable=True, allow_dash=False, path_type=Path),
     help=(
         "Declare save location for output VCF pickle. If not provided, must provide --vcf_out."
     ),
@@ -133,8 +133,8 @@ def _log_level_option(func: Callable) -> Callable:
 @click.option(
     "--seqrepo_root_dir",
     required=False,
-    default=pathlib.Path("/usr/local/share/seqrepo/latest"),
-    type=click.Path(path_type=pathlib.Path),
+    default=Path("/usr/local/share/seqrepo/latest"),
+    type=click.Path(path_type=Path),
     help="Define root directory for local SeqRepo instance, if --seqrepo_dp_type=local.",
     show_default=True,
 )
@@ -173,12 +173,12 @@ def _log_level_option(func: Callable) -> Callable:
     help="Suppress messages printed to stdout",
 )
 def _annotate_vcf_cli(
-    vcf_in: pathlib.Path,
-    vcf_out: pathlib.Path | None,
-    vrs_pickle_out: pathlib.Path | None,
+    vcf_in: Path,
+    vcf_out: Path | None,
+    vrs_pickle_out: Path | None,
     vrs_attributes: bool,
     seqrepo_dp_type: SeqRepoProxyType,
-    seqrepo_root_dir: pathlib.Path,
+    seqrepo_root_dir: Path,
     seqrepo_base_url: str,
     assembly: str,
     skip_ref: bool,
@@ -264,9 +264,9 @@ class VCFAnnotator:
     @use_ga4gh_compute_identifier_when(VrsObjectIdentifierIs.MISSING)
     def annotate(
         self,
-        vcf_in: str,
-        vcf_out: str | None = None,
-        vrs_pickle_out: str | None = None,
+        vcf_in: Path,
+        vcf_out: Path | None = None,
+        vrs_pickle_out: Path | None = None,
         vrs_attributes: bool = False,
         assembly: str = "GRCh38",
         compute_for_ref: bool = True,
@@ -297,8 +297,8 @@ class VCFAnnotator:
         info_field_desc = "REF and ALT" if compute_for_ref else "ALT"
 
         vrs_data = {}
-        vcf_in = pysam.VariantFile(filename=vcf_in)
-        vcf_in.header.info.add(
+        vcf = pysam.VariantFile(filename=str(vcf_in.absolute()))
+        vcf.header.info.add(
             self.VRS_ALLELE_IDS_FIELD,
             info_field_num,
             "String",
@@ -307,7 +307,7 @@ class VCFAnnotator:
                 f"GT indexes of the {info_field_desc} alleles"
             ),
         )
-        vcf_in.header.info.add(
+        vcf.header.info.add(
             self.VRS_ERROR_FIELD,
             ".",
             "String",
@@ -315,7 +315,7 @@ class VCFAnnotator:
         )
 
         if vrs_attributes:
-            vcf_in.header.info.add(
+            vcf.header.info.add(
                 self.VRS_STARTS_FIELD,
                 info_field_num,
                 "String",
@@ -324,7 +324,7 @@ class VCFAnnotator:
                     f"VRS Alleles corresponding to the GT indexes of the {info_field_desc} alleles"
                 ),
             )
-            vcf_in.header.info.add(
+            vcf.header.info.add(
                 self.VRS_ENDS_FIELD,
                 info_field_num,
                 "String",
@@ -333,7 +333,7 @@ class VCFAnnotator:
                     f"Alleles corresponding to the GT indexes of the {info_field_desc} alleles"
                 ),
             )
-            vcf_in.header.info.add(
+            vcf.header.info.add(
                 self.VRS_STATES_FIELD,
                 info_field_num,
                 "String",
@@ -344,12 +344,12 @@ class VCFAnnotator:
             )
 
         if vcf_out:
-            vcf_out = pysam.VariantFile(vcf_out, "w", header=vcf_in.header)
+            vcf_out = pysam.VariantFile(str(vcf_out.absolute()), "w", header=vcf.header)
 
         output_vcf = bool(vcf_out)
         output_pickle = bool(vrs_pickle_out)
 
-        for record in vcf_in:
+        for record in vcf:
             additional_info_fields = [self.VRS_ALLELE_IDS_FIELD]
             if vrs_attributes:
                 additional_info_fields += [
@@ -389,7 +389,7 @@ class VCFAnnotator:
                     record.info[k] = [value or "." for value in vrs_field_data[k]]
                 vcf_out.write(record)
 
-        vcf_in.close()
+        vcf.close()
 
         if output_vcf:
             vcf_out.close()
