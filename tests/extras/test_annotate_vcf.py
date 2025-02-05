@@ -169,7 +169,7 @@ def test_annotate_vcf_input_validation(vcf_annotator):
 @pytest.mark.vcr
 def test_get_vrs_object_invalid_input(vcf_annotator, caplog):
     """Test that _get_vrs_object method works as expected with invalid input"""
-    # some tests are check
+    # some tests below are checking for debug logging statements
     caplog.set_level(logging.DEBUG)
 
     # No CHROM
