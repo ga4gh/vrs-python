@@ -1,6 +1,6 @@
 # VCF Annotator
 
-The [VCF Annotator tool](../../src/ga4gh/vrs/extras/vcf_annotation.py) provides utility for annotating VCF's with VRS Allele IDs.
+The [VCF Annotator tool](../../src/ga4gh/vrs/extras/annotator/vcf.py) provides a Python class for annotating VCFs with VRS Allele IDs. A [command-line interface](../../src/ga4gh/vrs/extras/annotator/cli.py) is available for accessing these functions from a shell or shell script.
 
 ## How to use
 
