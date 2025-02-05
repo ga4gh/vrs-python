@@ -285,7 +285,7 @@ class VCFAnnotator:
 
         if output_vcf:
             allele_id = vrs_obj.id if vrs_obj else ""
-            vrs_field_data[self.VRS_ALLELE_IDS_FIELD].append(allele_id)
+            vrs_field_data[VRS_ALLELE_IDS_FIELD].append(allele_id)
 
             if vrs_attributes:
                 if vrs_obj:
