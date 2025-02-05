@@ -78,7 +78,7 @@ Source = "https://github.com/ga4gh/vrs-python"
 "Bug Tracker" = "https://github.com/ga4gh/vrs-python/issues"
 
 [project.scripts]
-vrs-annotate = "ga4gh.vrs.extras.vcf_annotation:_cli"
+vrs-annotate = "ga4gh.vrs.extras.annotator.cli:_cli"
 
 [build-system]
 requires = ["setuptools>=65.3", "setuptools_scm>=8"]
@@ -193,7 +193,7 @@ exclude = [
     "ANN201",
     "ANN202",
 ]
-"src/ga4gh/vrs/extras/vcf_annotation.py" = [
+"src/ga4gh/vrs/extras/annotator/vcf.py" = [
     "PTH123",  # see https://github.com/ga4gh/vrs-python/issues/482
 ]
 "src/ga4gh/vrs/extras/object_store.py" = [
