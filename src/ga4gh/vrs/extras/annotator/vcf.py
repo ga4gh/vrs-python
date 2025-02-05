@@ -103,6 +103,7 @@ class VCFAnnotator:
             object for a record. If `False` then VRS object will be returned even if
             validation checks fail, although all instances of failed validation are
             logged as warnings regardless.
+        :raise VCFAnnotatorError: if no output formats are selected
         """
         if not any((output_vcf_path, output_pkl_path)):
             msg = "Must provide one of: `vcf_out` or `vrs_pickle_out`"
@@ -230,9 +231,10 @@ class VCFAnnotator:
         be mutated.
 
         :param vcf_coords: Allele to get VRS object for. Format is chr-pos-ref-alt
-        :param vrs_data: Dictionary containing the VRS object information for the VCF
-        :param vrs_field_data: If `output_vcf`, keys are VRS Fields and values are list
-            of VRS data. Empty otherwise.
+        :param vrs_data: All constructed VRS objects. Can be `None` if no data dumps
+            will be created.
+        :param vrs_field_data: If `vrs_data`, keys are VRS Fields and values are list
+            of VRS data. Empty dict otherwise.
         :param assembly: The assembly used in `vcf_coords`
         :param vrs_data_key: The key to update in `vrs_data`. If not provided, will use
             `vcf_coords` as the key.
