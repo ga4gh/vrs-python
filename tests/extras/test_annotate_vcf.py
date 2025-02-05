@@ -1,13 +1,14 @@
 """Ensure proper functionality of VCFAnnotator"""
 
 import gzip
+import logging
 import re
 from pathlib import Path
 
 import pytest
 
 from ga4gh.vrs.dataproxy import DataProxyValidationError
-from ga4gh.vrs.extras.vcf_annotation import VCFAnnotator, VCFAnnotatorException
+from ga4gh.vrs.extras.annotator.vcf import VCFAnnotator, VCFAnnotatorException
 
 TEST_DATA_DIR = "tests/extras/data"
 
@@ -168,6 +169,9 @@ def test_annotate_vcf_input_validation(vcf_annotator):
 @pytest.mark.vcr
 def test_get_vrs_object_invalid_input(vcf_annotator, caplog):
     """Test that _get_vrs_object method works as expected with invalid input"""
+    # some tests are check
+    caplog.set_level(logging.DEBUG)
+
     # No CHROM
     vcf_annotator._get_vrs_object(".-140753336-A-T", {}, [], "GRCh38")
     assert "KeyError when getting refget accession: GRCh38:." in caplog.text
