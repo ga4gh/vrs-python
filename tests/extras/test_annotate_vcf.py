@@ -133,7 +133,7 @@ def test_annotate_vcf_pickle_only(
 
     # Test only pickle output
     vcf_annotator.annotate(
-        input_vcf, vrs_pickle_out=output_vrs_pkl, vrs_attributes=True
+        input_vcf, output_pkl_path=output_vrs_pkl, vrs_attributes=True
     )
     assert output_vrs_pkl.exists()
     assert not output_vcf.exists()
@@ -150,7 +150,7 @@ def test_annotate_vcf_vcf_only(
     expected_vcf = TEST_DATA_DIR / "test_vcf_expected_output.vcf.gz"
 
     # Test only VCF output
-    vcf_annotator.annotate(input_vcf, vcf_out=output_vcf, vrs_attributes=True)
+    vcf_annotator.annotate(input_vcf, output_vcf_path=output_vcf, vrs_attributes=True)
     with gzip.open(output_vcf, "rt") as out_vcf:
         out_vcf_lines = out_vcf.readlines()
     with gzip.open(expected_vcf, "rt") as expected_output:

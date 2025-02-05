@@ -183,8 +183,8 @@ def _annotate_vcf_cli(
         click.echo(msg)
     annotator.annotate(
         str(vcf_in.absolute()),
-        vcf_out=vcf_out_str,
-        vrs_pickle_out=vrs_pkl_out_str,
+        output_vcf_path=vcf_out_str,
+        output_pkl_path=vrs_pkl_out_str,
         vrs_attributes=vrs_attributes,
         assembly=assembly,
         compute_for_ref=(not skip_ref),
