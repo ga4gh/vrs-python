@@ -2,21 +2,15 @@
 
 import logging
 import pickle
-from enum import Enum
 
 import pysam
-from biocommons.seqrepo import SeqRepo
 from pydantic import ValidationError
 
 from ga4gh.core.identifiers import (
     VrsObjectIdentifierIs,
     use_ga4gh_compute_identifier_when,
 )
-from ga4gh.vrs.dataproxy import (
-    DataProxyValidationError,
-    SeqRepoDataProxy,
-    SeqRepoRESTDataProxy,
-)
+from ga4gh.vrs.dataproxy import DataProxyValidationError, _DataProxy
 from ga4gh.vrs.extras.translator import AlleleTranslator
 
 _logger = logging.getLogger(__name__)
@@ -24,13 +18,6 @@ _logger = logging.getLogger(__name__)
 
 class VCFAnnotatorError(Exception):
     """Custom exceptions for VCF Annotator tool"""
-
-
-class SeqRepoProxyType(str, Enum):
-    """Define constraints for SeqRepo Data Proxy types"""
-
-    LOCAL = "local"
-    REST = "rest"
 
 
 class VCFAnnotator:
@@ -56,24 +43,13 @@ class VCFAnnotator:
         ("\t", "%09"),
     ]
 
-    def __init__(
-        self,
-        seqrepo_dp_type: SeqRepoProxyType = SeqRepoProxyType.LOCAL,
-        seqrepo_base_url: str = "http://localhost:5000/seqrepo",
-        seqrepo_root_dir: str = "/usr/local/share/seqrepo/latest",
-    ) -> None:
+    def __init__(self, data_proxy: _DataProxy) -> None:
         """Initialize the VCFAnnotator class.
 
-        :param seqrepo_dp_type: The type of SeqRepo Data Proxy to use
-            (i.e., local vs REST)
-        :param seqrepo_base_url: The base url for SeqRepo REST API
-        :param seqrepo_root_dir: The root directory for the local SeqRepo instance
+        :param data_proxy: GA4GH sequence dataproxy instance.
         """
-        if seqrepo_dp_type == SeqRepoProxyType.LOCAL:
-            self.dp = SeqRepoDataProxy(SeqRepo(seqrepo_root_dir))
-        else:
-            self.dp = SeqRepoRESTDataProxy(seqrepo_base_url)
-        self.tlr = AlleleTranslator(self.dp)
+        self.data_proxy = data_proxy
+        self.tlr = AlleleTranslator(self.data_proxy)
 
     @use_ga4gh_compute_identifier_when(VrsObjectIdentifierIs.MISSING)
     def annotate(
