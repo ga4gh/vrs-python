@@ -120,11 +120,10 @@ class VCFAnnotator:
                 "Exception encountered during translation of variation: %s", vcf_coords
             )
             raise
-        else:
-            if vrs_obj is None:
-                _logger.debug(
-                    "None was returned when translating %s from gnomad", vcf_coords
-                )
+        if vrs_obj is None:
+            _logger.debug(
+                "None was returned when translating %s from gnomad", vcf_coords
+            )
 
         if output_pickle and vrs_obj:
             key = vrs_data_key if vrs_data_key else vcf_coords

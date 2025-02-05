@@ -1,15 +1,29 @@
 """Ensure proper functionality of VCFAnnotator"""
 
 import gzip
+import logging
+import os
 import re
 from pathlib import Path
 
 import pytest
 
-from ga4gh.vrs.dataproxy import DataProxyValidationError, _DataProxy
+from ga4gh.vrs.dataproxy import (
+    DataProxyValidationError,
+    SeqRepoRESTDataProxy,
+    _DataProxy,
+)
 from ga4gh.vrs.extras.annotator.vcf import VCFAnnotator, VCFAnnotatorError
 
 TEST_DATA_DIR = Path("tests/extras/data")
+
+
+@pytest.fixture
+def rest_dataproxy():
+    """REST dataproxy scoped to individual test cases, rather than the entire session"""
+    return SeqRepoRESTDataProxy(
+        base_url=os.environ.get("SEQREPO_REST_URL", "http://localhost:5000/seqrepo")
+    )
 
 
 @pytest.fixture
@@ -169,6 +183,8 @@ def test_annotate_vcf_input_validation(vcf_annotator: VCFAnnotator, input_vcf: P
 @pytest.mark.vcr
 def test_get_vrs_object_invalid_input(vcf_annotator: VCFAnnotator, caplog):
     """Test that _get_vrs_object method works as expected with invalid input"""
+    caplog.set_level(logging.DEBUG)
+
     # No CHROM
     vcf_annotator._process_allele(".-140753336-A-T", {}, {}, "GRCh38")
     assert "KeyError when getting refget accession: GRCh38:." in caplog.text
