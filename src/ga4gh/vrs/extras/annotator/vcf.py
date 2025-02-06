@@ -82,6 +82,64 @@ class VCFAnnotator:
             self.dp = SeqRepoRESTDataProxy(seqrepo_base_url)
         self.tlr = AlleleTranslator(self.dp)
 
+    def _update_vcf_header(
+        self, vcf: pysam.VariantFile, incl_ref_allele: bool, incl_vrs_attrs: bool
+    ) -> None:
+        """Add new fields to VCF header
+
+        :param vcf: pysam VCF object to annotate
+        :param incl_ref_allele: whether VRS alleles will be calculated for REFs
+        :param incl_vrs_attrs: whether INFO properties should be defined for VRS attributes
+            (normalized coordinates/state)
+        """
+        info_field_num = "R" if incl_ref_allele else "A"
+        info_field_desc = "REF and ALT" if incl_ref_allele else "ALT"
+
+        vcf.header.info.add(
+            FieldName.IDS_FIELD.value,
+            info_field_num,
+            "String",
+            (
+                "The computed identifiers for the GA4GH VRS Alleles corresponding to the "
+                f"GT indexes of the {info_field_desc} alleles"
+            ),
+        )
+        vcf.header.info.add(
+            FieldName.ERROR_FIELD.value,
+            ".",
+            "String",
+            ("If an error occurred computing a VRS Identifier, the error message"),
+        )
+
+        if incl_vrs_attrs:
+            vcf.header.info.add(
+                FieldName.STARTS_FIELD.value,
+                info_field_num,
+                "String",
+                (
+                    "Interresidue coordinates used as the location starts for the GA4GH "
+                    f"VRS Alleles corresponding to the GT indexes of the {info_field_desc} alleles"
+                ),
+            )
+            vcf.header.info.add(
+                FieldName.ENDS_FIELD.value,
+                info_field_num,
+                "String",
+                (
+                    "Interresidue coordinates used as the location ends for the GA4GH VRS "
+                    f"Alleles corresponding to the GT indexes of the {info_field_desc} alleles"
+                ),
+            )
+            vcf.header.info.add(
+                FieldName.STATES_FIELD.value,
+                info_field_num,
+                "String",
+                (
+                    "The literal sequence states used for the GA4GH VRS Alleles "
+                    f"corresponding to the GT indexes of the {info_field_desc} alleles"
+                ),
+            )
+
     @use_ga4gh_compute_identifier_when(VrsObjectIdentifierIs.MISSING)
     def annotate(
         self,
@@ -115,60 +173,14 @@ class VCFAnnotator:
             msg = "Must provide one of: `vcf_out` or `vrs_pickle_out`"
             raise VCFAnnotatorError(msg)
 
-        info_field_num = "R" if compute_for_ref else "A"
-        info_field_desc = "REF and ALT" if compute_for_ref else "ALT"
-
         vcf = pysam.VariantFile(filename=str(input_vcf_path.absolute()))
-        vcf.header.info.add(
-            FieldName.IDS_FIELD.value,
-            info_field_num,
-            "String",
-            (
-                "The computed identifiers for the GA4GH VRS Alleles corresponding to the "
-                f"GT indexes of the {info_field_desc} alleles"
-            ),
-        )
-        vcf.header.info.add(
-            FieldName.ERROR_FIELD.value,
-            ".",
-            "String",
-            ("If an error occurred computing a VRS Identifier, the error message"),
-        )
-
-        if vrs_attributes:
-            vcf.header.info.add(
-                FieldName.STARTS_FIELD.value,
-                info_field_num,
-                "String",
-                (
-                    "Interresidue coordinates used as the location starts for the GA4GH "
-                    f"VRS Alleles corresponding to the GT indexes of the {info_field_desc} alleles"
-                ),
+        if output_vcf_path:
+            self._update_vcf_header(vcf, compute_for_ref, vrs_attributes)
+            vcf_out = pysam.VariantFile(
+                str(output_vcf_path.absolute()), "w", header=vcf.header
             )
-            vcf.header.info.add(
-                FieldName.ENDS_FIELD.value,
-                info_field_num,
-                "String",
-                (
-                    "Interresidue coordinates used as the location ends for the GA4GH VRS "
-                    f"Alleles corresponding to the GT indexes of the {info_field_desc} alleles"
-                ),
-            )
-            vcf.header.info.add(
-                FieldName.STATES_FIELD.value,
-                info_field_num,
-                "String",
-                (
-                    "The literal sequence states used for the GA4GH VRS Alleles "
-                    f"corresponding to the GT indexes of the {info_field_desc} alleles"
-                ),
-            )
-
-        vcf_out = (
-            pysam.VariantFile(str(output_vcf_path.absolute()), "w", header=vcf.header)
-            if output_vcf_path
-            else None
-        )
+        else:
+            vcf_out = None
 
         # only retain raw data if dumping to pkl
         vrs_data = {} if output_pkl_path else None
