@@ -49,6 +49,7 @@ extras = [
     "hgvs>=1.4",
     "dill~=0.3.7",
     "click",
+    "requests",
 ]
 dev = [
     # tests
