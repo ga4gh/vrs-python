@@ -1,3 +1,4 @@
+import os
 import re
 
 import pytest
@@ -26,7 +27,7 @@ def test_data_proxies(dp, request):
     assert seq == "CCTCGCCTCCGTTACAACGGCCTACGGTGCTGGAGGATCCTTCTGCGCAC"
 
 
-def test_invalid_data_proxy_uri():
+def test_data_proxy_configs():
     with pytest.raises(
         ValueError,
         match=re.escape(
@@ -51,3 +52,7 @@ def test_invalid_data_proxy_uri():
         match="No data proxy URI provided or found in GA4GH_VRS_DATAPROXY_URI",
     ):
         create_dataproxy(None)
+
+    # check that fallback on env var works
+    os.environ["GA4GH_VRS_DATAPROXY_URI"] = "seqrepo+:tests/data/seqrepo/latest"
+    create_dataproxy(None)
