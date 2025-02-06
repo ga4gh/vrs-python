@@ -45,3 +45,9 @@ def test_invalid_data_proxy_uri():
         ValueError, match="DataProxy provider fake-dataprovider not implemented"
     ):
         create_dataproxy("fake-dataprovider+http://localhost:5000")
+
+    with pytest.raises(
+        ValueError,
+        match="No data proxy URI provided or found in GA4GH_VRS_DATAPROXY_URI",
+    ):
+        create_dataproxy(None)
