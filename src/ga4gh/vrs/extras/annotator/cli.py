@@ -99,7 +99,7 @@ def _log_level_option(func: Callable) -> Callable:
     help="Include VRS_Start, VRS_End, and VRS_State fields in the VCF output INFO field.",
 )
 @click.option(
-    "--dataproxy-uri",
+    "--dataproxy_uri",
     required=False,
     default="seqrepo+http://localhost:5000/seqrepo",
     help="URI declaring source of sequence data. See subcommand description for more information.",
@@ -149,16 +149,17 @@ def _annotate_vcf_cli(
 
     Note that at least one of --vcf_out or --vrs_pickle_out must be selected and defined.
 
-    Sequence data from a provider such as SeqRepo is required. Use the `--dataproxy_api`
-    option or the environment variable `GA4GH_VRS_DATAPROXY_URI` to define its location.
+    Sequence data from a provider such as SeqRepo is required. Use the `--dataproxy_uri`
+    option or the environment variable `GA4GH_VRS_DATAPROXY_URI` to define its location
+    (the former will take priority over the latter when both are set).
 
     Currently accepted URI schemes:
 
     \b
-     * seqrepo+file:///path/to/seqrepo/root
-     * seqrepo+:../relative/path/to/seqrepo/root
      * seqrepo+http://localhost:5000/seqrepo
      * seqrepo+https://somewhere:5000/seqrepo
+     * seqrepo+file:///path/to/seqrepo/root
+     * seqrepo+:../relative/path/to/seqrepo/root
     """  # noqa: D301
     data_proxy = create_dataproxy(dataproxy_uri)
     annotator = VCFAnnotator(data_proxy)
