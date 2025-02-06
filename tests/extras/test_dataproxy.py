@@ -1,4 +1,8 @@
+import re
+
 import pytest
+
+from ga4gh.vrs.dataproxy import create_dataproxy
 
 
 @pytest.mark.parametrize("dp", ["rest_dataproxy", "dataproxy"])
@@ -20,3 +24,24 @@ def test_data_proxies(dp, request):
         "ga4gh:SQ.v_QTc1p-MUYdgrRv4LMT6ByXIOsdw3C_", start=0, end=50
     )
     assert seq == "CCTCGCCTCCGTTACAACGGCCTACGGTGCTGGAGGATCCTTCTGCGCAC"
+
+
+def test_invalid_data_proxy_uri():
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "create_dataproxy scheme must include provider (e.g., `seqrepo+http:...`)"
+        ),
+    ):
+        create_dataproxy("file:///path/to/seqrepo/root")
+
+    with pytest.raises(
+        ValueError,
+        match=re.escape("SeqRepo URI scheme seqrepo+fake-scheme not implemented"),
+    ):
+        create_dataproxy("seqrepo+fake-scheme://localhost:5000")
+
+    with pytest.raises(
+        ValueError, match="DataProxy provider fake-dataprovider not implemented"
+    ):
+        create_dataproxy("fake-dataprovider+http://localhost:5000")
