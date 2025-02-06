@@ -56,3 +56,12 @@ def test_data_proxy_configs():
     # check that fallback on env var works
     os.environ["GA4GH_VRS_DATAPROXY_URI"] = "seqrepo+:tests/data/seqrepo/latest"
     create_dataproxy(None)
+
+    # check that method arg takes precedence by passing an invalid arg
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "create_dataproxy scheme must include provider (e.g., `seqrepo+http:...`)"
+        ),
+    ):
+        create_dataproxy("file:///path/to/seqrepo/root")
