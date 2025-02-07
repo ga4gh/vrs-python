@@ -66,8 +66,8 @@ class AbstractVcfAnnotator(abc.ABC):
         seqrepo_dp_type: SeqRepoProxyType = SeqRepoProxyType.LOCAL,
         seqrepo_base_url: str = "http://localhost:5000/seqrepo",
         seqrepo_root_dir: str = "/usr/local/share/seqrepo/latest",
-        **kwargs
-    ) -> None:  # noqa: ARG002
+        **kwargs,
+    ) -> None:
         """Initialize the VCFAnnotator class.
 
         :param seqrepo_dp_type: The type of SeqRepo Data Proxy to use
