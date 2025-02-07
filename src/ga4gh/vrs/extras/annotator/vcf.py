@@ -72,7 +72,17 @@ def dump_alleles_to_ndjson(
 
 
 class AbstractVcfAnnotator(abc.ABC):
-    """Abstract class for VCF annotation with VRS."""
+    """Abstract class for VCF annotation with VRS.
+
+    Child classes should implement all abstract methods, though some may be less relevant
+    and can just be stubbed out (for example, if the desired side effect for each VRS
+    object is something like a REST request, there may be no need for extra cleanup in
+    ``on_vrs_object_collection``).
+
+    Critically, implementations that intend to do something with all VRS objects at once
+    following ingestion (e.g. writing a PKL dump) need to set the class variable
+    ``collect_alleles`` to ``True``.
+    """
 
     collect_alleles: bool = False
 
@@ -313,12 +323,12 @@ class AbstractVcfAnnotator(abc.ABC):
                 "Exception encountered during translation of variation: %s", vcf_coords
             )
             raise
-        if vrs_obj is None:
+        if vrs_obj is not None:
+            vrs_obj = self.on_vrs_object(vcf_coords, vrs_obj, **kwargs)
+        else:
             _logger.debug(
                 "None was returned when translating %s from gnomad", vcf_coords
             )
-        else:
-            vrs_obj = self.on_vrs_object(vcf_coords, vrs_obj, **kwargs)
 
         if allele_collection is not None and vrs_obj:
             allele_collection.append(vrs_obj)
