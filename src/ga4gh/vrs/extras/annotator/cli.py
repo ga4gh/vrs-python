@@ -98,7 +98,7 @@ def _log_level_option(func: Callable) -> Callable:
     required=False,
     type=click.Path(writable=True, allow_dash=False, path_type=Path),
     help=(
-        "Declare save location for output NDJSON file mapping VRS IDs to alleles. At least one form of output must be declared."
+        "Declare save location for output NDJSON file dump of VRS alleles. At least one form of output must be declared."
     ),
 )
 @click.option(
