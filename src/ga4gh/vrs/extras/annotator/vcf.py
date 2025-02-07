@@ -1,5 +1,6 @@
 """Annotate VCFs with VRS identifiers and attributes."""
 
+import abc
 import logging
 import pickle
 from enum import Enum
@@ -17,6 +18,7 @@ from ga4gh.vrs.dataproxy import (
     SeqRepoRESTDataProxy,
 )
 from ga4gh.vrs.extras.translator import AlleleTranslator
+from ga4gh.vrs.models import Allele
 
 _logger = logging.getLogger(__name__)
 
@@ -54,19 +56,18 @@ VCF_ESCAPE_MAP = str.maketrans(
 )
 
 
-class VCFAnnotator:
-    """Annotate VCFs with VRS allele IDs.
+class AbstractVcfAnnotator(abc.ABC):
+    """Abstract class for VCF annotation with VRS."""
 
-    Uses pysam to read, store, and (optionally) output VCFs. Alleles are translated
-    into VRS IDs using the VRS-Python translator class.
-    """
+    _collect_alleles: bool = False
 
     def __init__(
         self,
         seqrepo_dp_type: SeqRepoProxyType = SeqRepoProxyType.LOCAL,
         seqrepo_base_url: str = "http://localhost:5000/seqrepo",
         seqrepo_root_dir: str = "/usr/local/share/seqrepo/latest",
-    ) -> None:
+        **kwargs
+    ) -> None:  # noqa: ARG002
         """Initialize the VCFAnnotator class.
 
         :param seqrepo_dp_type: The type of SeqRepo Data Proxy to use
@@ -80,23 +81,33 @@ class VCFAnnotator:
             self.dp = SeqRepoRESTDataProxy(seqrepo_base_url)
         self.tlr = AlleleTranslator(self.dp)
 
+
+    @abc.abstractmethod
+    def raise_for_output_args(self, output_vcf_path: Path | None, **kwargs) -> None:
+        """Raise an exception if no output appears to be configured or declared.
+
+        Child classes should implement this to ensure that any other outputs are checked
+        on top of an annotated VCF output.
+
+        :raise VCFAnnotatorError: if no output args are shown
+        """
+
     @use_ga4gh_compute_identifier_when(VrsObjectIdentifierIs.MISSING)
     def annotate(
         self,
         input_vcf_path: Path,
         output_vcf_path: Path | None = None,
-        output_pkl_path: Path | None = None,
         vrs_attributes: bool = False,
         assembly: str = "GRCh38",
         compute_for_ref: bool = True,
         require_validation: bool = True,
+        **kwargs,
     ) -> None:
         """Given a VCF, produce an output VCF annotated with VRS allele IDs, and/or
         a pickle file containing the full VRS objects.
 
         :param input_vcf_path: Location of input VCF
         :param output_vcf_path: The path for the output VCF file
-        :param output_pkl_path: The path for the output VCF pickle file
         :param vrs_attributes: If `True`, include VRS_Start, VRS_End, VRS_State
             properties in the VCF INFO field. If `False` will not include these
             properties. Only used if `vcf_out` is defined.
@@ -109,9 +120,7 @@ class VCFAnnotator:
             logged as warnings regardless.
         :raise VCFAnnotatorError: if no output formats are selected
         """
-        if not any((output_vcf_path, output_pkl_path)):
-            msg = "Must provide one of: `vcf_out` or `vrs_pickle_out`"
-            raise VCFAnnotatorError(msg)
+        self.raise_for_output_args(output_vcf_path, **kwargs)
 
         info_field_num = "R" if compute_for_ref else "A"
         info_field_desc = "REF and ALT" if compute_for_ref else "ALT"
@@ -168,8 +177,7 @@ class VCFAnnotator:
             else None
         )
 
-        # only retain raw data if dumping to pkl
-        vrs_data = {} if output_pkl_path else None
+        allele_collection = [] if self._collect_alleles else None
         for record in vcf:
             if vcf_out:
                 additional_info_fields = [FieldName.IDS_FIELD]
@@ -185,7 +193,7 @@ class VCFAnnotator:
             try:
                 vrs_field_data = self._get_vrs_data(
                     record,
-                    vrs_data,
+                    allele_collection,
                     assembly,
                     additional_info_fields,
                     vrs_attributes=vrs_attributes,
@@ -218,9 +226,36 @@ class VCFAnnotator:
         if vcf_out:
             vcf_out.close()
 
-        if output_pkl_path:
-            with output_pkl_path.open("wb") as wf:
-                pickle.dump(vrs_data, wf)
+        # TODO move to collection method?
+        # if output_pkl_path:
+        #     with output_pkl_path.open("wb") as wf:
+        #         pickle.dump(allele_collection, wf)
+
+    @abc.abstractmethod
+    def on_vrs_object(self, vcf_coords: str, vrs_allele: Allele, **kwargs) -> Allele:
+        """Perform side-effects (eg additional annotation or storage) on VRS alleles
+        as they are constructed during VCF annotation.
+
+        Reimplement in a child class to add custom logic. Otherwise, this method simply
+        passes through ``vrs_allele`` without altering it further or storing it.
+
+        :param vcf_coords: CHR-POS-REF-ALT from VCF for this allele
+        :param vrs_allele: allele translated from coords
+        :return: final VRS allele
+        """
+
+    @abc.abstractmethod
+    def on_vrs_object_collection(
+        self, vrs_alleles_collection: list[Allele], **kwargs
+    ) -> None:
+        """Perform clean-up operations (eg file writing) on VRS objects collected
+        during VCF ingestion.
+
+        Reimplement in a child class to add custom logic. Otherwise, this method does
+        nothing.
+
+        :param vrs_alleles: VRS alleles constructed from ingested VCF
+        """
 
     def _get_vrs_object(
         self,
@@ -266,6 +301,8 @@ class VCFAnnotator:
             _logger.debug(
                 "None was returned when translating %s from gnomad", vcf_coords
             )
+        else:
+            vrs_obj = self.on_vrs_object(vcf_coords, vrs_obj)
 
         if vrs_data and vrs_obj:
             key = vrs_data_key if vrs_data_key else vcf_coords
@@ -355,3 +392,40 @@ class VCFAnnotator:
                 )
 
         return vrs_field_data
+
+
+class VcfAnnotator(AbstractVcfAnnotator):
+    """Annotate VCFs with VRS allele IDs.
+
+    Uses pysam to ingest a VCF and produce a copy annotated with VRS IDs
+    (and, optionally, normalized allele attributes). Alleles are translated
+    using the VRS-Python translator class.
+    """
+
+    def raise_for_output_args(self, output_vcf_path: Path | None, **kwargs) -> None:
+        if output_vcf_path is None:
+            msg = "No VCF output location provided."
+            raise VCFAnnotatorError(msg)
+
+    def on_vrs_object(self, vcf_coords: str, vrs_allele: Allele, **kwargs) -> Allele:  # noqa: ARG002
+        """Perform side-effects (eg additional annotation or storage) on VRS alleles
+        as they are constructed during VCF annotation.
+
+        For this basic implementation, no additional operations are performed.
+
+        :param vcf_coords: CHR-POS-REF-ALT from VCF for this allele
+        :param vrs_allele: allele translated from coords
+        :return: final VRS allele
+        """
+        return vrs_allele
+
+    def on_vrs_object_collection(
+        self, vrs_alleles_collection: list[Allele], **kwargs
+    ) -> None:  # noqa:ARG 002
+        """Perform clean-up operations (eg file writing) on VRS objects collected
+        during VCF ingestion.
+
+        For this basic implementation, does nothing.
+
+        :param vrs_alleles: VRS alleles constructed from ingested VCF
+        """

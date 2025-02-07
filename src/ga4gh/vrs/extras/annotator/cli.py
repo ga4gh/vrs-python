@@ -12,7 +12,7 @@ from timeit import default_timer as timer
 
 import click
 
-from ga4gh.vrs.extras.annotator.vcf import SeqRepoProxyType, VCFAnnotator
+from ga4gh.vrs.extras.annotator.vcf import SeqRepoProxyType, VcfAnnotator
 
 _logger = logging.getLogger(__name__)
 
@@ -169,7 +169,7 @@ def _annotate_vcf_cli(
 
     Note that at least one of --vcf_out or --vrs_pickle_out must be selected and defined.
     """
-    annotator = VCFAnnotator(
+    annotator = VcfAnnotator(
         seqrepo_dp_type, seqrepo_base_url, str(seqrepo_root_dir.absolute())
     )
     start = timer()

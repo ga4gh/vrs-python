@@ -8,14 +8,14 @@ from pathlib import Path
 import pytest
 
 from ga4gh.vrs.dataproxy import DataProxyValidationError
-from ga4gh.vrs.extras.annotator.vcf import VCFAnnotator, VCFAnnotatorError
+from ga4gh.vrs.extras.annotator.vcf import VcfAnnotator, VCFAnnotatorError
 
 TEST_DATA_DIR = Path("tests/extras/data")
 
 
 @pytest.fixture
 def vcf_annotator():
-    return VCFAnnotator("rest")
+    return VcfAnnotator("rest")
 
 
 @pytest.fixture(scope="session")
@@ -26,7 +26,7 @@ def input_vcf():
 
 @pytest.mark.vcr
 def test_annotate_vcf_grch38_noattrs(
-    vcf_annotator: VCFAnnotator, input_vcf: Path, tmp_path: Path, vcr_cassette
+    vcf_annotator: VcfAnnotator, input_vcf: Path, tmp_path: Path, vcr_cassette
 ):
     vcr_cassette.allow_playback_repeats = False
     output_vcf = tmp_path / "test_vcf_output_grch38_noattrs.vcf.gz"
@@ -51,7 +51,7 @@ def test_annotate_vcf_grch38_noattrs(
 
 @pytest.mark.vcr
 def test_annotate_vcf_grch38_attrs(
-    vcf_annotator: VCFAnnotator, input_vcf: Path, tmp_path: Path, vcr_cassette
+    vcf_annotator: VcfAnnotator, input_vcf: Path, tmp_path: Path, vcr_cassette
 ):
     vcr_cassette.allow_playback_repeats = False
     output_vcf = tmp_path / "test_vcf_output_grch38_attrs.vcf.gz"
@@ -74,7 +74,7 @@ def test_annotate_vcf_grch38_attrs(
 
 @pytest.mark.vcr
 def test_annotate_vcf_grch38_attrs_altsonly(
-    vcf_annotator: VCFAnnotator, input_vcf: Path, tmp_path: Path, vcr_cassette
+    vcf_annotator: VcfAnnotator, input_vcf: Path, tmp_path: Path, vcr_cassette
 ):
     vcr_cassette.allow_playback_repeats = False
     output_vcf = tmp_path / "test_vcf_output_grch38_attrs_altsonly.vcf.gz"
@@ -103,7 +103,7 @@ def test_annotate_vcf_grch38_attrs_altsonly(
 
 @pytest.mark.vcr
 def test_annotate_vcf_grch37_attrs(
-    vcf_annotator: VCFAnnotator, input_vcf: Path, tmp_path: Path, vcr_cassette
+    vcf_annotator: VcfAnnotator, input_vcf: Path, tmp_path: Path, vcr_cassette
 ):
     vcr_cassette.allow_playback_repeats = False
     output_vcf = tmp_path / "test_vcf_output_grch37_attrs.vcf.gz"
@@ -125,7 +125,7 @@ def test_annotate_vcf_grch37_attrs(
 
 @pytest.mark.vcr
 def test_annotate_vcf_pickle_only(
-    vcf_annotator: VCFAnnotator, input_vcf: Path, tmp_path: Path, vcr_cassette
+    vcf_annotator: VcfAnnotator, input_vcf: Path, tmp_path: Path, vcr_cassette
 ):
     vcr_cassette.allow_playback_repeats = False
     output_vcf = tmp_path / "test_vcf_output_pickle_only.vcf.gz"
@@ -142,7 +142,7 @@ def test_annotate_vcf_pickle_only(
 
 @pytest.mark.vcr
 def test_annotate_vcf_vcf_only(
-    vcf_annotator: VCFAnnotator, input_vcf: Path, tmp_path: Path, vcr_cassette
+    vcf_annotator: VcfAnnotator, input_vcf: Path, tmp_path: Path, vcr_cassette
 ):
     vcr_cassette.allow_playback_repeats = False
     output_vcf = tmp_path / "test_vcf_output_vcf_only.vcf.gz"
@@ -160,14 +160,14 @@ def test_annotate_vcf_vcf_only(
     assert not Path(output_vrs_pkl).exists()
 
 
-def test_annotate_vcf_input_validation(vcf_annotator: VCFAnnotator, input_vcf: Path):
+def test_annotate_vcf_input_validation(vcf_annotator: VcfAnnotator, input_vcf: Path):
     with pytest.raises(VCFAnnotatorError) as e:
         vcf_annotator.annotate(input_vcf)
     assert str(e.value) == "Must provide one of: `vcf_out` or `vrs_pickle_out`"
 
 
 @pytest.mark.vcr
-def test_get_vrs_object_invalid_input(vcf_annotator: VCFAnnotator, caplog):
+def test_get_vrs_object_invalid_input(vcf_annotator: VcfAnnotator, caplog):
     """Test that _get_vrs_object method works as expected with invalid input"""
     # some tests below are checking for debug logging statements
     caplog.set_level(logging.DEBUG)
