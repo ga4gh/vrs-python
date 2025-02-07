@@ -6,16 +6,12 @@ from enum import Enum
 from pathlib import Path
 
 import pysam
-from biocommons.seqrepo import SeqRepo
 
 from ga4gh.core.identifiers import (
     VrsObjectIdentifierIs,
     use_ga4gh_compute_identifier_when,
 )
-from ga4gh.vrs.dataproxy import (
-    SeqRepoDataProxy,
-    SeqRepoRESTDataProxy,
-)
+from ga4gh.vrs.dataproxy import _DataProxy
 from ga4gh.vrs.extras.translator import AlleleTranslator
 
 _logger = logging.getLogger(__name__)
@@ -23,13 +19,6 @@ _logger = logging.getLogger(__name__)
 
 class VCFAnnotatorError(Exception):
     """Custom exceptions for VCF Annotator tool"""
-
-
-class SeqRepoProxyType(str, Enum):
-    """Define constraints for SeqRepo Data Proxy types"""
-
-    LOCAL = "local"
-    REST = "rest"
 
 
 class FieldName(str, Enum):
@@ -61,24 +50,13 @@ class VCFAnnotator:
     into VRS IDs using the VRS-Python translator class.
     """
 
-    def __init__(
-        self,
-        seqrepo_dp_type: SeqRepoProxyType = SeqRepoProxyType.LOCAL,
-        seqrepo_base_url: str = "http://localhost:5000/seqrepo",
-        seqrepo_root_dir: str = "/usr/local/share/seqrepo/latest",
-    ) -> None:
+    def __init__(self, data_proxy: _DataProxy) -> None:
         """Initialize the VCFAnnotator class.
 
-        :param seqrepo_dp_type: The type of SeqRepo Data Proxy to use
-            (i.e., local vs REST)
-        :param seqrepo_base_url: The base url for SeqRepo REST API
-        :param seqrepo_root_dir: The root directory for the local SeqRepo instance
+        :param data_proxy: GA4GH sequence dataproxy instance.
         """
-        if seqrepo_dp_type == SeqRepoProxyType.LOCAL:
-            self.dp = SeqRepoDataProxy(SeqRepo(seqrepo_root_dir))
-        else:
-            self.dp = SeqRepoRESTDataProxy(seqrepo_base_url)
-        self.tlr = AlleleTranslator(self.dp)
+        self.data_proxy = data_proxy
+        self.tlr = AlleleTranslator(self.data_proxy)
 
     def _update_vcf_header(
         self, vcf: pysam.VariantFile, incl_ref_allele: bool, incl_vrs_attrs: bool
