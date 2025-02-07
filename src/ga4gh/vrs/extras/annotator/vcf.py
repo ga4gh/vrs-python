@@ -74,7 +74,7 @@ def dump_alleles_to_ndjson(
 class AbstractVcfAnnotator(abc.ABC):
     """Abstract class for VCF annotation with VRS.
 
-    Child classes should implement all abstract methods, though some may be less relevant
+    Child classes must implement all abstract methods, though some may be less relevant
     and can just be stubbed out (for example, if the desired side effect for each VRS
     object is something like a REST request, there may be no need for extra cleanup in
     ``on_vrs_object_collection``).
