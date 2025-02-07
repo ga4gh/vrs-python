@@ -353,6 +353,8 @@ def create_dataproxy(uri: str | None = None) -> _DataProxy:
     * seqrepo+http://localhost:5000/seqrepo
     * seqrepo+https://somewhere:5000/seqrepo
 
+    :raise ValueError: if URI doesn't match recognized schemes, e.g. is missing provider
+        prefix (`"seqrepo+"`)
     """
     uri = uri or os.environ.get("GA4GH_VRS_DATAPROXY_URI", None)
 
