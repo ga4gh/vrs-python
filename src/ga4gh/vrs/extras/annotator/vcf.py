@@ -67,40 +67,19 @@ class AbstractVcfAnnotator(abc.ABC):
         :raise VCFAnnotatorError: if no output args are shown
         """
 
-    @use_ga4gh_compute_identifier_when(VrsObjectIdentifierIs.MISSING)
-    def annotate(
-        self,
-        input_vcf_path: Path,
-        output_vcf_path: Path | None = None,
-        vrs_attributes: bool = False,
-        assembly: str = "GRCh38",
-        compute_for_ref: bool = True,
-        require_validation: bool = True,
-        **kwargs,
+    def _update_vcf_header(
+        self, vcf: pysam.VariantFile, incl_ref_allele: bool, incl_vrs_attrs: bool
     ) -> None:
-        """Given a VCF, produce an output VCF annotated with VRS allele IDs, and/or
-        a pickle file containing the full VRS objects.
+        """Add new fields to VCF header
 
-        :param input_vcf_path: Location of input VCF
-        :param output_vcf_path: The path for the output VCF file
-        :param vrs_attributes: If `True`, include VRS_Start, VRS_End, VRS_State
-            properties in the VCF INFO field. If `False` will not include these
-            properties. Only used if `vcf_out` is defined.
-        :param assembly: The assembly used in `vcf_in` data
-        :param compute_for_ref: If true, compute VRS IDs for the reference allele
-        :param require_validation: If `True`, validation checks (i.e., REF value
-            matches expected REF at given location) must pass in order to return a VRS
-            object for a record. If `False` then VRS object will be returned even if
-            validation checks fail, although all instances of failed validation are
-            logged as warnings regardless.
-        :raise VCFAnnotatorError: if no output formats are selected
+        :param vcf: pysam VCF object to annotate
+        :param incl_ref_allele: whether VRS alleles will be calculated for REFs
+        :param incl_vrs_attrs: whether INFO properties should be defined for VRS attributes
+            (normalized coordinates/state)
         """
-        self.raise_for_output_args(output_vcf_path, **kwargs)
+        info_field_num = "R" if incl_ref_allele else "A"
+        info_field_desc = "REF and ALT" if incl_ref_allele else "ALT"
 
-        info_field_num = "R" if compute_for_ref else "A"
-        info_field_desc = "REF and ALT" if compute_for_ref else "ALT"
-
-        vcf = pysam.VariantFile(filename=str(input_vcf_path.absolute()))
         vcf.header.info.add(
             FieldName.IDS_FIELD.value,
             info_field_num,
@@ -117,7 +96,7 @@ class AbstractVcfAnnotator(abc.ABC):
             ("If an error occurred computing a VRS Identifier, the error message"),
         )
 
-        if vrs_attributes:
+        if incl_vrs_attrs:
             vcf.header.info.add(
                 FieldName.STARTS_FIELD.value,
                 info_field_num,
@@ -146,11 +125,45 @@ class AbstractVcfAnnotator(abc.ABC):
                 ),
             )
 
-        vcf_out = (
-            pysam.VariantFile(str(output_vcf_path.absolute()), "w", header=vcf.header)
-            if output_vcf_path
-            else None
-        )
+    @use_ga4gh_compute_identifier_when(VrsObjectIdentifierIs.MISSING)
+    def annotate(
+        self,
+        input_vcf_path: Path,
+        output_vcf_path: Path | None = None,
+        vrs_attributes: bool = False,
+        assembly: str = "GRCh38",
+        compute_for_ref: bool = True,
+        require_validation: bool = True,
+        **kwargs,
+    ) -> None:
+        """Given a VCF, produce an output VCF annotated with VRS allele IDs, and/or
+        a pickle file containing the full VRS objects.
+
+        :param input_vcf_path: Location of input VCF
+        :param output_vcf_path: The path for the output VCF file
+        :param output_pkl_path: The path for the output VCF pickle file
+        :param vrs_attributes: If `True`, include VRS_Start, VRS_End, VRS_State
+            properties in the VCF INFO field. If `False` will not include these
+            properties. Only used if `output_vcf_path` is defined.
+        :param assembly: The assembly used in `input_vcf_path` data
+        :param compute_for_ref: If true, compute VRS IDs for the reference allele
+        :param require_validation: If `True`, validation checks (i.e., REF value
+            matches expected REF at given location) must pass in order to return a VRS
+            object for a record. If `False` then VRS object will be returned even if
+            validation checks fail, although all instances of failed validation are
+            logged as warnings regardless.
+        :raise VCFAnnotatorError: if no output formats are selected
+        """
+        self.raise_for_output_args(output_vcf_path, **kwargs)
+
+        vcf = pysam.VariantFile(filename=str(input_vcf_path.absolute()))
+        if output_vcf_path:
+            self._update_vcf_header(vcf, compute_for_ref, vrs_attributes)
+            vcf_out = pysam.VariantFile(
+                str(output_vcf_path.absolute()), "w", header=vcf.header
+            )
+        else:
+            vcf_out = None
 
         allele_collection = [] if self._collect_alleles else None
         for record in vcf:
@@ -395,7 +408,7 @@ class VcfAnnotator(AbstractVcfAnnotator):
 
     def on_vrs_object_collection(
         self, vrs_alleles_collection: list[Allele] | None, **kwargs
-    ) -> None:  # noqa:ARG 002
+    ) -> None:
         """Perform clean-up operations (eg file writing) on VRS objects collected
         during VCF ingestion.
 

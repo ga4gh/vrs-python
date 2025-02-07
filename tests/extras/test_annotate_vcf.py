@@ -8,7 +8,8 @@ from pathlib import Path
 
 import pytest
 
-from ga4gh.vrs.dataproxy import SeqRepoRESTDataProxy
+from ga4gh.vrs.dataproxy import DataProxyValidationError, SeqRepoRESTDataProxy
+from ga4gh.vrs.extras.annotator.vcf import VcfAnnotator, VCFAnnotatorError
 
 TEST_DATA_DIR = Path("tests/extras/data")
 
@@ -171,7 +172,7 @@ def test_annotate_vcf_vcf_only(
 def test_annotate_vcf_input_validation(vcf_annotator: VcfAnnotator, input_vcf: Path):
     with pytest.raises(VCFAnnotatorError) as e:
         vcf_annotator.annotate(input_vcf)
-    assert str(e.value) == "Must provide one of: `vcf_out` or `vrs_pickle_out`"
+    assert str(e.value) == "Must provide one of: `output_vcf_path` or `output_pkl_path`"
 
 
 @pytest.mark.vcr
