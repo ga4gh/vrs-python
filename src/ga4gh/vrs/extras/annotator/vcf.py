@@ -7,14 +7,12 @@ from pathlib import Path
 
 import pysam
 from biocommons.seqrepo import SeqRepo
-from pydantic import ValidationError
 
 from ga4gh.core.identifiers import (
     VrsObjectIdentifierIs,
     use_ga4gh_compute_identifier_when,
 )
 from ga4gh.vrs.dataproxy import (
-    DataProxyValidationError,
     SeqRepoDataProxy,
     SeqRepoRESTDataProxy,
 )
@@ -34,28 +32,34 @@ class SeqRepoProxyType(str, Enum):
     REST = "rest"
 
 
+class FieldName(str, Enum):
+    """Define VCF field names for VRS annotations"""
+
+    IDS_FIELD = "VRS_Allele_IDs"
+    STARTS_FIELD = "VRS_Starts"
+    ENDS_FIELD = "VRS_Ends"
+    STATES_FIELD = "VRS_States"
+    ERROR_FIELD = "VRS_Error"
+
+
+# VCF character escape map
+VCF_ESCAPE_MAP = str.maketrans(
+    {
+        "%": "%25",
+        ";": "%3B",
+        ",": "%2C",
+        "\r": "%0D",
+        "\n": "%0A",
+    }
+)
+
+
 class VCFAnnotator:
     """Annotate VCFs with VRS allele IDs.
 
     Uses pysam to read, store, and (optionally) output VCFs. Alleles are translated
     into VRS IDs using the VRS-Python translator class.
     """
-
-    # Field names for VCF
-    VRS_ALLELE_IDS_FIELD = "VRS_Allele_IDs"
-    VRS_STARTS_FIELD = "VRS_Starts"
-    VRS_ENDS_FIELD = "VRS_Ends"
-    VRS_STATES_FIELD = "VRS_States"
-    VRS_ERROR_FIELD = "VRS_Error"
-    # VCF character escape map
-    VCF_ESCAPE_MAP = [  # noqa: RUF012
-        ("%", "%25"),
-        (";", "%3B"),
-        (",", "%2C"),
-        ("\r", "%0D"),
-        ("\n", "%0A"),
-        ("\t", "%09"),
-    ]
 
     def __init__(
         self,
@@ -114,7 +118,7 @@ class VCFAnnotator:
 
         vcf = pysam.VariantFile(filename=str(input_vcf_path.absolute()))
         vcf.header.info.add(
-            self.VRS_ALLELE_IDS_FIELD,
+            FieldName.IDS_FIELD.value,
             info_field_num,
             "String",
             (
@@ -123,7 +127,7 @@ class VCFAnnotator:
             ),
         )
         vcf.header.info.add(
-            self.VRS_ERROR_FIELD,
+            FieldName.ERROR_FIELD.value,
             ".",
             "String",
             ("If an error occurred computing a VRS Identifier, the error message"),
@@ -131,7 +135,7 @@ class VCFAnnotator:
 
         if vrs_attributes:
             vcf.header.info.add(
-                self.VRS_STARTS_FIELD,
+                FieldName.STARTS_FIELD.value,
                 info_field_num,
                 "String",
                 (
@@ -140,7 +144,7 @@ class VCFAnnotator:
                 ),
             )
             vcf.header.info.add(
-                self.VRS_ENDS_FIELD,
+                FieldName.ENDS_FIELD.value,
                 info_field_num,
                 "String",
                 (
@@ -149,7 +153,7 @@ class VCFAnnotator:
                 ),
             )
             vcf.header.info.add(
-                self.VRS_STATES_FIELD,
+                FieldName.STATES_FIELD.value,
                 info_field_num,
                 "String",
                 (
@@ -168,12 +172,12 @@ class VCFAnnotator:
         vrs_data = {} if output_pkl_path else None
         for record in vcf:
             if vcf_out:
-                additional_info_fields = [self.VRS_ALLELE_IDS_FIELD]
+                additional_info_fields = [FieldName.IDS_FIELD]
                 if vrs_attributes:
                     additional_info_fields += [
-                        self.VRS_STARTS_FIELD,
-                        self.VRS_ENDS_FIELD,
-                        self.VRS_STATES_FIELD,
+                        FieldName.STARTS_FIELD,
+                        FieldName.ENDS_FIELD,
+                        FieldName.STATES_FIELD,
                     ]
             else:
                 # no INFO field names need to be designated if not producing an annotated VCF
@@ -191,10 +195,9 @@ class VCFAnnotator:
             except Exception as ex:
                 _logger.exception("VRS error on %s-%s", record.chrom, record.pos)
                 err_msg = f"{ex}" or f"{type(ex)}"
-                for search_repl in VCFAnnotator.VCF_ESCAPE_MAP:
-                    err_msg = err_msg.replace(search_repl[0], search_repl[1])
-                additional_info_fields = [self.VRS_ERROR_FIELD]
-                vrs_field_data = {self.VRS_ERROR_FIELD: [err_msg]}
+                err_msg = err_msg.translate(VCF_ESCAPE_MAP)
+                additional_info_fields = [FieldName.ERROR_FIELD]
+                vrs_field_data = {FieldName.ERROR_FIELD.value: [err_msg]}
 
             _logger.debug(
                 "VCF record %s-%s generated vrs_field_data %s",
@@ -205,7 +208,9 @@ class VCFAnnotator:
 
             if output_vcf_path and vcf_out:
                 for k in additional_info_fields:
-                    record.info[k] = [value or "." for value in vrs_field_data[k]]
+                    record.info[k.value] = [
+                        value or "." for value in vrs_field_data[k.value]
+                    ]
                 vcf_out.write(record)
 
         vcf.close()
@@ -251,33 +256,16 @@ class VCFAnnotator:
                 assembly_name=assembly,
                 require_validation=require_validation,
             )
-        except (ValidationError, DataProxyValidationError):
-            vrs_obj = None
-            _logger.exception(
-                "ValidationError when translating %s from gnomad", vcf_coords
-            )
-            raise
-        except KeyError:
-            vrs_obj = None
-            _logger.exception("KeyError when translating %s from gnomad", vcf_coords)
-            raise
-        except AssertionError:
-            vrs_obj = None
-            _logger.exception(
-                "AssertionError when translating %s from gnomad", vcf_coords
-            )
-            raise
         except Exception:
             vrs_obj = None
             _logger.exception(
-                "Unhandled Exception when translating %s from gnomad", vcf_coords
+                "Exception encountered during translation of variation: %s", vcf_coords
             )
             raise
-        else:
-            if not vrs_obj:
-                _logger.debug(
-                    "None was returned when translating %s from gnomad", vcf_coords
-                )
+        if vrs_obj is None:
+            _logger.debug(
+                "None was returned when translating %s from gnomad", vcf_coords
+            )
 
         if vrs_data and vrs_obj:
             key = vrs_data_key if vrs_data_key else vcf_coords
@@ -285,7 +273,7 @@ class VCFAnnotator:
 
         if vrs_field_data:
             allele_id = vrs_obj.id if vrs_obj else ""
-            vrs_field_data[self.VRS_ALLELE_IDS_FIELD].append(allele_id)
+            vrs_field_data[FieldName.IDS_FIELD].append(allele_id)
 
             if vrs_attributes:
                 if vrs_obj:
@@ -299,16 +287,16 @@ class VCFAnnotator:
                 else:
                     start = end = alt = ""
 
-                vrs_field_data[self.VRS_STARTS_FIELD].append(start)
-                vrs_field_data[self.VRS_ENDS_FIELD].append(end)
-                vrs_field_data[self.VRS_STATES_FIELD].append(alt)
+                vrs_field_data[FieldName.STARTS_FIELD].append(start)
+                vrs_field_data[FieldName.ENDS_FIELD].append(end)
+                vrs_field_data[FieldName.STATES_FIELD].append(alt)
 
     def _get_vrs_data(
         self,
         record: pysam.VariantRecord,
         vrs_data: dict | None,
         assembly: str,
-        additional_info_fields: list[str],
+        additional_info_fields: list[FieldName],
         vrs_attributes: bool = False,
         compute_for_ref: bool = True,
         require_validation: bool = True,
@@ -331,7 +319,7 @@ class VCFAnnotator:
         :return: A dictionary mapping VRS-related INFO fields to lists of associated
             values. Will be empty if `create_annotated_vcf` is false.
         """
-        vrs_field_data = {field: [] for field in additional_info_fields}
+        vrs_field_data = {field.value: [] for field in additional_info_fields}
 
         # Get VRS data for reference allele
         gnomad_loc = f"{record.chrom}-{record.pos}"
@@ -354,7 +342,7 @@ class VCFAnnotator:
             if "*" in allele:
                 _logger.debug("Star allele found: %s", allele)
                 for field in additional_info_fields:
-                    vrs_field_data[field].append("")
+                    vrs_field_data[field.value].append("")
             else:
                 self._get_vrs_object(
                     allele,
