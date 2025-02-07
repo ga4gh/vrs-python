@@ -2,21 +2,16 @@
 
 import abc
 import logging
-import pickle
 from enum import Enum
 from pathlib import Path
 
 import pysam
-from biocommons.seqrepo import SeqRepo
 
 from ga4gh.core.identifiers import (
     VrsObjectIdentifierIs,
     use_ga4gh_compute_identifier_when,
 )
-from ga4gh.vrs.dataproxy import (
-    SeqRepoDataProxy,
-    SeqRepoRESTDataProxy,
-)
+from ga4gh.vrs.dataproxy import _DataProxy
 from ga4gh.vrs.extras.translator import AlleleTranslator
 from ga4gh.vrs.models import Allele
 
@@ -25,13 +20,6 @@ _logger = logging.getLogger(__name__)
 
 class VCFAnnotatorError(Exception):
     """Custom exceptions for VCF Annotator tool"""
-
-
-class SeqRepoProxyType(str, Enum):
-    """Define constraints for SeqRepo Data Proxy types"""
-
-    LOCAL = "local"
-    REST = "rest"
 
 
 class FieldName(str, Enum):
@@ -61,25 +49,13 @@ class AbstractVcfAnnotator(abc.ABC):
 
     _collect_alleles: bool = False
 
-    def __init__(
-        self,
-        seqrepo_dp_type: SeqRepoProxyType = SeqRepoProxyType.LOCAL,
-        seqrepo_base_url: str = "http://localhost:5000/seqrepo",
-        seqrepo_root_dir: str = "/usr/local/share/seqrepo/latest",
-        **kwargs,
-    ) -> None:
+    def __init__(self, data_proxy: _DataProxy) -> None:
         """Initialize the VCFAnnotator class.
 
-        :param seqrepo_dp_type: The type of SeqRepo Data Proxy to use
-            (i.e., local vs REST)
-        :param seqrepo_base_url: The base url for SeqRepo REST API
-        :param seqrepo_root_dir: The root directory for the local SeqRepo instance
+        :param data_proxy: GA4GH sequence dataproxy instance.
         """
-        if seqrepo_dp_type == SeqRepoProxyType.LOCAL:
-            self.dp = SeqRepoDataProxy(SeqRepo(seqrepo_root_dir))
-        else:
-            self.dp = SeqRepoRESTDataProxy(seqrepo_base_url)
-        self.tlr = AlleleTranslator(self.dp)
+        self.data_proxy = data_proxy
+        self.tlr = AlleleTranslator(self.data_proxy)
 
 
     @abc.abstractmethod
@@ -199,6 +175,7 @@ class AbstractVcfAnnotator(abc.ABC):
                     vrs_attributes=vrs_attributes,
                     compute_for_ref=compute_for_ref,
                     require_validation=require_validation,
+                    **kwargs
                 )
             except Exception as ex:
                 _logger.exception("VRS error on %s-%s", record.chrom, record.pos)
@@ -226,10 +203,7 @@ class AbstractVcfAnnotator(abc.ABC):
         if vcf_out:
             vcf_out.close()
 
-        # TODO move to collection method?
-        # if output_pkl_path:
-        #     with output_pkl_path.open("wb") as wf:
-        #         pickle.dump(allele_collection, wf)
+        self.on_vrs_object_collection(allele_collection, **kwargs)
 
     @abc.abstractmethod
     def on_vrs_object(self, vcf_coords: str, vrs_allele: Allele, **kwargs) -> Allele:
@@ -246,7 +220,7 @@ class AbstractVcfAnnotator(abc.ABC):
 
     @abc.abstractmethod
     def on_vrs_object_collection(
-        self, vrs_alleles_collection: list[Allele], **kwargs
+        self, vrs_alleles_collection: list[Allele] | None, **kwargs
     ) -> None:
         """Perform clean-up operations (eg file writing) on VRS objects collected
         during VCF ingestion.
@@ -260,12 +234,12 @@ class AbstractVcfAnnotator(abc.ABC):
     def _get_vrs_object(
         self,
         vcf_coords: str,
-        vrs_data: dict | None,
+        allele_collection: list[Allele] | None,
         vrs_field_data: dict,
         assembly: str,
-        vrs_data_key: str | None = None,
         vrs_attributes: bool = False,
         require_validation: bool = True,
+        **kwargs
     ) -> None:
         """Get VRS object given `vcf_coords`. `vrs_data` and `vrs_field_data` will
         be mutated.
@@ -302,11 +276,10 @@ class AbstractVcfAnnotator(abc.ABC):
                 "None was returned when translating %s from gnomad", vcf_coords
             )
         else:
-            vrs_obj = self.on_vrs_object(vcf_coords, vrs_obj)
+            vrs_obj = self.on_vrs_object(vcf_coords, vrs_obj, **kwargs)
 
-        if vrs_data and vrs_obj:
-            key = vrs_data_key if vrs_data_key else vcf_coords
-            vrs_data[key] = str(vrs_obj.model_dump(exclude_none=True))
+        if allele_collection and vrs_obj:
+            allele_collection.append(vrs_obj)
 
         if vrs_field_data:
             allele_id = vrs_obj.id if vrs_obj else ""
@@ -331,12 +304,13 @@ class AbstractVcfAnnotator(abc.ABC):
     def _get_vrs_data(
         self,
         record: pysam.VariantRecord,
-        vrs_data: dict | None,
+        allele_collection: list | None,
         assembly: str,
         additional_info_fields: list[FieldName],
         vrs_attributes: bool = False,
         compute_for_ref: bool = True,
         require_validation: bool = True,
+        **kwargs
     ) -> dict:
         """Get VRS data for record's reference and alt alleles.
 
@@ -364,11 +338,12 @@ class AbstractVcfAnnotator(abc.ABC):
             reference_allele = f"{gnomad_loc}-{record.ref}-{record.ref}"
             self._get_vrs_object(
                 reference_allele,
-                vrs_data,
+                allele_collection,
                 vrs_field_data,
                 assembly,
                 vrs_attributes=vrs_attributes,
                 require_validation=require_validation,
+                **kwargs
             )
 
         # Get VRS data for alts
@@ -383,7 +358,7 @@ class AbstractVcfAnnotator(abc.ABC):
             else:
                 self._get_vrs_object(
                     allele,
-                    vrs_data,
+                    allele_collection,
                     vrs_field_data,
                     assembly,
                     vrs_data_key=data,
@@ -402,7 +377,7 @@ class VcfAnnotator(AbstractVcfAnnotator):
     using the VRS-Python translator class.
     """
 
-    def raise_for_output_args(self, output_vcf_path: Path | None, **kwargs) -> None:
+    def raise_for_output_args(self, output_vcf_path: Path | None, **kwargs) -> None:  # noqa: D102 ARG002
         if output_vcf_path is None:
             msg = "No VCF output location provided."
             raise VCFAnnotatorError(msg)
@@ -420,7 +395,7 @@ class VcfAnnotator(AbstractVcfAnnotator):
         return vrs_allele
 
     def on_vrs_object_collection(
-        self, vrs_alleles_collection: list[Allele], **kwargs
+        self, vrs_alleles_collection: list[Allele] | None, **kwargs
     ) -> None:  # noqa:ARG 002
         """Perform clean-up operations (eg file writing) on VRS objects collected
         during VCF ingestion.

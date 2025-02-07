@@ -2,20 +2,28 @@
 
 import gzip
 import logging
+import os
 import re
 from pathlib import Path
 
 import pytest
 
-from ga4gh.vrs.dataproxy import DataProxyValidationError
-from ga4gh.vrs.extras.annotator.vcf import VcfAnnotator, VCFAnnotatorError
+from ga4gh.vrs.dataproxy import SeqRepoRESTDataProxy
 
 TEST_DATA_DIR = Path("tests/extras/data")
 
 
 @pytest.fixture
-def vcf_annotator():
-    return VcfAnnotator("rest")
+def rest_dataproxy_fn_scope():
+    """REST dataproxy scoped to individual test functions, rather than the entire session"""
+    return SeqRepoRESTDataProxy(
+        base_url=os.environ.get("SEQREPO_REST_URL", "http://localhost:5000/seqrepo")
+    )
+
+
+@pytest.fixture
+def vcf_annotator(rest_dataproxy_fn_scope: SeqRepoRESTDataProxy):
+    return VcfAnnotator(rest_dataproxy_fn_scope)
 
 
 @pytest.fixture(scope="session")
