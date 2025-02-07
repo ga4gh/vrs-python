@@ -157,8 +157,8 @@ class VCFAnnotator:
         :param output_pkl_path: The path for the output VCF pickle file
         :param vrs_attributes: If `True`, include VRS_Start, VRS_End, VRS_State
             properties in the VCF INFO field. If `False` will not include these
-            properties. Only used if `vcf_out` is defined.
-        :param assembly: The assembly used in `vcf_in` data
+            properties. Only used if `output_vcf_path` is defined.
+        :param assembly: The assembly used in `input_vcf_path` data
         :param compute_for_ref: If true, compute VRS IDs for the reference allele
         :param require_validation: If `True`, validation checks (i.e., REF value
             matches expected REF at given location) must pass in order to return a VRS
@@ -168,7 +168,7 @@ class VCFAnnotator:
         :raise VCFAnnotatorError: if no output formats are selected
         """
         if not any((output_vcf_path, output_pkl_path)):
-            msg = "Must provide one of: `vcf_out` or `vrs_pickle_out`"
+            msg = "Must provide one of: `output_vcf_path` or `output_pkl_path`"
             raise VCFAnnotatorError(msg)
 
         vcf = pysam.VariantFile(filename=str(input_vcf_path.absolute()))
