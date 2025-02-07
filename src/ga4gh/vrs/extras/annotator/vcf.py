@@ -57,7 +57,6 @@ class AbstractVcfAnnotator(abc.ABC):
         self.data_proxy = data_proxy
         self.tlr = AlleleTranslator(self.data_proxy)
 
-
     @abc.abstractmethod
     def raise_for_output_args(self, output_vcf_path: Path | None, **kwargs) -> None:
         """Raise an exception if no output appears to be configured or declared.
@@ -175,7 +174,7 @@ class AbstractVcfAnnotator(abc.ABC):
                     vrs_attributes=vrs_attributes,
                     compute_for_ref=compute_for_ref,
                     require_validation=require_validation,
-                    **kwargs
+                    **kwargs,
                 )
             except Exception as ex:
                 _logger.exception("VRS error on %s-%s", record.chrom, record.pos)
@@ -239,7 +238,7 @@ class AbstractVcfAnnotator(abc.ABC):
         assembly: str,
         vrs_attributes: bool = False,
         require_validation: bool = True,
-        **kwargs
+        **kwargs,
     ) -> None:
         """Get VRS object given `vcf_coords`. `vrs_data` and `vrs_field_data` will
         be mutated.
@@ -310,7 +309,7 @@ class AbstractVcfAnnotator(abc.ABC):
         vrs_attributes: bool = False,
         compute_for_ref: bool = True,
         require_validation: bool = True,
-        **kwargs
+        **kwargs,
     ) -> dict:
         """Get VRS data for record's reference and alt alleles.
 
@@ -343,7 +342,7 @@ class AbstractVcfAnnotator(abc.ABC):
                 assembly,
                 vrs_attributes=vrs_attributes,
                 require_validation=require_validation,
-                **kwargs
+                **kwargs,
             )
 
         # Get VRS data for alts
