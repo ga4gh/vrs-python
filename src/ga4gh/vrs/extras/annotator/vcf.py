@@ -7,14 +7,12 @@ from pathlib import Path
 
 import pysam
 from biocommons.seqrepo import SeqRepo
-from pydantic import ValidationError
 
 from ga4gh.core.identifiers import (
     VrsObjectIdentifierIs,
     use_ga4gh_compute_identifier_when,
 )
 from ga4gh.vrs.dataproxy import (
-    DataProxyValidationError,
     SeqRepoDataProxy,
     SeqRepoRESTDataProxy,
 )
@@ -258,33 +256,16 @@ class VCFAnnotator:
                 assembly_name=assembly,
                 require_validation=require_validation,
             )
-        except (ValidationError, DataProxyValidationError):
-            vrs_obj = None
-            _logger.exception(
-                "ValidationError when translating %s from gnomad", vcf_coords
-            )
-            raise
-        except KeyError:
-            vrs_obj = None
-            _logger.exception("KeyError when translating %s from gnomad", vcf_coords)
-            raise
-        except AssertionError:
-            vrs_obj = None
-            _logger.exception(
-                "AssertionError when translating %s from gnomad", vcf_coords
-            )
-            raise
         except Exception:
             vrs_obj = None
             _logger.exception(
-                "Unhandled Exception when translating %s from gnomad", vcf_coords
+                "Exception encountered during translation of variation: %s", vcf_coords
             )
             raise
-        else:
-            if not vrs_obj:
-                _logger.debug(
-                    "None was returned when translating %s from gnomad", vcf_coords
-                )
+        if vrs_obj is None:
+            _logger.debug(
+                "None was returned when translating %s from gnomad", vcf_coords
+            )
 
         if vrs_data and vrs_obj:
             key = vrs_data_key if vrs_data_key else vcf_coords
