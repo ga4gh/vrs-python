@@ -137,12 +137,12 @@ def pydantic_class_refatt_map():
                 class_reffable_fields.append(fieldname)
         if len(class_reffable_fields) > 0:
             reffable_fields[model_class.__name__] = class_reffable_fields
-    class_keys = {}
+    class_inherent = {}
     for model_class in model_classes:
-        keys = getattr_in(model_class, ["ga4gh", "keys"])
-        if keys and len(keys) > 0:
-            class_keys[model_class.__name__] = keys
-    return (reffable_classes, union_reffable_classes, reffable_fields, class_keys)
+        inherent = getattr_in(model_class, ["ga4gh", "inherent"])
+        if inherent and len(inherent) > 0:
+            class_inherent[model_class.__name__] = inherent
+    return (reffable_classes, union_reffable_classes, reffable_fields, class_inherent)
 
 
 class VrsType(str, Enum):
@@ -242,13 +242,13 @@ class _ValueObject(Entity, ABC):
 
     def ga4gh_serialize(self) -> Dict:
         out = OrderedDict()
-        for k in self.ga4gh.keys:
+        for k in self.ga4gh.inherent:
             v = getattr(self, k)
             out[k] = _recurse_ga4gh_serialize(v)
         return out
 
     class ga4gh:  # noqa: N801
-        keys: List[str]
+        inherent: List[str]
 
     @staticmethod
     def is_ga4gh_identifiable() -> bool:
@@ -476,7 +476,7 @@ class LengthExpression(_ValueObject):
     )
 
     class ga4gh(_ValueObject.ga4gh):
-        keys = ["length", "type"]
+        inherent = ["length", "type"]
 
 
 class ReferenceLengthExpression(_ValueObject):
@@ -498,7 +498,7 @@ class ReferenceLengthExpression(_ValueObject):
     )
 
     class ga4gh(_ValueObject.ga4gh):
-        keys = ["length", "repeatSubunitLength", "type"]
+        inherent = ["length", "repeatSubunitLength", "type"]
 
 
 class LiteralSequenceExpression(_ValueObject):
@@ -511,7 +511,7 @@ class LiteralSequenceExpression(_ValueObject):
     sequence: sequenceString = Field(..., description="the literal sequence")
 
     class ga4gh(_ValueObject.ga4gh):
-        keys = ["sequence", "type"]
+        inherent = ["sequence", "type"]
 
 
 #########################################
@@ -551,25 +551,26 @@ class SequenceReference(_ValueObject):
     )
 
     class ga4gh(_ValueObject.ga4gh):
-        keys = ["refgetAccession", "type"]
+        inherent = ["refgetAccession", "type"]
 
 
 class SequenceLocation(Ga4ghIdentifiableObject):
-    """A `Location` defined by an interval on a referenced `Sequence`."""
+    """A `Location` defined by an interval on a `Sequence`."""
 
     type: Literal["SequenceLocation"] = Field(
         VrsType.SEQ_LOC.value, description=f'MUST be "{VrsType.SEQ_LOC.value}"'
     )
     sequenceReference: Optional[Union[iriReference, SequenceReference]] = Field(
-        None, description="A reference to a Sequence on which the location is defined."
+        None,
+        description="A reference to a SequenceReference on which the location is defined.",
     )
     start: Optional[Union[Range, int]] = Field(
         None,
-        description="The start coordinate or range of the SequenceLocation. The minimum value of this coordinate or range is 0. For locations on linear sequences, this MUST represent a coordinate or range  less than or equal to the value of `end`. For circular sequences, `start` is greater than `end` when the location spans the sequence 0 coordinate.",
+        description="The start coordinate or range of the SequenceLocation. The minimum value of this coordinate or range is 0. For locations on linear sequences, this MUST represent a coordinate or range less than or equal to the value of `end`. For circular sequences, `start` is greater than `end` when the location spans the sequence 0 coordinate.",
     )
     end: Optional[Union[Range, int]] = Field(
         None,
-        description="The end coordinate or range of the SequenceLocation. The minimum value of this coordinate or range is 0. For locations on linear sequences, this MUST represent a coordinate or range  grater than or equal to the value of `start`. For circular sequences, `end` is less than `start` when the location spans the sequence 0 coordinate.",
+        description="The end coordinate or range of the SequenceLocation. The minimum value of this coordinate or range is 0. For locations on linear sequences, this MUST represent a coordinate or range greater than or equal to the value of `start`. For circular sequences, `end` is less than `start` when the location spans the sequence 0 coordinate.",
     )
     sequence: Optional[sequenceString] = Field(
         None,
@@ -640,7 +641,7 @@ class SequenceLocation(Ga4ghIdentifiableObject):
     class ga4gh(Ga4ghIdentifiableObject.ga4gh):  # noqa: N801
         prefix = "SL"
         priorPrefix = {PrevVrsVersion.V1_3.value: "VSL"}  # noqa: N815
-        keys = ["end", "sequenceReference", "start", "type"]
+        inherent = ["end", "sequenceReference", "start", "type"]
 
 
 #########################################
@@ -700,7 +701,7 @@ class Allele(_VariationBase):
     class ga4gh(Ga4ghIdentifiableObject.ga4gh):  # noqa: N801
         prefix = "VA"
         priorPrefix = {PrevVrsVersion.V1_3.value: "VA"}  # noqa: N815
-        keys = ["location", "state", "type"]
+        inherent = ["location", "state", "type"]
 
 
 class CisPhasedBlock(_VariationBase):
@@ -727,7 +728,7 @@ class CisPhasedBlock(_VariationBase):
 
     class ga4gh(Ga4ghIdentifiableObject.ga4gh):
         prefix = "CPB"
-        keys = ["members", "type"]
+        inherent = ["members", "type"]
 
 
 #########################################
@@ -775,7 +776,7 @@ class Adjacency(_VariationBase):
 
     class ga4gh(Ga4ghIdentifiableObject.ga4gh):
         prefix = "AJ"
-        keys = ["adjoinedSequences", "linker", "type"]
+        inherent = ["adjoinedSequences", "linker", "type"]
 
 
 class Terminus(_VariationBase):
@@ -793,7 +794,7 @@ class Terminus(_VariationBase):
 
     class ga4gh(Ga4ghIdentifiableObject.ga4gh):  # noqa: N815
         prefix = "TM"
-        keys = ["location", "type"]
+        inherent = ["location", "type"]
 
 
 class TraversalBlock(_ValueObject):
@@ -816,7 +817,7 @@ class TraversalBlock(_ValueObject):
     )
 
     class ga4gh(_ValueObject.ga4gh):
-        keys = ["component", "orientation", "type"]
+        inherent = ["component", "orientation", "type"]
 
 
 class DerivativeMolecule(_VariationBase):
@@ -842,7 +843,7 @@ class DerivativeMolecule(_VariationBase):
 
     class ga4gh(Ga4ghIdentifiableObject.ga4gh):  # noqa: N815
         prefix = "DM"
-        keys = ["components", "type"]
+        inherent = ["components", "type"]
 
 
 #########################################
@@ -868,7 +869,7 @@ class CopyNumberCount(_VariationBase):
 
     class ga4gh(Ga4ghIdentifiableObject.ga4gh):  # noqa: N815
         prefix = "CN"
-        keys = ["copies", "location", "type"]
+        inherent = ["copies", "location", "type"]
 
 
 class CopyNumberChange(_VariationBase):
@@ -912,7 +913,7 @@ class CopyNumberChange(_VariationBase):
 
     class ga4gh(Ga4ghIdentifiableObject.ga4gh):
         prefix = "CX"
-        keys = ["copyChange", "location", "type"]
+        inherent = ["copyChange", "location", "type"]
 
 
 #########################################
@@ -993,6 +994,6 @@ class SystemicVariation(RootModel):
 
 
 # At end so classes exist
-(reffable_classes, union_reffable_classes, class_refatt_map, class_keys) = (
+(reffable_classes, union_reffable_classes, class_refatt_map, class_inherent) = (
     pydantic_class_refatt_map()
 )
