@@ -95,11 +95,11 @@ class Entity(BaseModel, ABC):
         ...,
         description="The name of the class that is instantiated by a data object representing the Entity.",
     )
-    label: Optional[str] = Field(None, description="A primary name for the entity.")
+    name: Optional[str] = Field(None, description="A primary name for the entity.")
     description: Optional[str] = Field(
         None, description="A free-text description of the Entity."
     )
-    alternativeLabels: Optional[list[str]] = Field(  # noqa: N815
+    aliases: Optional[list[str]] = Field(
         None, description="Alternative name(s) for the Entity."
     )
     extensions: Optional[list[Extension]] = Field(
@@ -134,7 +134,7 @@ class Coding(Element):
     code system.
     """
 
-    label: Optional[str] = Field(
+    name: Optional[str] = Field(
         None,
         description="The human-readable name for the coded concept, as defined by the code system.",
     )
@@ -187,13 +187,13 @@ class Extension(Element):
 
 
 class MappableConcept(Element):
-    """A concept label that may be mapped to one or more `Codings`."""
+    """A concept name that may be mapped to one or more `Codings`."""
 
     conceptType: Optional[str] = Field(  # noqa: N815
         None,
         description="A term indicating the type of concept being represented by the MappableConcept.",
     )
-    label: Optional[str] = Field(None, description="A primary name for the concept.")
+    name: Optional[str] = Field(None, description="A primary name for the concept.")
     primaryCode: Optional[code] = Field(  # noqa: N815
         None,
         description="A primary code for the concept that is used to identify the concept in a terminology or code system. If there is a public code system for the primaryCode then it should also be specified in the mappings array with a relation of 'exactMatch'. This attribute is provided to both allow a more technical code to be used when a public Coding with a system is not available as well as when it is available but should be identified as the primary code.",
@@ -203,11 +203,16 @@ class MappableConcept(Element):
         description="A list of mappings to concepts in terminologies or code systems. Each mapping should include a coding and a relation.",
     )
 
+    class ga4gh:  # noqa: N801
+        """Contain properties used for computing digests"""
+
+        inherent: tuple[str] = ("primaryCode",)
+
     @model_validator(mode="after")
-    def require_label_or_primary_code(cls, v):  # noqa: ANN001 N805 ANN201
-        """Ensure that ``label`` or ``primaryCode`` is provided"""
-        if v.primaryCode is None and v.label is None:
-            err_msg = "`One of label` or `primaryCode` must be provided."
+    def require_name_or_primary_code(cls, v):  # noqa: ANN001 N805 ANN201
+        """Ensure that ``name`` or ``primaryCode`` is provided"""
+        if v.primaryCode is None and v.name is None:
+            err_msg = "`One of name` or `primaryCode` must be provided."
             raise ValueError(err_msg)
         return v
 
