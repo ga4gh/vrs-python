@@ -37,7 +37,13 @@ from ga4gh.core import (
     PrevVrsVersion,
     sha512t24u,
 )
-from ga4gh.core.models import Element, Entity, MappableConcept, iriReference
+from ga4gh.core.models import (
+    BaseModelForbidExtra,
+    Element,
+    Entity,
+    MappableConcept,
+    iriReference,
+)
 from ga4gh.core.pydantic import get_pydantic_root, getattr_in
 
 
@@ -369,7 +375,7 @@ class Ga4ghIdentifiableObject(_ValueObject, ABC):
         prefix: str
 
 
-class Expression(Element):
+class Expression(Element, BaseModelForbidExtra):
     """Representation of a variation by a specified nomenclature or syntax for a
     Variation object. Common examples of expressions for the description of molecular
     variation include the HGVS and ISCN nomenclatures.
@@ -465,7 +471,7 @@ class sequenceString(RootModel):
 #########################################
 
 
-class LengthExpression(_ValueObject):
+class LengthExpression(_ValueObject, BaseModelForbidExtra):
     """A sequence expressed only by its length."""
 
     type: Literal["LengthExpression"] = Field(
@@ -479,7 +485,7 @@ class LengthExpression(_ValueObject):
         inherent = ["length", "type"]
 
 
-class ReferenceLengthExpression(_ValueObject):
+class ReferenceLengthExpression(_ValueObject, BaseModelForbidExtra):
     """An expression of a length of a sequence from a repeating reference."""
 
     type: Literal["ReferenceLengthExpression"] = Field(
@@ -501,7 +507,7 @@ class ReferenceLengthExpression(_ValueObject):
         inherent = ["length", "repeatSubunitLength", "type"]
 
 
-class LiteralSequenceExpression(_ValueObject):
+class LiteralSequenceExpression(_ValueObject, BaseModelForbidExtra):
     """An explicit expression of a Sequence."""
 
     type: Literal["LiteralSequenceExpression"] = Field(
@@ -519,7 +525,7 @@ class LiteralSequenceExpression(_ValueObject):
 #########################################
 
 
-class SequenceReference(_ValueObject):
+class SequenceReference(_ValueObject, BaseModelForbidExtra):
     """A sequence of nucleic or amino acid character codes."""
 
     model_config = ConfigDict(use_enum_values=True)
@@ -554,7 +560,7 @@ class SequenceReference(_ValueObject):
         inherent = ["refgetAccession", "type"]
 
 
-class SequenceLocation(Ga4ghIdentifiableObject):
+class SequenceLocation(Ga4ghIdentifiableObject, BaseModelForbidExtra):
     """A `Location` defined by an interval on a `Sequence`."""
 
     type: Literal["SequenceLocation"] = Field(
@@ -660,7 +666,7 @@ class _VariationBase(Ga4ghIdentifiableObject, ABC):
 #########################################
 
 
-class Allele(_VariationBase):
+class Allele(_VariationBase, BaseModelForbidExtra):
     """The state of a molecule at a `Location`."""
 
     type: Literal["Allele"] = Field(
@@ -704,7 +710,7 @@ class Allele(_VariationBase):
         inherent = ["location", "state", "type"]
 
 
-class CisPhasedBlock(_VariationBase):
+class CisPhasedBlock(_VariationBase, BaseModelForbidExtra):
     """An ordered set of co-occurring `Variation` on the same molecule."""
 
     type: Literal["CisPhasedBlock"] = Field(
@@ -736,7 +742,7 @@ class CisPhasedBlock(_VariationBase):
 #########################################
 
 
-class Adjacency(_VariationBase):
+class Adjacency(_VariationBase, BaseModelForbidExtra):
     """The `Adjacency` class represents the adjoining of the end of a sequence with the
     beginning of an adjacent sequence, potentially with an intervening linker sequence.
     """
@@ -779,7 +785,7 @@ class Adjacency(_VariationBase):
         inherent = ["adjoinedSequences", "linker", "type"]
 
 
-class Terminus(_VariationBase):
+class Terminus(_VariationBase, BaseModelForbidExtra):
     """The `Terminus` data class provides a structure for describing the end
     (terminus) of a sequence. Structurally similar to Adjacency but the linker sequence
     is not allowed and it removes the unnecessary array structure.
@@ -797,7 +803,7 @@ class Terminus(_VariationBase):
         inherent = ["location", "type"]
 
 
-class TraversalBlock(_ValueObject):
+class TraversalBlock(_ValueObject, BaseModelForbidExtra):
     """A component used to describe the orientation of applicable molecular variation
     within a DerivativeMolecule.
     """
@@ -820,7 +826,7 @@ class TraversalBlock(_ValueObject):
         inherent = ["component", "orientation", "type"]
 
 
-class DerivativeMolecule(_VariationBase):
+class DerivativeMolecule(_VariationBase, BaseModelForbidExtra):
     """The "Derivative Molecule" data class is a structure for describing a derivate
     molecule composed from multiple sequence components.
     """
@@ -851,7 +857,7 @@ class DerivativeMolecule(_VariationBase):
 #########################################
 
 
-class CopyNumberCount(_VariationBase):
+class CopyNumberCount(_VariationBase, BaseModelForbidExtra):
     """The absolute count of discrete copies of a `Location`, within a system
     (e.g. genome, cell, etc.).
     """
@@ -872,7 +878,7 @@ class CopyNumberCount(_VariationBase):
         inherent = ["copies", "location", "type"]
 
 
-class CopyNumberChange(_VariationBase):
+class CopyNumberChange(_VariationBase, BaseModelForbidExtra):
     """An assessment of the copy number of a `Location` within a system
     (e.g. genome, cell, etc.) relative to a baseline ploidy.
     """
