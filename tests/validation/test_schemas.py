@@ -105,6 +105,11 @@ def test_schema_class_fields(gks_schema, pydantic_models):
 
         required_schema_fields = set(mapping.schema[schema_model]["required"])
 
+        if mapping.schema[schema_model].get("additionalProperties") is False:
+            assert pydantic_model.model_config.get("extra") == "forbid", (
+                f"{pydantic_model} should forbid extra attributes"
+            )
+
         for prop, property_def in schema_properties.items():
             pydantic_model_field_info = pydantic_model.model_fields[prop]
             pydantic_field_required = pydantic_model_field_info.is_required()

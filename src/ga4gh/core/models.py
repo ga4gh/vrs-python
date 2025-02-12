@@ -18,6 +18,12 @@ from pydantic import (
 from ga4gh.core.identifiers import GA4GH_IR_REGEXP
 
 
+class BaseModelForbidExtra(BaseModel):
+    """Base Pydantic model class with extra attributes forbidden."""
+
+    model_config = ConfigDict(extra="forbid")
+
+
 class Relation(str, Enum):
     """A mapping relation between concepts as defined by the Simple Knowledge
     Organization System (SKOS).
@@ -129,7 +135,7 @@ class Element(BaseModel, ABC):
 #########################################
 
 
-class Coding(Element):
+class Coding(Element, BaseModelForbidExtra):
     """A structured representation of a code for a defined concept in a terminology or
     code system.
     """
@@ -149,7 +155,7 @@ class Coding(Element):
     code: code  # Cannot use Field due to PydanticUserError: field name and type annotation must not clash.
 
 
-class ConceptMapping(Element):
+class ConceptMapping(Element, BaseModelForbidExtra):
     """A mapping to a concept in a terminology or code system."""
 
     model_config = ConfigDict(use_enum_values=True)
@@ -164,7 +170,7 @@ class ConceptMapping(Element):
     )
 
 
-class Extension(Element):
+class Extension(Element, BaseModelForbidExtra):
     """The Extension class provides entities with a means to include additional
     attributes that are outside of the specified standard but needed by a given content
     provider or system implementer. These extensions are not expected to be natively
@@ -186,7 +192,7 @@ class Extension(Element):
     )
 
 
-class MappableConcept(Element):
+class MappableConcept(Element, BaseModelForbidExtra):
     """A concept name that may be mapped to one or more `Codings`."""
 
     conceptType: Optional[str] = Field(  # noqa: N815
