@@ -279,7 +279,7 @@ class AbstractVcfAnnotator(abc.ABC):
         Reimplement in a child class to add custom logic. Otherwise, this method does
         nothing.
 
-        :param vrs_alleles: VRS alleles constructed from ingested VCF
+        :param vrs_alleles_collection: VRS alleles constructed from ingested VCF
         """
 
     def _get_vrs_object(
@@ -296,13 +296,11 @@ class AbstractVcfAnnotator(abc.ABC):
         be mutated.
 
         :param vcf_coords: Allele to get VRS object for. Format is chr-pos-ref-alt
-        :param vrs_data: All constructed VRS objects. Can be `None` if no data dumps
+        :param allele_collection: All constructed VRS objects. Can be `None` if no data dumps
             will be created.
         :param vrs_field_data: If `vrs_data`, keys are VRS Fields and values are list
             of VRS data. Empty dict otherwise.
         :param assembly: The assembly used in `vcf_coords`
-        :param vrs_data_key: The key to update in `vrs_data`. If not provided, will use
-            `vcf_coords` as the key.
         :param vrs_attributes: If `True` will include VRS_Start, VRS_End, VRS_State
             fields in the INFO field. If `False` will not include these fields. Only
             used if `output_vcf` set to `True`.
@@ -366,8 +364,8 @@ class AbstractVcfAnnotator(abc.ABC):
         """Get VRS data for record's reference and alt alleles.
 
         :param record: A row in the VCF file
-        :param vrs_data: Dictionary containing the VRS object information for the VCF.
-            Will be mutated if `output_pickle = True`
+        :param allele_collection: Dictionary containing the VRS object information for
+            the VCF. Will be mutated if `output_pickle = True`
         :param assembly: The assembly used in `record`
         :param additional_info_fields: Additional VRS fields to add in INFO field
         :param vrs_attributes: If `True` will include VRS_Start, VRS_End, VRS_State
@@ -512,7 +510,7 @@ class VcfAnnotator(AbstractVcfAnnotator):
         """Perform clean-up operations (eg file writing) on VRS objects collected
         during VCF ingestion.
 
-        :param vrs_alleles: VRS alleles constructed from ingested VCF
+        :param vrs_alleles_collection: VRS alleles constructed from ingested VCF
         """
         if vrs_alleles_collection is not None:
             output_pkl_path = kwargs.get(self.pkl_arg_name)
