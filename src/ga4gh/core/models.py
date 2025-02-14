@@ -18,6 +18,12 @@ from pydantic import (
 from ga4gh.core.identifiers import GA4GH_IR_REGEXP
 
 
+class BaseModelForbidExtra(BaseModel):
+    """Base Pydantic model class with extra attributes forbidden."""
+
+    model_config = ConfigDict(extra="forbid")
+
+
 class Relation(str, Enum):
     """A mapping relation between concepts as defined by the Simple Knowledge
     Organization System (SKOS).
@@ -95,11 +101,11 @@ class Entity(BaseModel, ABC):
         ...,
         description="The name of the class that is instantiated by a data object representing the Entity.",
     )
-    label: Optional[str] = Field(None, description="A primary name for the entity.")
+    name: Optional[str] = Field(None, description="A primary name for the entity.")
     description: Optional[str] = Field(
         None, description="A free-text description of the Entity."
     )
-    alternativeLabels: Optional[list[str]] = Field(  # noqa: N815
+    aliases: Optional[list[str]] = Field(
         None, description="Alternative name(s) for the Entity."
     )
     extensions: Optional[list[Extension]] = Field(
@@ -129,12 +135,12 @@ class Element(BaseModel, ABC):
 #########################################
 
 
-class Coding(Element):
+class Coding(Element, BaseModelForbidExtra):
     """A structured representation of a code for a defined concept in a terminology or
     code system.
     """
 
-    label: Optional[str] = Field(
+    name: Optional[str] = Field(
         None,
         description="The human-readable name for the coded concept, as defined by the code system.",
     )
@@ -149,7 +155,7 @@ class Coding(Element):
     code: code  # Cannot use Field due to PydanticUserError: field name and type annotation must not clash.
 
 
-class ConceptMapping(Element):
+class ConceptMapping(Element, BaseModelForbidExtra):
     """A mapping to a concept in a terminology or code system."""
 
     model_config = ConfigDict(use_enum_values=True)
@@ -164,7 +170,7 @@ class ConceptMapping(Element):
     )
 
 
-class Extension(Element):
+class Extension(Element, BaseModelForbidExtra):
     """The Extension class provides entities with a means to include additional
     attributes that are outside of the specified standard but needed by a given content
     provider or system implementer. These extensions are not expected to be natively
@@ -186,14 +192,14 @@ class Extension(Element):
     )
 
 
-class MappableConcept(Element):
-    """A concept label that may be mapped to one or more `Codings`."""
+class MappableConcept(Element, BaseModelForbidExtra):
+    """A concept name that may be mapped to one or more `Codings`."""
 
     conceptType: Optional[str] = Field(  # noqa: N815
         None,
         description="A term indicating the type of concept being represented by the MappableConcept.",
     )
-    label: Optional[str] = Field(None, description="A primary name for the concept.")
+    name: Optional[str] = Field(None, description="A primary name for the concept.")
     primaryCode: Optional[code] = Field(  # noqa: N815
         None,
         description="A primary code for the concept that is used to identify the concept in a terminology or code system. If there is a public code system for the primaryCode then it should also be specified in the mappings array with a relation of 'exactMatch'. This attribute is provided to both allow a more technical code to be used when a public Coding with a system is not available as well as when it is available but should be identified as the primary code.",
@@ -203,11 +209,16 @@ class MappableConcept(Element):
         description="A list of mappings to concepts in terminologies or code systems. Each mapping should include a coding and a relation.",
     )
 
+    class ga4gh:  # noqa: N801
+        """Contain properties used for computing digests"""
+
+        inherent: tuple[str] = ("primaryCode",)
+
     @model_validator(mode="after")
-    def require_label_or_primary_code(cls, v):  # noqa: ANN001 N805 ANN201
-        """Ensure that ``label`` or ``primaryCode`` is provided"""
-        if v.primaryCode is None and v.label is None:
-            err_msg = "`One of label` or `primaryCode` must be provided."
+    def require_name_or_primary_code(cls, v):  # noqa: ANN001 N805 ANN201
+        """Ensure that ``name`` or ``primaryCode`` is provided"""
+        if v.primaryCode is None and v.name is None:
+            err_msg = "`One of name` or `primaryCode` must be provided."
             raise ValueError(err_msg)
         return v
 
