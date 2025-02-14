@@ -14,7 +14,7 @@ import click
 import requests
 
 from ga4gh.vrs.dataproxy import create_dataproxy
-from ga4gh.vrs.extras.annotator.vcf import VCFAnnotator
+from ga4gh.vrs.extras.annotator.vcf import VcfAnnotator
 
 _logger = logging.getLogger(__name__)
 
@@ -82,15 +82,23 @@ def _log_level_option(func: Callable) -> Callable:
     required=False,
     type=click.Path(writable=True, allow_dash=False, path_type=Path),
     help=(
-        "Declare save location for output annotated VCF. If not provided, must provide --vrs_pickle_out."
+        "Declare save location for output annotated VCF. At least one form of output must be declared."
     ),
 )
 @click.option(
-    "--vrs_pickle_out",
+    "--pkl_out",
     required=False,
     type=click.Path(writable=True, allow_dash=False, path_type=Path),
     help=(
-        "Declare save location for output VCF pickle. If not provided, must provide --vcf_out."
+        "Declare save location for output PKL file mapping VRS IDs to alleles. At least one form of output must be declared."
+    ),
+)
+@click.option(
+    "--ndjson_out",
+    required=False,
+    type=click.Path(writable=True, allow_dash=False, path_type=Path),
+    help=(
+        "Declare save location for output NDJSON file dump of VRS alleles. At least one form of output must be declared."
     ),
 )
 @click.option(
@@ -136,7 +144,8 @@ def _log_level_option(func: Callable) -> Callable:
 def _annotate_vcf_cli(
     vcf_in: Path,
     vcf_out: Path | None,
-    vrs_pickle_out: Path | None,
+    pkl_out: Path | None,
+    ndjson_out: Path | None,
     vrs_attributes: bool,
     dataproxy_uri: str,
     assembly: str,
@@ -146,9 +155,10 @@ def _annotate_vcf_cli(
 ) -> None:
     """Extract VRS objects from VCF located at VCF_IN.
 
-        $ vrs-annotate vcf input.vcf.gz --vcf_out output.vcf.gz --vrs_pickle_out vrs_objects.pkl
+        $ vrs-annotate vcf input.vcf.gz --vcf_out output.vcf.gz --pkl_out vrs_objects.pkl
 
-    Note that at least one of --vcf_out or --vrs_pickle_out must be selected and defined.
+    Note that at least one of --vcf_out, --pkl_out, or --ndjson_out must be selected and
+    defined; otherwise, this process will terminate immediately.
 
     Sequence data from a provider such as SeqRepo is required. Use the `--dataproxy_uri`
     option or the environment variable `GA4GH_VRS_DATAPROXY_URI` to define its location
@@ -171,7 +181,7 @@ def _annotate_vcf_cli(
         if not silent:
             click.echo(msg, err=True)
         exit(1)
-    annotator = VCFAnnotator(data_proxy)
+    annotator = VcfAnnotator(data_proxy)
     start = timer()
     msg = f"Annotating {vcf_in} with the VCF Annotator..."
     _logger.info(msg)
@@ -180,11 +190,12 @@ def _annotate_vcf_cli(
     annotator.annotate(
         vcf_in.absolute(),
         output_vcf_path=vcf_out,
-        output_pkl_path=vrs_pickle_out,
         vrs_attributes=vrs_attributes,
         assembly=assembly,
         compute_for_ref=(not skip_ref),
         require_validation=require_validation,
+        output_pkl_path=pkl_out,
+        output_ndjson_path=ndjson_out,
     )
     end = timer()
     msg = f"VCF Annotator finished in {(end - start):.5f} seconds"
