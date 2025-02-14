@@ -86,7 +86,7 @@ class AbstractVcfAnnotator(abc.ABC):
 
     collect_alleles: bool = False
 
-    def __init__(self, data_proxy: _DataProxy) -> None:
+    def __init__(self, data_proxy: _DataProxy, **kwargs) -> None:  # noqa: ARG002
         """Initialize the VCFAnnotator class.
 
         :param data_proxy: GA4GH sequence dataproxy instance.
@@ -178,7 +178,6 @@ class AbstractVcfAnnotator(abc.ABC):
 
         :param input_vcf_path: Location of input VCF
         :param output_vcf_path: The path for the output VCF file
-        :param output_pkl_path: The path for the output VCF pickle file
         :param vrs_attributes: If `True`, include VRS_Start, VRS_End, VRS_State
             properties in the VCF INFO field. If `False` will not include these
             properties. Only used if `output_vcf_path` is defined.
@@ -449,7 +448,6 @@ class VcfAnnotator(AbstractVcfAnnotator):
 
         :param input_vcf_path: Location of input VCF
         :param output_vcf_path: The path for the output VCF file
-        :param output_pkl_path: The path for the output VCF pickle file
         :param vrs_attributes: If `True`, include VRS_Start, VRS_End, VRS_State
             properties in the VCF INFO field. If `False` will not include these
             properties. Only used if `output_vcf_path` is defined.
