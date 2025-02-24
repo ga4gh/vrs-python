@@ -364,8 +364,8 @@ class AbstractVcfAnnotator(abc.ABC):
         """Get VRS data for record's reference and alt alleles.
 
         :param record: A row in the VCF file
-        :param allele_collection: Dictionary containing the VRS object information for
-            the VCF. Will be mutated if `output_pickle = True`
+        :param allele_collection: List containing the VRS object information for
+            the VCF, if `self.collect_alleles` is `True`.
         :param assembly: The assembly used in `record`
         :param additional_info_fields: Additional VRS fields to add in INFO field
         :param vrs_attributes: If `True` will include VRS_Start, VRS_End, VRS_State
