@@ -16,8 +16,6 @@ else
 endif
 XRM=xargs -0${_XRM_R} rm
 
-PKG=ga4gh.vrs
-PKGD=$(subst .,/,${PKG})
 PYV:=3.12
 VEDIR=venv/${PYV}
 
@@ -89,18 +87,15 @@ doctest:
 ############################################################################
 #= UTILITY TARGETS
 
-# N.B. Although code is stored in github, I use hg and hg-git on the command line
-#=> reformat: reformat code with yapf and commit
-.PHONY: reformat
-reformat:
-	@if ! git diff --cached --exit-code; then echo "Repository not clean" 1>&2; exit 1; fi
-	yapf -i -r "${PKGD}" tests
-	git commit -a -m "reformatted with yapf"
+#=> reformat: reformat code with ruff
+.PHONY: format
+format:
+	python3 -m ruff format
 
 #=> lint -- static analysis check
 .PHONY: lint
 lint:
-	pylint src/ga4gh/{core,vrs} | tee $@
+	python3 -m ruff check --fix
 
 #=> docs -- make sphinx docs
 .PHONY: docs

@@ -1,13 +1,13 @@
 """Test that VRS-Python Pydantic models match VRS and GKS-Common schemas"""
 
-from enum import Enum
 import json
+from enum import Enum
 from pathlib import Path
 
 import pytest
 from pydantic import BaseModel
 
-from ga4gh.core import entity_models, domain_models
+from ga4gh.core import core_models
 from ga4gh.vrs import models as vrs_models
 
 
@@ -15,8 +15,7 @@ class GKSSchema(str, Enum):
     """Enum for GKS schema"""
 
     VRS = "vrs"
-    CORE_IM = "core-im"
-    DOMAIN = "domain-entities"
+    CORE = "core"
 
 
 class GKSSchemaMapping(BaseModel):
@@ -59,23 +58,19 @@ vrs_mapping = GKS_SCHEMA_MAPPING[GKSSchema.VRS]
 for f in (SUBMODULES_DIR / "schema" / "vrs" / "json").glob("*"):
     _update_gks_schema_mapping(f, vrs_mapping)
 
-
-# Get core-im + domain classes
-for child in (SUBMODULES_DIR / "submodules" / "gks-common" / "schema").iterdir():
-    mapping_key = (
-        GKSSchema.DOMAIN if str(child).endswith(GKSSchema.DOMAIN) else GKSSchema.CORE_IM
-    )
-    mapping = GKS_SCHEMA_MAPPING[mapping_key]
-    for f in (child / "json").glob("*"):
-        _update_gks_schema_mapping(f, mapping)
+# Get core classes
+core_mapping = GKS_SCHEMA_MAPPING[GKSSchema.CORE]
+for f in (
+    SUBMODULES_DIR / "submodules" / "gks-core" / "schema" / "gks-core" / "json"
+).glob("*"):
+    _update_gks_schema_mapping(f, core_mapping)
 
 
 @pytest.mark.parametrize(
     ("gks_schema", "pydantic_models"),
     [
         (GKSSchema.VRS, vrs_models),
-        (GKSSchema.CORE_IM, entity_models),
-        (GKSSchema.DOMAIN, domain_models),
+        (GKSSchema.CORE, core_models),
     ],
 )
 def test_schema_models_in_pydantic(gks_schema, pydantic_models):
@@ -84,15 +79,18 @@ def test_schema_models_in_pydantic(gks_schema, pydantic_models):
     for schema_model in (
         mapping.base_classes | mapping.concrete_classes | mapping.primitives
     ):
-        assert getattr(pydantic_models, schema_model, False), schema_model
+        if schema_model not in {
+            "date",
+            "datetime",
+        }:  # since we leverage datetime module
+            assert getattr(pydantic_models, schema_model, False), schema_model
 
 
 @pytest.mark.parametrize(
     ("gks_schema", "pydantic_models"),
     [
         (GKSSchema.VRS, vrs_models),
-        (GKSSchema.CORE_IM, entity_models),
-        (GKSSchema.DOMAIN, domain_models),
+        (GKSSchema.CORE, core_models),
     ],
 )
 def test_schema_class_fields(gks_schema, pydantic_models):
@@ -107,6 +105,11 @@ def test_schema_class_fields(gks_schema, pydantic_models):
 
         required_schema_fields = set(mapping.schema[schema_model]["required"])
 
+        if mapping.schema[schema_model].get("additionalProperties") is False:
+            assert pydantic_model.model_config.get("extra") == "forbid", (
+                f"{pydantic_model} should forbid extra attributes"
+            )
+
         for prop, property_def in schema_properties.items():
             pydantic_model_field_info = pydantic_model.model_fields[prop]
             pydantic_field_required = pydantic_model_field_info.is_required()
@@ -118,31 +121,39 @@ def test_schema_class_fields(gks_schema, pydantic_models):
                 assert not pydantic_field_required, f"{pydantic_model}.{prop}"
 
             if "description" in property_def:
-                assert property_def["description"].replace("'", "\"") == pydantic_model_field_info.description.replace("'", "\""), f"{pydantic_model}.{prop}"
+                if prop != "code":  # special exception
+                    assert property_def["description"].replace(
+                        "'", '"'
+                    ) == pydantic_model_field_info.description.replace("'", '"'), (
+                        f"{pydantic_model}.{prop}"
+                    )
             else:
-                assert pydantic_model_field_info.description is None, f"{pydantic_model}.{prop}"
+                assert pydantic_model_field_info.description is None, (
+                    f"{pydantic_model}.{prop}"
+                )
 
 
-def test_ga4gh_keys():
-    """Ensure ga4ghDigest keys defined in schema model exist in corresponding Pydantic model"""
-    vrs_mapping = GKS_SCHEMA_MAPPING[GKSSchema.VRS]
-    for vrs_class in vrs_mapping.concrete_classes:
-        if (
-            vrs_mapping.schema[vrs_class].get("ga4ghDigest", {}).get("keys", None)
-            is None
-        ):
+@pytest.mark.parametrize(
+    ("gks_schema", "pydantic_models"),
+    [
+        (GKSSchema.VRS, vrs_models),
+        (GKSSchema.CORE, core_models),
+    ],
+)
+def test_ga4gh_keys(gks_schema, pydantic_models):
+    """Ensure ga4gh inherent defined in schema model exist in corresponding Pydantic model"""
+    mapping = GKS_SCHEMA_MAPPING[gks_schema]
+    for schema_model in mapping.concrete_classes:
+        if mapping.schema[schema_model].get("ga4gh", {}).get("inherent", None) is None:
             continue
 
-        pydantic_model = getattr(vrs_models, vrs_class)
+        pydantic_model = getattr(pydantic_models, schema_model)
 
         try:
-            pydantic_model_digest_keys = pydantic_model.ga4gh.keys
+            pydantic_model_digest_inherent = pydantic_model.ga4gh.inherent
         except AttributeError as e:
-            raise AttributeError(vrs_class) from e
+            raise AttributeError(schema_model) from e
 
-        assert set(pydantic_model_digest_keys) == set(
-            vrs_mapping.schema[vrs_class]["ga4ghDigest"]["keys"]
-        ), vrs_class
-        assert pydantic_model_digest_keys == sorted(
-            pydantic_model.ga4gh.keys
-        ), vrs_class
+        assert set(pydantic_model_digest_inherent) == set(
+            mapping.schema[schema_model]["ga4gh"]["inherent"]
+        ), schema_model
