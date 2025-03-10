@@ -1,6 +1,6 @@
 services:
   seqrepo:
-    image: biocommons/seqrepo:2024-02-20
+    image: biocommons/seqrepo:2024-12-20
     volumes:
       - seqrepo_vol:/usr/local/share/seqrepo
 
@@ -11,16 +11,16 @@ services:
       - seqrepo_vol:/usr/local/share/seqrepo
     depends_on:
       - seqrepo
-    command: seqrepo-rest-service -w /usr/local/share/seqrepo/2024-02-20
+    command: seqrepo-rest-service -w /usr/local/share/seqrepo/2024-12-20
     network_mode: bridge
     ports:
       - 5000:5000
 
   uta:
     # Test:
-    # psql -XAt postgres://anonymous@localhost/uta -c 'select count(*) from uta_20210129b.transcript'
+    # psql -XAt postgres://anonymous@localhost/uta -c 'select count(*) from uta_20241220.transcript'
     # 314227
-    image: biocommons/uta:uta_20210129b
+    image: biocommons/uta:uta_20241220
     environment:
       - POSTGRES_PASSWORD=some-password-that-you-make-up
     volumes:
