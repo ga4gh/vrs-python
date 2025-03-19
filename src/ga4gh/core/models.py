@@ -146,13 +146,17 @@ class Coding(Element, BaseModelForbidExtra):
     )
     system: str = Field(
         ...,
-        description="The terminology/code system that defined the code. May be reported as a free-text name (e.g. 'Sequence Ontology'), but it is preferable to provide a uri/url for the system. When the 'code' is reported as a CURIE, the 'system' should be reported as the uri that the CURIE's prefix expands to (e.g. 'http://purl.obofoundry.org/so.owl/' for the Sequence Ontology).",
+        description="The terminology/code system that defined the code. May be reported as a free-text name (e.g. 'Sequence Ontology'), but it is preferable to provide a uri/url for the system.",
     )
     systemVersion: Optional[str] = Field(  # noqa: N815
         None,
         description="Version of the terminology or code system that provided the code.",
     )
     code: code  # Cannot use Field due to PydanticUserError: field name and type annotation must not clash.
+    iris: Optional[list[iriReference]] = Field(
+        None,
+        description="A list of IRIs that are associated with the coding. This can be used to provide additional context or to link to additional information about the concept.",
+    )
 
 
 class ConceptMapping(Element, BaseModelForbidExtra):
@@ -193,39 +197,29 @@ class Extension(Element, BaseModelForbidExtra):
 
 
 class MappableConcept(Element, BaseModelForbidExtra):
-    """A concept name that may be mapped to one or more `Codings`."""
+    """A concept based on a primaryCoding and/or name that may be mapped to one or more other `Codings`."""
 
     conceptType: Optional[str] = Field(  # noqa: N815
         None,
         description="A term indicating the type of concept being represented by the MappableConcept.",
     )
     name: Optional[str] = Field(None, description="A primary name for the concept.")
-    primaryCode: Optional[code] = Field(  # noqa: N815
+    primaryCoding: Optional[Coding] = Field(  # noqa: N815
         None,
-        description="A primary code for the concept that is used to identify the concept in a terminology or code system. If there is a public code system for the primaryCode then it should also be specified in the mappings array with a relation of 'exactMatch'. This attribute is provided to both allow a more technical code to be used when a public Coding with a system is not available as well as when it is available but should be identified as the primary code.",
+        description="A primary coding for the concept.",
     )
     mappings: Optional[list[ConceptMapping]] = Field(
         None,
         description="A list of mappings to concepts in terminologies or code systems. Each mapping should include a coding and a relation.",
     )
 
-    class ga4gh:  # noqa: N801
-        """Contain properties used for computing digests"""
-
-        inherent: tuple[str] = ("primaryCode",)
-
     @model_validator(mode="after")
     def require_name_or_primary_code(cls, v):  # noqa: ANN001 N805 ANN201
-        """Ensure that ``name`` or ``primaryCode`` is provided"""
-        if v.primaryCode is None and v.name is None:
-            err_msg = "`One of name` or `primaryCode` must be provided."
+        """Ensure that ``name`` or ``primaryCoding`` is provided"""
+        if v.primaryCoding is None and v.name is None:
+            err_msg = "`One of name` or `primaryCoding` must be provided."
             raise ValueError(err_msg)
         return v
-
-    def ga4gh_serialize(self) -> Optional[str]:  # noqa: D102
-        if self.primaryCode:
-            return self.primaryCode.root
-        return None
 
 
 Element.model_rebuild()

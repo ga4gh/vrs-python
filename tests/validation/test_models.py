@@ -153,30 +153,34 @@ def test_mappable_concept():
     """Test the MappableConcept model validator"""
     # Does not provide required fields
     with pytest.raises(
-        ValueError, match="`One of name` or `primaryCode` must be provided."
+        ValueError, match="`One of name` or `primaryCoding` must be provided."
     ):
         core_models.MappableConcept(conceptType="test")
 
     # Valid models
     assert core_models.MappableConcept(name="Primary Label")
-    assert core_models.MappableConcept(primaryCode="EFO:0030067")
+    assert core_models.MappableConcept(
+        primaryCoding=core_models.Coding(
+            code="HGNC:1097",
+            system="https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+        )
+    )
 
 
 def test_copy_number_change():
     """Test the CopyNumberChange field validator"""
     location = core_models.iriReference("location.json#/1")
 
-    # Primary code not provided
-    with pytest.raises(ValueError, match="`primaryCode` is required."):
-        models.CopyNumberChange(
-            location=location, copyChange=core_models.MappableConcept(name="test")
-        )
+    assert models.CopyNumberChange(location=location, copyChange="loss")
 
-    # Primary code not valid EFO
-    with pytest.raises(ValueError, match="`primaryCode` must be one of:"):
+    # Copy Change
+    with pytest.raises(
+        ValueError,
+        match="Input should be 'complete genomic loss', 'high-level loss', 'low-level loss', 'loss', 'regional base ploidy', 'gain', 'low-level gain' or 'high-level gain'",
+    ):
         models.CopyNumberChange(
             location=location,
-            copyChange=core_models.MappableConcept(primaryCode="test"),
+            copyChange="test",
         )
 
 
