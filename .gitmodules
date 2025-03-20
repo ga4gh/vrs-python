@@ -1,4 +1,4 @@
 [submodule "submodules/vrs"]
 	path = submodules/vrs
 	url = https://github.com/ga4gh/vrs.git
-	branch = issue-640
+	branch = 2.0
