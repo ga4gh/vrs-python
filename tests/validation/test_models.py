@@ -153,7 +153,7 @@ def test_mappable_concept():
     """Test the MappableConcept model validator"""
     # Does not provide required fields
     with pytest.raises(
-        ValueError, match="`One of name` or `primaryCoding` must be provided."
+        ValueError, match="One of `name` or `primaryCoding` must be provided."
     ):
         core_models.MappableConcept(conceptType="test")
 

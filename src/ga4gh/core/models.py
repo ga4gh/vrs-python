@@ -217,7 +217,7 @@ class MappableConcept(Element, BaseModelForbidExtra):
     def require_name_or_primary_coding(cls, v):  # noqa: ANN001 N805 ANN201
         """Ensure that ``name`` or ``primaryCoding`` is provided"""
         if v.primaryCoding is None and v.name is None:
-            err_msg = "`One of name` or `primaryCoding` must be provided."
+            err_msg = "One of `name` or `primaryCoding` must be provided."
             raise ValueError(err_msg)
         return v
 
