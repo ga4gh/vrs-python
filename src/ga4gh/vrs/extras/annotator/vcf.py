@@ -37,7 +37,7 @@ class FieldName(str, Enum):
     STATES_FIELD = "VRS_States"
     ERROR_FIELD = "VRS_Error"
 
-    def default_value(self) -> Literal["."] | int:
+    def default_value(self) -> Literal[".", -1]:
         """Provide value to use for default/null case in VCF INFO field
 
         :return: either ``"."`` or ``-1``
