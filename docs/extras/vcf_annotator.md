@@ -20,13 +20,13 @@ Like other VRS-Python tools, the VCF annotator requires access to [sequence and 
 For example, to use a local set of SeqRepo data, you can use an absolute file path:
 
 ```commandline
-vrs-annotate vcf --dataproxy_uri="seqrepo+file:///usr/local/share/seqrepo/2024-02-20/" --vcf_out=out.vcf.gz input.vcf.gz
+vrs-annotate vcf --dataproxy_uri="seqrepo+file:///usr/local/share/seqrepo/2024-12-20/" --vcf_out=out.vcf.gz input.vcf.gz
 ```
 
 Alternative, a relative file path:
 
 ```commandline
-vrs-annotate vcf --dataproxy_uri="seqrepo+../seqrepo/2024-02-20/" --vcf_out=out.vcf.gz input.vcf.gz
+vrs-annotate vcf --dataproxy_uri="seqrepo+../seqrepo/2024-12-20/" --vcf_out=out.vcf.gz input.vcf.gz
 ```
 
 Or an alternate REST path:

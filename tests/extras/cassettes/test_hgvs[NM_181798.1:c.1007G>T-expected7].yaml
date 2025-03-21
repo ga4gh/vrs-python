@@ -28,7 +28,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 05 Nov 2024 04:24:20 GMT
+      - Mon, 10 Mar 2025 16:23:06 GMT
       Server:
       - Werkzeug/2.2.3 Python/3.10.12
     status:
@@ -72,20 +72,20 @@ interactions:
       Content-Type:
       - text/plain
       Date:
-      - Tue, 05 Nov 2024 04:24:20 GMT
+      - Mon, 10 Mar 2025 16:23:06 GMT
       Keep-Alive:
       - timeout=4, max=40
       NCBI-PHID:
-      - 322C9169F7233CA500005201A58BB4F4.1.1.m_5
+      - 939B8D0F598EF64500002C4EA9104A61.1.1.m_5
       NCBI-SID:
-      - 0D5641C9CB27706A_9DF4SID
+      - 30DD211EE0892843_5A1ESID
       Referrer-Policy:
       - origin-when-cross-origin
       Server:
       - Finatra
       Set-Cookie:
-      - ncbi_sid=0D5641C9CB27706A_9DF4SID; domain=.nih.gov; path=/; expires=Wed, 05
-        Nov 2025 04:24:21 GMT
+      - ncbi_sid=30DD211EE0892843_5A1ESID; domain=.nih.gov; path=/; expires=Tue, 10
+        Mar 2026 16:23:06 GMT
       Strict-Transport-Security:
       - max-age=31536000; includeSubDomains; preload
       Transfer-Encoding:
@@ -132,7 +132,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 05 Nov 2024 04:24:21 GMT
+      - Mon, 10 Mar 2025 16:23:06 GMT
       Server:
       - Werkzeug/2.2.3 Python/3.10.12
     status:
@@ -162,78 +162,9 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Tue, 05 Nov 2024 04:24:21 GMT
+      - Mon, 10 Mar 2025 16:23:06 GMT
       Server:
       - Werkzeug/2.2.3 Python/3.10.12
-    status:
-      code: 200
-      message: OK
-- request:
-    body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      User-Agent:
-      - python-requests/2.32.3
-    method: GET
-    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nucleotide&id=NR_040711.1&rettype=fasta&seq_start=1263&seq_stop=1263&tool=bioutils&email=biocommons-dev@googlegroups.com
-  response:
-    body:
-      string: '>NR_040711.1:1263-1263 Homo sapiens potassium voltage-gated channel,
-        KQT-like subfamily, member 1 (KCNQ1), transcript variant 2, non-coding RNA
-
-        G
-
-
-        '
-    headers:
-      Access-Control-Allow-Origin:
-      - '*'
-      Access-Control-Expose-Headers:
-      - X-RateLimit-Limit,X-RateLimit-Remaining
-      Cache-Control:
-      - private
-      Connection:
-      - Keep-Alive
-      Content-Disposition:
-      - attachment; filename="sequence.fasta"
-      Content-Security-Policy:
-      - upgrade-insecure-requests
-      Content-Type:
-      - text/plain
-      Date:
-      - Tue, 05 Nov 2024 04:24:21 GMT
-      Keep-Alive:
-      - timeout=4, max=40
-      NCBI-PHID:
-      - D0BD5FC90C0C9E5500002306006D0145.1.1.m_5
-      NCBI-SID:
-      - 474459F9CA51DF89_0363SID
-      Referrer-Policy:
-      - origin-when-cross-origin
-      Server:
-      - Finatra
-      Set-Cookie:
-      - ncbi_sid=474459F9CA51DF89_0363SID; domain=.nih.gov; path=/; expires=Wed, 05
-        Nov 2025 04:24:21 GMT
-      Strict-Transport-Security:
-      - max-age=31536000; includeSubDomains; preload
-      Transfer-Encoding:
-      - chunked
-      X-RateLimit-Limit:
-      - '3'
-      X-RateLimit-Remaining:
-      - '1'
-      X-UA-Compatible:
-      - IE=Edge
-      X-XSS-Protection:
-      - 1; mode=block
-      content-encoding:
-      - gzip
     status:
       code: 200
       message: OK
@@ -275,20 +206,89 @@ interactions:
       Content-Type:
       - text/plain
       Date:
-      - Tue, 05 Nov 2024 04:24:21 GMT
+      - Mon, 10 Mar 2025 16:23:12 GMT
       Keep-Alive:
       - timeout=4, max=40
       NCBI-PHID:
-      - D0BD5FC90C0C9E5500004A0601FB0EB1.1.1.m_5
+      - 322C1EB26B7FD5C500004768A15CDFD0.1.1.m_5
       NCBI-SID:
-      - 253B71D3BC16CA7C_FBDASID
+      - 1775CB3F32205734_491BSID
       Referrer-Policy:
       - origin-when-cross-origin
       Server:
       - Finatra
       Set-Cookie:
-      - ncbi_sid=253B71D3BC16CA7C_FBDASID; domain=.nih.gov; path=/; expires=Wed, 05
-        Nov 2025 04:24:22 GMT
+      - ncbi_sid=1775CB3F32205734_491BSID; domain=.nih.gov; path=/; expires=Tue, 10
+        Mar 2026 16:23:12 GMT
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubDomains; preload
+      Transfer-Encoding:
+      - chunked
+      X-RateLimit-Limit:
+      - '3'
+      X-RateLimit-Remaining:
+      - '2'
+      X-UA-Compatible:
+      - IE=Edge
+      X-XSS-Protection:
+      - 1; mode=block
+      content-encoding:
+      - gzip
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.32.3
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nucleotide&id=NR_040711.1&rettype=fasta&seq_start=1263&seq_stop=1263&tool=bioutils&email=biocommons-dev@googlegroups.com
+  response:
+    body:
+      string: '>NR_040711.1:1263-1263 Homo sapiens potassium voltage-gated channel,
+        KQT-like subfamily, member 1 (KCNQ1), transcript variant 2, non-coding RNA
+
+        G
+
+
+        '
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      Access-Control-Expose-Headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining
+      Cache-Control:
+      - private
+      Connection:
+      - Keep-Alive
+      Content-Disposition:
+      - attachment; filename="sequence.fasta"
+      Content-Security-Policy:
+      - upgrade-insecure-requests
+      Content-Type:
+      - text/plain
+      Date:
+      - Mon, 10 Mar 2025 16:23:11 GMT
+      Keep-Alive:
+      - timeout=4, max=40
+      NCBI-PHID:
+      - 939B8D0F598EF6450000504EBE95DDC4.1.1.m_5
+      NCBI-SID:
+      - 738BE373688C0FCA_4A11SID
+      Referrer-Policy:
+      - origin-when-cross-origin
+      Server:
+      - Finatra
+      Set-Cookie:
+      - ncbi_sid=738BE373688C0FCA_4A11SID; domain=.nih.gov; path=/; expires=Tue, 10
+        Mar 2026 16:23:12 GMT
       Strict-Transport-Security:
       - max-age=31536000; includeSubDomains; preload
       Transfer-Encoding:

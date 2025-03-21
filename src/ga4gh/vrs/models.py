@@ -196,16 +196,19 @@ class MoleculeType(str, Enum):
 
 
 class CopyChange(str, Enum):
-    """Define constraints for copy change"""
+    """MUST use one of the defined enumerations that are based on the corresponding EFO
+    ontological terms for copy number variation. See Implementation Guidance for more
+    details.
+    """
 
-    EFO_0030069 = "EFO:0030069"
-    EFO_0020073 = "EFO:0020073"
-    EFO_0030068 = "EFO:0030068"
-    EFO_0030067 = "EFO:0030067"
-    EFO_0030064 = "EFO:0030064"
-    EFO_0030070 = "EFO:0030070"
-    EFO_0030071 = "EFO:0030071"
-    EFO_0030072 = "EFO:0030072"
+    COMPLETE_GENOMIC_LOSS = "complete genomic loss"
+    HIGH_LEVEL_LOSS = "high-level loss"
+    LOW_LEVEL_LOSS = "low-level loss"
+    LOSS = "loss"
+    REGIONAL_BASE_PLOIDY = "regional base ploidy"
+    GAIN = "gain"
+    LOW_LEVEL_GAIN = "low-level gain"
+    HIGH_LEVEL_GAIN = "high-level gain"
 
 
 class Syntax(str, Enum):
@@ -227,7 +230,7 @@ class Syntax(str, Enum):
 def _recurse_ga4gh_serialize(obj):
     if isinstance(obj, Ga4ghIdentifiableObject):
         return obj.get_or_create_digest()
-    if isinstance(obj, (_ValueObject, MappableConcept)):
+    if isinstance(obj, _ValueObject):
         return obj.ga4gh_serialize()
     if isinstance(obj, RootModel):
         return _recurse_ga4gh_serialize(obj.model_dump())
@@ -892,30 +895,10 @@ class CopyNumberChange(_VariationBase, BaseModelForbidExtra):
         ...,
         description="The location of the subject of the copy change.",
     )
-    copyChange: MappableConcept = Field(
+    copyChange: CopyChange = Field(
         ...,
-        description='MUST use a `primaryCode` representing one of "EFO:0030069" (complete genomic loss), "EFO:0020073" (high-level loss), "EFO:0030068" (low-level loss), "EFO:0030067" (loss), "EFO:0030064" (regional base ploidy), "EFO:0030070" (gain), "EFO:0030071" (low-level gain), "EFO:0030072" (high-level gain).',
+        description="MUST use one of the defined enumerations that are based on the corresponding EFO ontological terms for copy number variation. See Implementation Guidance for more details.",
     )
-
-    @field_validator("copyChange", mode="after")
-    def validate_copy_change(cls, v) -> MappableConcept:
-        """Validate that copyChange.primaryCode is an EFO code
-
-        :raises ValueError: If `primaryCode` is not provided or if its not a valid
-            EFO code
-        :return: Copy change represented as mappable concept
-        """
-        if v.primaryCode is None:
-            err_msg = "`primaryCode` is required."
-            raise ValueError(err_msg)
-
-        try:
-            CopyChange(v.primaryCode.root)
-        except ValueError:
-            err_msg = f"`primaryCode` must be one of: {[v.value for v in CopyChange.__members__.values()]}."
-            raise ValueError(err_msg)
-
-        return v
 
     class ga4gh(Ga4ghIdentifiableObject.ga4gh):
         prefix = "CX"

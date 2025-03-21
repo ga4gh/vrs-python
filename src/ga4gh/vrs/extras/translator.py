@@ -10,7 +10,7 @@ import re
 from abc import ABC
 from collections.abc import Mapping
 
-from ga4gh.core import core_models, ga4gh_identify
+from ga4gh.core import ga4gh_identify
 from ga4gh.vrs import models, normalize
 from ga4gh.vrs.dataproxy import _DataProxy
 from ga4gh.vrs.extras.decorators import lazy_property
@@ -503,13 +503,13 @@ class CnvTranslator(_Translator):
             copy_change = kwargs.get("copy_change")
             if not copy_change:
                 copy_change = (
-                    models.CopyChange.EFO_0030067
+                    models.CopyChange.LOSS
                     if sv_type == "del"
-                    else models.CopyChange.EFO_0030070
+                    else models.CopyChange.GAIN
                 )
             cnv = models.CopyNumberChange(
                 location=location,
-                copyChange=core_models.MappableConcept(primaryCode=copy_change),
+                copyChange=copy_change,
             )
 
         return self._post_process_imported_cnv(cnv)

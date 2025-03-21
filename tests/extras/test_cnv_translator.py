@@ -16,11 +16,11 @@ def tlr(rest_dataproxy):
 from_hgvs_cx_tests = (
     (
         "NC_000013.11:g.26440969_26443305del",
-        models.CopyChange.EFO_0030069,
+        models.CopyChange.COMPLETE_GENOMIC_LOSS,
         {
-            "copyChange": {"primaryCode": "EFO:0030069"},
-            "digest": "bY_40M893gdWmNhU598V-T_dYtPJs-pp",
-            "id": "ga4gh:CX.bY_40M893gdWmNhU598V-T_dYtPJs-pp",
+            "copyChange": "complete genomic loss",
+            "digest": "eVlFPLW5eFChqk1GX5QBpHent0UchVhG",
+            "id": "ga4gh:CX.eVlFPLW5eFChqk1GX5QBpHent0UchVhG",
             "location": {
                 "digest": "4akcjXlbAu4xBKnxjOL_b4DM_20HOCA3",
                 "end": 26443305,
@@ -39,9 +39,9 @@ from_hgvs_cx_tests = (
         "NC_000013.11:g.32379315_32379819del",
         None,
         {
-            "copyChange": {"primaryCode": "EFO:0030067"},
-            "digest": "WKtHlbV6XCoKqvyeAJxdFj4ogw9ipDfQ",
-            "id": "ga4gh:CX.WKtHlbV6XCoKqvyeAJxdFj4ogw9ipDfQ",
+            "copyChange": "loss",
+            "digest": "j47pPHxYNH4pWr9tQQAE9uaQDgI8Lb2e",
+            "id": "ga4gh:CX.j47pPHxYNH4pWr9tQQAE9uaQDgI8Lb2e",
             "location": {
                 "digest": "_TUGA9kX6JKdXzUklgN2zWkOvNu5pNmV",
                 "end": 32379819,
@@ -58,11 +58,11 @@ from_hgvs_cx_tests = (
     ),
     (
         "NC_000013.11:g.32332787_32333388dup",
-        models.CopyChange.EFO_0030071,
+        models.CopyChange.LOW_LEVEL_GAIN,
         {
-            "copyChange": {"primaryCode": "EFO:0030071"},
-            "digest": "EqI18-X9p8MUDr-Oz2J5GPQppEQKqWMU",
-            "id": "ga4gh:CX.EqI18-X9p8MUDr-Oz2J5GPQppEQKqWMU",
+            "copyChange": "low-level gain",
+            "digest": "p0bDtEJrI7g1zIlQxlVprTwXyB9j2nGX",
+            "id": "ga4gh:CX.p0bDtEJrI7g1zIlQxlVprTwXyB9j2nGX",
             "location": {
                 "digest": "UOA3zJOPfQxxRord_7pBkoMBpt46xcQq",
                 "end": 32333388,
@@ -81,9 +81,9 @@ from_hgvs_cx_tests = (
         "NC_000013.11:g.32344743_32352093dup",
         None,
         {
-            "copyChange": {"primaryCode": "EFO:0030070"},
-            "digest": "eZVvwCSineeWTGKG3vbJvqkSUMW2JTCH",
-            "id": "ga4gh:CX.eZVvwCSineeWTGKG3vbJvqkSUMW2JTCH",
+            "copyChange": "gain",
+            "digest": "XkrTJHxkqmtHh3gDtkotuQoeJ0uwGSlL",
+            "id": "ga4gh:CX.XkrTJHxkqmtHh3gDtkotuQoeJ0uwGSlL",
             "location": {
                 "digest": "17-a6p7m6QznwxZyVz2QdA9oPf5jTCyT",
                 "end": 32352093,

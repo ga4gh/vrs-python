@@ -83,7 +83,7 @@ First, you must install a local [SeqRepo](https://github.com/biocommons/biocommo
 
 ```shell
 pip install seqrepo
-export SEQREPO_VERSION=2024-02-20  # or newer if available -- check `seqrepo list-remote-instances`
+export SEQREPO_VERSION=2024-12-20  # or newer if available -- check `seqrepo list-remote-instances`
 sudo mkdir -p /usr/local/share/seqrepo
 sudo chown $USER /usr/local/share/seqrepo
 seqrepo pull -i $SEQREPO_VERSION
@@ -93,7 +93,7 @@ seqrepo update-latest
 If you encounter a permission error similar to the one below:
 
 ```shell
-PermissionError: [Error 13] Permission denied: '/usr/local/share/seqrepo/2024-02-20._fkuefgd' -> '/usr/local/share/seqrepo/2024-02-20'
+PermissionError: [Error 13] Permission denied: '/usr/local/share/seqrepo/2024-12-20._fkuefgd' -> '/usr/local/share/seqrepo/2024-12-20'
 ```
 
 Try moving data manually with `sudo`:
@@ -131,7 +131,7 @@ Check that the containers are running, by running:
 $ docker ps
 CONTAINER ID        IMAGE                                    //  NAMES
 86e872ab0c69        biocommons/seqrepo-rest-service:latest   //  vrs-python_seqrepo-rest-service_1
-a40576b8cf1f        biocommons/uta:uta_20210129b              //  vrs-python_uta_1
+a40576b8cf1f        biocommons/uta:uta_20241220              //  vrs-python_uta_1
 ```
 
 Depending on your network and host, the _first_ run is likely to take 5-15
@@ -141,7 +141,7 @@ nearly instantaneous.
 You can test UTA and seqrepo installations like so:
 
 ```shell
-$ psql -XAt postgres://anonymous@localhost/uta -c 'select count(*) from uta_20210129b.transcript'
+$ psql -XAt postgres://anonymous@localhost/uta -c 'select count(*) from uta_20241220.transcript'
 314227
 ```
 
@@ -156,9 +156,9 @@ Here are some things to try.
   $ docker-compose up seqrepo-rest-service
   Starting vrs-python_seqrepo-rest-service_1 ... done
   Attaching to vrs-python_seqrepo-rest-service_1
-  seqrepo-rest-service_1  | 2022-07-26 15:59:59 seqrepo_rest_service.__main__[1] INFO Using seqrepo_dir='/usr/local/share/seqrepo/2024-02-20' from command line
+  seqrepo-rest-service_1  | 2022-07-26 15:59:59 seqrepo_rest_service.__main__[1] INFO Using seqrepo_dir='/usr/local/share/seqrepo/2024-12-20' from command line
   ⋮
-  seqrepo-rest-service_1  | OSError: Unable to open SeqRepo directory /usr/local/share/seqrepo/2024-02-20
+  seqrepo-rest-service_1  | OSError: Unable to open SeqRepo directory /usr/local/share/seqrepo/2024-12-20
   vrs-python_seqrepo-rest-service_1 exited with code 1
   ```
 
