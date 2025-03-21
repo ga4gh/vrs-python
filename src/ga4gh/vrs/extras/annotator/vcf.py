@@ -137,7 +137,7 @@ class AbstractVcfAnnotator(abc.ABC):
             vcf.header.info.add(
                 FieldName.STARTS_FIELD.value,
                 info_field_num,
-                "String",
+                "Integer",
                 (
                     "Interresidue coordinates used as the location starts for the GA4GH "
                     f"VRS Alleles corresponding to the GT indexes of the {info_field_desc} alleles"
@@ -146,7 +146,7 @@ class AbstractVcfAnnotator(abc.ABC):
             vcf.header.info.add(
                 FieldName.ENDS_FIELD.value,
                 info_field_num,
-                "String",
+                "Integer",
                 (
                     "Interresidue coordinates used as the location ends for the GA4GH VRS "
                     f"Alleles corresponding to the GT indexes of the {info_field_desc} alleles"
