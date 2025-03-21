@@ -55,6 +55,16 @@ For your convenience, this section is copied from the
 
   You must be using VS Code to use the Dev Containers.
 
+  **⚠ Note:** Dev Containers will still work with [Podman](https://podman.io/). You will
+  need to configure your VS Code settings.
+
+  Open User Settings in VS Code (`View` > `Command Palette` > `"Preferences: Open User Settings (JSON)"`) and add the following:
+
+  ```json
+  ... // your configs
+  "dev.containers.dockerPath": "podman"
+  ```
+
 * [Install Docker](https://docs.docker.com/get-started/get-docker/)
 
   Docker is needed to create and manage your containers.
