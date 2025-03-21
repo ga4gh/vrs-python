@@ -110,7 +110,6 @@ def _log_level_option(func: Callable) -> Callable:
 @click.option(
     "--dataproxy-uri",
     required=False,
-    default="seqrepo+http://localhost:5000/seqrepo",
     help="URI declaring source of sequence data. See subcommand description for more information.",
     show_default=True,
 )
@@ -162,7 +161,9 @@ def _annotate_vcf_cli(
 
     Sequence data from a provider such as SeqRepo is required. Use the `--dataproxy-uri`
     option or the environment variable `GA4GH_VRS_DATAPROXY_URI` to define its location
-    (the former will take priority over the latter when both are set).
+    (the former will take priority over the latter when both are set). This option
+    falls back upon the VRS-Python library default `seqrepo+http://localhost:5000/seqrepo`
+    value if it is not otherwise declared.
 
     Currently accepted URI schemes:
 
