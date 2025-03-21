@@ -5,6 +5,7 @@ import logging
 import pickle
 from enum import Enum
 from pathlib import Path
+from typing import Literal
 
 import pysam
 
@@ -35,6 +36,15 @@ class FieldName(str, Enum):
     ENDS_FIELD = "VRS_Ends"
     STATES_FIELD = "VRS_States"
     ERROR_FIELD = "VRS_Error"
+
+    def default_value(self) -> Literal[".", -1]:
+        """Provide value to use for default/null case in VCF INFO field
+
+        :return: either ``"."`` or ``-1``
+        """
+        if self in (FieldName.IDS_FIELD, FieldName.STATES_FIELD, FieldName.ERROR_FIELD):
+            return "."
+        return -1
 
 
 # VCF character escape map
@@ -141,7 +151,7 @@ class AbstractVcfAnnotator(abc.ABC):
             vcf.header.info.add(
                 FieldName.STARTS_FIELD.value,
                 info_field_num,
-                "String",
+                "Integer",
                 (
                     "Interresidue coordinates used as the location starts for the GA4GH "
                     f"VRS Alleles corresponding to the GT indexes of the {info_field_desc} alleles"
@@ -150,7 +160,7 @@ class AbstractVcfAnnotator(abc.ABC):
             vcf.header.info.add(
                 FieldName.ENDS_FIELD.value,
                 info_field_num,
-                "String",
+                "Integer",
                 (
                     "Interresidue coordinates used as the location ends for the GA4GH VRS "
                     f"Alleles corresponding to the GT indexes of the {info_field_desc} alleles"
@@ -246,7 +256,7 @@ class AbstractVcfAnnotator(abc.ABC):
             if output_vcf_path and vcf_out:
                 for k in additional_info_fields:
                     record.info[k.value] = [
-                        value or "." for value in vrs_field_data[k.value]
+                        value or k.default_value() for value in vrs_field_data[k.value]
                     ]
                 vcf_out.write(record)
 
@@ -340,8 +350,8 @@ class AbstractVcfAnnotator(abc.ABC):
 
             if vrs_attributes:
                 if vrs_obj:
-                    start = str(vrs_obj.location.start)
-                    end = str(vrs_obj.location.end)
+                    start = vrs_obj.location.start
+                    end = vrs_obj.location.end
                     alt = (
                         str(vrs_obj.state.sequence.root)
                         if vrs_obj.state.sequence
