@@ -23,6 +23,10 @@ class VcfAnnotatorError(Exception):
     """Custom exceptions for VCF Annotator tool"""
 
 
+class VcfAnnotatorArgsError(VcfAnnotatorError):
+    """Raise for improper args passed to VCF annotator"""
+
+
 class FieldName(str, Enum):
     """Define VCF field names for VRS annotations"""
 
@@ -477,7 +481,7 @@ class VcfAnnotator(AbstractVcfAnnotator):
         :param output_vcf_path: VCF output path arg passed to `annotate()`
         :kwparam output_pkl_path: optional path to PKL output
         :kwparam output_ndjson_path: optional path to NDJSON output
-        :raise VCFAnnotatorError: if no output args are shown
+        :raise VCFAnnotatorArgsError: if no output args are given
         """
         if (
             output_vcf_path is None
@@ -485,7 +489,7 @@ class VcfAnnotator(AbstractVcfAnnotator):
             and kwargs.get(self.ndjson_arg_name) is None
         ):
             msg = f"No VCF, PKL, or NDJSON output path provided -- must pass at least one of `output_vcf_path`, `{self.pkl_arg_name}`, `{self.ndjson_arg_name}` to annotate()."
-            raise VcfAnnotatorError(msg)
+            raise VcfAnnotatorArgsError(msg)
 
     def on_vrs_object(
         self,
