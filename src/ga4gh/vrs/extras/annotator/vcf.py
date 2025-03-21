@@ -111,7 +111,11 @@ class AbstractVcfAnnotator(abc.ABC):
     def _update_vcf_header(
         self, vcf: pysam.VariantFile, incl_ref_allele: bool, incl_vrs_attrs: bool
     ) -> None:
-        """Add new fields to VCF header
+        """Add new fields to VCF header.
+
+        Note that the fields VRS_Starts and VRS_Ends are typed as Strings because they
+        also need to have a way to express nullity (e.g. if the translator detects
+        an invalid reference allele).
 
         :param vcf: pysam VCF object to annotate
         :param incl_ref_allele: whether VRS alleles will be calculated for REFs
