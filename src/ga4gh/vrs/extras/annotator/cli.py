@@ -30,7 +30,7 @@ def _cli() -> None:
 
 
 class _LogLevel(str, Enum):
-    """Define legal values for `--log_level` option."""
+    """Define legal values for `--log-level` option."""
 
     DEBUG = "debug"
     INFO = "info"
@@ -42,7 +42,7 @@ class _LogLevel(str, Enum):
 def _log_level_option(func: Callable) -> Callable:
     """Provide reusable log level CLI option decorator.
 
-    Adds a `--log_level` CLI option to any decorated command. Doesn't pass on any
+    Adds a `--log-level` CLI option to any decorated command. Doesn't pass on any
     values, just sets the logging level for this module.
 
     :param func: incoming click command
@@ -60,7 +60,7 @@ def _log_level_option(func: Callable) -> Callable:
         logging.getLogger(__name__).setLevel(level_map[value])
 
     return click.option(
-        "--log_level",
+        "--log-level",
         type=click.Choice([v.value for v in _LogLevel.__members__.values()]),
         default="info",
         help="Set the logging level.",
@@ -73,12 +73,12 @@ def _log_level_option(func: Callable) -> Callable:
 @_cli.command(name="vcf")
 @_log_level_option
 @click.argument(
-    "vcf_in",
+    "vcf-in",
     nargs=1,
     type=click.Path(exists=True, readable=True, dir_okay=False, path_type=Path),
 )
 @click.option(
-    "--vcf_out",
+    "--vcf-out",
     required=False,
     type=click.Path(writable=True, allow_dash=False, path_type=Path),
     help=(
@@ -86,7 +86,7 @@ def _log_level_option(func: Callable) -> Callable:
     ),
 )
 @click.option(
-    "--pkl_out",
+    "--pkl-out",
     required=False,
     type=click.Path(writable=True, allow_dash=False, path_type=Path),
     help=(
@@ -94,7 +94,7 @@ def _log_level_option(func: Callable) -> Callable:
     ),
 )
 @click.option(
-    "--ndjson_out",
+    "--ndjson-out",
     required=False,
     type=click.Path(writable=True, allow_dash=False, path_type=Path),
     help=(
@@ -102,13 +102,13 @@ def _log_level_option(func: Callable) -> Callable:
     ),
 )
 @click.option(
-    "--vrs_attributes",
+    "--vrs-attributes",
     is_flag=True,
     default=False,
     help="Include VRS_Start, VRS_End, and VRS_State fields in the VCF output INFO field.",
 )
 @click.option(
-    "--dataproxy_uri",
+    "--dataproxy-uri",
     required=False,
     default="seqrepo+http://localhost:5000/seqrepo",
     help="URI declaring source of sequence data. See subcommand description for more information.",
@@ -123,13 +123,13 @@ def _log_level_option(func: Callable) -> Callable:
     type=str,
 )
 @click.option(
-    "--skip_ref",
+    "--skip-ref",
     is_flag=True,
     default=False,
     help="Skip VRS computation for REF alleles.",
 )
 @click.option(
-    "--require_validation",
+    "--require-validation",
     is_flag=True,
     default=False,
     help="Require validation checks to pass to construct a VRS object.",
@@ -155,12 +155,12 @@ def _annotate_vcf_cli(
 ) -> None:
     """Extract VRS objects from VCF located at VCF_IN.
 
-        $ vrs-annotate vcf input.vcf.gz --vcf_out output.vcf.gz --pkl_out vrs_objects.pkl
+        $ vrs-annotate vcf input.vcf.gz --vcf-out output.vcf.gz --pkl-out vrs_objects.pkl
 
-    Note that at least one of --vcf_out, --pkl_out, or --ndjson_out must be selected and
+    Note that at least one of --vcf-out, --pkl-out, or --ndjson-out must be selected and
     defined; otherwise, this process will terminate immediately.
 
-    Sequence data from a provider such as SeqRepo is required. Use the `--dataproxy_uri`
+    Sequence data from a provider such as SeqRepo is required. Use the `--dataproxy-uri`
     option or the environment variable `GA4GH_VRS_DATAPROXY_URI` to define its location
     (the former will take priority over the latter when both are set).
 
@@ -199,7 +199,7 @@ def _annotate_vcf_cli(
             output_ndjson_path=ndjson_out,
         )
     except VcfAnnotatorArgsError:
-        msg = "No VCF, PKL, or NDJSON output path provided -- must set at least one of --vcf_out, --pkl_out, or --ndjson_out"
+        msg = "No VCF, PKL, or NDJSON output path provided -- must set at least one of --vcf-out, --pkl-out, or --ndjson-out"
         if not silent:
             click.echo(msg)
         _logger.exception(msg)
