@@ -14,7 +14,7 @@ import click
 import requests
 
 from ga4gh.vrs.dataproxy import create_dataproxy
-from ga4gh.vrs.extras.annotator.vcf import VcfAnnotator
+from ga4gh.vrs.extras.annotator.vcf import VcfAnnotator, VcfAnnotatorArgsError
 
 _logger = logging.getLogger(__name__)
 
@@ -187,16 +187,24 @@ def _annotate_vcf_cli(
     _logger.info(msg)
     if not silent:
         click.echo(msg)
-    annotator.annotate(
-        vcf_in.absolute(),
-        output_vcf_path=vcf_out,
-        vrs_attributes=vrs_attributes,
-        assembly=assembly,
-        compute_for_ref=(not skip_ref),
-        require_validation=require_validation,
-        output_pkl_path=pkl_out,
-        output_ndjson_path=ndjson_out,
-    )
+    try:
+        annotator.annotate(
+            vcf_in.absolute(),
+            output_vcf_path=vcf_out,
+            vrs_attributes=vrs_attributes,
+            assembly=assembly,
+            compute_for_ref=(not skip_ref),
+            require_validation=require_validation,
+            output_pkl_path=pkl_out,
+            output_ndjson_path=ndjson_out,
+        )
+    except VcfAnnotatorArgsError:
+        msg = "No VCF, PKL, or NDJSON output path provided -- must set at least one of --vcf_out, --pkl_out, or --ndjson_out"
+        if not silent:
+            click.echo(msg)
+        _logger.exception(msg)
+        exit(1)
+
     end = timer()
     msg = f"VCF Annotator finished in {(end - start):.5f} seconds"
     _logger.info(msg)
