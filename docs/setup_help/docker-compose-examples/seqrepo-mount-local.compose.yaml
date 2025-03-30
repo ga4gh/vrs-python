@@ -1,0 +1,46 @@
+####
+# This is a docker-compose example to run seqrepo-rest-service by mounting
+# a local directory of seqrepo instead of re-downloading it or storing it in a volume.
+# Assumes SEQREPO_ROOT_DIR is set to the directory where your seqrepo data is stored.
+# e.g. if you have a seqrepo db at ~/.local/share/seqrepo/2024-12-20, SEQREPO_ROOT_DIR
+# should be set to ~/.local/share/seqrepo.
+#
+# It also includes a volume uta_dl_cache which enables the UTA database to be reconstructed
+# from scratch using postgres restore without re-downloading the archive file.
+####
+
+services:
+
+  seqrepo-rest-service:
+    # Test: curl http://localhost:5000/seqrepo/1/sequence/refseq:NM_000551.3
+    image: biocommons/seqrepo-rest-service:0.2.2
+    volumes:
+    # Recommended to mount read-only to avoid accidentally modififying host files
+      - $SEQREPO_ROOT_DIR:/usr/local/share/seqrepo:ro
+    depends_on:
+      seqrepo_local_populator:
+        condition: service_completed_successfully
+    command: seqrepo-rest-service -w /usr/local/share/seqrepo/2024-12-20
+    ports:
+      - 127.0.0.1:5001:5000
+
+  uta:
+    # Test:
+    # psql -XAt postgres://anonymous@localhost/uta -c 'select count(*) from uta_20241220.transcript'
+    # 314227
+    image: biocommons/uta:uta_20241220
+    environment:
+      - POSTGRES_PASSWORD=some-password-that-you-make-up
+    volumes:
+      - uta_dl_cache:/tmp
+      - uta_vol:/var/lib/postgresql/data
+    ports:
+      - 127.0.0.1:5433:5432
+
+volumes:
+  seqrepo_vol:
+    external: true
+  uta_vol:
+    external: true
+  uta_dl_cache:
+    external: true
