@@ -15,7 +15,7 @@ services:
     image: eeacms/rsync
     volumes:
       - seqrepo_vol:/usr/local/share/seqrepo
-      - $SEQREPO_ROOT_DIR:/seqrepo
+      - $SEQREPO_ROOT_DIR:/seqrepo:ro
     command: >
       /bin/sh -c "rsync -a --delete /seqrepo/2024-12-20/ /usr/local/share/seqrepo/2024-12-20/"
 

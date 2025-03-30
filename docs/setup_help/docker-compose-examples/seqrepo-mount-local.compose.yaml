@@ -17,9 +17,6 @@ services:
     volumes:
     # Recommended to mount read-only to avoid accidentally modififying host files
       - $SEQREPO_ROOT_DIR:/usr/local/share/seqrepo:ro
-    depends_on:
-      seqrepo_local_populator:
-        condition: service_completed_successfully
     command: seqrepo-rest-service -w /usr/local/share/seqrepo/2024-12-20
     ports:
       - 127.0.0.1:5001:5000
