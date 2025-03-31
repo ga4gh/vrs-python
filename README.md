@@ -202,7 +202,7 @@ Here are some things to try.
      ```
   - Set the `UTA_DB_URL` environment variable to specify your port.
     ```shell
-    UTA_DB_URL="postgresql://anonymous@localhost:[your_port_number]/uta/uta_20241220"
+    export UTA_DB_URL="postgresql://anonymous@localhost:[your_port_number]/uta/uta_20241220"
     ```
 
 - If you are having issues with SeqRepo, check to see if there is another
