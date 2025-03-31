@@ -125,7 +125,7 @@ This should start three containers:
 - [uta](https://github.com/biocommons/uta): a database of transcripts and
   alignments (localhost:5432)
 
-Check that the containers are running, by running:
+Check that the seqrepo-rest-service and uta containers are running, by running:
 
 ```shell
 $ docker ps
@@ -161,6 +161,45 @@ Here are some things to try.
   seqrepo-rest-service_1  | OSError: Unable to open SeqRepo directory /usr/local/share/seqrepo/2024-12-20
   vrs-python_seqrepo-rest-service_1 exited with code 1
   ```
+
+- If your machine is already running postgresql on port 5432 (which is the
+  default on many systems), you may see an error message such as this:
+  ```shell
+  $ psql -XAt postgres://anonymous@localhost/uta -c 'select count(*) from uta_20241220.transcript'
+  psql: error: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "anonymous" does not exist
+  ```
+  You can move your UTA installation to a different port as follows:
+  - Select a new port number for UTA, and verify that the port is available.
+    For example, if you have sudo privileges on your machine, you can verify
+    the port is available with the `lsof` command:
+    ```
+    sudo lsof -i :[port_number]
+    ```
+    If the port is available, the output of this command should be 0 lines long.
+  - Edit your docker-compose.yml file.  In the lines
+    ```
+    ports:
+      - 5432:5432
+    ```
+    replace the *first* number with a different number on your local machine.
+    ````
+    ports:
+      - [port_number]:5432
+    ```
+  - Repeat the docker-compose command
+    ```
+    docker-compose up
+    ```
+  - Repeat the command above to verify that there is now a docker command
+    listening at this port.
+    ```
+    sudo lsof -i :[port_number]
+    ```
+    This time, you should see that a docker command is using the port.
+  - Specify the new port in your psql command:
+    ```shell
+     $ psql -XAt postgres://anonymous@localhost/uta -p [port_number] -c 'select count(*) from uta_20241220.transcript'
+     ```
 
 ## VRS-Python and VRS Version Correspondence
 
