@@ -200,6 +200,11 @@ Here are some things to try.
     ```shell
      $ psql -XAt postgres://anonymous@localhost/uta -p [your_port_number] -c 'select count(*) from uta_20241220.transcript'
      ```
+  - Set the `UTA_DB_URL` environment variable to specify your port.
+    ```shell
+    UTA_DB_URL="postgresql://anonymous@localhost:[your_port_number]/uta/uta_20241220"
+    ```
+
 - If you are having issues with SeqRepo, check to see if there is another
   process using port 5000, and try moving to a different port:
   - Follow the instructions above to see if port 5000 is already in use.
@@ -218,6 +223,12 @@ Here are some things to try.
   - Test the SeqRepo REST API service with this new port
     ```shell
     curl 'http://127.0.0.1:[your_port_number]/seqrepo/1/sequence/refseq:NM_000059.4?end=20'
+    ```
+  - Set the `GA4GH_VRS_DATAPROXY_URI` environment variable to point to
+    this UL:
+    ```shell
+    $ export GA4GH_VRS_DATAPROXY_URI=http://localhost:[your_port_number]/seqrepo
+    $ export SEQREPO_URI=http://localhost:[your_port_number]
     ```
 
 ## VRS-Python and VRS Version Correspondence
