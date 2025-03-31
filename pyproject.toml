@@ -38,7 +38,7 @@ dependencies = [
     "pydantic~=2.1",
     "bioutils",
     "requests",
-    "canonicaljson",
+    "canonicaljson"
 ]
 
 [project.optional-dependencies]
@@ -49,6 +49,7 @@ extras = [
     "hgvs>=1.4",
     "dill~=0.3.7",
     "click",
+    "pysam>=0.23.0",
 ]
 dev = [
     # tests
