@@ -38,7 +38,8 @@ dependencies = [
     "pydantic~=2.1",
     "bioutils",
     "requests",
-    "canonicaljson"
+    "canonicaljson",
+    "setuptools>=78.1.0",
 ]
 
 [project.optional-dependencies]
