@@ -209,12 +209,12 @@ class AbstractVcfAnnotator(abc.ABC):
         pysam_in_filename = (
             "-" if input_vcf_path == "-" else str(input_vcf_path.absolute())
         )
-        pysam_out_filename = (
-            "-" if output_vcf_path == "-" else str(output_vcf_path.absolute())
-        )
         vcf = pysam.VariantFile(filename=pysam_in_filename, mode="r")
         if output_vcf_path:
             self._update_vcf_header(vcf, compute_for_ref, vrs_attributes)
+            pysam_out_filename = (
+                "-" if output_vcf_path == "-" else str(output_vcf_path.absolute())
+            )
             vcf_out = pysam.VariantFile(pysam_out_filename, mode="w", header=vcf.header)
         else:
             vcf_out = None
