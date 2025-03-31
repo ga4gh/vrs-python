@@ -102,7 +102,6 @@ class PathOrDash(click.ParamType):
         dir_okay=False,
         path_type=Path,
     ),
-    # help='VCF file path to read from (or "-" to read from stdin)',
 )
 @click.option(
     "--vcf-out",
