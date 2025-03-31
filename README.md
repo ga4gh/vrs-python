@@ -143,6 +143,8 @@ You can test UTA and seqrepo installations like so:
 ```shell
 $ psql -XAt postgres://anonymous@localhost/uta -c 'select count(*) from uta_20241220.transcript'
 314227
+curl 'http://127.0.0.1:5000/seqrepo/1/sequence/refseq:NM_000059.4?end=20'
+AGAGGCGGAGCCGCTGTGGC
 ```
 
 ##### It doesn't work
@@ -162,7 +164,8 @@ Here are some things to try.
   vrs-python_seqrepo-rest-service_1 exited with code 1
   ```
 
-- If your machine is already running postgresql on port 5432 (which is the
+- If you are having issues with UTA: if your machine is already running
+  postgresql on port 5432 (which is the
   default on many systems), you may see an error message such as this:
   ```shell
   $ psql -XAt postgres://anonymous@localhost/uta -c 'select count(*) from uta_20241220.transcript'
@@ -181,21 +184,41 @@ Here are some things to try.
     ports:
       - 5432:5432
     ```
-    replace the *first* number with a different number on your local machine.
+    replace the *first* number with a different number to specify a port on
+    your local machine.
     ````
     ports:
-      - [port_number]:5432
+      - [your_port_number]:5432
   - Repeat the `docker-compose up` command
   - Repeat the command above to verify that there is now a docker command
     listening at this port.
     ```
-    sudo lsof -i :[port_number]
+    sudo lsof -i :[your_port_number]
     ```
     This time, you should see that a docker command is using the port.
   - Specify the new port in your psql command:
     ```shell
-     $ psql -XAt postgres://anonymous@localhost/uta -p [port_number] -c 'select count(*) from uta_20241220.transcript'
+     $ psql -XAt postgres://anonymous@localhost/uta -p [your_port_number] -c 'select count(*) from uta_20241220.transcript'
      ```
+- If you are having issues with SeqRepo, check to see if there is another
+  process using port 5000, and try moving to a different port:
+  - Follow the instructions above to see if port 5000 is already in use.
+  - If it is, edit your docker-compose.yml file to specify a different port.
+    In the lines
+    ```
+    ports:
+      - 5000:5000
+    ```
+    replace the *first* number with a different number to specify a port on
+    your local machine.
+    ````
+    ports:
+      - [your_port_number]:5000
+  - Repeat the `docker-compose up` command
+  - Test the SeqRepo REST API service with this new port
+    ```shell
+    curl 'http://127.0.0.1:[your_port_number]/seqrepo/1/sequence/refseq:NM_000059.4?end=20'
+    ```
 
 ## VRS-Python and VRS Version Correspondence
 
