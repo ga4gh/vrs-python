@@ -179,8 +179,8 @@ class AbstractVcfAnnotator(abc.ABC):
     @use_ga4gh_compute_identifier_when(VrsObjectIdentifierIs.MISSING)
     def annotate(
         self,
-        input_vcf_path: Path | str,
-        output_vcf_path: Path | str | None = None,
+        input_vcf_path: Path | Literal["-"],
+        output_vcf_path: Path | Literal["-"] | None = None,
         vrs_attributes: bool = False,
         assembly: str = "GRCh38",
         compute_for_ref: bool = True,
