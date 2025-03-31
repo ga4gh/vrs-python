@@ -179,8 +179,8 @@ class AbstractVcfAnnotator(abc.ABC):
     @use_ga4gh_compute_identifier_when(VrsObjectIdentifierIs.MISSING)
     def annotate(
         self,
-        input_vcf_path: Path,
-        output_vcf_path: Path | None = None,
+        input_vcf_path: Path | str,
+        output_vcf_path: Path | str | None = None,
         vrs_attributes: bool = False,
         assembly: str = "GRCh38",
         compute_for_ref: bool = True,
@@ -190,8 +190,8 @@ class AbstractVcfAnnotator(abc.ABC):
         """Given a VCF, produce an output VCF annotated with VRS allele IDs, and/or
         additional storage outputs as implemented in a specific child class.
 
-        :param input_vcf_path: Location of input VCF
-        :param output_vcf_path: The path for the output VCF file
+        :param input_vcf_path: Location of input VCF (or "-" to read from stdin)
+        :param output_vcf_path: The path for the output VCF file (or "-" to write to stdout)
         :param vrs_attributes: If `True`, include VRS_Start, VRS_End, VRS_State
             properties in the VCF INFO field. If `False` will not include these
             properties. Only used if `output_vcf_path` is defined.
@@ -205,13 +205,17 @@ class AbstractVcfAnnotator(abc.ABC):
         :raise VCFAnnotatorError: if no output formats are selected
         """
         self.raise_for_output_args(output_vcf_path, **kwargs)
-
-        vcf = pysam.VariantFile(filename=str(input_vcf_path.absolute()))
+        # This can be pushed up to the click arg parsing too
+        pysam_in_filename = (
+            "-" if input_vcf_path == "-" else str(input_vcf_path.absolute())
+        )
+        pysam_out_filename = (
+            "-" if output_vcf_path == "-" else str(output_vcf_path.absolute())
+        )
+        vcf = pysam.VariantFile(filename=pysam_in_filename, mode="r")
         if output_vcf_path:
             self._update_vcf_header(vcf, compute_for_ref, vrs_attributes)
-            vcf_out = pysam.VariantFile(
-                str(output_vcf_path.absolute()), "w", header=vcf.header
-            )
+            vcf_out = pysam.VariantFile(pysam_out_filename, mode="w", header=vcf.header)
         else:
             vcf_out = None
 
