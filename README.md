@@ -185,11 +185,7 @@ Here are some things to try.
     ````
     ports:
       - [port_number]:5432
-    ```
-  - Repeat the docker-compose command
-    ```
-    docker-compose up
-    ```
+  - Repeat the `docker-compose up` command
   - Repeat the command above to verify that there is now a docker command
     listening at this port.
     ```
