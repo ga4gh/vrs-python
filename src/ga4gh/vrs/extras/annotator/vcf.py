@@ -1,11 +1,17 @@
 """Annotate VCFs with VRS identifiers and attributes."""
-
+import asyncio
+import concurrent.futures
 import abc
 import logging
+import os
 import pickle
 from enum import Enum
 from pathlib import Path
 from typing import Literal
+from queue import Queue
+from threading import Thread
+
+
 
 import pysam
 
@@ -216,55 +222,69 @@ class AbstractVcfAnnotator(abc.ABC):
             vcf_out = None
 
         allele_collection = [] if self.collect_alleles else None
+        record_queue = Queue()
+        result_queue = Queue()
+        num_workers = os.cpu_count() or 4  # Adjust based on system resources
+        
+        def worker():
+            while True:
+                record = record_queue.get()
+                if record is None:
+                    break
+                try:
+                    additional_info_fields = [FieldName.IDS_FIELD]
+                    if vrs_attributes:
+                        additional_info_fields += [
+                            FieldName.STARTS_FIELD,
+                            FieldName.ENDS_FIELD,
+                            FieldName.STATES_FIELD,
+                        ]
+                    vrs_field_data = self._get_vrs_data(
+                        record,
+                        allele_collection,
+                        assembly,
+                        additional_info_fields,
+                        vrs_attributes=vrs_attributes,
+                        compute_for_ref=compute_for_ref,
+                        require_validation=require_validation,
+                        **kwargs,
+                    )
+                except Exception as ex:
+                    _logger.exception("VRS error on %s-%s", record.chrom, record.pos)
+                    err_msg = f"{ex}" or f"{type(ex)}"
+                    err_msg = err_msg.translate(VCF_ESCAPE_MAP)
+                    additional_info_fields = [FieldName.ERROR_FIELD]
+                    vrs_field_data = {FieldName.ERROR_FIELD.value: [err_msg]}
+                result_queue.put((record, vrs_field_data))
+                record_queue.task_done()
+        
+        workers = [Thread(target=worker) for _ in range(num_workers)]
+        for w in workers:
+            w.start()
+        
         for record in vcf:
-            if vcf_out:
-                additional_info_fields = [FieldName.IDS_FIELD]
-                if vrs_attributes:
-                    additional_info_fields += [
-                        FieldName.STARTS_FIELD,
-                        FieldName.ENDS_FIELD,
-                        FieldName.STATES_FIELD,
-                    ]
-            else:
-                # no INFO field names need to be designated if not producing an annotated VCF
-                additional_info_fields = []
-            try:
-                vrs_field_data = self._get_vrs_data(
-                    record,
-                    allele_collection,
-                    assembly,
-                    additional_info_fields,
-                    vrs_attributes=vrs_attributes,
-                    compute_for_ref=compute_for_ref,
-                    require_validation=require_validation,
-                    **kwargs,
-                )
-            except Exception as ex:
-                _logger.exception("VRS error on %s-%s", record.chrom, record.pos)
-                err_msg = f"{ex}" or f"{type(ex)}"
-                err_msg = err_msg.translate(VCF_ESCAPE_MAP)
-                additional_info_fields = [FieldName.ERROR_FIELD]
-                vrs_field_data = {FieldName.ERROR_FIELD.value: [err_msg]}
-
-            _logger.debug(
-                "VCF record %s-%s generated vrs_field_data %s",
-                record.chrom,
-                record.pos,
-                vrs_field_data,
-            )
-
+            record_queue.put(record)
+        
+        record_queue.join()
+        
+        for _ in range(num_workers):
+            record_queue.put(None)
+        for w in workers:
+            w.join()
+        
+        while not result_queue.empty():
+            record, vrs_field_data = result_queue.get()
             if output_vcf_path and vcf_out:
-                for k in additional_info_fields:
-                    record.info[k.value] = [
-                        value or k.default_value() for value in vrs_field_data[k.value]
+                for k in vrs_field_data:
+                    record.info[k] = [
+                        value for value in vrs_field_data[k]
                     ]
+
                 vcf_out.write(record)
-
-        vcf.close()
-
+        
         if vcf_out:
             vcf_out.close()
-
+        
         if self.collect_alleles:
             self.on_vrs_object_collection(allele_collection, **kwargs)
 
