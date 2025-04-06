@@ -4,7 +4,7 @@ from ga4gh.vrs import models
 from ga4gh.vrs.extras.translator import CnvTranslator
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture
 def tlr(rest_dataproxy):
     return CnvTranslator(
         data_proxy=rest_dataproxy,
