@@ -125,7 +125,7 @@ This should start three containers:
 - [uta](https://github.com/biocommons/uta): a database of transcripts and
   alignments (localhost:5432)
 
-Check that the containers are running, by running:
+Check that the seqrepo-rest-service and uta containers are running, by running:
 
 ```shell
 $ docker ps
@@ -143,6 +143,8 @@ You can test UTA and seqrepo installations like so:
 ```shell
 $ psql -XAt postgres://anonymous@localhost/uta -c 'select count(*) from uta_20241220.transcript'
 314227
+curl 'http://127.0.0.1:5000/seqrepo/1/sequence/refseq:NM_000059.4?end=20'
+AGAGGCGGAGCCGCTGTGGC
 ```
 
 ##### It doesn't work
@@ -161,6 +163,73 @@ Here are some things to try.
   seqrepo-rest-service_1  | OSError: Unable to open SeqRepo directory /usr/local/share/seqrepo/2024-12-20
   vrs-python_seqrepo-rest-service_1 exited with code 1
   ```
+
+- If you are having issues with UTA: if your machine is already running
+  postgresql on port 5432 (which is the
+  default on many systems), you may see an error message such as this:
+  ```shell
+  $ psql -XAt postgres://anonymous@localhost/uta -c 'select count(*) from uta_20241220.transcript'
+  psql: error: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "anonymous" does not exist
+  ```
+  You can move your UTA installation to a different port as follows:
+  - Select a new port number for UTA, and verify that the port is available.
+    For example, if you have sudo privileges on your machine, you can verify
+    the port is available with the `lsof` command:
+    ```
+    sudo lsof -i :[port_number]
+    ```
+    If the port is available, the output of this command should be 0 lines long.
+  - Edit your docker-compose.yml file.  In the lines
+    ```
+    ports:
+      - 5432:5432
+    ```
+    replace the *first* number with a different number to specify a port on
+    your local machine.
+    ````
+    ports:
+      - [your_port_number]:5432
+  - Repeat the `docker-compose up` command
+  - Repeat the command above to verify that there is now a docker command
+    listening at this port.
+    ```
+    sudo lsof -i :[your_port_number]
+    ```
+    This time, you should see that a docker command is using the port.
+  - Specify the new port in your psql command:
+    ```shell
+     $ psql -XAt postgres://anonymous@localhost/uta -p [your_port_number] -c 'select count(*) from uta_20241220.transcript'
+     ```
+  - Set the `UTA_DB_URL` environment variable to specify your port.
+    ```shell
+    export UTA_DB_URL="postgresql://anonymous@localhost:[your_port_number]/uta/uta_20241220"
+    ```
+
+- If you are having issues with SeqRepo, check to see if there is another
+  process using port 5000, and try moving to a different port:
+  - Follow the instructions above to see if port 5000 is already in use.
+  - If it is, edit your docker-compose.yml file to specify a different port.
+    In the lines
+    ```
+    ports:
+      - 5000:5000
+    ```
+    replace the *first* number with a different number to specify a port on
+    your local machine.
+    ````
+    ports:
+      - [your_port_number]:5000
+  - Repeat the `docker-compose up` command
+  - Test the SeqRepo REST API service with this new port
+    ```shell
+    curl 'http://127.0.0.1:[your_port_number]/seqrepo/1/sequence/refseq:NM_000059.4?end=20'
+    ```
+  - Set the `GA4GH_VRS_DATAPROXY_URI` environment variable to point to
+    this UL:
+    ```shell
+    $ export GA4GH_VRS_DATAPROXY_URI=http://localhost:[your_port_number]/seqrepo
+    $ export SEQREPO_URI=http://localhost:[your_port_number]
+    ```
 
 ## VRS-Python and VRS Version Correspondence
 
