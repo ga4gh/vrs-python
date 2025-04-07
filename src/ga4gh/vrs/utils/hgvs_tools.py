@@ -12,6 +12,7 @@ from hgvs.sequencevariant import SequenceVariant as HgvsSequenceVariant
 
 from ga4gh.vrs import models
 from ga4gh.vrs.dataproxy import _DataProxy
+from ga4gh.vrs.utils.sequences import extract_sequence_type
 
 _logger = logging.getLogger(__name__)
 
@@ -252,7 +253,7 @@ class HgvsTools:
             ):
                 continue
 
-            sequence_type = self.data_proxy.extract_sequence_type(alias)
+            sequence_type = extract_sequence_type(alias)
 
             # create the hgvs expression object
             var = self._to_sequence_variant(vo, sequence_type, sequence, accession)

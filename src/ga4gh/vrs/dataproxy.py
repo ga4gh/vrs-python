@@ -9,6 +9,7 @@ import datetime
 import functools
 import logging
 import os
+import warnings
 from abc import ABC, abstractmethod
 from collections.abc import Sequence
 from urllib.parse import urlparse
@@ -16,7 +17,18 @@ from urllib.parse import urlparse
 import requests
 from bioutils.accessions import coerce_namespace
 
+from ga4gh.vrs.utils.sequences import (
+    extract_sequence_type as _util_extract_sequence_type,
+)
+
 _logger = logging.getLogger(__name__)
+
+
+warnings.warn(
+    "`ga4gh.vrs.dataproxy`, and all classes and functions contained therein, is deprecated and may be removed in a future VRS-Python release. Please migrate all usage to an alternate dataproxy implementation, e.g. as provided in `biocommons.seqrepo`.",
+    category=DeprecationWarning,
+    stacklevel=2,
+)
 
 
 class DataProxyValidationError(Exception):
@@ -80,25 +92,12 @@ class _DataProxy(ABC):
         str or None: The sequence type associated with the accession string, or None if no matching prefix is found.
 
         """
-        prefix_dict = {
-            "refseq:NM_": "c",
-            "refseq:NC_012920": "m",
-            "refseq:NG_": "g",
-            "refseq:NC_00": "g",
-            "refseq:NW_": "g",
-            "refseq:NT_": "g",
-            "refseq:NR_": "n",
-            "refseq:NP_": "p",
-            "refseq:XM_": "c",
-            "refseq:XR_": "n",
-            "refseq:XP_": "p",
-            "GRCh": "g",
-        }
-
-        for prefix, seq_type in prefix_dict.items():
-            if alias.startswith(prefix):
-                return seq_type
-        return None
+        warnings.warn(
+            "`ga4gh.vrs.dataproxy._DataProxy.extract_sequence_type` is deprecated, and may not be available on alternate DataProxy implementations. Use `ga4gh.vrs.utils.sequences.extract_sequence_type` instead.",
+            category=DeprecationWarning,
+            stacklevel=2,
+        )
+        return _util_extract_sequence_type(alias)
 
     @functools.lru_cache
     def translate_sequence_identifier(
@@ -123,30 +122,6 @@ class _DataProxy(ABC):
             nsd = namespace + ":"
             aliases = [a for a in aliases if a.startswith(nsd)]
         return aliases
-
-    def derive_refget_accession(self, ac: str) -> str | None:
-        """Derive the refget accession from a public accession identifier
-
-        :param ac: public accession in simple or curie form from which to derive the refget accession
-        :return: Refget Accession if found
-        """
-        if ac is None:
-            return None
-
-        if ":" not in ac[1:]:
-            # always coerce the namespace if none provided
-            ac = coerce_namespace(ac)
-
-        refget_accession = None
-        try:
-            aliases = self.translate_sequence_identifier(ac, namespace="ga4gh")
-        except KeyError:
-            _logger.exception("KeyError when getting refget accession: %s", ac)
-        else:
-            if aliases:
-                refget_accession = aliases[0].split("ga4gh:")[-1]
-
-        return refget_accession
 
     def validate_ref_seq(
         self,
