@@ -35,6 +35,10 @@ def input_vcf():
 
 
 def compare_vcfs(actual_vcf_path: Path, expected_vcf_path: Path):
+    """VRS-Python version annotation would be annoying to manually update. This helper
+    method replaces a placeholder string with the real version, and otherwise performs
+    a pairwise check for all lines in each VCF.
+    """
     with gzip.open(actual_vcf_path, "rt") as out_vcf:
         out_vcf_lines = out_vcf.readlines()
     with gzip.open(expected_vcf_path, "rt") as expected_output:
