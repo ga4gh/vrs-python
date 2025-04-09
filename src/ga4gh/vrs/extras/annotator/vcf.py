@@ -138,7 +138,7 @@ class AbstractVcfAnnotator(abc.ABC):
             "String",
             (
                 "The computed identifiers for the GA4GH VRS Alleles corresponding to the "
-                f"GT indexes of the {info_field_desc} alleles. Annotated with VRS-Python version [{__version__}]"
+                f"GT indexes of the {info_field_desc} alleles [VRS-Python version {__version__}]"
             ),
         )
         vcf.header.info.add(
