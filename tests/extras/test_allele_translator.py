@@ -187,6 +187,55 @@ duplication_output_normalized = {
     "type": "Allele",
 }
 
+rle_inputs = [
+    {
+        # original input reference sequence:
+        # "TGGGTCCAGGCACCGGCGCCCAGCCCCCGTGGGGTGTCCAGGGC"
+        # orignal alt:
+        # "T"
+        # Fetched EXPAND sequence:
+        #'GGGTCCAGGCACCGGCGCCCAGCCCCCGTGGGGTGTCCAGGGCGGGTCCAGGCACCGGCGCCCAGCCCCCGTGGGGTGTCCAGGGCGGGTCCAGGCACCGGCGCCCAGCCCCC'
+        #'GGGTCCAGGCACCGGCGCCCAGCCCCCGTGGGGTGTCCAGGGCGGGTCCAGGCACCGGCGCCCAGCCCCC'
+        # 2 contiguous GGGTCCAGGCACCGGCGCCCAGCCCCCGTGGGGTGTCCAGGGC collapsed to 1
+        "gnomad": "21-5033800-TGGGTCCAGGCACCGGCGCCCAGCCCCCGTGGGGTGTCCAGGGC-T",
+        "spdi": "NC_000021.9:5033800:GGGTCCAGGCACCGGCGCCCAGCCCCCGTGGGGTGTCCAGGGCGGGTCCAGGCACCGGCGCCCAGCCCCCGTGGGGTGTCCAGGGCGGGTCCAGGCACCGGCGCCCAGCCCCC:GGGTCCAGGCACCGGCGCCCAGCCCCCGTGGGGTGTCCAGGGCGGGTCCAGGCACCGGCGCCCAGCCCCC",
+        "expected_allele": {
+            "location": {
+                "start": 5033800,
+                "end": 5033913,
+                "sequenceReference": {
+                    "refgetAccession": "SQ.5ZUqxCmDDgN4xTRbaSjN8LwgZironmB8",
+                    "type": "SequenceReference",
+                },
+                "type": "SequenceLocation",
+            },
+            "state": {
+                "length": 70,
+                "repeatSubunitLength": 43,
+                # "sequence": "TGGGTCCAGGCACCGGCGCCCAGCCCCCGTGGGGTGTCCAGGGC",
+                "type": "ReferenceLengthExpression",
+            },
+            "type": "Allele",
+        },
+    },
+]
+
+
+def test_rle_round_trip_gnomad_spdi(tlr):
+    """Test translating an RLE allele from gnomAD and translating it back to gnomAD and SPDI"""
+    for inp in rle_inputs:
+        # fmt, expr, expected_dict in rle_inputs:
+        gnomad = inp["gnomad"]
+        spdi = inp["spdi"]
+        expected_dict = inp["expected_allele"]
+        allele_gnomad = tlr.translate_from(gnomad, fmt="gnomad")
+        assert allele_gnomad.model_dump(exclude_none=True) == expected_dict
+        allele_spdi = tlr.translate_from(spdi, fmt="spdi")
+        assert allele_spdi.model_dump(exclude_none=True) == expected_dict
+
+        allele_gnomad_to_spdi = tlr.translate_to(allele_gnomad, fmt="spdi")
+        assert allele_gnomad_to_spdi == spdi
+
 
 def test_from_invalid(tlr):
     with pytest.raises(
