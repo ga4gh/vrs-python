@@ -8,6 +8,7 @@ from pathlib import Path
 
 import pytest
 
+from ga4gh.vrs import __version__
 from ga4gh.vrs.dataproxy import DataProxyValidationError, SeqRepoRESTDataProxy
 from ga4gh.vrs.extras.annotator.vcf import VcfAnnotator, VcfAnnotatorError
 
@@ -33,6 +34,23 @@ def input_vcf():
     return TEST_DATA_DIR / "test_vcf_input.vcf"
 
 
+def compare_vcfs(actual_vcf_path: Path, expected_vcf_path: Path):
+    """VRS-Python version annotation would be annoying to manually update. This helper
+    method replaces a placeholder string with the real version, and otherwise performs
+    a pairwise check for all lines in each VCF.
+    """
+    with gzip.open(actual_vcf_path, "rt") as out_vcf:
+        out_vcf_lines = out_vcf.readlines()
+    with gzip.open(expected_vcf_path, "rt") as expected_output:
+        expected_output_lines = expected_output.readlines()
+    for actual_line, expected_line in zip(
+        out_vcf_lines, expected_output_lines, strict=False
+    ):
+        if actual_line.startswith("##INFO=<ID=VRS_Allele_IDs"):
+            expected_line = expected_line.replace("9999", __version__)
+        assert actual_line == expected_line
+
+
 @pytest.mark.vcr
 def test_annotate_vcf_grch38_noattrs(
     vcf_annotator: VcfAnnotator, input_vcf: Path, tmp_path: Path, vcr_cassette
@@ -46,14 +64,7 @@ def test_annotate_vcf_grch38_noattrs(
 
     # Test GRCh38 assembly, which was used for input_vcf and no vrs attributes
     vcf_annotator.annotate(input_vcf, output_vcf, output_pkl_path=output_vrs_pkl)
-    with gzip.open(output_vcf, "rt") as out_vcf:
-        out_vcf_lines = out_vcf.readlines()
-    with gzip.open(expected_vcf_no_vrs_attrs, "rt") as expected_output:
-        expected_output_lines = expected_output.readlines()
-    for actual_line, expected_line in zip(
-        out_vcf_lines, expected_output_lines, strict=False
-    ):
-        assert actual_line == expected_line
+    compare_vcfs(output_vcf, expected_vcf_no_vrs_attrs)
     assert output_vrs_pkl.exists()
     assert vcr_cassette.all_played
 
@@ -71,14 +82,7 @@ def test_annotate_vcf_grch38_attrs(
     vcf_annotator.annotate(
         input_vcf, output_vcf, vrs_attributes=True, output_pkl_path=output_vrs_pkl
     )
-    with gzip.open(output_vcf, "rt") as out_vcf:
-        out_vcf_lines = out_vcf.readlines()
-    with gzip.open(expected_vcf, "rt") as expected_output:
-        expected_output_lines = expected_output.readlines()
-    for actual_line, expected_line in zip(
-        out_vcf_lines, expected_output_lines, strict=False
-    ):
-        assert actual_line == expected_line
+    compare_vcfs(output_vcf, expected_vcf)
     assert output_vrs_pkl.exists()
     assert vcr_cassette.all_played
 
@@ -100,14 +104,7 @@ def test_annotate_vcf_grch38_attrs_altsonly(
         compute_for_ref=False,
         output_pkl_path=output_vrs_pkl,
     )
-    with gzip.open(output_vcf, "rt") as out_vcf:
-        out_vcf_lines = out_vcf.readlines()
-    with gzip.open(expected_altsonly_vcf, "rt") as expected_output:
-        expected_output_lines = expected_output.readlines()
-    for actual_line, expected_line in zip(
-        out_vcf_lines, expected_output_lines, strict=False
-    ):
-        assert actual_line == expected_line
+    compare_vcfs(output_vcf, expected_altsonly_vcf)
     assert output_vrs_pkl.exists()
     assert vcr_cassette.all_played
 
@@ -166,11 +163,7 @@ def test_annotate_vcf_vcf_only(
 
     # Test only VCF output
     vcf_annotator.annotate(input_vcf, output_vcf_path=output_vcf, vrs_attributes=True)
-    with gzip.open(output_vcf, "rt") as out_vcf:
-        out_vcf_lines = out_vcf.readlines()
-    with gzip.open(expected_vcf, "rt") as expected_output:
-        expected_output_lines = expected_output.readlines()
-    assert out_vcf_lines == expected_output_lines
+    compare_vcfs(output_vcf, expected_vcf)
     assert vcr_cassette.all_played
     assert not Path(output_vrs_pkl).exists()
 
