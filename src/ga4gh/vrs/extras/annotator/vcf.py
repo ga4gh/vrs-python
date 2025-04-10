@@ -13,7 +13,7 @@ from ga4gh.core.identifiers import (
     VrsObjectIdentifierIs,
     use_ga4gh_compute_identifier_when,
 )
-from ga4gh.vrs import __version__
+from ga4gh.vrs import VRS_VERSION, __version__
 from ga4gh.vrs.dataproxy import _DataProxy
 from ga4gh.vrs.extras.translator import AlleleTranslator
 from ga4gh.vrs.models import Allele
@@ -137,8 +137,7 @@ class AbstractVcfAnnotator(abc.ABC):
             info_field_num,
             "String",
             (
-                "The computed identifiers for the GA4GH VRS Alleles corresponding to the "
-                f"GT indexes of the {info_field_desc} alleles [VRS-Python version {__version__}]"
+                f"The computed identifiers for the GA4GH VRS Alleles corresponding to the GT indexes of the {info_field_desc} alleles [VRS version={VRS_VERSION};VRS-Python version={__version__}]"
             ),
         )
         vcf.header.info.add(
