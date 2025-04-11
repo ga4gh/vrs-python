@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from ga4gh.vrs import __version__
+from ga4gh.vrs import VRS_VERSION, __version__
 from ga4gh.vrs.dataproxy import DataProxyValidationError, SeqRepoRESTDataProxy
 from ga4gh.vrs.extras.annotator.vcf import VcfAnnotator, VcfAnnotatorError
 
@@ -47,6 +47,7 @@ def compare_vcfs(actual_vcf_path: Path, expected_vcf_path: Path):
         out_vcf_lines, expected_output_lines, strict=False
     ):
         if actual_line.startswith("##INFO=<ID=VRS_Allele_IDs"):
+            expected_line = expected_line.replace("1111", VRS_VERSION)
             expected_line = expected_line.replace("9999", __version__)
         assert actual_line == expected_line
 
