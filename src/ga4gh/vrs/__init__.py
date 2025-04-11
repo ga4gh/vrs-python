@@ -20,7 +20,6 @@ VRS_VERSION = "2.0.1"
 __all__ = [
     "VRS_VERSION",
     "VrsType",
-    "__version__",
     "models",
     "normalize",
     "vrs_deref",
