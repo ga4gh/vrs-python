@@ -13,6 +13,7 @@ from ga4gh.core.identifiers import (
     VrsObjectIdentifierIs,
     use_ga4gh_compute_identifier_when,
 )
+from ga4gh.vrs import VRS_VERSION, __version__
 from ga4gh.vrs.dataproxy import _DataProxy
 from ga4gh.vrs.extras.translator import AlleleTranslator
 from ga4gh.vrs.models import Allele
@@ -108,6 +109,18 @@ class AbstractVcfAnnotator(abc.ABC):
         self.data_proxy = data_proxy
         self.tlr = AlleleTranslator(self.data_proxy)
 
+    def should_collect_alleles(self, **kwargs) -> bool:  # noqa: ARG002
+        """Determine whether allele aggregation is necessary.
+
+        This method is called to initialize (or not) an initial allele collection for
+        downstream use. By default, it returns the corresponding class variable, but
+        implementing classes can choose to amend this based on provided annotation
+        arguments.
+
+        :return: ``True`` if alleles should be collected
+        """
+        return self.collect_alleles
+
     @abc.abstractmethod
     def raise_for_output_args(self, output_vcf_path: Path | None, **kwargs) -> None:
         """Raise an exception if no output appears to be configured or declared.
@@ -136,8 +149,7 @@ class AbstractVcfAnnotator(abc.ABC):
             info_field_num,
             "String",
             (
-                "The computed identifiers for the GA4GH VRS Alleles corresponding to the "
-                f"GT indexes of the {info_field_desc} alleles"
+                f"The computed identifiers for the GA4GH VRS Alleles corresponding to the GT indexes of the {info_field_desc} alleles [VRS version={VRS_VERSION};VRS-Python version={__version__}]"
             ),
         )
         vcf.header.info.add(
@@ -219,7 +231,11 @@ class AbstractVcfAnnotator(abc.ABC):
         else:
             vcf_out = None
 
-        allele_collection = [] if self.collect_alleles else None
+        allele_collection = (
+            []
+            if (self.collect_alleles and self.should_collect_alleles(**kwargs))
+            else None
+        )
         for record in vcf:
             if vcf_out:
                 additional_info_fields = [FieldName.IDS_FIELD]
@@ -269,7 +285,7 @@ class AbstractVcfAnnotator(abc.ABC):
         if vcf_out:
             vcf_out.close()
 
-        if self.collect_alleles:
+        if allele_collection is not None:
             self.on_vrs_object_collection(allele_collection, **kwargs)
 
     @abc.abstractmethod
@@ -279,8 +295,8 @@ class AbstractVcfAnnotator(abc.ABC):
         """Perform side-effects (eg additional annotation or storage) or additional
         filtering on VRS alleles as they are constructed during VCF annotation.
 
-        Reimplement in a child class to add custom logic. Otherwise, this method simply
-        passes through ``vrs_allele`` without altering it further or storing it.
+        Reimplement in a child class to add custom logic. Otherwise, simply pass through
+        ``vrs_allele`` without altering it further or storing it.
 
         :param vcf_coords: CHR-POS-REF-ALT from VCF for this allele
         :param vrs_allele: allele translated from coords
@@ -447,6 +463,15 @@ class VcfAnnotator(AbstractVcfAnnotator):
     collect_alleles = True
     pkl_arg_name = "output_pkl_path"
     ndjson_arg_name = "output_ndjson_path"
+
+    def should_collect_alleles(self, **kwargs) -> bool:
+        """Inhibit allele collection parameter if no means of output are given.
+
+        :kwparam output_pkl_path: Optional path to output PKL dump of all alleles
+        :kwparam output_ndjson_path: Optional path to output NDJSON dump of all alleles
+        :return: ``True`` if at least one of the output path args is ``True``
+        """
+        return bool(kwargs.get("output_pkl_path") or kwargs.get("output_ndjson_path"))
 
     @use_ga4gh_compute_identifier_when(VrsObjectIdentifierIs.MISSING)
     def annotate(
