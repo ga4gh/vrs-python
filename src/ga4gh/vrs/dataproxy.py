@@ -176,8 +176,8 @@ class _DataProxy(ABC):
 
         if actual_ref != ref:
             err_msg = (
-                f"Expected reference sequence {ref} on {sequence_id} at positions "
-                f"({start_pos}, {end_pos}) but found {actual_ref}"
+                f"Expected reference sequence '{ref}' on {sequence_id} at positions "
+                f"({start_pos}, {end_pos}) but found '{actual_ref}'"
             )
             _logger.warning(err_msg)
 
