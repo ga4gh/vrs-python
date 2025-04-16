@@ -221,6 +221,29 @@ def _normalize_allele(input_allele, data_proxy, rle_seq_limit=50):
     return new_allele
 
 
+def denormalize_reference_length_expression(
+    ref_seq: str,
+    repeat_subunit_length: int,
+    alt_length: int,
+) -> str:
+    """Reverse the process of repeat subunit compaction for a ReferenceLengthExpression.
+    The alt is reference-derived so repeat the repeat subunit until it is it to alt_length
+    characters long. May include a trailing partial copy of the repeat subunit.
+
+    e.g. "ACGT" (repeat_subunit_length=4, length=10) -> "ACGTACGTAC" (ACGT ACGT AC)
+
+    :param ref_seq: The reference sequence to be denormalized.
+    :param repeat_subunit_length: The length of the repeat subunit.
+    :param alt_length: The length of the alternate sequence that was compacted during normalization.
+    """
+    repeat_subunit = ref_seq[:repeat_subunit_length]
+    repeat_count = alt_length // repeat_subunit_length
+    remainder = alt_length % repeat_subunit_length
+    alt = repeat_subunit * repeat_count
+    alt += repeat_subunit[:remainder]
+    return alt
+
+
 def _factor_gen(n):
     """Yield all factors of an integer `n`, in descending order"""
     lower_factors = []
