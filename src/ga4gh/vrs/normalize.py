@@ -237,6 +237,10 @@ def denormalize_reference_length_expression(
     :param alt_length: The length of the alternate sequence that was compacted during normalization.
     """
     repeat_subunit = ref_seq[:repeat_subunit_length]
+    if len(repeat_subunit) != repeat_subunit_length:
+        raise ValueError(  # noqa: TRY003
+            f"Repeat subunit length {repeat_subunit_length} is not equal to the length of the repeat subunit {len(repeat_subunit)}"  # noqa: EM102
+        )
     repeat_count = alt_length // repeat_subunit_length
     remainder = alt_length % repeat_subunit_length
     alt = repeat_subunit * repeat_count
@@ -282,7 +286,10 @@ def _is_valid_cycle(template_start, template, target):
 # TODO _normalize_genotype?
 
 
-def _normalize_cis_phased_block(o, data_proxy: _DataProxy | None = None):  # noqa: ARG001
+def _normalize_cis_phased_block(
+    o,
+    data_proxy: _DataProxy | None = None,  # noqa: ARG001
+):
     o.members = sorted(o.members, key=ga4gh_digest)
     return o
 
