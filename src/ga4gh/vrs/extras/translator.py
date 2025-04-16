@@ -127,10 +127,8 @@ class _Translator(ABC):  # noqa: B024
         """Translate vrs object `vo` to named format `fmt`
 
         kwargs:
-            rle_seq_limit Optional(int): If vo.state is a ReferenceLengthExpression,
-                include the reference sequence in the SPDI expression as long as it is below
-                the limit. If the rle_seq_limit is None, the reference sequence is
-                always included. In all cases, the alt sequence is included.
+            ref_seq_limit Optional(int):
+                If vo.state is a ReferenceLengthExpression, and `ref_seq_limit` is specified, and `fmt` is `spdi`, the reference sequence is included in the SPDI expression if it is below the limit Otherwise only the length of the reference sequence is included. If the limit is None, the reference sequence is always included. In all cases, the alt sequence is included. Default is 0 (never include reference sequence).
         """
         t = self.to_translators[fmt]
         return t(vo, **kwargs)
