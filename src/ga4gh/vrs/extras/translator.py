@@ -123,7 +123,7 @@ class _Translator(ABC):  # noqa: B024
         msg = f"Unable to parse data as {', '.join(formats)}"
         raise ValueError(msg)
 
-    def translate_to(self, vo: models._VariationBase, fmt: str, **kwargs) -> str:
+    def translate_to(self, vo: models._VariationBase, fmt: str, **kwargs) -> list[str]:
         """Translate vrs object `vo` to named format `fmt`
 
         kwargs:
