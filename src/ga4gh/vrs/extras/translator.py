@@ -9,14 +9,38 @@ import logging
 import re
 from abc import ABC
 from collections.abc import Mapping
+from typing import Protocol
 
 from ga4gh.core import ga4gh_identify
 from ga4gh.vrs import models, normalize
-from ga4gh.vrs.dataproxy import _DataProxy
+from ga4gh.vrs.dataproxy import SequenceProxy, _DataProxy
 from ga4gh.vrs.extras.decorators import lazy_property
+from ga4gh.vrs.normalize import denormalize_reference_length_expression
 from ga4gh.vrs.utils.hgvs_tools import HgvsTools
 
 _logger = logging.getLogger(__name__)
+
+
+class VariationToStrProtocol(Protocol):
+    """Protocol for translating VRS objects to other string expressions.
+
+    This protocol defines a callable interface for translating a VRS object
+    into variation strings, with optional keyword arguments for customization.
+    """
+
+    def __call__(self, vo: models._VariationBase, **kwargs) -> list[str]:
+        """Translate vrs object `vo` to variation string expressions"""
+
+
+class VariationFromStrProtocol(Protocol):
+    """Protocol for translating variation strings to VRS objects.
+
+    This protocol defines a callable interface for translating a variation
+    string into a VRS object, with optional keyword arguments for customization.
+    """
+
+    def __call__(self, expr: str, **kwargs) -> models._VariationBase | None:
+        """Translate variation string `expr` to a VRS object"""
 
 
 class _Translator(ABC):  # noqa: B024
@@ -54,8 +78,8 @@ class _Translator(ABC):  # noqa: B024
         self.data_proxy = data_proxy
         self.identify = identify
         self.rle_seq_limit = rle_seq_limit
-        self.from_translators = {}
-        self.to_translators = {}
+        self.from_translators: dict[str, VariationFromStrProtocol] = {}
+        self.to_translators: dict[str, VariationToStrProtocol] = {}
 
     def translate_from(
         self, var: str, fmt: str | None = None, **kwargs
@@ -110,10 +134,15 @@ class _Translator(ABC):  # noqa: B024
         msg = f"Unable to parse data as {', '.join(formats)}"
         raise ValueError(msg)
 
-    def translate_to(self, vo: models._VariationBase, fmt: str) -> str:
-        """Translate vrs object `vo` to named format `fmt`"""
+    def translate_to(self, vo: models._VariationBase, fmt: str, **kwargs) -> list[str]:
+        """Translate vrs object `vo` to named format `fmt`
+
+        kwargs:
+            ref_seq_limit Optional(int):
+                If vo.state is a ReferenceLengthExpression, and `ref_seq_limit` is specified, and `fmt` is `spdi`, the reference sequence is included in the SPDI expression if it is below the limit Otherwise only the length of the reference sequence is included. If the limit is None, the reference sequence is always included. In all cases, the alt sequence is included. Default is 0 (never include reference sequence).
+        """
         t = self.to_translators[fmt]
-        return t(vo)
+        return t(vo, **kwargs)
 
     ############################################################################
     # INTERNAL
@@ -385,12 +414,15 @@ class AlleleTranslator(_Translator):
         return self._create_allele(values, **kwargs)
 
     def _to_hgvs(
-        self, vo: models.Allele, namespace: str | None = "refseq"
+        self,
+        vo: models.Allele,
+        namespace: str | None = "refseq",
+        **kwargs,  # noqa: ARG002
     ) -> list[str]:
         return self.hgvs_tools.from_allele(vo, namespace)
 
     def _to_spdi(
-        self, vo: models.Allele, namespace: str | None = "refseq"
+        self, vo: models.Allele, namespace: str | None = "refseq", **kwargs
     ) -> list[str]:
         """Generate a *list* of SPDI expressions for VRS Allele.
 
@@ -399,6 +431,13 @@ class AlleleTranslator(_Translator):
 
         If `namespace` is None, returns SPDI strings for all alias
         translations.
+
+        If `ref_seq_limit` is specified, the reference sequence is
+        included in the SPDI expression only if it is below the limit.
+        Otherwise only the length of the reference sequence is
+        included. If the limit is None, the reference sequence is
+        always included. In all cases, the alt sequence is included.
+        Default is 0 (never include reference sequence).
 
         If no alias translations are available, an empty list is
         returned.
@@ -411,9 +450,43 @@ class AlleleTranslator(_Translator):
         sequence = f"ga4gh:{vo.location.get_refget_accession()}"
         aliases = self.data_proxy.translate_sequence_identifier(sequence, namespace)
         aliases = [a.split(":")[1] for a in aliases]
+        seq_proxies = {a: SequenceProxy(self.data_proxy, a) for a in aliases}
         start, end = vo.location.start, vo.location.end
-        spdi_tail = f":{start}:{end - start}:{vo.state.sequence.root}"
-        return [a + spdi_tail for a in aliases]
+        spdi_exprs = []
+
+        for alias in aliases:
+            # Get the reference sequence
+            seq_proxy = seq_proxies[alias]
+            ref_seq = seq_proxy[start:end]
+
+            if vo.state.type == models.VrsType.REF_LEN_EXPR.value:
+                # Derived from reference. sequence included if under limit, but
+                # we can derive it again from the reference.
+                alt_seq = denormalize_reference_length_expression(
+                    ref_seq=ref_seq,
+                    repeat_subunit_length=vo.state.repeatSubunitLength,
+                    alt_length=vo.state.length,
+                )
+                # Warn if the derived sequence is different from the one in the object
+                if vo.state.sequence and vo.state.sequence != alt_seq:
+                    _logger.warning(
+                        "Derived sequence '%s' is different from provided state.sequence '%s'",
+                        alt_seq,
+                        vo.state.sequence,
+                    )
+            else:
+                alt_seq = vo.state.sequence.root
+
+            # Optionally allow using the length of the reference sequence
+            # instead of the sequence itself.
+            ref_seq_limit = kwargs.get("ref_seq_limit", 0)
+            if ref_seq_limit is not None and len(ref_seq) > int(ref_seq_limit):
+                ref_seq = len(ref_seq)
+
+            spdi_expr = f"{alias}:{start}:{ref_seq}:{alt_seq}"
+            spdi_exprs.append(spdi_expr)
+
+        return spdi_exprs
 
     def _post_process_imported_allele(
         self, allele: models.Allele, **kwargs

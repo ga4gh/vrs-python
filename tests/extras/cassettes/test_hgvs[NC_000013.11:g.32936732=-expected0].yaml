@@ -23,7 +23,37 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Mon, 10 Mar 2025 16:22:49 GMT
+      - Wed, 16 Apr 2025 22:49:30 GMT
+      Server:
+      - Werkzeug/2.2.3 Python/3.10.12
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.32.3
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT?start=32936731&end=32936732
+  response:
+    body:
+      string: C
+    headers:
+      Connection:
+      - close
+      Content-Length:
+      - '1'
+      Content-Type:
+      - text/plain; charset=utf-8
+      Date:
+      - Wed, 16 Apr 2025 22:49:30 GMT
       Server:
       - Werkzeug/2.2.3 Python/3.10.12
     status:
@@ -67,20 +97,20 @@ interactions:
       Content-Type:
       - text/plain
       Date:
-      - Mon, 10 Mar 2025 16:22:50 GMT
+      - Wed, 16 Apr 2025 22:49:30 GMT
       Keep-Alive:
       - timeout=4, max=40
       NCBI-PHID:
-      - D0BDD793D08B96450000396AA7F60D6E.1.1.m_5
+      - 322CF8979F5E85B5000050CD47341D44.1.1.m_5
       NCBI-SID:
-      - A10F065EB442C5FB_D344SID
+      - B4DD900AE926F06D_8D6DSID
       Referrer-Policy:
       - origin-when-cross-origin
       Server:
       - Finatra
       Set-Cookie:
-      - ncbi_sid=A10F065EB442C5FB_D344SID; domain=.nih.gov; path=/; expires=Tue, 10
-        Mar 2026 16:22:50 GMT
+      - ncbi_sid=B4DD900AE926F06D_8D6DSID; domain=.nih.gov; path=/; expires=Thu, 16
+        Apr 2026 22:49:30 GMT
       Strict-Transport-Security:
       - max-age=31536000; includeSubDomains; preload
       Transfer-Encoding:
