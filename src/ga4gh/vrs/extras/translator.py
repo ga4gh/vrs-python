@@ -24,14 +24,12 @@ _logger = logging.getLogger(__name__)
 class VariationToProtocol(Protocol):
     """Protocol for translating VRS objects to other string expressions
 
-    This protocol defines a callable interface for translating a variation
-    string into a VRS object, with optional keyword arguments for customization.
+    This protocol defines a callable interface for translating a VRS object
+    into variation strings, with optional keyword arguments for customization.
     """
 
-    def __call__(self, var: str, **kwargs) -> models._VariationBase | None:
-        """Translate variation `var` to VRS object"""
-
-
+    def __call__(self, vo: models._VariationBase, **kwargs) -> list[str]:
+        """Translate vrs object `vo` to variation string expressions"""
 class _Translator(ABC):  # noqa: B024
     """abstract class / interface for VRS to/from translation needs
 
