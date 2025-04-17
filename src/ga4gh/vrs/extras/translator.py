@@ -21,8 +21,8 @@ from ga4gh.vrs.utils.hgvs_tools import HgvsTools
 _logger = logging.getLogger(__name__)
 
 
-class VariationToProtocol(Protocol):
-    """Protocol for translating VRS objects to other string expressions
+class VariationToStrProtocol(Protocol):
+    """Protocol for translating VRS objects to other string expressions.
 
     This protocol defines a callable interface for translating a VRS object
     into variation strings, with optional keyword arguments for customization.
@@ -30,6 +30,19 @@ class VariationToProtocol(Protocol):
 
     def __call__(self, vo: models._VariationBase, **kwargs) -> list[str]:
         """Translate vrs object `vo` to variation string expressions"""
+
+
+class VariationFromStrProtocol(Protocol):
+    """Protocol for translating variation strings to VRS objects.
+
+    This protocol defines a callable interface for translating a variation
+    string into a VRS object, with optional keyword arguments for customization.
+    """
+
+    def __call__(self, expr: str, **kwargs) -> models._VariationBase | None:
+        """Translate variation string `expr` to a VRS object"""
+
+
 class _Translator(ABC):  # noqa: B024
     """abstract class / interface for VRS to/from translation needs
 
@@ -65,8 +78,8 @@ class _Translator(ABC):  # noqa: B024
         self.data_proxy = data_proxy
         self.identify = identify
         self.rle_seq_limit = rle_seq_limit
-        self.from_translators = {}
-        self.to_translators: dict[str, VariationToProtocol] = {}
+        self.from_translators = dict[str, VariationFromStrProtocol] = {}
+        self.to_translators: dict[str, VariationToStrProtocol] = {}
 
     def translate_from(
         self, var: str, fmt: str | None = None, **kwargs
