@@ -438,7 +438,7 @@ class AlleleTranslator(_Translator):
         """
         sequence = f"ga4gh:{vo.location.get_refget_accession()}"
         aliases = self.data_proxy.translate_sequence_identifier(sequence, namespace)
-        aliases = [a.split(":")[1] for a in aliases]  # TODO why split here?
+        aliases = [a.split(":")[1] for a in aliases]
         seq_proxies = {a: SequenceProxy(self.data_proxy, a) for a in aliases}
         start, end = vo.location.start, vo.location.end
         spdi_exprs = []
