@@ -78,7 +78,7 @@ class _Translator(ABC):  # noqa: B024
         self.data_proxy = data_proxy
         self.identify = identify
         self.rle_seq_limit = rle_seq_limit
-        self.from_translators = dict[str, VariationFromStrProtocol] = {}
+        self.from_translators: dict[str, VariationFromStrProtocol] = {}
         self.to_translators: dict[str, VariationToStrProtocol] = {}
 
     def translate_from(
