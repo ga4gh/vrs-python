@@ -212,8 +212,7 @@ def _annotate_vcf_cli(
     start = timer()
     msg = f"Annotating {vcf_in} with the VCF Annotator..."
     _logger.info(msg)
-    if not silent:
-        click.echo(msg)
+
     try:
         annotator.annotate(
             vcf_in,
