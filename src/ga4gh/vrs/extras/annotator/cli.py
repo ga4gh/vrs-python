@@ -70,19 +70,45 @@ def _log_level_option(func: Callable) -> Callable:
     )(func)
 
 
+class PathOrDash(click.ParamType):
+    """click ParamType to support converting to Path and allowing '-' for stdin/out"""
+
+    name = "path-or-dash"
+
+    def __init__(self, **kwargs) -> None:
+        """Initialize PathOrDash"""
+        self._path_type = kwargs.pop("path_type", Path)
+        self._inner = click.Path(**kwargs, path_type=self._path_type)
+
+    def convert(
+        self, value: str, param: click.Parameter | None, ctx: click.Context | None
+    ) -> str | Path:
+        """Convert the value using click.Path if it is not '-'"""
+        if value == "-":
+            return value
+        # Use click.Path for validation
+        return self._inner.convert(value, param, ctx)
+
+
 @_cli.command(name="vcf")
 @_log_level_option
 @click.argument(
     "vcf-in",
     nargs=1,
-    type=click.Path(exists=True, readable=True, dir_okay=False, path_type=Path),
+    type=PathOrDash(
+        allow_dash=True,
+        exists=True,
+        readable=True,
+        dir_okay=False,
+        path_type=Path,
+    ),
 )
 @click.option(
     "--vcf-out",
     required=False,
-    type=click.Path(writable=True, allow_dash=False, path_type=Path),
+    type=PathOrDash(writable=True, allow_dash=True, path_type=Path),
     help=(
-        "Declare save location for output annotated VCF. At least one form of output must be declared."
+        'Declare save location for output annotated VCF (or "-" to write to stdout). At least one form of output must be declared.'
     ),
 )
 @click.option(
@@ -141,8 +167,8 @@ def _log_level_option(func: Callable) -> Callable:
     help="Suppress messages printed to stdout",
 )
 def _annotate_vcf_cli(
-    vcf_in: Path,
-    vcf_out: Path | None,
+    vcf_in: Path | str,
+    vcf_out: Path | str | None,
     pkl_out: Path | None,
     ndjson_out: Path | None,
     vrs_attributes: bool,
@@ -152,7 +178,7 @@ def _annotate_vcf_cli(
     require_validation: bool,
     silent: bool,
 ) -> None:
-    """Extract VRS objects from VCF located at VCF_IN.
+    """Extract VRS objects from VCF located at VCF_IN. VCF_IN can be "-" to read from stdin.
 
         $ vrs-annotate vcf input.vcf.gz --vcf-out output.vcf.gz --pkl-out vrs_objects.pkl
 
@@ -186,11 +212,10 @@ def _annotate_vcf_cli(
     start = timer()
     msg = f"Annotating {vcf_in} with the VCF Annotator..."
     _logger.info(msg)
-    if not silent:
-        click.echo(msg)
+
     try:
         annotator.annotate(
-            vcf_in.absolute(),
+            vcf_in,
             output_vcf_path=vcf_out,
             vrs_attributes=vrs_attributes,
             assembly=assembly,

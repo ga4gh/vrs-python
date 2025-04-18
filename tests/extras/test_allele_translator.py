@@ -187,6 +187,143 @@ duplication_output_normalized = {
     "type": "Allele",
 }
 
+rle_inputs = [
+    {
+        # small 1+ repeat deletion
+        "gnomad": "1-145916840-CTCCT-CT",
+        "spdi": "NC_000001.11:145916839:CTCCT:CT",
+        "expected_allele": {
+            "type": "Allele",
+            "location": {
+                "type": "SequenceLocation",
+                "sequenceReference": {
+                    "type": "SequenceReference",
+                    "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
+                },
+                "start": 145916839,
+                "end": 145916844,
+            },
+            "state": {
+                "type": "ReferenceLengthExpression",
+                "length": 2,
+                "sequence": "CT",
+                "repeatSubunitLength": 3,
+            },
+        },
+    },
+    {
+        # big 2+ multiple-repeat deletion
+        "gnomad": "21-5033800-TGGGTCCAGGCACCGGCGCCCAGCCCCCGTGGGGTGTCCAGGGC-T",
+        "spdi": "NC_000021.9:5033800:GGGTCCAGGCACCGGCGCCCAGCCCCCGTGGGGTGTCCAGGGCGGGTCCAGGCACCGGCGCCCAGCCCCCGTGGGGTGTCCAGGGCGGGTCCAGGCACCGGCGCCCAGCCCCC:GGGTCCAGGCACCGGCGCCCAGCCCCCGTGGGGTGTCCAGGGCGGGTCCAGGCACCGGCGCCCAGCCCCC",
+        "expected_allele": {
+            "location": {
+                "start": 5033800,
+                "end": 5033913,
+                "sequenceReference": {
+                    "refgetAccession": "SQ.5ZUqxCmDDgN4xTRbaSjN8LwgZironmB8",
+                    "type": "SequenceReference",
+                },
+                "type": "SequenceLocation",
+            },
+            "state": {
+                "length": 70,
+                "repeatSubunitLength": 43,
+                "type": "ReferenceLengthExpression",
+                "sequence": "GGGTCCAGGCACCGGCGCCCAGCCCCCGTGGGGTGTCCAGGGCGGGTCCAGGCACCGGCGCCCAGCCCCC",
+            },
+            "type": "Allele",
+        },
+    },
+    {
+        # insertion
+        "gnomad": "1-2228956-GTGCCCG-GTGCCCGTGCCCG",
+        "spdi": "NC_000001.11:2228955:GTGCCCG:GTGCCCGTGCCCG",
+        "expected_allele": {
+            "type": "Allele",
+            "location": {
+                "type": "SequenceLocation",
+                "sequenceReference": {
+                    "type": "SequenceReference",
+                    "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
+                },
+                "start": 2228955,
+                "end": 2228962,
+            },
+            "state": {
+                "type": "ReferenceLengthExpression",
+                "length": 13,
+                "sequence": "GTGCCCGTGCCCG",
+                "repeatSubunitLength": 6,
+            },
+        },
+    },
+    {
+        # single base expansion (9*A -> 11*A)
+        "spdi": "NC_000001.11:236900409:AAAAAAAAA:AAAAAAAAAAA",
+        "gnomad": "1-236900410-A-AAA",
+        "expected_allele": {
+            "location": {
+                "end": 236900418,
+                "sequenceReference": {
+                    "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
+                    "type": "SequenceReference",
+                },
+                "start": 236900409,
+                "type": "SequenceLocation",
+            },
+            "state": {
+                "length": 11,
+                "repeatSubunitLength": 2,
+                "sequence": "AAAAAAAAAAA",
+                "type": "ReferenceLengthExpression",
+            },
+            "type": "Allele",
+        },
+    },
+    {
+        # single base expansion (9*A -> 11*A)
+        "spdi": "NC_000001.11:236900409:AAAAAAAAA:AAAAAAAAAAAAAAAAAAAA",
+        "gnomad": "1-236900410-A-AAAAAAAAAAAA",
+        "expected_allele": {
+            "location": {
+                "end": 236900418,
+                "sequenceReference": {
+                    "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
+                    "type": "SequenceReference",
+                },
+                "start": 236900409,
+                "type": "SequenceLocation",
+            },
+            "state": {
+                "length": 20,
+                "repeatSubunitLength": 1,
+                "sequence": "AAAAAAAAAAAAAAAAAAAA",
+                "type": "ReferenceLengthExpression",
+            },
+            "type": "Allele",
+        },
+    },
+]
+
+
+@pytest.mark.vcr
+def test_rle_round_trip_gnomad_spdi(tlr):
+    """Test translating an RLE allele from gnomAD and SPDI, and back to SPDI"""
+    for inp in rle_inputs:
+        gnomad = inp["gnomad"]
+        spdi = inp["spdi"]
+        expected_dict = inp["expected_allele"]
+        allele_gnomad = tlr.translate_from(gnomad, fmt="gnomad", rle_seq_limit=None)
+        assert allele_gnomad.model_dump(exclude_none=True) == expected_dict
+        allele_spdi = tlr.translate_from(spdi, fmt="spdi", rle_seq_limit=None)
+        assert allele_spdi.model_dump(exclude_none=True) == expected_dict
+
+        allele_gnomad_to_spdi = tlr.translate_to(
+            allele_gnomad, fmt="spdi", ref_seq_limit=None
+        )
+        assert len(allele_gnomad_to_spdi) == 1
+        assert allele_gnomad_to_spdi[0] == spdi
+
 
 def test_from_invalid(tlr):
     with pytest.raises(
@@ -374,6 +511,24 @@ def test_to_spdi(tlr):
     to_spdi = tlr.translate_to(allele, "spdi")
     assert len(to_spdi) == 1
     assert spdiexpr == to_spdi[0]
+
+
+@pytest.mark.vcr
+def test_to_spdi_with_ref(tlr):
+    spdi_expr_no_ref = "NC_000019.10:44908821:1:T"
+    spdi_expr_with_ref = "NC_000019.10:44908821:C:T"
+
+    allele_no_ref = tlr.translate_from(spdi_expr_no_ref, "spdi")
+    allele_with_ref = tlr.translate_from(spdi_expr_with_ref, "spdi")
+    assert allele_no_ref == allele_with_ref
+
+    to_spdi_no_ref = tlr.translate_to(allele_no_ref, "spdi", ref_seq_limit=0)
+    assert len(to_spdi_no_ref) == 1
+    assert spdi_expr_no_ref == to_spdi_no_ref[0]
+
+    to_spdi_with_ref = tlr.translate_to(allele_with_ref, "spdi", ref_seq_limit=None)
+    assert len(to_spdi_with_ref) == 1
+    assert spdi_expr_with_ref == to_spdi_with_ref[0]
 
 
 hgvs_tests = (
@@ -626,6 +781,10 @@ def test_hgvs(tlr, hgvsexpr, expected):
 
 @pytest.mark.vcr
 def test_rle_seq_limit(tlr):
+    """Test that for an ReferenceLengthExpression over 50bp, the sequence is not
+    returned when rle_seq_limit is set to 50bp, but is included in the state when
+    rle_seq_limit is set to None.
+    """
     # do_normalize defaults to true
     tlr.identify = True
 
