@@ -468,11 +468,11 @@ class AlleleTranslator(_Translator):
                     alt_length=vo.state.length,
                 )
                 # Warn if the derived sequence is different from the one in the object
-                if vo.state.sequence and vo.state.sequence != alt_seq:
+                if vo.state.sequence and vo.state.sequence.root != alt_seq:
                     _logger.warning(
                         "Derived sequence '%s' is different from provided state.sequence '%s'",
                         alt_seq,
-                        vo.state.sequence,
+                        vo.state.sequence.root,
                     )
             else:
                 alt_seq = vo.state.sequence.root
