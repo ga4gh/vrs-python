@@ -5,7 +5,7 @@ from ga4gh.vrs.dataproxy import DataProxyValidationError
 from ga4gh.vrs.extras.translator import AlleleTranslator
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture
 def tlr(rest_dataproxy):
     return AlleleTranslator(
         data_proxy=rest_dataproxy,
