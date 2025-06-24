@@ -3,11 +3,13 @@
 import abc
 import logging
 import pickle
+import tempfile
 from enum import Enum
 from pathlib import Path
 from typing import Literal
 
 import pysam
+import pysam.bcftools
 
 from ga4gh.core.identifiers import (
     VrsObjectIdentifierIs,
@@ -27,6 +29,10 @@ class VcfAnnotatorError(Exception):
 
 class VcfAnnotatorArgsError(VcfAnnotatorError):
     """Raise for improper args passed to VCF annotator"""
+
+
+class ExistingVcfAnnotationError(VcfAnnotatorError):
+    """Raise for VCF annotator input that already has VRS object annotations"""
 
 
 class FieldName(str, Enum):
@@ -197,6 +203,7 @@ class AbstractVcfAnnotator(abc.ABC):
         assembly: str = "GRCh38",
         compute_for_ref: bool = True,
         require_validation: bool = True,
+        recompute_existing: bool = False,
         **kwargs,
     ) -> None:
         """Given a VCF, produce an output VCF annotated with VRS allele IDs, and/or
@@ -214,7 +221,11 @@ class AbstractVcfAnnotator(abc.ABC):
             object for a record. If `False` then VRS object will be returned even if
             validation checks fail, although all instances of failed validation are
             logged as warnings regardless.
+        :param recompute_existing: If `True`, recompute all existing VRS annotations.
+            Otherwise, raise an error if the input VCF has already been annotated.
         :raise VCFAnnotatorError: if no output formats are selected
+        :raise ExistingVcfAnnotationError: if input is already annotated and
+            `recompute_existing` is `False`
         """
         self.raise_for_output_args(output_vcf_path, **kwargs)
         # This can be pushed up to the click arg parsing too
@@ -223,7 +234,25 @@ class AbstractVcfAnnotator(abc.ABC):
         )
         vcf = pysam.VariantFile(filename=pysam_in_filename, mode="r")
         if output_vcf_path:
-            self._update_vcf_header(vcf, compute_for_ref, vrs_attributes)
+            try:
+                self._update_vcf_header(vcf, compute_for_ref, vrs_attributes)
+            except ValueError as e:
+                if recompute_existing:
+                    tmp = tempfile.NamedTemporaryFile(suffix=".vcf", delete=False)  # noqa: SIM115
+                    tmp_path = tmp.name
+                    tmp.close()
+                    pysam.bcftools.annotate(
+                        "--output",
+                        tmp_path,
+                        "--remove",
+                        "INFO/VRS_Allele_IDs,INFO/VRS_Starts,INFO/VRS_Ends,INFO/VRS_States,INFO/VRS_Error",
+                        pysam_in_filename,
+                        "-Ov",
+                        catch_stdout=False,
+                    )
+                    vcf = pysam.VariantFile(filename=tmp_path, mode="r")
+                else:
+                    raise ExistingVcfAnnotationError from e
             pysam_out_filename = (
                 "-" if output_vcf_path == "-" else str(output_vcf_path.absolute())
             )
