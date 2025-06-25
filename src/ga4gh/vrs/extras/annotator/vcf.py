@@ -238,6 +238,9 @@ class AbstractVcfAnnotator(abc.ABC):
                 self._update_vcf_header(vcf, compute_for_ref, vrs_attributes)
             except ValueError as e:
                 if recompute_existing:
+                    _logger.info(
+                        "VCF appears to already have VRS INFO columns -- they will be wiped and recomputed."
+                    )
                     tmp = tempfile.NamedTemporaryFile(suffix=".vcf", delete=False)  # noqa: SIM115
                     tmp_path = tmp.name
                     tmp.close()
