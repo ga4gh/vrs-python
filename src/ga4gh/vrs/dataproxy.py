@@ -172,11 +172,11 @@ class _DataProxy(ABC):
         :raises DataProxyValidationError: If excepted reference sequence does not match
             the actual reference sequence and ``require_validation`` is ``True``.
         """
-        actual_ref = self.get_sequence(sequence_id, start_pos, end_pos)
+        expected_ref = self.get_sequence(sequence_id, start_pos, end_pos)
 
-        if actual_ref != ref:
+        if expected_ref != ref:
             err_msg = (
-                f"Expected reference sequence {actual_ref} on {sequence_id} at positions "
+                f"Expected reference sequence {expected_ref} on {sequence_id} at positions "
                 f"({start_pos}, {end_pos}) but found {ref}"
             )
             _logger.warning(err_msg)
