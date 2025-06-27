@@ -417,7 +417,7 @@ def test_from_gnomad(tlr):
 
     # Ref != Actual ref
     invalid_var = "13-32936732-G-C"
-    error_msg = "Expected reference sequence G on GRCh38:13 at positions (32936731, 32936732) but found C"
+    error_msg = "Expected reference sequence C on GRCh38:13 at positions (32936731, 32936732) but found G"
 
     with pytest.raises(DataProxyValidationError) as e:
         tlr._from_gnomad(invalid_var)
