@@ -164,8 +164,7 @@ class _DataProxy(ABC):
         :param sequence_id: Sequence ID to use
         :param start_pos: Start pos (inter-residue) on the sequence_id
         :param end_pos: End pos (inter-residue) on the sequence_id
-        :param ref: The expected reference sequence on the sequence_id given the
-            start_pos and end_pos
+        :param ref: Input allele state
         :param require_validation: If ``True`` and if validation checks fail, a
             ``DataProxyValidationError`` will be raised. Error message will always be
             logged.
@@ -176,8 +175,8 @@ class _DataProxy(ABC):
 
         if actual_ref != ref:
             err_msg = (
-                f"Expected reference sequence {ref} on {sequence_id} at positions "
-                f"({start_pos}, {end_pos}) but found {actual_ref}"
+                f"Expected reference sequence {actual_ref} on {sequence_id} at positions "
+                f"({start_pos}, {end_pos}) but found {ref}"
             )
             _logger.warning(err_msg)
 
