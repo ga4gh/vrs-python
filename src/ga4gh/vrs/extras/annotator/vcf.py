@@ -29,6 +29,10 @@ class VcfAnnotatorArgsError(VcfAnnotatorError):
     """Raise for improper args passed to VCF annotator"""
 
 
+class ExistingVcfAnnotationError(VcfAnnotatorError):
+    """Raise for VCF annotator input that already has VRS object annotations"""
+
+
 class FieldName(str, Enum):
     """Define VCF field names for VRS annotations"""
 
@@ -215,6 +219,8 @@ class AbstractVcfAnnotator(abc.ABC):
             validation checks fail, although all instances of failed validation are
             logged as warnings regardless.
         :raise VCFAnnotatorError: if no output formats are selected
+        :raise ExistingVcfAnnotationError: if attempting to output an annotated VCF
+            and the input already contains annotations.
         """
         self.raise_for_output_args(output_vcf_path, **kwargs)
         # This can be pushed up to the click arg parsing too
@@ -223,7 +229,10 @@ class AbstractVcfAnnotator(abc.ABC):
         )
         vcf = pysam.VariantFile(filename=pysam_in_filename, mode="r")
         if output_vcf_path:
-            self._update_vcf_header(vcf, compute_for_ref, vrs_attributes)
+            try:
+                self._update_vcf_header(vcf, compute_for_ref, vrs_attributes)
+            except ValueError as e:
+                raise ExistingVcfAnnotationError(e.args[0] if e.args else None) from e
             pysam_out_filename = (
                 "-" if output_vcf_path == "-" else str(output_vcf_path.absolute())
             )
