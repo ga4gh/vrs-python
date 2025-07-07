@@ -175,10 +175,7 @@ class _DataProxy(ABC):
         expected_ref = self.get_sequence(sequence_id, start_pos, end_pos)
 
         if expected_ref != ref:
-            err_msg = (
-                f"Expected reference sequence {expected_ref} on {sequence_id} at positions "
-                f"({start_pos}, {end_pos}) but found {ref}"
-            )
+            err_msg = f"Reference mismatch at {sequence_id} position {start_pos}-{end_pos} (expected '{expected_ref}' but found '{ref}')"
             _logger.warning(err_msg)
 
             if require_validation:
