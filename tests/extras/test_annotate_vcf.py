@@ -210,7 +210,7 @@ def test_get_vrs_object_invalid_input(vcf_annotator: VcfAnnotator, caplog):
     assert "" in caplog.text
 
     # Invalid ref, but requiring validation checks so an error is raised
-    invalid_ref_seq_msg = "Reference mismatch at GRCh38:7 position 140753335-140753336 (expected 'A' but found 'C')"
+    invalid_ref_seq_msg = "Reference mismatch at GRCh38:7 position 140753335-140753336 (input gave 'C' but correct ref is 'A')"
     with pytest.raises(DataProxyValidationError, match=re.escape(invalid_ref_seq_msg)):
         vcf_annotator._get_vrs_object(
             "7-140753336-C-T", [], {}, "GRCh38", require_validation=True

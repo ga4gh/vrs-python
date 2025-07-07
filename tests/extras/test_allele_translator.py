@@ -417,7 +417,7 @@ def test_from_gnomad(tlr):
 
     # Ref != Actual ref
     invalid_var = "13-32936732-G-C"
-    error_msg = "Reference mismatch at GRCh38:13 position 32936731-32936732 (expected 'C' but found 'G')"
+    error_msg = "Reference mismatch at GRCh38:13 position 32936731-32936732 (input gave 'G' but correct ref is 'C')"
 
     with pytest.raises(DataProxyValidationError) as e:
         tlr._from_gnomad(invalid_var)
