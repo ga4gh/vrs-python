@@ -82,7 +82,7 @@ transcripts, and genome-transcript alignments.
 First, you must install a local [SeqRepo](https://github.com/biocommons/biocommons.seqrepo):
 
 ```shell
-pip install seqrepo
+pip install biocommons.seqrepo
 export SEQREPO_VERSION=2024-12-20  # or newer if available -- check `seqrepo list-remote-instances`
 sudo mkdir -p /usr/local/share/seqrepo
 sudo chown $USER /usr/local/share/seqrepo
@@ -102,8 +102,8 @@ Try moving data manually with `sudo`:
 sudo mv /usr/local/share/seqrepo/$SEQREPO_VERSION.* /usr/local/share/seqrepo/$SEQREPO_VERSION
 ```
 
-To make installation easy, we recommend using Docker to install the other Biocommons
-tools - [SeqRepo REST](https://github.com/biocommons/seqrepo-rest-service) and
+To make installation easy, we recommend using [Docker](https://docs.docker.com/get-started/get-docker/)
+to install the other Biocommons tools - [SeqRepo REST](https://github.com/biocommons/seqrepo-rest-service) and
 [UTA](https://github.com/biocommons/uta). If you would like to use local instances of UTA,
 see [UTA](https://github.com/biocommons/uta) directly. We do provide some additional
 setup help [here](./docs/setup_help/).
@@ -113,8 +113,14 @@ Next, run the following commands:
 ```shell
 docker volume create --name=uta_vol
 docker volume create --name=seqrepo_vol
-docker-compose up
+docker compose up
 ```
+
+> [!NOTE]
+> You must run all Docker commands from the root of the vrs-python repository (where `docker-compose.yml` lives). See [installing for development](#installing-for-development)
+> for the clone commands.
+> If you use Docker Compose v1, use `docker-compose` instead of `docker compose`.
+> However, we do recommend [upgrading to v2](https://docs.docker.com/compose/releases/migrate/).
 
 This should start three containers:
 
@@ -155,7 +161,7 @@ Here are some things to try.
   yet, you might see this:
 
   ```shell
-  $ docker-compose up seqrepo-rest-service
+  $ docker compose up seqrepo-rest-service
   Starting vrs-python_seqrepo-rest-service_1 ... done
   Attaching to vrs-python_seqrepo-rest-service_1
   seqrepo-rest-service_1  | 2022-07-26 15:59:59 seqrepo_rest_service.__main__[1] INFO Using seqrepo_dir='/usr/local/share/seqrepo/2024-12-20' from command line
@@ -189,7 +195,7 @@ Here are some things to try.
     ````
     ports:
       - [your_port_number]:5432
-  - Repeat the `docker-compose up` command
+  - Repeat the `docker compose up` command
   - Repeat the command above to verify that there is now a docker command
     listening at this port.
     ```
@@ -219,7 +225,7 @@ Here are some things to try.
     ````
     ports:
       - [your_port_number]:5000
-  - Repeat the `docker-compose up` command
+  - Repeat the `docker compose up` command
   - Test the SeqRepo REST API service with this new port
     ```shell
     curl 'http://127.0.0.1:[your_port_number]/seqrepo/1/sequence/refseq:NM_000059.4?end=20'
