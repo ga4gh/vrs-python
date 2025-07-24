@@ -9,11 +9,6 @@ contains only the assembled chromosomes for a single reference assembly.
 
 Prebuilt images are available in Docker Hub: https://hub.docker.com/u/ga4gh
 
-## Using VRS-in-a-Box in Terra
-VRS-in-a-Box can be easily added to a workflow in Terra to annotate a VCF file with
-VRS IDs.  The `VrsVcfAnnotator.wdl` file contains a simple workflow with one task
-that will annotate a VCF file using the pre-built images in Docker Hub.
-
 ## Building VRS-in-a-Box
 The following instructions describe how to build a VRS-in-a-Box image from scratch.
 
