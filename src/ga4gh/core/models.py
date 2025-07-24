@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from abc import ABC
 from enum import Enum
-from typing import Annotated, Any, Optional, Union
+from typing import Annotated, Any
 
 from pydantic import (
     BaseModel,
@@ -93,7 +93,7 @@ class Entity(BaseModel, ABC):
     Abstract base class to be extended by other classes. Do NOT instantiate directly.
     """
 
-    id: Optional[str] = Field(
+    id: str | None = Field(
         None,
         description="The 'logical' identifier of the Entity in the system of record, e.g. a UUID.  This 'id' is unique within a given system, but may or may not be globally unique outside the system. It is used within a system to reference an object from another.",
     )
@@ -101,14 +101,14 @@ class Entity(BaseModel, ABC):
         ...,
         description="The name of the class that is instantiated by a data object representing the Entity.",
     )
-    name: Optional[str] = Field(None, description="A primary name for the entity.")
-    description: Optional[str] = Field(
+    name: str | None = Field(None, description="A primary name for the entity.")
+    description: str | None = Field(
         None, description="A free-text description of the Entity."
     )
-    aliases: Optional[list[str]] = Field(
+    aliases: list[str] | None = Field(
         None, description="Alternative name(s) for the Entity."
     )
-    extensions: Optional[list[Extension]] = Field(
+    extensions: list[Extension] | None = Field(
         None,
         description="A list of extensions to the Entity, that allow for capture of information not directly supported by elements defined in the model.",
     )
@@ -120,11 +120,11 @@ class Element(BaseModel, ABC):
     Abstract base class to be extended by other classes. Do NOT instantiate directly.
     """
 
-    id: Optional[str] = Field(
+    id: str | None = Field(
         None,
         description="The 'logical' identifier of the data element in the system of record, e.g. a UUID.  This 'id' is unique within a given system, but may or may not be globally unique outside the system. It is used within a system to reference an object from another.",
     )
-    extensions: Optional[list[Extension]] = Field(
+    extensions: list[Extension] | None = Field(
         None,
         description="A list of extensions to the Entity, that allow for capture of information not directly supported by elements defined in the model.",
     )
@@ -140,7 +140,7 @@ class Coding(Element, BaseModelForbidExtra):
     code system.
     """
 
-    name: Optional[str] = Field(
+    name: str | None = Field(
         None,
         description="The human-readable name for the coded concept, as defined by the code system.",
     )
@@ -148,12 +148,12 @@ class Coding(Element, BaseModelForbidExtra):
         ...,
         description="The terminology/code system that defined the code. May be reported as a free-text name (e.g. 'Sequence Ontology'), but it is preferable to provide a uri/url for the system.",
     )
-    systemVersion: Optional[str] = Field(  # noqa: N815
+    systemVersion: str | None = Field(  # noqa: N815
         None,
         description="Version of the terminology or code system that provided the code.",
     )
     code: code  # Cannot use Field due to PydanticUserError: field name and type annotation must not clash.
-    iris: Optional[list[iriReference]] = Field(
+    iris: list[iriReference] | None = Field(
         None,
         description="A list of IRIs that are associated with the coding. This can be used to provide additional context or to link to additional information about the concept.",
     )
@@ -186,11 +186,11 @@ class Extension(Element, BaseModelForbidExtra):
         ...,
         description="A name for the Extension. Should be indicative of its meaning and/or the type of information it value represents.",
     )
-    value: Optional[Union[float, str, bool, dict[str, Any], list[Any]]] = Field(
+    value: float | str | bool | dict[str, Any] | list[Any] | None = Field(
         ...,
         description="The value of the Extension - can be any primitive or structured object",
     )
-    description: Optional[str] = Field(
+    description: str | None = Field(
         None,
         description="A description of the meaning or utility of the Extension, to explain the type of information it is meant to hold.",
     )
@@ -199,16 +199,16 @@ class Extension(Element, BaseModelForbidExtra):
 class MappableConcept(Element, BaseModelForbidExtra):
     """A concept based on a primaryCoding and/or name that may be mapped to one or more other `Codings`."""
 
-    conceptType: Optional[str] = Field(  # noqa: N815
+    conceptType: str | None = Field(  # noqa: N815
         None,
         description="A term indicating the type of concept being represented by the MappableConcept.",
     )
-    name: Optional[str] = Field(None, description="A primary name for the concept.")
-    primaryCoding: Optional[Coding] = Field(  # noqa: N815
+    name: str | None = Field(None, description="A primary name for the concept.")
+    primaryCoding: Coding | None = Field(  # noqa: N815
         None,
         description="A primary coding for the concept.",
     )
-    mappings: Optional[list[ConceptMapping]] = Field(
+    mappings: list[ConceptMapping] | None = Field(
         None,
         description="A list of mappings to concepts in terminologies or code systems. Each mapping should include a coding and a relation.",
     )
