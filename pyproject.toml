@@ -48,7 +48,7 @@ extras = [
     "psycopg2-binary",
     "biocommons.seqrepo>=0.5.1",
     "bioutils>=0.5.2",
-    "hgvs>=1.4",
+    "hgvs>=1.4,<1.5.5",
     "dill~=0.3.7",
     "click",
     "pysam>=0.23.0",
