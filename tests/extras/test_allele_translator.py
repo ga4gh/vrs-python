@@ -17,7 +17,6 @@ def tlr(rest_dataproxy):
 # https://www.ncbi.nlm.nih.gov/clinvar/variation/17848/?new_evidence=true
 snv_inputs = {
     "hgvs": "NC_000019.10:g.44908822C>T",
-    "beacon": "19 : 44908822 C > T",
     "spdi": "NC_000019.10:44908821:1:T",
     "gnomad": "19-44908822-C-T",
 }
@@ -39,7 +38,6 @@ snv_output = {
 # https://www.ncbi.nlm.nih.gov/clinvar/variation/693259/?new_evidence=true
 mito_inputs = {
     "hgvs": "NC_012920.1:m.10083A>G",
-    "beacon": "MT : 10083 A > G",
     "spdi": "NC_012920.1:10082:A:G",
     "gnomad": "MT-10083-A-G",
 }
@@ -327,26 +325,9 @@ def test_rle_round_trip_gnomad_spdi(tlr):
 
 def test_from_invalid(tlr):
     with pytest.raises(
-        ValueError, match="Unable to parse data as beacon, gnomad, hgvs, spdi, vrs"
+        ValueError, match="Unable to parse data as gnomad, hgvs, spdi, vrs"
     ):
         tlr.translate_from("BRAF amplication")
-
-
-@pytest.mark.vcr
-def test_from_beacon(tlr):
-    do_normalize = False
-    assert (
-        tlr._from_beacon(snv_inputs["beacon"], do_normalize=do_normalize).model_dump(
-            exclude_none=True
-        )
-        == snv_output
-    )
-    assert (
-        tlr._from_beacon(mito_inputs["beacon"], do_normalize=do_normalize).model_dump(
-            exclude_none=True
-        )
-        == mito_output
-    )
 
 
 @pytest.mark.vcr
@@ -859,9 +840,6 @@ def test_to_hgvs_iri_ref_keyerror(tlr):
 # TODO: Readd these tests
 # @pytest.mark.vcr
 # def test_errors(tlr):
-#     with pytest.raises(ValueError):
-#         tlr._from_beacon("bogus")
-#
 #     with pytest.raises(ValueError):
 #         tlr._from_gnomad("NM_182763.2:c.688+403C>T")
 #

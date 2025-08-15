@@ -9,7 +9,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.32.3
+      - python-requests/2.32.4
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/NC_000013.11?start=32316466&end=32316467
   response:
@@ -23,7 +23,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Mon, 10 Mar 2025 16:22:58 GMT
+      - Fri, 15 Aug 2025 12:11:26 GMT
       Server:
       - Werkzeug/2.2.3 Python/3.10.12
     status:
@@ -39,7 +39,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.32.3
+      - python-requests/2.32.4
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT?start=32316466&end=32316467
   response:
@@ -53,7 +53,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Mon, 10 Mar 2025 16:22:58 GMT
+      - Fri, 15 Aug 2025 12:11:27 GMT
       Server:
       - Werkzeug/2.2.3 Python/3.10.12
     status:
@@ -69,7 +69,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.32.3
+      - python-requests/2.32.4
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT?start=32316467&end=32316467
   response:
@@ -83,7 +83,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Mon, 10 Mar 2025 16:22:58 GMT
+      - Fri, 15 Aug 2025 12:11:27 GMT
       Server:
       - Werkzeug/2.2.3 Python/3.10.12
     status:
@@ -99,7 +99,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.32.3
+      - python-requests/2.32.4
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT?start=32316465&end=32316466
   response:
@@ -113,7 +113,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Mon, 10 Mar 2025 16:22:58 GMT
+      - Fri, 15 Aug 2025 12:11:27 GMT
       Server:
       - Werkzeug/2.2.3 Python/3.10.12
     status:
@@ -129,7 +129,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.32.3
+      - python-requests/2.32.4
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT?start=32316467&end=32316468
   response:
@@ -143,7 +143,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Mon, 10 Mar 2025 16:22:58 GMT
+      - Fri, 15 Aug 2025 12:11:27 GMT
       Server:
       - Werkzeug/2.2.3 Python/3.10.12
     status:
@@ -159,18 +159,14 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.32.3
+      - python-requests/2.32.4
     method: GET
     uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nucleotide&id=NC_000013.11&rettype=fasta&seq_start=32316467&seq_stop=32316467&tool=bioutils&email=biocommons-dev@googlegroups.com
   response:
     body:
-      string: '>NC_000013.11:32316467-32316467 Homo sapiens chromosome 13, GRCh38.p14
-        Primary Assembly
-
-        A
-
-
-        '
+      string: !!binary |
+        H4sIAAAAAAAAALLzc443AAJDYz1DQytjI2NDMxMzc10YQ8EjPzdfoTixIDM1r1ghOaMIyC3Oz01V
+        MDTWUXAPcs4wttArMDRRCCjKzE0sqlRwLC5OzU3KqeRy5AIAAAD//+ICAAAA//8DABNU0u5bAAAA
     headers:
       Access-Control-Allow-Origin:
       - '*'
@@ -187,20 +183,20 @@ interactions:
       Content-Type:
       - text/plain
       Date:
-      - Mon, 10 Mar 2025 16:22:57 GMT
+      - Fri, 15 Aug 2025 12:11:28 GMT
       Keep-Alive:
       - timeout=4, max=40
       NCBI-PHID:
-      - 322C1EB26B7FD5C500003E6886B10019.1.1.m_5
+      - 1D3461E48F30F3850000608EC0BA4CD7.1.1.m_7
       NCBI-SID:
-      - FCA6F5765141935F_9ED1SID
+      - 675ED03F8BB85978_74F3SID
       Referrer-Policy:
       - origin-when-cross-origin
       Server:
       - Finatra
       Set-Cookie:
-      - ncbi_sid=FCA6F5765141935F_9ED1SID; domain=.nih.gov; path=/; expires=Tue, 10
-        Mar 2026 16:22:58 GMT
+      - ncbi_sid=675ED03F8BB85978_74F3SID; domain=.nih.gov; path=/; expires=Sat, 15
+        Aug 2026 12:11:28 GMT
       Strict-Transport-Security:
       - max-age=31536000; includeSubDomains; preload
       Transfer-Encoding:
@@ -228,18 +224,15 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.32.3
+      - python-requests/2.32.4
     method: GET
     uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nucleotide&id=NC_000013.11&rettype=fasta&seq_start=32316467&seq_stop=32316487&tool=bioutils&email=biocommons-dev@googlegroups.com
   response:
     body:
-      string: '>NC_000013.11:32316467-32316487 Homo sapiens chromosome 13, GRCh38.p14
-        Primary Assembly
-
-        ATTGGATCCAAAGAGAGGCCA
-
-
-        '
+      string: !!binary |
+        H4sIAAAAAAAAALLzc443AAJDYz1DQytjI2NDMxMzc10Iw8JcwSM/N1+hOLEgMzWvWCE5owjILc7P
+        TVUwNNZRcA9yzjC20CswNFEIKMrMTSyqVHAsLk7NTcqp5HIMCXF3dwxxdnZ0dHQHQXcgkwsAAAD/
+        /+ICAAAA//8DAG14V2hvAAAA
     headers:
       Access-Control-Allow-Origin:
       - '*'
@@ -256,20 +249,20 @@ interactions:
       Content-Type:
       - text/plain
       Date:
-      - Mon, 10 Mar 2025 16:22:58 GMT
+      - Fri, 15 Aug 2025 12:11:28 GMT
       Keep-Alive:
       - timeout=4, max=40
       NCBI-PHID:
-      - D0BDD793D08B964500003F6AC5AD35EB.1.1.m_5
+      - 1D3210813EE3F8C5000046817D86E8A2.1.1.m_7
       NCBI-SID:
-      - 64DB9D0ADA04B826_34FESID
+      - A8FDFF889394BA3E_2459SID
       Referrer-Policy:
       - origin-when-cross-origin
       Server:
       - Finatra
       Set-Cookie:
-      - ncbi_sid=64DB9D0ADA04B826_34FESID; domain=.nih.gov; path=/; expires=Tue, 10
-        Mar 2026 16:22:58 GMT
+      - ncbi_sid=A8FDFF889394BA3E_2459SID; domain=.nih.gov; path=/; expires=Sat, 15
+        Aug 2026 12:11:28 GMT
       Strict-Transport-Security:
       - max-age=31536000; includeSubDomains; preload
       Transfer-Encoding:
