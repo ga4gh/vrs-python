@@ -1,0 +1,85 @@
+name: Build SeqRepo Slim Container
+
+on:
+  workflow_dispatch:
+    inputs:
+      assembly:
+        description: 'Assembly version to build'
+        required: false
+        default: 'GRCh38'
+        type: string
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}/seqrepo-slim
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+    - name: Checkout vrs-python repository
+      uses: actions/checkout@v4
+      with:
+        repository: ga4gh/vrs-python
+        fetch-depth: 1
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+      with:
+        driver-opts: |
+          image=moby/buildkit:latest
+
+    - name: Log in to Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Build and push data stage
+      run: |
+        ASSEMBLY=${{ github.event.inputs.assembly || 'GRCh38' }}
+        cd misc/containers
+        docker build \
+          --build-arg ASSEMBLY=${ASSEMBLY} \
+          --target data \
+          --cache-from ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${ASSEMBLY}-data \
+          --cache-to type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${ASSEMBLY}-data-cache,mode=max \
+          -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${ASSEMBLY}-data \
+          -f Dockerfile .
+        docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${ASSEMBLY}-data
+
+    - name: Build and push build stage
+      run: |
+        ASSEMBLY=${{ github.event.inputs.assembly || 'GRCh38' }}
+        cd misc/containers
+        docker build \
+          --build-arg ASSEMBLY=${ASSEMBLY} \
+          --target build \
+          --cache-from ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${ASSEMBLY}-data \
+          --cache-from ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${ASSEMBLY}-build \
+          --cache-to type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${ASSEMBLY}-build-cache,mode=max \
+          -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${ASSEMBLY}-build \
+          -f Dockerfile .
+        docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${ASSEMBLY}-build
+
+    - name: Build and push final stage
+      run: |
+        ASSEMBLY=${{ github.event.inputs.assembly || 'GRCh38' }}
+        cd misc/containers
+        docker build \
+          --build-arg ASSEMBLY=${ASSEMBLY} \
+          --target vrs-python \
+          --cache-from ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${ASSEMBLY}-data \
+          --cache-from ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${ASSEMBLY}-build \
+          --cache-from ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${ASSEMBLY} \
+          --cache-to type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${ASSEMBLY}-cache,mode=max \
+          -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${ASSEMBLY} \
+          -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest \
+          -f Dockerfile .
+        docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${ASSEMBLY}
+        docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
