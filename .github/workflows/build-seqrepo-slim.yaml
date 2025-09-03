@@ -47,7 +47,6 @@ jobs:
           --build-arg ASSEMBLY=${ASSEMBLY} \
           --target data \
           --cache-from ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${ASSEMBLY}-data \
-          --cache-to type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${ASSEMBLY}-data-cache,mode=max \
           -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${ASSEMBLY}-data \
           -f Dockerfile .
         docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${ASSEMBLY}-data
@@ -61,7 +60,6 @@ jobs:
           --target build \
           --cache-from ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${ASSEMBLY}-data \
           --cache-from ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${ASSEMBLY}-build \
-          --cache-to type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${ASSEMBLY}-build-cache,mode=max \
           -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${ASSEMBLY}-build \
           -f Dockerfile .
         docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${ASSEMBLY}-build
@@ -76,7 +74,6 @@ jobs:
           --cache-from ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${ASSEMBLY}-data \
           --cache-from ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${ASSEMBLY}-build \
           --cache-from ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${ASSEMBLY} \
-          --cache-to type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${ASSEMBLY}-cache,mode=max \
           -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${ASSEMBLY} \
           -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest \
           -f Dockerfile .
