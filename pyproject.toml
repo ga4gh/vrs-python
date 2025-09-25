@@ -51,7 +51,7 @@ extras = [
     "hgvs>=1.4,<1.5.5",
     "dill~=0.3.7",
     "click",
-    "pysam>=0.23.0",
+    "pysam==0.23.0",  # pinned pending https://github.com/ga4gh/vrs-python/issues/560
 ]
 dev = [
     # tests
