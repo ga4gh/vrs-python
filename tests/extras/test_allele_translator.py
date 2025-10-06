@@ -335,18 +335,21 @@ def test_from_invalid(tlr):
 @pytest.mark.vcr
 def test_from_beacon(tlr):
     do_normalize = False
-    assert (
-        tlr._from_beacon(snv_inputs["beacon"], do_normalize=do_normalize).model_dump(
-            exclude_none=True
+    with pytest.deprecated_call():
+        assert (
+            tlr._from_beacon(
+                snv_inputs["beacon"], do_normalize=do_normalize
+            ).model_dump(exclude_none=True)
+            == snv_output
         )
-        == snv_output
-    )
-    assert (
-        tlr._from_beacon(mito_inputs["beacon"], do_normalize=do_normalize).model_dump(
-            exclude_none=True
+
+    with pytest.deprecated_call():
+        assert (
+            tlr._from_beacon(
+                mito_inputs["beacon"], do_normalize=do_normalize
+            ).model_dump(exclude_none=True)
+            == mito_output
         )
-        == mito_output
-    )
 
 
 @pytest.mark.vcr
