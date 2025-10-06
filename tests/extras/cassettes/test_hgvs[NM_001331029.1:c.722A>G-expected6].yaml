@@ -9,7 +9,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.32.4
+      - python-requests/2.32.3
     method: GET
     uri: http://localhost:5000/seqrepo/1/metadata/refseq:NM_001331029.1
   response:
@@ -28,7 +28,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Fri, 15 Aug 2025 12:11:27 GMT
+      - Mon, 10 Mar 2025 16:22:59 GMT
       Server:
       - Werkzeug/2.2.3 Python/3.10.12
     status:
@@ -44,15 +44,18 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.32.4
+      - python-requests/2.32.3
     method: GET
     uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nucleotide&id=NM_001331029.1&rettype=fasta&seq_start=872&seq_stop=872&tool=bioutils&email=biocommons-dev@googlegroups.com
   response:
     body:
-      string: !!binary |
-        H4sIAAAAAAAAAAzGsQrCMBAG4L1P8Y8KVXLpYHUQ6uRiCX0BOSXYQJuE3EXw7e3wwXcdH09jqOvI
-        2PORLv3JHja4pzVBOAcfBbkk9SEiz0nyzMriQSj+UxfWVH6Q+qoxKMjesHPO0bRt30ILR3mXkBVf
-        LoGjom+xTuPQDM0fAAD//+ICAAAA//8DADLRQFd8AAAA
+      string: '>NM_001331029.1:872-872 Homo sapiens protein phosphatase 1 regulatory
+        subunit 12B (PPP1R12B), transcript variant 8, mRNA
+
+        A
+
+
+        '
     headers:
       Access-Control-Allow-Origin:
       - '*'
@@ -69,20 +72,20 @@ interactions:
       Content-Type:
       - text/plain
       Date:
-      - Fri, 15 Aug 2025 12:11:29 GMT
+      - Mon, 10 Mar 2025 16:22:59 GMT
       Keep-Alive:
       - timeout=4, max=40
       NCBI-PHID:
-      - 1D3461E48F30F3850000558EC22A96F0.1.1.m_7
+      - 322C1EB26B7FD5C50000456888830C71.1.1.m_5
       NCBI-SID:
-      - 2C7ADF65761BDABD_AC52SID
+      - 7AD8F1E2A50E9918_F982SID
       Referrer-Policy:
       - origin-when-cross-origin
       Server:
       - Finatra
       Set-Cookie:
-      - ncbi_sid=2C7ADF65761BDABD_AC52SID; domain=.nih.gov; path=/; expires=Sat, 15
-        Aug 2026 12:11:28 GMT
+      - ncbi_sid=7AD8F1E2A50E9918_F982SID; domain=.nih.gov; path=/; expires=Tue, 10
+        Mar 2026 16:22:59 GMT
       Strict-Transport-Security:
       - max-age=31536000; includeSubDomains; preload
       Transfer-Encoding:
@@ -90,7 +93,7 @@ interactions:
       X-RateLimit-Limit:
       - '3'
       X-RateLimit-Remaining:
-      - '0'
+      - '1'
       X-UA-Compatible:
       - IE=Edge
       X-XSS-Protection:
@@ -110,7 +113,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.32.4
+      - python-requests/2.32.3
     method: GET
     uri: http://localhost:5000/seqrepo/1/metadata/ga4gh:SQ.MBIgVnoHFw34aFqNUVGM0zgjC3d-v8dK
   response:
@@ -129,7 +132,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Fri, 15 Aug 2025 12:11:28 GMT
+      - Mon, 10 Mar 2025 16:22:59 GMT
       Server:
       - Werkzeug/2.2.3 Python/3.10.12
     status:
@@ -145,7 +148,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.32.4
+      - python-requests/2.32.3
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.MBIgVnoHFw34aFqNUVGM0zgjC3d-v8dK?start=871&end=872
   response:
@@ -159,7 +162,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Fri, 15 Aug 2025 12:11:28 GMT
+      - Mon, 10 Mar 2025 16:22:59 GMT
       Server:
       - Werkzeug/2.2.3 Python/3.10.12
     status:
@@ -175,15 +178,18 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.32.4
+      - python-requests/2.32.3
     method: GET
     uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nucleotide&id=NM_001331029.1&rettype=fasta&seq_start=872&seq_stop=892&tool=bioutils&email=biocommons-dev@googlegroups.com
   response:
     body:
-      string: !!binary |
-        H4sIAAAAAAAAAAzGsQrCMBQF0L1fcUeFKk062DoIsUNdLKFkl6cEG7BJSF4E/95O51ym+6NpRNuK
-        RvZHce5O8tD1ErewBmSKzvqMmAJb5xGXkONCTNlCINl3+RCH9EMuz+IdQ8grdlprMW/b1+BEPr+S
-        i4wvJUee0dVY50lVyoxKDWZQW8zGOCpjqj8AAAD//+ICAAAA//8DAEDhNYqQAAAA
+      string: '>NM_001331029.1:872-892 Homo sapiens protein phosphatase 1 regulatory
+        subunit 12B (PPP1R12B), transcript variant 8, mRNA
+
+        ATGAACTCAATGTTCAGGATT
+
+
+        '
     headers:
       Access-Control-Allow-Origin:
       - '*'
@@ -200,20 +206,20 @@ interactions:
       Content-Type:
       - text/plain
       Date:
-      - Fri, 15 Aug 2025 12:11:28 GMT
+      - Mon, 10 Mar 2025 16:23:05 GMT
       Keep-Alive:
       - timeout=4, max=40
       NCBI-PHID:
-      - 1D3461E48F30F38500004E8EC33C135D.1.1.m_7
+      - 322C1EB26B7FD5C50000586893DC8709.1.1.m_5
       NCBI-SID:
-      - 1885AD1956110274_9432SID
+      - 262F01FCE7B21934_7603SID
       Referrer-Policy:
       - origin-when-cross-origin
       Server:
       - Finatra
       Set-Cookie:
-      - ncbi_sid=1885AD1956110274_9432SID; domain=.nih.gov; path=/; expires=Sat, 15
-        Aug 2026 12:11:29 GMT
+      - ncbi_sid=262F01FCE7B21934_7603SID; domain=.nih.gov; path=/; expires=Tue, 10
+        Mar 2026 16:23:05 GMT
       Strict-Transport-Security:
       - max-age=31536000; includeSubDomains; preload
       Transfer-Encoding:
@@ -221,7 +227,7 @@ interactions:
       X-RateLimit-Limit:
       - '3'
       X-RateLimit-Remaining:
-      - '1'
+      - '2'
       X-UA-Compatible:
       - IE=Edge
       X-XSS-Protection:

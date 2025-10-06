@@ -35,7 +35,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Mon, 10 Mar 2025 16:22:49 GMT
+      - Tue, 18 Mar 2025 14:14:55 GMT
       Server:
       - Werkzeug/2.2.3 Python/3.10.12
     status:
@@ -82,7 +82,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Mon, 10 Mar 2025 16:22:49 GMT
+      - Tue, 18 Mar 2025 14:14:55 GMT
       Server:
       - Werkzeug/2.2.3 Python/3.10.12
     status:
@@ -124,37 +124,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Mon, 10 Mar 2025 16:22:49 GMT
-      Server:
-      - Werkzeug/2.2.3 Python/3.10.12
-    status:
-      code: 200
-      message: OK
-- request:
-    body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      User-Agent:
-      - python-requests/2.32.3
-    method: GET
-    uri: http://localhost:5000/seqrepo/1/sequence/NC_000013.11?start=19993837&end=19993839
-  response:
-    body:
-      string: GT
-    headers:
-      Connection:
-      - close
-      Content-Length:
-      - '2'
-      Content-Type:
-      - text/plain; charset=utf-8
-      Date:
-      - Mon, 10 Mar 2025 16:22:49 GMT
+      - Tue, 18 Mar 2025 14:14:55 GMT
       Server:
       - Werkzeug/2.2.3 Python/3.10.12
     status:

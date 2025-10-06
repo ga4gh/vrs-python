@@ -9,7 +9,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.32.4
+      - python-requests/2.32.3
     method: GET
     uri: http://localhost:5000/seqrepo/1/metadata/ga4gh:seqrefs.jsonc
   response:
@@ -23,7 +23,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Fri, 15 Aug 2025 12:11:35 GMT
+      - Mon, 10 Mar 2025 16:23:19 GMT
       Server:
       - Werkzeug/2.2.3 Python/3.10.12
     status:

@@ -9,7 +9,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.32.4
+      - python-requests/2.32.3
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/NC_000013.11?start=32936731&end=32936732
   response:
@@ -23,7 +23,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Fri, 15 Aug 2025 12:11:20 GMT
+      - Wed, 16 Apr 2025 22:49:30 GMT
       Server:
       - Werkzeug/2.2.3 Python/3.10.12
     status:
@@ -39,14 +39,48 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.32.4
+      - python-requests/2.32.3
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT?start=32936731&end=32936732
+  response:
+    body:
+      string: C
+    headers:
+      Connection:
+      - close
+      Content-Length:
+      - '1'
+      Content-Type:
+      - text/plain; charset=utf-8
+      Date:
+      - Wed, 16 Apr 2025 22:49:30 GMT
+      Server:
+      - Werkzeug/2.2.3 Python/3.10.12
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.32.3
     method: GET
     uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nucleotide&id=NC_000013.11&rettype=fasta&seq_start=32936732&seq_stop=32936732&tool=bioutils&email=biocommons-dev@googlegroups.com
   response:
     body:
-      string: !!binary |
-        H4sIAAAAAAAAALLzc443AAJDYz1DQytjI0tjM3NjI10YQ8EjPzdfoTixIDM1r1ghOaMIyC3Oz01V
-        MDTWUXAPcs4wttArMDRRCCjKzE0sqlRwLC5OzU3KqeRy5gIAAAD//+ICAAAA//8DALFcilZbAAAA
+      string: '>NC_000013.11:32936732-32936732 Homo sapiens chromosome 13, GRCh38.p14
+        Primary Assembly
+
+        C
+
+
+        '
     headers:
       Access-Control-Allow-Origin:
       - '*'
@@ -63,20 +97,20 @@ interactions:
       Content-Type:
       - text/plain
       Date:
-      - Fri, 15 Aug 2025 12:11:21 GMT
+      - Wed, 16 Apr 2025 22:49:30 GMT
       Keep-Alive:
       - timeout=4, max=40
       NCBI-PHID:
-      - 1D3461E48F30F3850000578EB8630CFF.1.1.m_7
+      - 322CF8979F5E85B5000050CD47341D44.1.1.m_5
       NCBI-SID:
-      - F3F1E64290227F17_26BESID
+      - B4DD900AE926F06D_8D6DSID
       Referrer-Policy:
       - origin-when-cross-origin
       Server:
       - Finatra
       Set-Cookie:
-      - ncbi_sid=F3F1E64290227F17_26BESID; domain=.nih.gov; path=/; expires=Sat, 15
-        Aug 2026 12:11:21 GMT
+      - ncbi_sid=B4DD900AE926F06D_8D6DSID; domain=.nih.gov; path=/; expires=Thu, 16
+        Apr 2026 22:49:30 GMT
       Strict-Transport-Security:
       - max-age=31536000; includeSubDomains; preload
       Transfer-Encoding:

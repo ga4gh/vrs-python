@@ -140,7 +140,7 @@ from its component parts. The notebook details how to add VRS identifiers to the
 ### 4 Exploring the Allele Translator
 
 The current implementation of vrs-python facilitates transformation of variants
-in a number of different variant nomenclatures (SPDI, HGVS, and gnomAD) to VRS form. In the
+in a number of different variant nomenclatures (SPDI, HGVS, gnomAD and Beacon) to VRS form. In the
 [Exploring the Allele Translator](4_Exploring_the_AlleleTranslator.ipynb) notebook,
 we show how to transform basic variants to VRS, and in some cases, back to the original nomenclature of the variant.
 

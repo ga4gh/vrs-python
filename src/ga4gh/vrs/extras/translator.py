@@ -1,6 +1,6 @@
 """Translates various external formats into VRS models.
 
-Input formats: VRS (serialized), hgvs, spdi, gnomad (vcf)
+Input formats: VRS (serialized), hgvs, spdi, gnomad (vcf), beacon
 Output formats: VRS (serialized), hgvs, spdi, gnomad (vcf)
 
 """
@@ -56,6 +56,9 @@ class _Translator(ABC):  # noqa: B024
 
     """
 
+    beacon_re = re.compile(
+        r"(?P<chr>[^-]+)\s*:\s*(?P<pos>\d+)\s*(?P<ref>\w+)\s*>\s*(?P<alt>\w+)"
+    )
     gnomad_re = re.compile(
         r"(?P<chr>[^-]+)-(?P<pos>\d+)-(?P<ref>[ACGTURYKMSWBDHVN]+)-(?P<alt>[ACGTURYKMSWBDHVN]+)",
         re.IGNORECASE,
@@ -96,7 +99,7 @@ class _Translator(ABC):  # noqa: B024
                     EFO:0030067 for deletions and EFO:0030070 for duplications
             For AlleleTranslator
                 assembly_name (str): Assembly used for `var`. Defaults to the
-                    `default_assembly_name`. Only used for gnomad.
+                    `default_assembly_name`. Only used for beacon and gnomad.
                 require_validation (bool): If `True` then validation checks must pass in
                     order to return a VRS object. A `DataProxyValidationError` will be
                     raised if validation checks fail. If `False` then VRS object will be
@@ -175,6 +178,7 @@ class AlleleTranslator(_Translator):
         super().__init__(data_proxy, default_assembly_name, identify)
 
         self.from_translators = {
+            "beacon": self._from_beacon,
             "gnomad": self._from_gnomad,
             "hgvs": self._from_hgvs,
             "spdi": self._from_spdi,
@@ -208,6 +212,67 @@ class AlleleTranslator(_Translator):
         state = models.LiteralSequenceExpression(sequence=values["literal_sequence"])
         allele = models.Allele(location=location, state=state)
         return self._post_process_imported_allele(allele, **kwargs)
+
+    def _from_beacon(self, beacon_expr: str, **kwargs) -> models.Allele | None:
+        """Parse beacon expression into VRS Allele
+
+        kwargs:
+            assembly_name (str): Assembly used for `beacon_expr`.
+            rle_seq_limit Optional(int): If RLE is set as the new state after
+                normalization, this sets the limit for the length of the `sequence`.
+                To exclude `sequence` from the response, set to 0.
+                For no limit, set to `None`.
+                Defaults value set in instance variable, `rle_seq_limit`.
+            do_normalize (bool): `True` if fully justified normalization should be
+                performed. `False` otherwise. Defaults to `True`
+
+        #>>> a = tlr.from_beacon("19 : 44908822 C > T")
+        #>>> a.model_dump()
+        {
+          'location': {
+            'end': 44908822,
+            'start': 44908821,
+            'sequenceReference': {
+              'type': 'SequenceReference',
+              'refgetAccession': 'SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl'
+            },
+            'type': 'SequenceLocation'
+          },
+          'state': {
+            'sequence': 'C',
+            'type': 'LiteralSequenceExpression'
+          },
+          'type': 'Allele'
+        }
+
+        """
+        if not isinstance(beacon_expr, str):
+            return None
+
+        m = self.beacon_re.match(beacon_expr.replace(" ", ""))
+        if not m:
+            return None
+
+        g = m.groupdict()
+        assembly_name = kwargs.get("assembly_name", self.default_assembly_name)
+        sequence = assembly_name + ":" + g["chr"]
+        refget_accession = self.data_proxy.derive_refget_accession(sequence)
+        if not refget_accession:
+            return None
+
+        start = int(g["pos"]) - 1
+        ref = g["ref"]
+        alt = g["alt"]
+        end = start + len(ref)
+        ins_seq = alt
+
+        values = {
+            "refget_accession": refget_accession,
+            "start": start,
+            "end": end,
+            "literal_sequence": ins_seq,
+        }
+        return self._create_allele(values, **kwargs)
 
     def _from_gnomad(self, gnomad_expr: str, **kwargs) -> models.Allele | None:
         """Parse gnomAD-style VCF expression into VRS Allele
