@@ -14,6 +14,7 @@ from pydantic import (
     StringConstraints,
     model_validator,
 )
+from typing_extensions import Self
 
 from ga4gh.core.identifiers import GA4GH_IR_REGEXP
 
@@ -216,12 +217,12 @@ class MappableConcept(Element, BaseModelForbidExtra):
     )
 
     @model_validator(mode="after")
-    def require_name_or_primary_coding(cls, v):  # noqa: ANN001 N805 ANN201
+    def require_name_or_primary_coding(self) -> Self:
         """Ensure that ``name`` or ``primaryCoding`` is provided"""
-        if v.primaryCoding is None and v.name is None:
+        if self.primaryCoding is None and self.name is None:
             err_msg = "One of `name` or `primaryCoding` must be provided."
             raise ValueError(err_msg)
-        return v
+        return self
 
 
 Element.model_rebuild()
