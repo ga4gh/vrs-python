@@ -52,8 +52,22 @@ fi
 cat "$TAR_NAME" | $CONTAINER_CMD build \
     --arch linux/arm64,linux/amd64 \
     --build-arg ASSEMBLY="$ASSEMBLY" \
+    --target data \
+    -t ghcr.io/theferrit32/vrs-python:${ASSEMBLY}-data \
+    -f ./misc/containers/Dockerfile
+
+cat "$TAR_NAME" | $CONTAINER_CMD build \
+    --arch linux/arm64,linux/amd64 \
+    --build-arg ASSEMBLY="$ASSEMBLY" \
     --target build \
-    -t docker.io/ga4gh/vrs-python:${ASSEMBLY}-build \
+    -t ghcr.io/theferrit32/vrs-python:${ASSEMBLY}-build \
+    -f ./misc/containers/Dockerfile
+
+cat "$TAR_NAME" | $CONTAINER_CMD build \
+    --arch linux/arm64,linux/amd64 \
+    --build-arg ASSEMBLY="$ASSEMBLY" \
+    --target build \
+    -t ghcr.io/theferrit32/vrs-python:${ASSEMBLY} \
     -f ./misc/containers/Dockerfile
 
 # Clean up tar file

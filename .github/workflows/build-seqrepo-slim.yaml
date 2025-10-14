@@ -20,6 +20,10 @@ jobs:
       contents: read
       packages: write
 
+    env:
+      ASSEMBLY: ${{ github.event.inputs.assembly || 'GRCh38' }}
+      BASE_TAG: ghcr.io/${{ github.repository }}/seqrepo-slim
+
     steps:
     - name: Checkout vrs-python repository
       uses: actions/checkout@v4
@@ -40,42 +44,47 @@ jobs:
         password: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Build and push data stage
-      run: |
-        ASSEMBLY=${{ github.event.inputs.assembly || 'GRCh38' }}
-        cd misc/containers
-        docker build \
-          --build-arg ASSEMBLY=${ASSEMBLY} \
-          --target data \
-          --cache-from ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${ASSEMBLY}-data \
-          -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${ASSEMBLY}-data \
-          -f Dockerfile .
-        docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${ASSEMBLY}-data
+      uses: docker/build-push-action@v5
+      with:
+        context: misc/containers
+        file: misc/containers/Dockerfile
+        platforms: linux/amd64,linux/arm64
+        target: data
+        build-args: |
+          ASSEMBLY=${{ env.ASSEMBLY }}
+        cache-from: type=registry,ref=${{ env.BASE_TAG }}:${{ env.ASSEMBLY }}-data
+        tags: ${{ env.BASE_TAG }}:${{ env.ASSEMBLY }}-data
+        push: true
 
     - name: Build and push build stage
-      run: |
-        ASSEMBLY=${{ github.event.inputs.assembly || 'GRCh38' }}
-        cd misc/containers
-        docker build \
-          --build-arg ASSEMBLY=${ASSEMBLY} \
-          --target build \
-          --cache-from ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${ASSEMBLY}-data \
-          --cache-from ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${ASSEMBLY}-build \
-          -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${ASSEMBLY}-build \
-          -f Dockerfile .
-        docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${ASSEMBLY}-build
+      uses: docker/build-push-action@v5
+      with:
+        context: misc/containers
+        file: misc/containers/Dockerfile
+        platforms: linux/amd64,linux/arm64
+        target: build
+        build-args: |
+          ASSEMBLY=${{ env.ASSEMBLY }}
+        cache-from: |
+          type=registry,ref=${{ env.BASE_TAG }}:${{ env.ASSEMBLY }}-data
+          type=registry,ref=${{ env.BASE_TAG }}:${{ env.ASSEMBLY }}-build
+        tags: ${{ env.BASE_TAG }}:${{ env.ASSEMBLY }}-build
+        push: true
 
     - name: Build and push final stage
-      run: |
-        ASSEMBLY=${{ github.event.inputs.assembly || 'GRCh38' }}
-        cd misc/containers
-        docker build \
-          --build-arg ASSEMBLY=${ASSEMBLY} \
-          --target vrs-python \
-          --cache-from ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${ASSEMBLY}-data \
-          --cache-from ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${ASSEMBLY}-build \
-          --cache-from ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${ASSEMBLY} \
-          -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${ASSEMBLY} \
-          -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest \
-          -f Dockerfile .
-        docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${ASSEMBLY}
-        docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+      uses: docker/build-push-action@v5
+      with:
+        context: misc/containers
+        file: misc/containers/Dockerfile
+        platforms: linux/amd64,linux/arm64
+        target: vrs-python
+        build-args: |
+          ASSEMBLY=${{ env.ASSEMBLY }}
+        cache-from: |
+          type=registry,ref=${{ env.BASE_TAG }}:${{ env.ASSEMBLY }}-data
+          type=registry,ref=${{ env.BASE_TAG }}:${{ env.ASSEMBLY }}-build
+          type=registry,ref=${{ env.BASE_TAG }}:${{ env.ASSEMBLY }}
+        tags: |
+          ${{ env.BASE_TAG }}:${{ env.ASSEMBLY }}
+          ${{ env.BASE_TAG }}:latest
+        push: true

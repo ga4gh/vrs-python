@@ -12,18 +12,15 @@ ARG ASSEMBLY="GRCh38"
 ENV SEQREPO_ROOT_DIR=/seqrepo-${ASSEMBLY}
 
 # Install curl for downloading
-RUN apt-get update && apt-get install -y curl
+RUN apt-get update && apt-get install -y curl \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /data
 
 # Download the appropriate genomic reference file based on assembly
-RUN if [ "$ASSEMBLY" = "GRCh38" ]; then \
-        curl -O https://ftp.ncbi.nlm.nih.gov/genomes/refseq/vertebrate_mammalian/Homo_sapiens/all_assembly_versions/GCF_000001405.26_GRCh38/GCF_000001405.26_GRCh38_genomic.fna.gz; \
-    elif [ "$ASSEMBLY" = "GRCh37" ]; then \
-        curl -O https://ftp.ncbi.nlm.nih.gov/genomes/refseq/vertebrate_mammalian/Homo_sapiens/all_assembly_versions/GCF_000001405.13_GRCh37/GCF_000001405.13_GRCh37_genomic.fna.gz; \
-    else \
-        echo "Unknown assembly: $ASSEMBLY" && exit 1; \
-    fi
+COPY build-${ASSEMBLY}.bash /data/
+RUN . /data/build-${ASSEMBLY}.bash \
+    && download_reference
 
 # Builder image
 FROM python:3.12-slim AS build
@@ -41,15 +38,15 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y \
     tabix \
     rsync \
     zlib1g-dev \
-    postgresql \
+    postgresql-client \
     unzip \
     libhts3 \
-    ;
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /vrs-python
 
 # Copy downloaded genomic files from data layer
-COPY --from=data /data/*.fna.gz /vrs-python/
+COPY --from=data /data/* /data/
 
 # Setup the virtual env for vrs-python
 RUN python3 -m venv /vrs-python/venv
@@ -59,19 +56,21 @@ ENV PATH=/vrs-python/venv/bin:$PATH
 ENV SEQREPO_ROOT_DIR=/seqrepo-${ASSEMBLY}
 
 # Install vrs-python
-RUN /vrs-python/venv/bin/python3 -m pip install -U setuptools
-RUN /vrs-python/venv/bin/python3 -m pip install 'ga4gh.vrs[extras]' biocommons.seqrepo
+RUN /vrs-python/venv/bin/python3 -m pip install -U setuptools 'ga4gh.vrs[extras]' biocommons.seqrepo
 
-COPY build-${ASSEMBLY}.bash /vrs-python/build-seqrepo.bash
-RUN bash /vrs-python/build-seqrepo.bash
+# Build the seqrepo data using provided function
+COPY build-${ASSEMBLY}.bash /tmp/build-${ASSEMBLY}.bash
+RUN cd /data && . /tmp/build-${ASSEMBLY}.bash \
+    && build_seqrepo
 
 # Final image
 FROM python:3.12-slim AS vrs-python
-ARG ASSEMBLY
+ARG ASSEMBLY="GRCh38"
 ENV ASSEMBLY=${ASSEMBLY}
 
 # Install runtime required packages
-RUN apt-get update && apt-get install -y libpq-dev
+RUN apt-get update && apt-get install -y libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
 
 # Copy over artifacts from the builder
 COPY --from=build /vrs-python /vrs-python
