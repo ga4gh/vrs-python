@@ -41,6 +41,7 @@ dependencies = [
     "requests",
     "canonicaljson",
     "setuptools>=78.1.0", # TODO remove this pin caused by HGVS issue
+    "typing-extensions",
 ]
 
 [project.optional-dependencies]
