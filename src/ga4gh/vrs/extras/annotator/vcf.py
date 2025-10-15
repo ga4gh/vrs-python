@@ -40,19 +40,6 @@ class FieldName(str, Enum):
     REPEAT_SUBUNIT_LENGTHS_FIELD = "VRS_RepeatSubunitLengths"
     ERROR_FIELD = "VRS_Error"
 
-    def default_value(self) -> Literal[".", -1]:
-        """Provide value to use for default/null case in VCF INFO field
-
-        :return: either ``"."`` or ``-1``
-        """
-        if self in (
-            FieldName.IDS_FIELD,
-            FieldName.STATES_FIELD,
-            FieldName.ERROR_FIELD,
-        ):
-            return "."
-        return -1
-
 
 # VCF character escape map
 VCF_ESCAPE_MAP = str.maketrans(
