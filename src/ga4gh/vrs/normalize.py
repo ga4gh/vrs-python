@@ -130,34 +130,28 @@ def _normalize_allele(input_allele, data_proxy, rle_seq_limit=50):
     )
 
     # Trim common flanking sequence from Allele sequences.
-    is_reference_allele = False
     try:
         trim_ival, trim_alleles = _normalize(
             ref_seq, ival, alleles, mode=None, trim=True
         )
-    except ValueError:
-        # bioutils._normalize raises ValueError for reference alleles (REF==ALT)
-        # Verify this is actually a reference allele before treating it as such
+    except ValueError as e:
+        # bioutils _normalize raises ValueError for reference alleles when in trim=True.
+        # But verify this is actually a reference allele before treating it as such.
         ref_at_location = ref_seq[start.value : end.value]
         alt_seq = alleles[1]
         if ref_at_location == alt_seq:
-            is_reference_allele = True
-        else:
-            # Re-raise if this is a different ValueError (shouldn't happen with valid input)
-            raise
-
-    # Handle reference alleles per VRS spec step 2.a:
-    # Return RLE with length and repeatSubunitLength both set to location length
-    if is_reference_allele:
-        location_length = end.value - start.value
-        new_allele = pydantic_copy(input_allele)
-        return _define_rle_allele(
-            new_allele,
-            length=location_length,
-            repeat_subunit_length=location_length,
-            rle_seq_limit=rle_seq_limit,
-            extended_alt_seq=ref_at_location,
-        )
+            # Return RLE with length and repeatSubunitLength both set to ref (and alt) length
+            new_allele = pydantic_copy(input_allele)
+            return _define_rle_allele(
+                new_allele,
+                length=len(ref_at_location),
+                repeat_subunit_length=len(ref_at_location),
+                rle_seq_limit=rle_seq_limit,
+                extended_alt_seq=ref_at_location,
+            )
+        # Re-raise if this is a different ValueError (shouldn't happen with valid input)
+        msg = f"Unexpected bioutils trim error for non reference allele: ref='{ref_at_location}', alt='{alt_seq}'"
+        raise ValueError(msg) from e
 
     trim_ref_seq = ref_seq[trim_ival[0] : trim_ival[1]]
     trim_alt_seq = trim_alleles[1]
