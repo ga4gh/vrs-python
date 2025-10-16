@@ -288,9 +288,10 @@ class AbstractVcfAnnotator(abc.ABC):
 
             if output_vcf_path and vcf_out:
                 for k in additional_info_fields:
-                    # Convert falsy (""|None) values to None. pysam outputs "." for missing values
+                    # Convert "" and None values (but not 0) to None.
+                    # Pysam outputs "." for missing values.
                     record.info[k.value] = [
-                        v if v else None for v in vrs_field_data[k.value]
+                        None if v in ("", None) else v for v in vrs_field_data[k.value]
                     ]
                 vcf_out.write(record)
 
