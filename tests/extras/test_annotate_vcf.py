@@ -6,6 +6,7 @@ import os
 import re
 from pathlib import Path
 
+import pysam
 import pytest
 
 from ga4gh.vrs import VRS_VERSION, __version__
@@ -216,3 +217,176 @@ def test_get_vrs_object_invalid_input(vcf_annotator: VcfAnnotator, caplog):
             "7-140753336-C-T", [], {}, "GRCh38", require_validation=True
         )
     assert invalid_ref_seq_msg in caplog.text
+
+
+@pytest.mark.vcr
+def test_annotate_vcf_rle(vcf_annotator: VcfAnnotator, vcr_cassette):
+    """Test VCF annotation with ReferenceLengthExpression states.
+
+    Tests two variants that should produce ReferenceLengthExpression states:
+    1. Deletion (1:100210778 AA>A): Expected RLE with length=1, repeatSubunitLength=1
+    2. Duplication (1:102995989 CTTT>CTTTCTTT): Expected RLE with length=8, repeatSubunitLength=4
+    """
+    vcr_cassette.allow_playback_repeats = False
+    input_vcf = TEST_DATA_DIR / "test_rle.vcf"
+    output_vcf = TEST_DATA_DIR / "test_rle_output.vcf"
+    output_vrs_pkl = TEST_DATA_DIR / "test_rle_output.pkl"
+
+    # Annotate the VCF with VRS attributes enabled
+    vcf_annotator.annotate(
+        input_vcf, output_vcf, vrs_attributes=True, output_pkl_path=output_vrs_pkl
+    )
+
+    # Read the output VCF and verify RLE fields are present
+    with gzip.open(output_vcf, "rt") as vcf_out:
+        vcf = pysam.VariantFile(vcf_out)
+
+        # Verify the RLE-specific header fields were added
+        assert "VRS_Lengths" in vcf.header.info
+        assert "VRS_RepeatSubunitLengths" in vcf.header.info
+
+        variants = list(vcf)
+        assert len(variants) == 2
+
+        # Test variant 1: Deletion (AA>A)
+        # Expected: length=1, repeatSubunitLength=1
+        deletion_variant = variants[0]
+        assert deletion_variant.chrom == "1"
+        assert deletion_variant.pos == 100210778
+        assert deletion_variant.ref == "AA"
+        assert deletion_variant.alts == ("A",)
+
+        # Check VRS attributes for deletion
+        assert "VRS_Allele_IDs" in deletion_variant.info
+        assert "VRS_Starts" in deletion_variant.info
+        assert "VRS_Ends" in deletion_variant.info
+        assert "VRS_States" in deletion_variant.info
+        assert "VRS_Lengths" in deletion_variant.info
+        assert "VRS_RepeatSubunitLengths" in deletion_variant.info
+
+        # Expected values for deletion RLE
+        # REF should have length=2, repeatSubunitLength=1
+        # ALT should have length=1, repeatSubunitLength=1
+        vrs_lengths = deletion_variant.info["VRS_Lengths"]
+        vrs_repeat_lengths = deletion_variant.info["VRS_RepeatSubunitLengths"]
+        assert len(vrs_lengths) == 2  # REF and ALT
+        assert len(vrs_repeat_lengths) == 2
+        assert vrs_lengths == (2, 1)  # REF: AA (length 2), ALT: A (length 1)
+        assert vrs_repeat_lengths == (1, 1)  # Both are single-base repeats
+
+        # Test variant 2: Duplication (CTTT>CTTTCTTT)
+        # Expected: length=8, repeatSubunitLength=4
+        duplication_variant = variants[1]
+        assert duplication_variant.chrom == "1"
+        assert duplication_variant.pos == 102995989
+        assert duplication_variant.ref == "CTTT"
+        assert duplication_variant.alts == ("CTTTCTTT",)
+
+        # Check VRS attributes for duplication
+        assert "VRS_Allele_IDs" in duplication_variant.info
+        assert "VRS_Lengths" in duplication_variant.info
+        assert "VRS_RepeatSubunitLengths" in duplication_variant.info
+
+        # Expected values for duplication RLE
+        # REF should have length=4, repeatSubunitLength=4
+        # ALT should have length=8, repeatSubunitLength=4
+        vrs_lengths = duplication_variant.info["VRS_Lengths"]
+        vrs_repeat_lengths = duplication_variant.info["VRS_RepeatSubunitLengths"]
+        assert len(vrs_lengths) == 2  # REF and ALT
+        assert len(vrs_repeat_lengths) == 2
+        assert vrs_lengths == (4, 8)  # REF: CTTT (length 4), ALT: CTTTCTTT (length 8)
+        assert vrs_repeat_lengths == (4, 4)  # Both are 4-base repeats
+
+    assert output_vrs_pkl.exists()
+    assert vcr_cassette.all_played
+
+
+"""
+Test VCF RLEs
+
+# Deletion:
+{
+  "in": {
+    "variation_id": "1663061",
+    "name": "NM_001918.5(DBT):c.940-7del",
+    "assembly_version": "38",
+    "accession": "NC_000001.11",
+    "vrs_class": "Allele",
+    "range_copies": [],
+    "fmt": "spdi",
+    "source": "NC_000001.11:100210777:AA:A",
+    "precedence": "1",
+    "variation_type": "Deletion",
+    "subclass_type": "SimpleAllele",
+    "cytogenetic": "1p21.2",
+    "chr": "1",
+    "variant_length": "1",
+    "mappings": []
+  },
+  "out": {
+    "id": "ga4gh:VA.r0qW5Jn6m42VHlDb1aOFChTBBbS_7zh1",
+    "type": "Allele",
+    "digest": "r0qW5Jn6m42VHlDb1aOFChTBBbS_7zh1",
+    "location": {
+      "id": "ga4gh:SL.4uMvoRYb3sR90KCxTkXKfzQHQvFo8tz-",
+      "type": "SequenceLocation",
+      "digest": "4uMvoRYb3sR90KCxTkXKfzQHQvFo8tz-",
+      "sequenceReference": {
+        "type": "SequenceReference",
+        "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO"
+      },
+      "start": 100210777,
+      "end": 100210779
+    },
+    "state": {
+      "type": "ReferenceLengthExpression",
+      "length": 1,
+      "sequence": "A",
+      "repeatSubunitLength": 1
+    }
+  }
+}
+
+# Repeat duplication
+{
+  "in": {
+    "variation_id": "3727769",
+    "name": "NM_001854.4(COL11A1):c.2292_2295dup (p.Gly766fs)",
+    "assembly_version": "38",
+    "accession": "NC_000001.11",
+    "vrs_class": "Allele",
+    "range_copies": [],
+    "fmt": "spdi",
+    "source": "NC_000001.11:102995988:CTTT:CTTTCTTT",
+    "precedence": "1",
+    "variation_type": "Duplication",
+    "subclass_type": "SimpleAllele",
+    "cytogenetic": "1p21.1",
+    "chr": "1",
+    "variant_length": "4",
+    "mappings": []
+  },
+  "out": {
+    "id": "ga4gh:VA.WXxaJ2ZsP_XfDma8a-nBi_VxMe9V20zJ",
+    "type": "Allele",
+    "digest": "WXxaJ2ZsP_XfDma8a-nBi_VxMe9V20zJ",
+    "location": {
+      "id": "ga4gh:SL.14ezn454AKxlhLHeeJbH3Dp7wJoQAml4",
+      "type": "SequenceLocation",
+      "digest": "14ezn454AKxlhLHeeJbH3Dp7wJoQAml4",
+      "sequenceReference": {
+        "type": "SequenceReference",
+        "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO"
+      },
+      "start": 102995988,
+      "end": 102995992
+    },
+    "state": {
+      "type": "ReferenceLengthExpression",
+      "length": 8,
+      "sequence": "CTTTCTTT",
+      "repeatSubunitLength": 4
+    }
+  }
+}
+"""

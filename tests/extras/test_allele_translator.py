@@ -856,6 +856,46 @@ def test_to_hgvs_iri_ref_keyerror(tlr):
     assert str(e.value) == "'ga4gh:seqrefs.jsonc#/NM_181798.1'"
 
 
+@pytest.mark.vcr
+def test_reference_allele_rle(tlr):
+    """Test that reference alleles (REF==ALT) are normalized to ReferenceLengthExpression."""
+    # Test with gnomad format
+    gnomad_ref_allele = "1-100210778-AA-AA"
+    allele = tlr._from_gnomad(gnomad_ref_allele)
+
+    expected = {
+        "type": "Allele",
+        "location": {
+            "type": "SequenceLocation",
+            "sequenceReference": {
+                "type": "SequenceReference",
+                "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
+            },
+            "start": 100210777,
+            "end": 100210779,
+        },
+        "state": {
+            "type": "ReferenceLengthExpression",
+            "length": 2,
+            "repeatSubunitLength": 2,
+            "sequence": "AA",
+        },
+    }
+
+    assert allele.model_dump(exclude_none=True) == expected
+
+    # Test with SPDI format (REF==ALT)
+    spdi_ref_allele = "NC_000001.11:100210777:AA:AA"
+    allele_spdi = tlr._from_spdi(spdi_ref_allele)
+
+    assert allele_spdi.model_dump(exclude_none=True) == expected
+
+    # Test round-trip to SPDI
+    to_spdi = tlr.translate_to(allele_spdi, "spdi", ref_seq_limit=None)
+    assert len(to_spdi) == 1
+    assert to_spdi[0] == spdi_ref_allele
+
+
 # TODO: Readd these tests
 # @pytest.mark.vcr
 # def test_errors(tlr):
