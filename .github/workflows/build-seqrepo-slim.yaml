@@ -1,6 +1,8 @@
 name: Build SeqRepo Slim Container
 
 on:
+  release:
+    types: [published, created]
   workflow_dispatch:
     inputs:
       assembly:
