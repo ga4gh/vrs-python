@@ -276,7 +276,7 @@ class Ga4ghIdentifiableObject(_ValueObject, ABC):
     digest: (
         Annotated[str, StringConstraints(pattern=r"^[0-9A-Za-z_\-]{32}$")] | None
     ) = Field(
-        None,
+        default=None,
         description="A sha512t24u digest created using the VRS Computed Identifier algorithm.",
     )
 
@@ -397,7 +397,7 @@ class Expression(Element, BaseModelForbidExtra):
         description="The expression of the variation in the specified syntax. The value should be a valid expression in the specified syntax.",
     )
     syntax_version: str | None = Field(
-        None,
+        default=None,
         description="The version of the syntax used to describe the variation. This is particularly important for HGVS expressions, as the syntax has evolved over time.",
     )
 
@@ -480,9 +480,12 @@ class LengthExpression(_ValueObject, BaseModelForbidExtra):
     """A sequence expressed only by its length."""
 
     type: Literal["LengthExpression"] = Field(
-        VrsType.LEN_EXPR.value, description=f'MUST be "{VrsType.LEN_EXPR.value}"'
+        default=VrsType.LEN_EXPR.value,
+        description=f'MUST be "{VrsType.LEN_EXPR.value}"',
     )
-    length: Range | int | None = Field(None, description="The length of the sequence.")
+    length: Range | int | None = Field(
+        default=None, description="The length of the sequence."
+    )
 
     class ga4gh(_ValueObject.ga4gh):
         inherent = ["length", "type"]
@@ -492,14 +495,14 @@ class ReferenceLengthExpression(_ValueObject, BaseModelForbidExtra):
     """An expression of a length of a sequence from a repeating reference."""
 
     type: Literal["ReferenceLengthExpression"] = Field(
-        VrsType.REF_LEN_EXPR.value,
+        default=VrsType.REF_LEN_EXPR.value,
         description=f'MUST be "{VrsType.REF_LEN_EXPR.value}"',
     )
     length: Range | int = Field(
         ..., description="The number of residues in the expressed sequence."
     )
     sequence: sequenceString | None = Field(
-        None,
+        default=None,
         description="the literal Sequence encoded by the Reference Length Expression.",
     )
     repeatSubunitLength: int = Field(
@@ -514,7 +517,7 @@ class LiteralSequenceExpression(_ValueObject, BaseModelForbidExtra):
     """An explicit expression of a Sequence."""
 
     type: Literal["LiteralSequenceExpression"] = Field(
-        VrsType.LIT_SEQ_EXPR.value,
+        default=VrsType.LIT_SEQ_EXPR.value,
         description=f'MUST be "{VrsType.LIT_SEQ_EXPR.value}"',
     )
     sequence: sequenceString = Field(..., description="the literal sequence")
@@ -534,7 +537,7 @@ class SequenceReference(_ValueObject, BaseModelForbidExtra):
     model_config = ConfigDict(use_enum_values=True)
 
     type: Literal["SequenceReference"] = Field(
-        VrsType.SEQ_REF.value, description=f'MUST be "{VrsType.SEQ_REF.value}"'
+        default=VrsType.SEQ_REF.value, description=f'MUST be "{VrsType.SEQ_REF.value}"'
     )
     refgetAccession: Annotated[
         str, StringConstraints(pattern=r"^SQ.[0-9A-Za-z_\-]{32}$")
@@ -543,19 +546,19 @@ class SequenceReference(_ValueObject, BaseModelForbidExtra):
         description="A [GA4GH RefGet](http://samtools.github.io/hts-specs/refget.html) identifier for the referenced sequence, using the sha512t24u digest.",
     )
     residueAlphabet: ResidueAlphabet | None = Field(
-        None,
+        default=None,
         description='The interpretation of the character codes referred to by the refget accession, where "aa" specifies an amino acid character set, and "na" specifies a nucleic acid character set.',
     )
     circular: bool | None = Field(
-        None,
+        default=None,
         description="A boolean indicating whether the molecule represented by the sequence is circular (true) or linear (false).",
     )
     sequence: sequenceString | None = Field(
-        None,
+        default=None,
         description="A sequenceString that is a literal representation of the referenced sequence.",
     )
     moleculeType: MoleculeType | None = Field(
-        None,
+        default=None,
         description="Molecule types as [defined by RefSeq](https://www.ncbi.nlm.nih.gov/books/NBK21091/) (see Table 1). MUST be one of 'genomic', 'RNA', 'mRNA', or 'protein'.",
     )
 
@@ -567,22 +570,22 @@ class SequenceLocation(Ga4ghIdentifiableObject, BaseModelForbidExtra):
     """A `Location` defined by an interval on a `Sequence`."""
 
     type: Literal["SequenceLocation"] = Field(
-        VrsType.SEQ_LOC.value, description=f'MUST be "{VrsType.SEQ_LOC.value}"'
+        default=VrsType.SEQ_LOC.value, description=f'MUST be "{VrsType.SEQ_LOC.value}"'
     )
     sequenceReference: iriReference | SequenceReference | None = Field(
-        None,
+        default=None,
         description="A reference to a SequenceReference on which the location is defined.",
     )
     start: Range | int | None = Field(
-        None,
+        default=None,
         description="The start coordinate or range of the SequenceLocation. The minimum value of this coordinate or range is 0. For locations on linear sequences, this MUST represent a coordinate or range less than or equal to the value of `end`. For circular sequences, `start` is greater than `end` when the location spans the sequence 0 coordinate.",
     )
     end: Range | int | None = Field(
-        None,
+        default=None,
         description="The end coordinate or range of the SequenceLocation. The minimum value of this coordinate or range is 0. For locations on linear sequences, this MUST represent a coordinate or range greater than or equal to the value of `start`. For circular sequences, `end` is less than `start` when the location spans the sequence 0 coordinate.",
     )
     sequence: sequenceString | None = Field(
-        None,
+        default=None,
         description="The literal sequence encoded by the `sequenceReference` at these coordinates.",
     )
 
@@ -673,7 +676,7 @@ class Allele(_VariationBase, BaseModelForbidExtra):
     """The state of a molecule at a `Location`."""
 
     type: Literal["Allele"] = Field(
-        VrsType.ALLELE.value, description=f'MUST be "{VrsType.ALLELE.value}"'
+        default=VrsType.ALLELE.value, description=f'MUST be "{VrsType.ALLELE.value}"'
     )
     location: iriReference | SequenceLocation = Field(
         ..., description="The location of the Allele"
@@ -717,7 +720,7 @@ class CisPhasedBlock(_VariationBase, BaseModelForbidExtra):
     """An ordered set of co-occurring `Variation` on the same molecule."""
 
     type: Literal["CisPhasedBlock"] = Field(
-        VrsType.CIS_PHASED_BLOCK.value,
+        default=VrsType.CIS_PHASED_BLOCK.value,
         description=f'MUST be "{VrsType.CIS_PHASED_BLOCK.value}"',
     )
     members: list[Allele | iriReference] = Field(
@@ -726,7 +729,7 @@ class CisPhasedBlock(_VariationBase, BaseModelForbidExtra):
         min_length=2,
     )
     sequenceReference: SequenceReference | None = Field(
-        None,
+        default=None,
         description="An optional Sequence Reference on which all of the in-cis Alleles are found. When defined, this may be used to implicitly define the `sequenceReference` attribute for each of the CisPhasedBlock member Alleles.",
     )
 
@@ -751,7 +754,8 @@ class Adjacency(_VariationBase, BaseModelForbidExtra):
     """
 
     type: Literal["Adjacency"] = Field(
-        VrsType.ADJACENCY.value, description=f'MUST be "{VrsType.ADJACENCY.value}".'
+        default=VrsType.ADJACENCY.value,
+        description=f'MUST be "{VrsType.ADJACENCY.value}".',
     )
     adjoinedSequences: list[iriReference | SequenceLocation] = Field(
         ...,
@@ -761,9 +765,11 @@ class Adjacency(_VariationBase, BaseModelForbidExtra):
     )
     linker: (
         LiteralSequenceExpression | ReferenceLengthExpression | LengthExpression | None
-    ) = Field(None, description="The sequence found between adjoined sequences.")
+    ) = Field(
+        default=None, description="The sequence found between adjoined sequences."
+    )
     homology: bool | None = Field(
-        None,
+        default=None,
         description="A flag indicating if coordinate ambiguity in the adjoined sequences is from sequence homology (true) or other uncertainty, such as instrument ambiguity (false).",
     )
 
@@ -793,7 +799,8 @@ class Terminus(_VariationBase, BaseModelForbidExtra):
     """
 
     type: Literal["Terminus"] = Field(
-        VrsType.TERMINUS.value, description=f'MUST be "{VrsType.TERMINUS.value}".'
+        default=VrsType.TERMINUS.value,
+        description=f'MUST be "{VrsType.TERMINUS.value}".',
     )
     location: iriReference | SequenceLocation = Field(
         ..., description="The location of the terminus."
@@ -812,15 +819,16 @@ class TraversalBlock(_ValueObject, BaseModelForbidExtra):
     model_config = ConfigDict(use_enum_values=True)
 
     type: Literal["TraversalBlock"] = Field(
-        VrsType.TRAVERSAL_BLOCK.value,
+        default=VrsType.TRAVERSAL_BLOCK.value,
         description=f'MUST be "{VrsType.TRAVERSAL_BLOCK.value}".',
     )
     orientation: Orientation | None = Field(
-        None, description="The orientation of the molecular variation component."
+        default=None,
+        description="The orientation of the molecular variation component.",
     )
 
     component: Adjacency | None = Field(
-        None, description="The unoriented molecular variation component."
+        default=None, description="The unoriented molecular variation component."
     )
 
     class ga4gh(_ValueObject.ga4gh):
@@ -833,7 +841,7 @@ class DerivativeMolecule(_VariationBase, BaseModelForbidExtra):
     """
 
     type: Literal["DerivativeMolecule"] = Field(
-        VrsType.DERIVATIVE_MOL.value,
+        default=VrsType.DERIVATIVE_MOL.value,
         description=f'MUST be "{VrsType.DERIVATIVE_MOL.value}".',
     )
     components: list[
@@ -844,7 +852,7 @@ class DerivativeMolecule(_VariationBase, BaseModelForbidExtra):
         min_length=2,
     )
     circular: bool | None = Field(
-        None,
+        default=None,
         description="A boolean indicating whether the molecule represented by the sequence is circular (true) or linear (false).",
     )
 
@@ -864,7 +872,8 @@ class CopyNumberCount(_VariationBase, BaseModelForbidExtra):
     """
 
     type: Literal["CopyNumberCount"] = Field(
-        VrsType.CN_COUNT.value, description=f'MUST be "{VrsType.CN_COUNT.value}"'
+        default=VrsType.CN_COUNT.value,
+        description=f'MUST be "{VrsType.CN_COUNT.value}"',
     )
     location: iriReference | SequenceLocation = Field(
         ...,
@@ -887,7 +896,8 @@ class CopyNumberChange(_VariationBase, BaseModelForbidExtra):
     model_config = ConfigDict(use_enum_values=True)
 
     type: Literal["CopyNumberChange"] = Field(
-        VrsType.CN_CHANGE.value, description=f'MUST be "{VrsType.CN_CHANGE.value}"'
+        default=VrsType.CN_CHANGE.value,
+        description=f'MUST be "{VrsType.CN_CHANGE.value}"',
     )
     location: iriReference | SequenceLocation = Field(
         ...,

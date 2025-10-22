@@ -14,6 +14,7 @@ from pydantic import (
     StringConstraints,
     model_validator,
 )
+from typing_extensions import Self
 
 from ga4gh.core.identifiers import GA4GH_IR_REGEXP
 
@@ -94,22 +95,22 @@ class Entity(BaseModel, ABC):
     """
 
     id: str | None = Field(
-        None,
+        default=None,
         description="The 'logical' identifier of the Entity in the system of record, e.g. a UUID.  This 'id' is unique within a given system, but may or may not be globally unique outside the system. It is used within a system to reference an object from another.",
     )
     type: str = Field(
         ...,
         description="The name of the class that is instantiated by a data object representing the Entity.",
     )
-    name: str | None = Field(None, description="A primary name for the entity.")
+    name: str | None = Field(default=None, description="A primary name for the entity.")
     description: str | None = Field(
-        None, description="A free-text description of the Entity."
+        default=None, description="A free-text description of the Entity."
     )
     aliases: list[str] | None = Field(
-        None, description="Alternative name(s) for the Entity."
+        default=None, description="Alternative name(s) for the Entity."
     )
     extensions: list[Extension] | None = Field(
-        None,
+        default=None,
         description="A list of extensions to the Entity, that allow for capture of information not directly supported by elements defined in the model.",
     )
 
@@ -121,11 +122,11 @@ class Element(BaseModel, ABC):
     """
 
     id: str | None = Field(
-        None,
+        default=None,
         description="The 'logical' identifier of the data element in the system of record, e.g. a UUID.  This 'id' is unique within a given system, but may or may not be globally unique outside the system. It is used within a system to reference an object from another.",
     )
     extensions: list[Extension] | None = Field(
-        None,
+        default=None,
         description="A list of extensions to the Entity, that allow for capture of information not directly supported by elements defined in the model.",
     )
 
@@ -141,7 +142,7 @@ class Coding(Element, BaseModelForbidExtra):
     """
 
     name: str | None = Field(
-        None,
+        default=None,
         description="The human-readable name for the coded concept, as defined by the code system.",
     )
     system: str = Field(
@@ -149,12 +150,12 @@ class Coding(Element, BaseModelForbidExtra):
         description="The terminology/code system that defined the code. May be reported as a free-text name (e.g. 'Sequence Ontology'), but it is preferable to provide a uri/url for the system.",
     )
     systemVersion: str | None = Field(  # noqa: N815
-        None,
+        default=None,
         description="Version of the terminology or code system that provided the code.",
     )
     code: code  # Cannot use Field due to PydanticUserError: field name and type annotation must not clash.
     iris: list[iriReference] | None = Field(
-        None,
+        default=None,
         description="A list of IRIs that are associated with the coding. This can be used to provide additional context or to link to additional information about the concept.",
     )
 
@@ -191,7 +192,7 @@ class Extension(Element, BaseModelForbidExtra):
         description="The value of the Extension - can be any primitive or structured object",
     )
     description: str | None = Field(
-        None,
+        default=None,
         description="A description of the meaning or utility of the Extension, to explain the type of information it is meant to hold.",
     )
 
@@ -200,26 +201,28 @@ class MappableConcept(Element, BaseModelForbidExtra):
     """A concept based on a primaryCoding and/or name that may be mapped to one or more other `Codings`."""
 
     conceptType: str | None = Field(  # noqa: N815
-        None,
+        default=None,
         description="A term indicating the type of concept being represented by the MappableConcept.",
     )
-    name: str | None = Field(None, description="A primary name for the concept.")
+    name: str | None = Field(
+        default=None, description="A primary name for the concept."
+    )
     primaryCoding: Coding | None = Field(  # noqa: N815
-        None,
+        default=None,
         description="A primary coding for the concept.",
     )
     mappings: list[ConceptMapping] | None = Field(
-        None,
+        default=None,
         description="A list of mappings to concepts in terminologies or code systems. Each mapping should include a coding and a relation.",
     )
 
     @model_validator(mode="after")
-    def require_name_or_primary_coding(cls, v):  # noqa: ANN001 N805 ANN201
+    def require_name_or_primary_coding(self) -> Self:
         """Ensure that ``name`` or ``primaryCoding`` is provided"""
-        if v.primaryCoding is None and v.name is None:
+        if self.primaryCoding is None and self.name is None:
             err_msg = "One of `name` or `primaryCoding` must be provided."
             raise ValueError(err_msg)
-        return v
+        return self
 
 
 Element.model_rebuild()
