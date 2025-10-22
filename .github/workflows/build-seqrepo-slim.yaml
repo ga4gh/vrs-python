@@ -3,13 +3,6 @@ name: Build SeqRepo Slim Container
 on:
   release:
     types: [published]
-  workflow_dispatch:
-    inputs:
-      assembly:
-        description: 'Assembly version to build'
-        required: false
-        default: 'GRCh38'
-        type: string
 
 env:
   REGISTRY: ghcr.io
@@ -22,8 +15,12 @@ jobs:
       contents: read
       packages: write
 
+    strategy:
+      matrix:
+        assembly: [GRCh38, GRCh37]
+
     env:
-      ASSEMBLY: ${{ github.event.inputs.assembly || 'GRCh38' }}
+      ASSEMBLY: ${{ matrix.assembly }}
       BASE_TAG: ghcr.io/${{ github.repository }}/seqrepo-slim
 
     steps:
