@@ -535,8 +535,8 @@ hgvs_tests = (
     (
         "NC_000013.11:g.32936732=",
         {
-            "digest": "GJ2JySBMXePcV2yItyvCfbGBUoawOBON",
-            "id": "ga4gh:VA.GJ2JySBMXePcV2yItyvCfbGBUoawOBON",
+            "digest": "DlGuOFkPMxweVP99ZAjfrAV3iZRB-AB3",
+            "id": "ga4gh:VA.DlGuOFkPMxweVP99ZAjfrAV3iZRB-AB3",
             "location": {
                 "digest": "28YsnRvD40gKu1x3nev0gRzRz-5OTlpS",
                 "end": 32936732,
@@ -548,7 +548,12 @@ hgvs_tests = (
                 "start": 32936731,
                 "type": "SequenceLocation",
             },
-            "state": {"sequence": "C", "type": "LiteralSequenceExpression"},
+            "state": {
+                "length": 1,
+                "repeatSubunitLength": 1,
+                "sequence": "C",
+                "type": "ReferenceLengthExpression",
+            },
             "type": "Allele",
         },
     ),
