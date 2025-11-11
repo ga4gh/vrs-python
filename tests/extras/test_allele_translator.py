@@ -858,7 +858,10 @@ def test_to_hgvs_iri_ref_keyerror(tlr):
 
 @pytest.mark.vcr
 def test_reference_allele_rle(tlr):
-    """Test that reference alleles (REF==ALT) are normalized to ReferenceLengthExpression."""
+    """Test that reference alleles (REF==ALT) are normalized to ReferenceLengthExpression.
+
+    Added to address https://github.com/ga4gh/vrs-python/issues/587
+    """
     # Test with gnomad format
     gnomad_ref_allele = "1-100210778-AA-AA"
     allele = tlr._from_gnomad(gnomad_ref_allele)
