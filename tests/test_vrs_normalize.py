@@ -2,13 +2,7 @@ import pytest
 
 from ga4gh.vrs import models, normalize
 
-# >>> dp.get_sequence("refseq:NC_000019.10", 44908820, 44908830)
-#  |820      |825      | 830
-# ' G C G C C T G G C A '
-#    |A| a1
-#
-
-
+# Single nucleotide same-as-reference allele.
 allele_dict1 = {
     "location": {
         "end": 26090951,
@@ -42,7 +36,7 @@ allele_dict1_normalized = {
     "type": "Allele",
 }
 
-
+# Ambiguous indefinite outer 2 bp deletion. Should become RLE.
 allele_dict2 = {
     "type": "Allele",
     "location": {
@@ -56,7 +50,6 @@ allele_dict2 = {
     },
     "state": {"sequence": "", "type": "LiteralSequenceExpression"},
 }
-
 
 allele_dict2_normalized = {
     "type": "Allele",
@@ -76,7 +69,7 @@ allele_dict2_normalized = {
     },
 }
 
-
+# Ambiguous definite 2-4bp deletion. Cannot be converted to RLE. (as opposed to allele_dict2 which can)
 allele_dict3 = {
     "type": "Allele",
     "location": {
@@ -91,7 +84,7 @@ allele_dict3 = {
     "state": {"sequence": "", "type": "LiteralSequenceExpression"},
 }
 
-
+# Tandem duplication of GT, normalizes to RLE.
 allele_dict4 = {
     "type": "Allele",
     "location": {
@@ -125,6 +118,7 @@ allele_dict4_normalized = {
     },
 }
 
+# Insertion of multiple repeat subunits ("CAG") into an existing repeating region.
 allele_dict5 = {
     "location": {
         "end": 289464,
@@ -158,7 +152,7 @@ allele_dict5_normalized = {
     },
 }
 
-# Another same-as-reference allele
+# Another simple same-as-reference allele
 allele_dict6 = {
     "type": "Allele",
     "location": {
