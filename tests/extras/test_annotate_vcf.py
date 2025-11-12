@@ -40,10 +40,17 @@ def compare_vcfs(actual_vcf_path: Path, expected_vcf_path: Path):
     method replaces a placeholder string with the real version, and otherwise performs
     a pairwise check for all lines in each VCF.
     """
-    with gzip.open(actual_vcf_path, "rt") as out_vcf:
+
+    # Handle both gzipped and uncompressed VCF files
+    def _open(path: Path):
+        if path.suffix == ".gz":
+            return gzip.open(path, "rt")
+        return path.open("r")
+
+    with _open(actual_vcf_path) as out_vcf, _open(expected_vcf_path) as expected_output:
         out_vcf_lines = out_vcf.readlines()
-    with gzip.open(expected_vcf_path, "rt") as expected_output:
         expected_output_lines = expected_output.readlines()
+
     for actual_line, expected_line in zip(
         out_vcf_lines, expected_output_lines, strict=False
     ):
@@ -61,7 +68,7 @@ def test_annotate_vcf_grch38_noattrs(
     output_vcf = tmp_path / "test_vcf_output_grch38_noattrs.vcf.gz"
     output_vrs_pkl = tmp_path / "test_vcf_pkl_grch38_noattrs.pkl"
     expected_vcf_no_vrs_attrs = (
-        TEST_DATA_DIR / "test_vcf_expected_output_no_vrs_attrs.vcf.gz"
+        TEST_DATA_DIR / "test_vcf_expected_output_no_vrs_attrs.vcf"
     )
 
     # Test GRCh38 assembly, which was used for input_vcf and no vrs attributes
@@ -78,7 +85,7 @@ def test_annotate_vcf_grch38_attrs(
     vcr_cassette.allow_playback_repeats = False
     output_vcf = tmp_path / "test_vcf_output_grch38_attrs.vcf.gz"
     output_vrs_pkl = tmp_path / "test_vcf_pkl_grch38_attrs.pkl"
-    expected_vcf = TEST_DATA_DIR / "test_vcf_expected_output.vcf.gz"
+    expected_vcf = TEST_DATA_DIR / "test_vcf_expected_output.vcf"
 
     # Test GRCh38 assembly, which was used for input_vcf and vrs attributes
     vcf_annotator.annotate(
@@ -96,7 +103,7 @@ def test_annotate_vcf_grch38_attrs_altsonly(
     vcr_cassette.allow_playback_repeats = False
     output_vcf = tmp_path / "test_vcf_output_grch38_attrs_altsonly.vcf.gz"
     output_vrs_pkl = tmp_path / "test_vcf_pkl_grch38_attrs_altsonly.pkl"
-    expected_altsonly_vcf = TEST_DATA_DIR / "test_vcf_expected_altsonly_output.vcf.gz"
+    expected_altsonly_vcf = TEST_DATA_DIR / "test_vcf_expected_altsonly_output.vcf"
 
     # Test GRCh38 assembly with VRS computed for ALTs only, which was used for input_vcf and vrs attributes
     vcf_annotator.annotate(
@@ -118,7 +125,7 @@ def test_annotate_vcf_grch37_attrs(
     vcr_cassette.allow_playback_repeats = False
     output_vcf = tmp_path / "test_vcf_output_grch37_attrs.vcf.gz"
     output_vrs_pkl = tmp_path / "test_vcf_pkl_grch37_attrs.pkl"
-    expected_vcf = TEST_DATA_DIR / "test_vcf_expected_output.vcf.gz"
+    expected_vcf = TEST_DATA_DIR / "test_vcf_expected_output.vcf"
 
     # Test GRCh37 assembly, which was not used for input_vcf
     vcf_annotator.annotate(
@@ -130,7 +137,7 @@ def test_annotate_vcf_grch37_attrs(
     )
     with gzip.open(output_vcf, "rt") as out_vcf:
         out_vcf_lines = out_vcf.readlines()
-    with gzip.open(expected_vcf, "rt") as expected_output:
+    with expected_vcf.open() as expected_output:
         expected_output_lines = expected_output.readlines()
     assert out_vcf_lines != expected_output_lines
     assert output_vrs_pkl.exists()
@@ -161,7 +168,7 @@ def test_annotate_vcf_vcf_only(
     vcr_cassette.allow_playback_repeats = False
     output_vcf = tmp_path / "test_vcf_output_vcf_only.vcf.gz"
     output_vrs_pkl = tmp_path / "test_vcf_pkl_vcf_only.pkl"
-    expected_vcf = TEST_DATA_DIR / "test_vcf_expected_output.vcf.gz"
+    expected_vcf = TEST_DATA_DIR / "test_vcf_expected_output.vcf"
 
     # Test only VCF output
     vcf_annotator.annotate(input_vcf, output_vcf_path=output_vcf, vrs_attributes=True)
@@ -238,9 +245,7 @@ def test_annotate_vcf_rle(vcf_annotator: VcfAnnotator, vcr_cassette):
     )
 
     # Read the output VCF and verify RLE fields are present
-    with gzip.open(output_vcf, "rt") as vcf_out:
-        vcf = pysam.VariantFile(vcf_out)
-
+    with pysam.VariantFile(str(output_vcf)) as vcf:
         # Verify the RLE-specific header fields were added
         assert "VRS_Lengths" in vcf.header.info
         assert "VRS_RepeatSubunitLengths" in vcf.header.info
