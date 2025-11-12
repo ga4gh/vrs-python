@@ -9,7 +9,6 @@ from pathlib import Path
 import pysam
 import pytest
 
-from ga4gh.vrs import VRS_VERSION, __version__
 from ga4gh.vrs.dataproxy import DataProxyValidationError, SeqRepoRESTDataProxy
 from ga4gh.vrs.extras.annotator.vcf import VcfAnnotator, VcfAnnotatorError
 
@@ -36,10 +35,23 @@ def input_vcf():
 
 
 def compare_vcfs(actual_vcf_path: Path, expected_vcf_path: Path):
-    """VRS-Python version annotation would be annoying to manually update. This helper
-    method replaces a placeholder string with the real version, and otherwise performs
-    a pairwise check for all lines in each VCF.
+    """Normalize version fields that change per build and compare the remaining content
+    of two VCF files line-by-line.
     """
+    version_section_pattern = re.compile(
+        r"\[VRS version=[^;\]]+;VRS-Python version=[^\]]+\]"
+    )
+
+    def _mask_version_fields(line: str) -> str:
+        """Replace the bracketed version section with a stable placeholder."""
+        if not line.startswith("##INFO=<ID=VRS_Allele_IDs"):
+            return line
+        if not version_section_pattern.search(line):
+            msg = f"Expected [VRS version=...;VRS-Python version=...] section in INFO header line {line}"
+            raise AssertionError(msg)
+        return version_section_pattern.sub(
+            "[VRS version=<ignored>;VRS-Python version=<ignored>]", line
+        )
 
     # Handle both gzipped and uncompressed VCF files
     def _open(path: Path):
@@ -54,9 +66,8 @@ def compare_vcfs(actual_vcf_path: Path, expected_vcf_path: Path):
     for actual_line, expected_line in zip(
         out_vcf_lines, expected_output_lines, strict=False
     ):
-        if actual_line.startswith("##INFO=<ID=VRS_Allele_IDs"):
-            expected_line = expected_line.replace("1111", VRS_VERSION)
-            expected_line = expected_line.replace("9999", __version__)
+        actual_line = _mask_version_fields(actual_line)
+        expected_line = _mask_version_fields(expected_line)
         assert actual_line == expected_line
 
 

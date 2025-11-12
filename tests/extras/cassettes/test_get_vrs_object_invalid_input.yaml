@@ -9,7 +9,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.32.3
+      - python-requests/2.32.5
     method: GET
     uri: http://localhost:5000/seqrepo/1/metadata/GRCh38:.
   response:
@@ -23,7 +23,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Mon, 10 Mar 2025 16:23:22 GMT
+      - Wed, 12 Nov 2025 20:57:40 GMT
       Server:
       - Werkzeug/2.2.3 Python/3.10.12
     status:
@@ -39,7 +39,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.32.3
+      - python-requests/2.32.5
     method: GET
     uri: http://localhost:5000/seqrepo/1/metadata/GRCh38:7
   response:
@@ -64,7 +64,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Mon, 10 Mar 2025 16:23:22 GMT
+      - Wed, 12 Nov 2025 20:57:40 GMT
       Server:
       - Werkzeug/2.2.3 Python/3.10.12
     status:
@@ -80,7 +80,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.32.3
+      - python-requests/2.32.5
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/GRCh38:7?start=140753335&end=140753336
   response:
@@ -94,7 +94,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Mon, 10 Mar 2025 16:23:22 GMT
+      - Wed, 12 Nov 2025 20:57:40 GMT
       Server:
       - Werkzeug/2.2.3 Python/3.10.12
     status:
@@ -110,7 +110,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.32.3
+      - python-requests/2.32.5
     method: GET
     uri: http://localhost:5000/seqrepo/1/metadata/ga4gh:SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul
   response:
@@ -135,7 +135,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Mon, 10 Mar 2025 16:23:22 GMT
+      - Wed, 12 Nov 2025 20:57:40 GMT
       Server:
       - Werkzeug/2.2.3 Python/3.10.12
     status:
@@ -151,7 +151,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.32.3
+      - python-requests/2.32.5
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul?start=140753335&end=140753336
   response:
@@ -165,7 +165,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Mon, 10 Mar 2025 16:23:22 GMT
+      - Wed, 12 Nov 2025 20:57:40 GMT
       Server:
       - Werkzeug/2.2.3 Python/3.10.12
     status:

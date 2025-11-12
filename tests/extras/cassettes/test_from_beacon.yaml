@@ -9,7 +9,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.32.3
+      - python-requests/2.32.5
     method: GET
     uri: http://localhost:5000/seqrepo/1/metadata/GRCh38:19
   response:
@@ -35,7 +35,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Mon, 10 Mar 2025 16:22:48 GMT
+      - Wed, 12 Nov 2025 20:57:12 GMT
       Server:
       - Werkzeug/2.2.3 Python/3.10.12
     status:
@@ -51,7 +51,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.32.3
+      - python-requests/2.32.5
     method: GET
     uri: http://localhost:5000/seqrepo/1/metadata/GRCh38:MT
   response:
@@ -82,7 +82,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Mon, 10 Mar 2025 16:22:48 GMT
+      - Wed, 12 Nov 2025 20:57:12 GMT
       Server:
       - Werkzeug/2.2.3 Python/3.10.12
     status:
