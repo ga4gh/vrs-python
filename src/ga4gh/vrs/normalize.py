@@ -149,7 +149,7 @@ def _normalize_allele(input_allele, data_proxy, rle_seq_limit=50):
                 rle_seq_limit=rle_seq_limit,
                 extended_alt_seq=ref_at_location,
             )
-        # Re-raise if this is a different ValueError (shouldn't happen with valid input)
+        # Re-raise if this is a different ValueError (shouldn't happen with valid input and assuming bioutils hasn't changed behavior)
         msg = f"Unexpected bioutils trim error for non reference allele: ref='{ref_at_location}', alt='{alt_seq}'"
         raise ValueError(msg) from e
 
