@@ -381,7 +381,7 @@ clinvar_microsatellite_insertion_normalized = {
 
 
 @pytest.mark.vcr
-def test_normalize_clinvar_rle_candidates(rest_dataproxy):
+def test_normalize_clinvar_rle(rest_dataproxy):
     """Test normalization of ClinVar variants that should produce RLE.
 
     These test cases are pulled from ClinVar GRCh38 VCF.
