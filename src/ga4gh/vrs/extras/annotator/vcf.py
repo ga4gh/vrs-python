@@ -16,7 +16,7 @@ from ga4gh.core.identifiers import (
 from ga4gh.vrs import VRS_VERSION, __version__
 from ga4gh.vrs.dataproxy import _DataProxy
 from ga4gh.vrs.extras.translator import AlleleTranslator
-from ga4gh.vrs.models import Allele, Range
+from ga4gh.vrs.models import Allele, Range, sequenceString
 
 _logger = logging.getLogger(__name__)
 
@@ -51,6 +51,19 @@ VCF_ESCAPE_MAP = str.maketrans(
         "\n": "%0A",
     }
 )
+
+# Short State.sequence will be included in output VCF if <= this value,
+# otherwise output will be emitted as the "." character.
+MAX_LITERAL_STATE_LENGTH = 15
+
+
+def _sequence_value_for_info(sequence: str | sequenceString) -> str | None:
+    """Return a literal sequence suitable for INFO fields if it is short enough."""
+    if not sequence:
+        return None
+    seq = getattr(sequence, "root", sequence)
+    seq_str = str(seq)
+    return seq_str if len(seq_str) <= MAX_LITERAL_STATE_LENGTH else None
 
 
 def dump_alleles_to_pkl(alleles: list[Allele], output_pkl_path: Path) -> None:
@@ -394,24 +407,18 @@ class AbstractVcfAnnotator(abc.ABC):
                     # Common fields for all state types
                     start = vrs_obj.location.start
                     end = vrs_obj.location.end
+                    state = vrs_obj.state
 
                     # State-specific fields
-                    state_type = vrs_obj.state.type
+                    state_type = state.type
+                    alt = _sequence_value_for_info(getattr(state, "sequence", None))
 
-                    if state_type == "LiteralSequenceExpression":
-                        # For LSE, populate sequence in STATES
-                        alt = (
-                            str(vrs_obj.state.sequence.root)
-                            if vrs_obj.state.sequence
-                            else None
-                        )
-                    # TODO TODO Leave in the `sequence` when the length of it is less than 15 characters
-                    elif state_type in (
+                    if state_type in (
                         "ReferenceLengthExpression",
                         "LengthExpression",
                     ):
                         # For RLE and LE, populate length
-                        length = vrs_obj.state.length
+                        length = state.length
                         if length is None:
                             err_msg = f"{state_type} requires a non-empty length: {vcf_coords}"
                             raise VcfAnnotatorError(err_msg)
@@ -420,10 +427,11 @@ class AbstractVcfAnnotator(abc.ABC):
                             raise VcfAnnotatorError(err_msg)
                         # For RLE only, also populate repeatSubunitLength
                         if state_type == "ReferenceLengthExpression":
-                            repeat_subunit_length = vrs_obj.state.repeatSubunitLength
+                            repeat_subunit_length = state.repeatSubunitLength
                     else:
-                        err_msg = f"Unsupported state type '{state_type}' for VCF annotation: {vcf_coords}"
-                        raise VcfAnnotatorError(err_msg)
+                        if state_type != "LiteralSequenceExpression":
+                            err_msg = f"Unsupported state type '{state_type}' for VCF annotation: {vcf_coords}"
+                            raise VcfAnnotatorError(err_msg)
 
                 vrs_field_data[FieldName.STARTS_FIELD].append(start)
                 vrs_field_data[FieldName.ENDS_FIELD].append(end)
