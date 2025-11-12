@@ -265,14 +265,17 @@ def test_annotate_vcf_rle(vcf_annotator: VcfAnnotator, vcr_cassette):
         assert "VRS_RepeatSubunitLengths" in deletion_variant.info
 
         # Expected values for deletion RLE
-        # REF should have length=2, repeatSubunitLength=1
-        # ALT should have length=1, repeatSubunitLength=1
+        # REF: AA uses RLE with length=2, repeatSubunitLength=2
+        # ALT: A uses RLE with length=1, repeatSubunitLength=1
         vrs_lengths = deletion_variant.info["VRS_Lengths"]
         vrs_repeat_lengths = deletion_variant.info["VRS_RepeatSubunitLengths"]
         assert len(vrs_lengths) == 2  # REF and ALT
         assert len(vrs_repeat_lengths) == 2
         assert vrs_lengths == (2, 1)  # REF: AA (length 2), ALT: A (length 1)
-        assert vrs_repeat_lengths == (1, 1)  # Both are single-base repeats
+        assert vrs_repeat_lengths == (
+            2,
+            1,
+        )  # REF: AA as repeat unit of length 2, ALT: A as repeat unit of length 1
 
         # Test variant 2: Duplication (CTTT>CTTTCTTT)
         # Expected: length=8, repeatSubunitLength=4
@@ -288,8 +291,8 @@ def test_annotate_vcf_rle(vcf_annotator: VcfAnnotator, vcr_cassette):
         assert "VRS_RepeatSubunitLengths" in duplication_variant.info
 
         # Expected values for duplication RLE
-        # REF should have length=4, repeatSubunitLength=4
-        # ALT should have length=8, repeatSubunitLength=4
+        # REF: CTTT uses RLE with length=4, repeatSubunitLength=4
+        # ALT: CTTTCTTT uses RLE with length=8, repeatSubunitLength=4
         vrs_lengths = duplication_variant.info["VRS_Lengths"]
         vrs_repeat_lengths = duplication_variant.info["VRS_RepeatSubunitLengths"]
         assert len(vrs_lengths) == 2  # REF and ALT
