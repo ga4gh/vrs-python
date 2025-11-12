@@ -9,7 +9,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.32.3
+      - python-requests/2.32.5
     method: GET
     uri: http://localhost:5000/seqrepo/1/metadata/refseq:NM_181798.1
   response:
@@ -28,7 +28,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Mon, 10 Mar 2025 16:23:06 GMT
+      - Tue, 11 Nov 2025 08:02:03 GMT
       Server:
       - Werkzeug/2.2.3 Python/3.10.12
     status:
@@ -44,18 +44,15 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.32.3
+      - python-requests/2.32.5
     method: GET
     uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nucleotide&id=NM_181798.1&rettype=fasta&seq_start=1263&seq_stop=1263&tool=bioutils&email=biocommons-dev@googlegroups.com
   response:
     body:
-      string: '>NM_181798.1:1263-1263 Homo sapiens potassium voltage-gated channel
-        subfamily Q member 1 (KCNQ1), transcript variant 2, mRNA
-
-        G
-
-
-        '
+      string: !!binary |
+        H4sIAAAAAAAAABTEQQrCMBAF0H1P8ZcKrTAVtLoQxIWCWKgXkGlNayCThGRa8PbiW7xT+3hRQ/tD
+        s6Ej1btt9Q+3IAGZozU+IwblnO0sWIJTnkw1sZo3hg97bxzy3I8s1n3RQYz0JoGwul/ajtYlNLHP
+        Q7JRsXCy7BV1CXm25+Ja/AAAAP//4gIAAAD//wMAjtT/qIAAAAA=
     headers:
       Access-Control-Allow-Origin:
       - '*'
@@ -72,20 +69,20 @@ interactions:
       Content-Type:
       - text/plain
       Date:
-      - Mon, 10 Mar 2025 16:23:06 GMT
+      - Tue, 11 Nov 2025 08:02:02 GMT
       Keep-Alive:
       - timeout=4, max=40
       NCBI-PHID:
-      - 939B8D0F598EF64500002C4EA9104A61.1.1.m_5
+      - 1D340441F938F2D50000573E59DD1A44.1.1.m_7
       NCBI-SID:
-      - 30DD211EE0892843_5A1ESID
+      - 4D46C1EC40ECB308_1BD4SID
       Referrer-Policy:
       - origin-when-cross-origin
       Server:
       - Finatra
       Set-Cookie:
-      - ncbi_sid=30DD211EE0892843_5A1ESID; domain=.nih.gov; path=/; expires=Tue, 10
-        Mar 2026 16:23:06 GMT
+      - ncbi_sid=4D46C1EC40ECB308_1BD4SID; domain=.nih.gov; path=/; expires=Wed, 11
+        Nov 2026 08:02:03 GMT
       Strict-Transport-Security:
       - max-age=31536000; includeSubDomains; preload
       Transfer-Encoding:
@@ -113,7 +110,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.32.3
+      - python-requests/2.32.5
     method: GET
     uri: http://localhost:5000/seqrepo/1/metadata/ga4gh:SQ.KN07u-RFqd1dTyOWOG98HnOq87Nq-ZIg
   response:
@@ -132,7 +129,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Mon, 10 Mar 2025 16:23:06 GMT
+      - Tue, 11 Nov 2025 08:02:03 GMT
       Server:
       - Werkzeug/2.2.3 Python/3.10.12
     status:
@@ -148,7 +145,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.32.3
+      - python-requests/2.32.5
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.KN07u-RFqd1dTyOWOG98HnOq87Nq-ZIg?start=1262&end=1263
   response:
@@ -162,7 +159,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Mon, 10 Mar 2025 16:23:06 GMT
+      - Tue, 11 Nov 2025 08:02:03 GMT
       Server:
       - Werkzeug/2.2.3 Python/3.10.12
     status:
@@ -178,18 +175,15 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.32.3
+      - python-requests/2.32.5
     method: GET
-    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nucleotide&id=NM_181798.1&rettype=fasta&seq_start=1263&seq_stop=1268&tool=bioutils&email=biocommons-dev@googlegroups.com
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nucleotide&id=NR_040711.1&rettype=fasta&seq_start=1263&seq_stop=1263&tool=bioutils&email=biocommons-dev@googlegroups.com
   response:
     body:
-      string: '>NM_181798.1:1263-1268 Homo sapiens potassium voltage-gated channel
-        subfamily Q member 1 (KCNQ1), transcript variant 2, mRNA
-
-        GTTCTG
-
-
-        '
+      string: !!binary |
+        H4sIAAAAAAAAABTEsQrCMBQF0N2vuKNCIk0VBQdBHBQKhRZ3eW2fNZi8lCQt+PfiGc65bp/Fvjga
+        szUnUx52+h/uwQckmixLwhQypWRnjyW4TCPrkTIP6N8kwk6hah7a2Q8jzd2LvHVfBc++4wiDdXWt
+        G7NRyJEk9dFOGQtFS5JRKkgQ3YfByoi2vqxuqx8AAAD//+ICAAAA//8DACrfWUyTAAAA
     headers:
       Access-Control-Allow-Origin:
       - '*'
@@ -206,20 +200,20 @@ interactions:
       Content-Type:
       - text/plain
       Date:
-      - Mon, 10 Mar 2025 16:23:12 GMT
+      - Tue, 11 Nov 2025 08:02:03 GMT
       Keep-Alive:
       - timeout=4, max=40
       NCBI-PHID:
-      - 322C1EB26B7FD5C500004768A15CDFD0.1.1.m_5
+      - 1D340441F938F2D50000383E5AE00C98.1.1.m_7
       NCBI-SID:
-      - 1775CB3F32205734_491BSID
+      - 7733257D8B5B7E1E_DB94SID
       Referrer-Policy:
       - origin-when-cross-origin
       Server:
       - Finatra
       Set-Cookie:
-      - ncbi_sid=1775CB3F32205734_491BSID; domain=.nih.gov; path=/; expires=Tue, 10
-        Mar 2026 16:23:12 GMT
+      - ncbi_sid=7733257D8B5B7E1E_DB94SID; domain=.nih.gov; path=/; expires=Wed, 11
+        Nov 2026 08:02:03 GMT
       Strict-Transport-Security:
       - max-age=31536000; includeSubDomains; preload
       Transfer-Encoding:
@@ -227,7 +221,7 @@ interactions:
       X-RateLimit-Limit:
       - '3'
       X-RateLimit-Remaining:
-      - '2'
+      - '0'
       X-UA-Compatible:
       - IE=Edge
       X-XSS-Protection:
@@ -247,18 +241,15 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.32.3
+      - python-requests/2.32.5
     method: GET
-    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nucleotide&id=NR_040711.1&rettype=fasta&seq_start=1263&seq_stop=1263&tool=bioutils&email=biocommons-dev@googlegroups.com
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nucleotide&id=NM_181798.1&rettype=fasta&seq_start=1263&seq_stop=1268&tool=bioutils&email=biocommons-dev@googlegroups.com
   response:
     body:
-      string: '>NR_040711.1:1263-1263 Homo sapiens potassium voltage-gated channel,
-        KQT-like subfamily, member 1 (KCNQ1), transcript variant 2, non-coding RNA
-
-        G
-
-
-        '
+      string: !!binary |
+        H4sIAAAAAAAAAAzEvQrCMBQG0L1P8Y0KrZAKGh0E6VBBDFSyy21Na6D5Ibkt+PZ6hnNRj5eQ4niS
+        O3EW9WFf/ZO4BReQKVrjM2JgytkuDmuYmSZTTcTmjeFD3psZeelHcnb+ooMzrjcJApt7ozqxLcGJ
+        fB6SjYyVkiXPqEu4p7oWrdaNbosfAAAA///iAgAAAP//AwAE2YHOhQAAAA==
     headers:
       Access-Control-Allow-Origin:
       - '*'
@@ -275,20 +266,20 @@ interactions:
       Content-Type:
       - text/plain
       Date:
-      - Mon, 10 Mar 2025 16:23:11 GMT
+      - Tue, 11 Nov 2025 08:02:09 GMT
       Keep-Alive:
       - timeout=4, max=40
       NCBI-PHID:
-      - 939B8D0F598EF6450000504EBE95DDC4.1.1.m_5
+      - 1D340441F938F2D50000553E6AA9813F.1.1.m_7
       NCBI-SID:
-      - 738BE373688C0FCA_4A11SID
+      - CE605A3CD98A7B9C_ED0BSID
       Referrer-Policy:
       - origin-when-cross-origin
       Server:
       - Finatra
       Set-Cookie:
-      - ncbi_sid=738BE373688C0FCA_4A11SID; domain=.nih.gov; path=/; expires=Tue, 10
-        Mar 2026 16:23:12 GMT
+      - ncbi_sid=CE605A3CD98A7B9C_ED0BSID; domain=.nih.gov; path=/; expires=Wed, 11
+        Nov 2026 08:02:09 GMT
       Strict-Transport-Security:
       - max-age=31536000; includeSubDomains; preload
       Transfer-Encoding:
@@ -296,7 +287,7 @@ interactions:
       X-RateLimit-Limit:
       - '3'
       X-RateLimit-Remaining:
-      - '1'
+      - '2'
       X-UA-Compatible:
       - IE=Edge
       X-XSS-Protection:

@@ -535,12 +535,8 @@ hgvs_tests = (
     (
         "NC_000013.11:g.32936732=",
         {
-            "digest": "DlGuOFkPMxweVP99ZAjfrAV3iZRB-AB3",
-            "id": "ga4gh:VA.DlGuOFkPMxweVP99ZAjfrAV3iZRB-AB3",
             "location": {
-                "digest": "28YsnRvD40gKu1x3nev0gRzRz-5OTlpS",
                 "end": 32936732,
-                "id": "ga4gh:SL.28YsnRvD40gKu1x3nev0gRzRz-5OTlpS",
                 "sequenceReference": {
                     "refgetAccession": "SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT",
                     "type": "SequenceReference",
@@ -560,12 +556,8 @@ hgvs_tests = (
     (
         "NC_000007.14:g.55181320A>T",
         {
-            "digest": "Hy2XU_-rp4IMh6I_1NXNecBo8Qx8n0oE",
-            "id": "ga4gh:VA.Hy2XU_-rp4IMh6I_1NXNecBo8Qx8n0oE",
             "location": {
-                "digest": "_G2K0qSioM74l_u3OaKR0mgLYdeTL7Xd",
                 "end": 55181320,
-                "id": "ga4gh:SL._G2K0qSioM74l_u3OaKR0mgLYdeTL7Xd",
                 "sequenceReference": {
                     "refgetAccession": "SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul",
                     "type": "SequenceReference",
@@ -580,12 +572,8 @@ hgvs_tests = (
     (
         "NC_000007.14:g.55181220del",
         {
-            "digest": "klRMVChjvV73ZxS9Ajq1Rb8WU-p_HbLu",
-            "id": "ga4gh:VA.klRMVChjvV73ZxS9Ajq1Rb8WU-p_HbLu",
             "location": {
-                "digest": "ljan7F0ePe9uiD6f2u80ZG5gDtx9Mr0V",
                 "end": 55181220,
-                "id": "ga4gh:SL.ljan7F0ePe9uiD6f2u80ZG5gDtx9Mr0V",
                 "sequenceReference": {
                     "refgetAccession": "SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul",
                     "type": "SequenceReference",
@@ -605,12 +593,8 @@ hgvs_tests = (
     (
         "NC_000007.14:g.55181230_55181231insGGCT",
         {
-            "digest": "CLOvnFRJXGNRB9aTuNbvsLqc7syRYb55",
-            "id": "ga4gh:VA.CLOvnFRJXGNRB9aTuNbvsLqc7syRYb55",
             "location": {
-                "digest": "lh4dRt_xWPi3wrubcfomi5DkD7fu6wd2",
                 "end": 55181230,
-                "id": "ga4gh:SL.lh4dRt_xWPi3wrubcfomi5DkD7fu6wd2",
                 "sequenceReference": {
                     "refgetAccession": "SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul",
                     "type": "SequenceReference",
@@ -625,12 +609,8 @@ hgvs_tests = (
     (
         "NC_000013.11:g.32331093_32331094dup",
         {
-            "digest": "swY2caCgv1kP6YqKyPlcEzJqTvou15vC",
-            "id": "ga4gh:VA.swY2caCgv1kP6YqKyPlcEzJqTvou15vC",
             "location": {
-                "digest": "ikECYncPpE1xh6f_LiComrFGevocjDHQ",
                 "end": 32331094,
-                "id": "ga4gh:SL.ikECYncPpE1xh6f_LiComrFGevocjDHQ",
                 "sequenceReference": {
                     "refgetAccession": "SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT",
                     "type": "SequenceReference",
@@ -650,12 +630,8 @@ hgvs_tests = (
     (
         "NC_000013.11:g.32316467dup",
         {
-            "digest": "96ak7XdY3DNbp71aHEXw-NHSfeHGW-KT",
-            "id": "ga4gh:VA.96ak7XdY3DNbp71aHEXw-NHSfeHGW-KT",
             "location": {
-                "digest": "fwfHu8VaD2-6Qvay9MJSINXPS767RYSw",
                 "end": 32316467,
-                "id": "ga4gh:SL.fwfHu8VaD2-6Qvay9MJSINXPS767RYSw",
                 "sequenceReference": {
                     "refgetAccession": "SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT",
                     "type": "SequenceReference",
@@ -675,12 +651,8 @@ hgvs_tests = (
     (
         "NM_001331029.1:c.722A>G",
         {
-            "digest": "DPe4AO-S0Yu4wzSCmys7eGn4p4sO0zaC",
-            "id": "ga4gh:VA.DPe4AO-S0Yu4wzSCmys7eGn4p4sO0zaC",
             "location": {
-                "digest": "7hcVmPnIspQNDfZKBzRJFc8K9GaJuAlY",
                 "end": 872,
-                "id": "ga4gh:SL.7hcVmPnIspQNDfZKBzRJFc8K9GaJuAlY",
                 "sequenceReference": {
                     "refgetAccession": "SQ.MBIgVnoHFw34aFqNUVGM0zgjC3d-v8dK",
                     "type": "SequenceReference",
@@ -695,12 +667,8 @@ hgvs_tests = (
     (
         "NM_181798.1:c.1007G>T",
         {
-            "digest": "vSL4aV7mPQKQLX7Jk-PmXN0APs0cBIr9",
-            "id": "ga4gh:VA.vSL4aV7mPQKQLX7Jk-PmXN0APs0cBIr9",
             "location": {
-                "digest": "EtvHvoj1Lsq-RruzIzWbKOIAW-bt193w",
                 "end": 1263,
-                "id": "ga4gh:SL.EtvHvoj1Lsq-RruzIzWbKOIAW-bt193w",
                 "sequenceReference": {
                     "refgetAccession": "SQ.KN07u-RFqd1dTyOWOG98HnOq87Nq-ZIg",
                     "type": "SequenceReference",
@@ -715,13 +683,9 @@ hgvs_tests = (
     (
         "NC_000019.10:g.289464_289465insCACA",
         {
-            "digest": "YFUR4oR_84b-rRFf0UzOjfI4eE5FTKAP",
-            "id": "ga4gh:VA.YFUR4oR_84b-rRFf0UzOjfI4eE5FTKAP",
             "type": "Allele",
             "location": {
-                "digest": "L145KFLJeJ334YnOVm59pPlbdqfHhgXZ",
                 "end": 289466,
-                "id": "ga4gh:SL.L145KFLJeJ334YnOVm59pPlbdqfHhgXZ",
                 "sequenceReference": {
                     "refgetAccession": "SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl",
                     "type": "SequenceReference",
@@ -740,13 +704,9 @@ hgvs_tests = (
     (
         "NC_000019.10:g.289485_289500del",
         {
-            "digest": "Djc_SwVDFunsArqwUM00PciVaF70VTcU",
-            "id": "ga4gh:VA.Djc_SwVDFunsArqwUM00PciVaF70VTcU",
             "type": "Allele",
             "location": {
-                "digest": "WTE7jyihK4qvRRzEqM7u5nSD4iS2k3xp",
                 "end": 289501,
-                "id": "ga4gh:SL.WTE7jyihK4qvRRzEqM7u5nSD4iS2k3xp",
                 "sequenceReference": {
                     "refgetAccession": "SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl",
                     "type": "SequenceReference",
@@ -774,7 +734,6 @@ hgvs_tests_to_hgvs_map = {
 @pytest.mark.vcr
 def test_hgvs(tlr, hgvsexpr, expected):
     # do_normalize defaults to true
-    tlr.identify = True
     allele = tlr.translate_from(hgvsexpr, "hgvs")
     assert allele.model_dump(exclude_none=True) == expected
 
@@ -791,15 +750,9 @@ def test_rle_seq_limit(tlr):
     rle_seq_limit is set to None.
     """
     # do_normalize defaults to true
-    tlr.identify = True
-
     a_dict = {
-        "digest": "j7qUzb1uvmdxLAbtdCPiay4kIRQmyZNv",
-        "id": "ga4gh:VA.j7qUzb1uvmdxLAbtdCPiay4kIRQmyZNv",
         "location": {
-            "digest": "88oOqkUgALP7fnN8P8lbvCosFhG8YpY0",
             "end": 32331094,
-            "id": "ga4gh:SL.88oOqkUgALP7fnN8P8lbvCosFhG8YpY0",
             "sequenceReference": {
                 "refgetAccession": "SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT",
                 "type": "SequenceReference",

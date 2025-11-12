@@ -9,7 +9,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.32.3
+      - python-requests/2.32.5
     method: GET
     uri: http://localhost:5000/seqrepo/1/metadata/refseq:NC_000007.14
   response:
@@ -34,7 +34,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Mon, 10 Mar 2025 16:22:51 GMT
+      - Tue, 11 Nov 2025 08:01:50 GMT
       Server:
       - Werkzeug/2.2.3 Python/3.10.12
     status:
@@ -50,7 +50,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.32.3
+      - python-requests/2.32.5
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul?start=55181319&end=55181320
   response:
@@ -64,7 +64,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Mon, 10 Mar 2025 16:22:51 GMT
+      - Tue, 11 Nov 2025 08:01:50 GMT
       Server:
       - Werkzeug/2.2.3 Python/3.10.12
     status:
@@ -80,18 +80,14 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.32.3
+      - python-requests/2.32.5
     method: GET
     uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nucleotide&id=NC_000007.14&rettype=fasta&seq_start=55181320&seq_stop=55181320&tool=bioutils&email=biocommons-dev@googlegroups.com
   response:
     body:
-      string: '>NC_000007.14:55181320-55181320 Homo sapiens chromosome 7, GRCh38.p14
-        Primary Assembly
-
-        A
-
-
-        '
+      string: !!binary |
+        H4sIAAAAAAAAALLzc443AAFzPUMTK1NTQwtDYyMDXRhDwSM/N1+hOLEgMzWvWCE5owjILc7PTVUw
+        11FwD3LOMLbQKzA0UQgoysxNLKpUcCwuTs1NyqnkcuQCAAAA///iAgAAAP//AwD5Qh4fWgAAAA==
     headers:
       Access-Control-Allow-Origin:
       - '*'
@@ -108,20 +104,20 @@ interactions:
       Content-Type:
       - text/plain
       Date:
-      - Mon, 10 Mar 2025 16:22:51 GMT
+      - Tue, 11 Nov 2025 08:01:49 GMT
       Keep-Alive:
       - timeout=4, max=40
       NCBI-PHID:
-      - D0BDD793D08B96450000306AACF15A8B.1.1.m_5
+      - 1D340441F938F2D50000443E36CDB98F.1.1.m_7
       NCBI-SID:
-      - D27BE21922DB341C_C7A9SID
+      - 4AA4A0E02A1F8886_9826SID
       Referrer-Policy:
       - origin-when-cross-origin
       Server:
       - Finatra
       Set-Cookie:
-      - ncbi_sid=D27BE21922DB341C_C7A9SID; domain=.nih.gov; path=/; expires=Tue, 10
-        Mar 2026 16:22:52 GMT
+      - ncbi_sid=4AA4A0E02A1F8886_9826SID; domain=.nih.gov; path=/; expires=Wed, 11
+        Nov 2026 08:01:50 GMT
       Strict-Transport-Security:
       - max-age=31536000; includeSubDomains; preload
       Transfer-Encoding:
@@ -129,7 +125,7 @@ interactions:
       X-RateLimit-Limit:
       - '3'
       X-RateLimit-Remaining:
-      - '2'
+      - '1'
       X-UA-Compatible:
       - IE=Edge
       X-XSS-Protection:
@@ -149,18 +145,15 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.32.3
+      - python-requests/2.32.5
     method: GET
     uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nucleotide&id=NC_000007.14&rettype=fasta&seq_start=55181320&seq_stop=55181340&tool=bioutils&email=biocommons-dev@googlegroups.com
   response:
     body:
-      string: '>NC_000007.14:55181320-55181340 Homo sapiens chromosome 7, GRCh38.p14
-        Primary Assembly
-
-        AACCCCCACGTGTGCCGCCTG
-
-
-        '
+      string: !!binary |
+        H4sIAAAAAAAAALLzc443AAFzPUMTK1NTQwtDYyMDXQjDxEDBIz83X6E4sSAzNa9YITmjCMgtzs9N
+        VTDXUXAPcs4wttArMDRRCCjKzE0sqlRwLC5OzU3KqeRydHQGAUdn9xAgdHYGohB3LgAAAAD//+IC
+        AAAA//8DAKrmuS9uAAAA
     headers:
       Access-Control-Allow-Origin:
       - '*'
@@ -177,20 +170,20 @@ interactions:
       Content-Type:
       - text/plain
       Date:
-      - Mon, 10 Mar 2025 16:22:52 GMT
+      - Tue, 11 Nov 2025 08:01:50 GMT
       Keep-Alive:
       - timeout=4, max=40
       NCBI-PHID:
-      - D0BDD793D08B96450000376AAED0F690.1.1.m_5
+      - 1D340441F938F2D50000543E3778FD17.1.1.m_7
       NCBI-SID:
-      - B02A0DE89C6FB2A8_F15ESID
+      - 0DAD2688A609A28F_8E6CSID
       Referrer-Policy:
       - origin-when-cross-origin
       Server:
       - Finatra
       Set-Cookie:
-      - ncbi_sid=B02A0DE89C6FB2A8_F15ESID; domain=.nih.gov; path=/; expires=Tue, 10
-        Mar 2026 16:22:52 GMT
+      - ncbi_sid=0DAD2688A609A28F_8E6CSID; domain=.nih.gov; path=/; expires=Wed, 11
+        Nov 2026 08:01:50 GMT
       Strict-Transport-Security:
       - max-age=31536000; includeSubDomains; preload
       Transfer-Encoding:
@@ -198,7 +191,7 @@ interactions:
       X-RateLimit-Limit:
       - '3'
       X-RateLimit-Remaining:
-      - '1'
+      - '0'
       X-UA-Compatible:
       - IE=Edge
       X-XSS-Protection:
