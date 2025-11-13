@@ -23,7 +23,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Thu, 13 Nov 2025 17:07:33 GMT
+      - Thu, 13 Nov 2025 17:52:12 GMT
       Server:
       - Werkzeug/2.2.3 Python/3.10.12
     status:
@@ -53,7 +53,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Thu, 13 Nov 2025 17:07:33 GMT
+      - Thu, 13 Nov 2025 17:52:12 GMT
       Server:
       - Werkzeug/2.2.3 Python/3.10.12
     status:
@@ -83,7 +83,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Thu, 13 Nov 2025 17:07:33 GMT
+      - Thu, 13 Nov 2025 17:52:12 GMT
       Server:
       - Werkzeug/2.2.3 Python/3.10.12
     status:
@@ -113,7 +113,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Thu, 13 Nov 2025 17:07:33 GMT
+      - Thu, 13 Nov 2025 17:52:12 GMT
       Server:
       - Werkzeug/2.2.3 Python/3.10.12
     status:
@@ -143,7 +143,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Thu, 13 Nov 2025 17:07:33 GMT
+      - Thu, 13 Nov 2025 17:52:12 GMT
       Server:
       - Werkzeug/2.2.3 Python/3.10.12
     status:
@@ -173,7 +173,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Thu, 13 Nov 2025 17:07:33 GMT
+      - Thu, 13 Nov 2025 17:52:12 GMT
       Server:
       - Werkzeug/2.2.3 Python/3.10.12
     status:
@@ -203,7 +203,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Thu, 13 Nov 2025 17:07:33 GMT
+      - Thu, 13 Nov 2025 17:52:12 GMT
       Server:
       - Werkzeug/2.2.3 Python/3.10.12
     status:
@@ -233,7 +233,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Thu, 13 Nov 2025 17:07:33 GMT
+      - Thu, 13 Nov 2025 17:52:12 GMT
       Server:
       - Werkzeug/2.2.3 Python/3.10.12
     status:
@@ -263,7 +263,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Thu, 13 Nov 2025 17:07:33 GMT
+      - Thu, 13 Nov 2025 17:52:12 GMT
       Server:
       - Werkzeug/2.2.3 Python/3.10.12
     status:
@@ -293,7 +293,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Thu, 13 Nov 2025 17:07:33 GMT
+      - Thu, 13 Nov 2025 17:52:12 GMT
       Server:
       - Werkzeug/2.2.3 Python/3.10.12
     status:
@@ -323,7 +323,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Thu, 13 Nov 2025 17:07:33 GMT
+      - Thu, 13 Nov 2025 17:52:12 GMT
       Server:
       - Werkzeug/2.2.3 Python/3.10.12
     status:
@@ -353,7 +353,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Thu, 13 Nov 2025 17:07:33 GMT
+      - Thu, 13 Nov 2025 17:52:12 GMT
       Server:
       - Werkzeug/2.2.3 Python/3.10.12
     status:
@@ -383,7 +383,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Thu, 13 Nov 2025 17:07:33 GMT
+      - Thu, 13 Nov 2025 17:52:12 GMT
       Server:
       - Werkzeug/2.2.3 Python/3.10.12
     status:
@@ -413,7 +413,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Thu, 13 Nov 2025 17:07:33 GMT
+      - Thu, 13 Nov 2025 17:52:12 GMT
       Server:
       - Werkzeug/2.2.3 Python/3.10.12
     status:
@@ -443,7 +443,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Thu, 13 Nov 2025 17:07:33 GMT
+      - Thu, 13 Nov 2025 17:52:12 GMT
       Server:
       - Werkzeug/2.2.3 Python/3.10.12
     status:
@@ -473,7 +473,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Thu, 13 Nov 2025 17:07:33 GMT
+      - Thu, 13 Nov 2025 17:52:12 GMT
       Server:
       - Werkzeug/2.2.3 Python/3.10.12
     status:
@@ -503,7 +503,7 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Thu, 13 Nov 2025 17:07:33 GMT
+      - Thu, 13 Nov 2025 17:52:12 GMT
       Server:
       - Werkzeug/2.2.3 Python/3.10.12
     status:
@@ -533,9 +533,326 @@ interactions:
       Content-Type:
       - text/plain; charset=utf-8
       Date:
-      - Thu, 13 Nov 2025 17:07:33 GMT
+      - Thu, 13 Nov 2025 17:52:12 GMT
       Server:
       - Werkzeug/2.2.3 Python/3.10.12
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.32.5
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nucleotide&id=NC_000013.11&rettype=fasta&seq_start=32331083&seq_stop=32331094&tool=bioutils&email=biocommons-dev@googlegroups.com
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAALLzc443AAJDYz1DQytjI2NjQwMLY10Iw9JEwSM/N1+hOLEgMzWvWCE5owjILc7P
+        TVUwNNZRcA9yzjC20CswNFEIKMrMTSyqVHAsLk7NTcqp5ApBAlwAAAAA///iAgAAAP//AwBz5s6G
+        ZgAAAA==
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      Access-Control-Expose-Headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining
+      Cache-Control:
+      - private
+      Connection:
+      - Keep-Alive
+      Content-Disposition:
+      - attachment; filename="sequence.fasta"
+      Content-Security-Policy:
+      - upgrade-insecure-requests
+      Content-Type:
+      - text/plain
+      Date:
+      - Thu, 13 Nov 2025 17:52:11 GMT
+      Keep-Alive:
+      - timeout=4, max=40
+      NCBI-PHID:
+      - 1D340D3D85948215000067690B57BDA8.1.1.m_7
+      NCBI-SID:
+      - 883D9EE35E4405EE_7C35SID
+      Referrer-Policy:
+      - origin-when-cross-origin
+      Server:
+      - Finatra
+      Set-Cookie:
+      - ncbi_sid=883D9EE35E4405EE_7C35SID; domain=.nih.gov; path=/; expires=Fri, 13
+        Nov 2026 17:52:12 GMT
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubDomains; preload
+      Transfer-Encoding:
+      - chunked
+      X-RateLimit-Limit:
+      - '3'
+      X-RateLimit-Remaining:
+      - '0'
+      X-UA-Compatible:
+      - IE=Edge
+      X-XSS-Protection:
+      - 1; mode=block
+      content-encoding:
+      - gzip
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.32.5
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nucleotide&id=NC_000013.11&rettype=fasta&seq_start=32331094&seq_stop=32331094&tool=bioutils&email=biocommons-dev@googlegroups.com
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAALLzc443AAJDYz1DQytjI2NjQwNLE10YQ8EjPzdfoTixIDM1r1ghOaMIyC3Oz01V
+        MDTWUXAPcs4wttArMDRRCCjKzE0sqlRwLC5OzU3KqeQK4QIAAAD//+ICAAAA//8DAOcxeKNbAAAA
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      Access-Control-Expose-Headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining
+      Cache-Control:
+      - private
+      Connection:
+      - Keep-Alive
+      Content-Disposition:
+      - attachment; filename="sequence.fasta"
+      Content-Security-Policy:
+      - upgrade-insecure-requests
+      Content-Type:
+      - text/plain
+      Date:
+      - Thu, 13 Nov 2025 17:52:12 GMT
+      Keep-Alive:
+      - timeout=4, max=40
+      NCBI-PHID:
+      - 1D331AE54D4115450000565E4790C6B3.1.1.m_7
+      NCBI-SID:
+      - 1D5DA0D8924A71E3_B259SID
+      Referrer-Policy:
+      - origin-when-cross-origin
+      Server:
+      - Finatra
+      Set-Cookie:
+      - ncbi_sid=1D5DA0D8924A71E3_B259SID; domain=.nih.gov; path=/; expires=Fri, 13
+        Nov 2026 17:52:12 GMT
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubDomains; preload
+      Transfer-Encoding:
+      - chunked
+      X-RateLimit-Limit:
+      - '3'
+      X-RateLimit-Remaining:
+      - '0'
+      X-UA-Compatible:
+      - IE=Edge
+      X-XSS-Protection:
+      - 1; mode=block
+      content-encoding:
+      - gzip
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.32.5
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nucleotide&id=NC_000013.11&rettype=fasta&seq_start=32331083&seq_stop=32331114&tool=bioutils&email=biocommons-dev@googlegroups.com
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAALLzc443AAJDYz1DQytjI2NjQwMLY10ww9DQRMEjPzdfoTixIDM1r1ghOaMIyC3O
+        z01VMDTWUXAPcs4wttArACoLKMrMTSyqVHAsLk7NTcqp5ApBAu6O7u4h7kAyxBnIcQaS7iFcAAAA
+        AP//4gIAAAD//wMAlOTJvHoAAAA=
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      Access-Control-Expose-Headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining
+      Cache-Control:
+      - private
+      Connection:
+      - Keep-Alive
+      Content-Disposition:
+      - attachment; filename="sequence.fasta"
+      Content-Security-Policy:
+      - upgrade-insecure-requests
+      Content-Type:
+      - text/plain
+      Date:
+      - Thu, 13 Nov 2025 17:52:12 GMT
+      Keep-Alive:
+      - timeout=4, max=40
+      NCBI-PHID:
+      - 1D340D3D85948215000067690C9EDFC4.1.1.m_7
+      NCBI-SID:
+      - 88AB7F246BB0ED6C_3D34SID
+      Referrer-Policy:
+      - origin-when-cross-origin
+      Server:
+      - Finatra
+      Set-Cookie:
+      - ncbi_sid=88AB7F246BB0ED6C_3D34SID; domain=.nih.gov; path=/; expires=Fri, 13
+        Nov 2026 17:52:13 GMT
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubDomains; preload
+      Transfer-Encoding:
+      - chunked
+      X-RateLimit-Limit:
+      - '3'
+      X-RateLimit-Remaining:
+      - '0'
+      X-UA-Compatible:
+      - IE=Edge
+      X-XSS-Protection:
+      - 1; mode=block
+      content-encoding:
+      - gzip
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.32.5
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nucleotide&id=NC_000013.11&rettype=fasta&seq_start=32331093&seq_stop=32331094&tool=bioutils&email=biocommons-dev@googlegroups.com
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAKpWSi0qyi9SslJyDPBUKEosSVXIyczNLFFIrUhOTU1JTVHSUUosyNTNTq0EqjGz
+        1DM0N9azNNczNLIAyiTnl+aVAMVNgGywNiDbWKmWCwAAAP//AwASzIfrVgAAAA==
+    headers:
+      Access-Control-Expose-Headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining,Retry-After
+      Connection:
+      - Keep-Alive
+      Content-Security-Policy:
+      - upgrade-insecure-requests
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 13 Nov 2025 17:52:12 GMT
+      Keep-Alive:
+      - timeout=4, max=40
+      Referrer-Policy:
+      - origin-when-cross-origin
+      Retry-After:
+      - '2'
+      Server:
+      - Finatra
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubDomains; preload
+      X-RateLimit-Limit:
+      - '3'
+      X-RateLimit-Remaining:
+      - '0'
+      X-UA-Compatible:
+      - IE=Edge
+      X-XSS-Protection:
+      - 1; mode=block
+      content-encoding:
+      - gzip
+      content-length:
+      - '103'
+    status:
+      code: 429
+      message: Too Many Requests
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.32.5
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nucleotide&id=NC_000013.11&rettype=fasta&seq_start=32331093&seq_stop=32331094&tool=bioutils&email=biocommons-dev@googlegroups.com
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAALLzc443AAJDYz1DQytjI2NjQwNLY10ow0TBIz83X6E4sSAzNa9YITmjCMgtzs9N
+        VTA01lFwD3LOMLbQKzA0UQgoysxNLKpUcCwuTs1NyqnkCgnhAgAAAP//4gIAAAD//wMAmBgGAVwA
+        AAA=
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      Access-Control-Expose-Headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining
+      Cache-Control:
+      - private
+      Connection:
+      - Keep-Alive
+      Content-Disposition:
+      - attachment; filename="sequence.fasta"
+      Content-Security-Policy:
+      - upgrade-insecure-requests
+      Content-Type:
+      - text/plain
+      Date:
+      - Thu, 13 Nov 2025 17:52:14 GMT
+      Keep-Alive:
+      - timeout=4, max=40
+      NCBI-PHID:
+      - 1D331AE54D4115450000365E4A194488.1.1.m_7
+      NCBI-SID:
+      - 4A111A7AF3103359_682FSID
+      Referrer-Policy:
+      - origin-when-cross-origin
+      Server:
+      - Finatra
+      Set-Cookie:
+      - ncbi_sid=4A111A7AF3103359_682FSID; domain=.nih.gov; path=/; expires=Fri, 13
+        Nov 2026 17:52:14 GMT
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubDomains; preload
+      Transfer-Encoding:
+      - chunked
+      X-RateLimit-Limit:
+      - '3'
+      X-RateLimit-Remaining:
+      - '2'
+      X-UA-Compatible:
+      - IE=Edge
+      X-XSS-Protection:
+      - 1; mode=block
+      content-encoding:
+      - gzip
     status:
       code: 200
       message: OK

@@ -21,6 +21,14 @@ def rest_dataproxy():
     )
 
 
+@pytest.fixture(scope="module")
+def vcr_config():
+    """Configure VCR.py for all tests."""
+    return {
+        "decode_compressed_response": True,
+    }
+
+
 # See https://github.com/ga4gh/vrs-python/issues/24
 # @pytest.fixture(autouse=True)
 # def setup_doctest(doctest_namespace, tlr):
