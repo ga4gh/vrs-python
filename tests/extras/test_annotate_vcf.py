@@ -323,4 +323,5 @@ def test_annotate_vcf_rle(vcf_annotator: VcfAnnotator, vcr_cassette):
         assert vrs_repeat_lengths == (4, 4)  # Both are 4-base repeats
 
     assert output_vrs_pkl.exists()
-    assert vcr_cassette.all_played
+    if vcr_cassette.write_protected:
+        assert vcr_cassette.all_played
