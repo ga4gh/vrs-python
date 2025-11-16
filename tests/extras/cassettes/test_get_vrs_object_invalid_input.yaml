@@ -1,45 +1,19 @@
 interactions:
 - request:
     body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      User-Agent:
-      - python-requests/2.32.3
+    headers: {}
     method: GET
     uri: http://localhost:5000/seqrepo/1/metadata/GRCh38:.
   response:
     body:
       string: ''
-    headers:
-      Connection:
-      - close
-      Content-Length:
-      - '0'
-      Content-Type:
-      - application/json
-      Date:
-      - Mon, 10 Mar 2025 16:23:22 GMT
-      Server:
-      - Werkzeug/2.2.3 Python/3.10.12
+    headers: {}
     status:
       code: 404
       message: NOT FOUND
 - request:
     body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      User-Agent:
-      - python-requests/2.32.3
+    headers: {}
     method: GET
     uri: http://localhost:5000/seqrepo/1/metadata/GRCh38:7
   response:
@@ -56,61 +30,25 @@ interactions:
         \   \"SHA1:e3e26309c05584f0abf2f748854285c9c3eff1b6\",\n    \"VMC:GS_F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul\",\n
         \   \"sha512t24u:F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul\",\n    \"ga4gh:SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul\"\n
         \ ],\n  \"alphabet\": \"ACGNRSTY\",\n  \"length\": 159345973\n}\n"
-    headers:
-      Connection:
-      - close
-      Content-Length:
-      - '977'
-      Content-Type:
-      - application/json
-      Date:
-      - Mon, 10 Mar 2025 16:23:22 GMT
-      Server:
-      - Werkzeug/2.2.3 Python/3.10.12
+    headers: {}
     status:
       code: 200
       message: OK
 - request:
     body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      User-Agent:
-      - python-requests/2.32.3
+    headers: {}
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/GRCh38:7?start=140753335&end=140753336
   response:
     body:
       string: A
-    headers:
-      Connection:
-      - close
-      Content-Length:
-      - '1'
-      Content-Type:
-      - text/plain; charset=utf-8
-      Date:
-      - Mon, 10 Mar 2025 16:23:22 GMT
-      Server:
-      - Werkzeug/2.2.3 Python/3.10.12
+    headers: {}
     status:
       code: 200
       message: OK
 - request:
     body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      User-Agent:
-      - python-requests/2.32.3
+    headers: {}
     method: GET
     uri: http://localhost:5000/seqrepo/1/metadata/ga4gh:SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul
   response:
@@ -127,47 +65,19 @@ interactions:
         \   \"SHA1:e3e26309c05584f0abf2f748854285c9c3eff1b6\",\n    \"VMC:GS_F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul\",\n
         \   \"sha512t24u:F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul\",\n    \"ga4gh:SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul\"\n
         \ ],\n  \"alphabet\": \"ACGNRSTY\",\n  \"length\": 159345973\n}\n"
-    headers:
-      Connection:
-      - close
-      Content-Length:
-      - '977'
-      Content-Type:
-      - application/json
-      Date:
-      - Mon, 10 Mar 2025 16:23:22 GMT
-      Server:
-      - Werkzeug/2.2.3 Python/3.10.12
+    headers: {}
     status:
       code: 200
       message: OK
 - request:
     body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      User-Agent:
-      - python-requests/2.32.3
+    headers: {}
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul?start=140753335&end=140753336
   response:
     body:
       string: A
-    headers:
-      Connection:
-      - close
-      Content-Length:
-      - '1'
-      Content-Type:
-      - text/plain; charset=utf-8
-      Date:
-      - Mon, 10 Mar 2025 16:23:22 GMT
-      Server:
-      - Werkzeug/2.2.3 Python/3.10.12
+    headers: {}
     status:
       code: 200
       message: OK

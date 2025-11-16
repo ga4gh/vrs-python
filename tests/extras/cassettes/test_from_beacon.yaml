@@ -1,15 +1,7 @@
 interactions:
 - request:
     body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      User-Agent:
-      - python-requests/2.32.3
+    headers: {}
     method: GET
     uri: http://localhost:5000/seqrepo/1/metadata/GRCh38:19
   response:
@@ -27,31 +19,13 @@ interactions:
         \   \"SHA1:007c4ce7f2fc8c85f4f148410642979223b9ae16\",\n    \"VMC:GS_IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl\",\n
         \   \"sha512t24u:IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl\",\n    \"ga4gh:SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl\"\n
         \ ],\n  \"alphabet\": \"ACGNT\",\n  \"length\": 58617616\n}\n"
-    headers:
-      Connection:
-      - close
-      Content-Length:
-      - '1035'
-      Content-Type:
-      - application/json
-      Date:
-      - Mon, 10 Mar 2025 16:22:48 GMT
-      Server:
-      - Werkzeug/2.2.3 Python/3.10.12
+    headers: {}
     status:
       code: 200
       message: OK
 - request:
     body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      User-Agent:
-      - python-requests/2.32.3
+    headers: {}
     method: GET
     uri: http://localhost:5000/seqrepo/1/metadata/GRCh38:MT
   response:
@@ -74,17 +48,7 @@ interactions:
         \   \"sha512t24u:k3grVkjY-hoWcCUojHw6VU6GE3MZ8Sct\",\n    \"ga4gh:SQ.k3grVkjY-hoWcCUojHw6VU6GE3MZ8Sct\",\n
         \   \"hs37-1kg:MT\",\n    \"hs37d5:MT\"\n  ],\n  \"alphabet\": \"ACGNT\",\n
         \ \"length\": 16569\n}\n"
-    headers:
-      Connection:
-      - close
-      Content-Length:
-      - '1355'
-      Content-Type:
-      - application/json
-      Date:
-      - Mon, 10 Mar 2025 16:22:48 GMT
-      Server:
-      - Werkzeug/2.2.3 Python/3.10.12
+    headers: {}
     status:
       code: 200
       message: OK
