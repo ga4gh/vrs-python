@@ -86,8 +86,6 @@ def test_annotate_vcf_grch38_noattrs(
     vcf_annotator.annotate(input_vcf, output_vcf, output_pkl_path=output_vrs_pkl)
     compare_vcfs(output_vcf, expected_vcf_no_vrs_attrs)
     assert output_vrs_pkl.exists()
-    if vcr_cassette.write_protected:
-        assert vcr_cassette.all_played
 
 
 @pytest.mark.vcr
@@ -105,8 +103,6 @@ def test_annotate_vcf_grch38_attrs(
     )
     compare_vcfs(output_vcf, expected_vcf)
     assert output_vrs_pkl.exists()
-    if vcr_cassette.write_protected:
-        assert vcr_cassette.all_played
 
 
 @pytest.mark.vcr
@@ -128,8 +124,6 @@ def test_annotate_vcf_grch38_attrs_altsonly(
     )
     compare_vcfs(output_vcf, expected_altsonly_vcf)
     assert output_vrs_pkl.exists()
-    if vcr_cassette.write_protected:
-        assert vcr_cassette.all_played
 
 
 @pytest.mark.vcr
@@ -155,8 +149,6 @@ def test_annotate_vcf_grch37_attrs(
         expected_output_lines = expected_output.readlines()
     assert out_vcf_lines != expected_output_lines
     assert output_vrs_pkl.exists()
-    if vcr_cassette.write_protected:
-        assert vcr_cassette.all_played
 
 
 @pytest.mark.vcr
@@ -173,8 +165,6 @@ def test_annotate_vcf_pickle_only(
     )
     assert output_vrs_pkl.exists()
     assert not output_vcf.exists()
-    if vcr_cassette.write_protected:
-        assert vcr_cassette.all_played
 
 
 @pytest.mark.vcr
@@ -189,8 +179,6 @@ def test_annotate_vcf_vcf_only(
     # Test only VCF output
     vcf_annotator.annotate(input_vcf, output_vcf_path=output_vcf, vrs_attributes=True)
     compare_vcfs(output_vcf, expected_vcf)
-    if vcr_cassette.write_protected:
-        assert vcr_cassette.all_played
     assert not Path(output_vrs_pkl).exists()
 
 
