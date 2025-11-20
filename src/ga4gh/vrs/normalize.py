@@ -123,100 +123,78 @@ def _normalize_allele(input_allele, data_proxy, rle_seq_limit=50):
         return input_allele
 
     ival = (start.value, end.value)
+    start_pos_type = start.pos_type
+    end_pos_type = end.pos_type
     alleles = (
         (None, input_allele.state.sequence.root)
         if input_allele.state.sequence
         else (None, "")
     )
 
-    # Trim common flanking sequence from Allele sequences.
-    try:
-        trim_ival, trim_alleles = _normalize(
-            ref_seq, ival, alleles, mode=None, trim=True
-        )
-    except ValueError as e:
-        # bioutils _normalize raises ValueError for reference alleles when in trim=True.
-        # But verify this is actually a reference allele before treating it as such.
-        ref_at_location = ref_seq[start.value : end.value]
-        alt_seq = alleles[1]
-        if ref_at_location == alt_seq:
-            # Return RLE with length and repeatSubunitLength both set to ref (and alt) length
-            new_allele = pydantic_copy(input_allele)
-            return _define_rle_allele(
-                new_allele,
-                length=len(ref_at_location),
-                repeat_subunit_length=len(ref_at_location),
-                rle_seq_limit=rle_seq_limit,
-                extended_alt_seq=ref_at_location,
-            )
-        # Re-raise if this is a different ValueError (shouldn't happen with valid input and assuming bioutils hasn't changed behavior)
-        msg = f"Unexpected bioutils trim error for non reference allele: ref='{ref_at_location}', alt='{alt_seq}'"
-        raise ValueError(msg) from e
+    # Phase 1: trim shared flanking sequence
+    trim_ival, trim_alleles = _trim_for_normalization(
+        ref_seq, ival, alleles, start, end
+    )
 
     trim_ref_seq = ref_seq[trim_ival[0] : trim_ival[1]]
     trim_alt_seq = trim_alleles[1]
     len_trimmed_ref = len(trim_ref_seq)
     len_trimmed_alt = len(trim_alt_seq)
+    seed_length = len_trimmed_ref if len_trimmed_ref else len_trimmed_alt
+    identity_case = len_trimmed_ref and len_trimmed_alt and trim_ref_seq == trim_alt_seq
 
     new_allele = pydantic_copy(input_allele)
 
-    if len_trimmed_ref and len_trimmed_alt:
-        new_allele.location.start = _get_new_allele_location_pos(
-            trim_ival[0], start.pos_type
-        )
-        new_allele.location.end = _get_new_allele_location_pos(
-            trim_ival[1], end.pos_type
-        )
+    # Substitution: both sides non-empty and different after trim.
+    # 2.b
+    if len_trimmed_ref and len_trimmed_alt and not identity_case:
+        _set_location_from_interval(new_allele, trim_ival, start_pos_type, end_pos_type)
         new_allele.state.sequence = models.sequenceString(trim_alleles[1])
         return new_allele
-    seed_length = len_trimmed_ref if len_trimmed_ref else len_trimmed_alt
 
-    # Determine bounds of ambiguity
+    # Phase 2: expand ambiguity
+    # 3
     new_ival, new_alleles = _normalize(
-        ref_seq, trim_ival, (None, trim_alleles[1]), mode=NormalizationMode.EXPAND
+        ref_seq,
+        trim_ival,
+        (None, trim_alleles[1]),
+        mode=NormalizationMode.EXPAND,
+        trim=not identity_case,  # bioutils cannot trim identical alleles
     )
 
-    new_allele.location.start = _get_new_allele_location_pos(
-        new_ival[0], start.pos_type
-    )
-    new_allele.location.end = _get_new_allele_location_pos(new_ival[1], end.pos_type)
-
+    # 4
     extended_ref_seq = ref_seq[new_ival[0] : new_ival[1]]
     extended_alt_seq = new_alleles[1]
+    len_extended_alt = len(extended_alt_seq)
+    len_extended_ref = len(extended_ref_seq)
 
+    # 5.a
     if not extended_ref_seq:
-        # If the reference sequence is empty this is an unambiguous insertion.
-        # Return a new Allele with the trimmed alternate sequence as a Literal
-        # Sequence Expression
+        _set_location_from_interval(new_allele, new_ival, start_pos_type, end_pos_type)
         new_allele.state = models.LiteralSequenceExpression(
             sequence=models.sequenceString(extended_alt_seq)
         )
         return new_allele
 
-    # Otherwise, determine if this is reference-derived (an RLE allele).
-    len_extended_alt = len(extended_alt_seq)
-    len_extended_ref = len(extended_ref_seq)
-
+    # 5.b
     if len_extended_alt < len_extended_ref:
-        # If this is a deletion, it is reference-derived
+        _set_location_from_interval(new_allele, new_ival, start_pos_type, end_pos_type)
         return _define_rle_allele(
             new_allele, len_extended_alt, seed_length, rle_seq_limit, extended_alt_seq
         )
 
+    # 5.c
     if len_extended_alt > len_extended_ref:
-        # If this is an insertion, it may or may not be reference-derived.
-        #
-        # Determine the greatest factor `d` of the `seed length` such that `d`
-        # is less than or equal to the length of the modified `reference sequence`,
-        # and there exists a subsequence of length `d` derived from the modified
-        # `reference sequence` that can be circularly expanded to recreate
-        # the modified `alternate sequence`.
         factors = _factor_gen(seed_length)
         for cycle_length in factors:
             if cycle_length > len_extended_ref:
                 continue
             cycle_start = len_extended_ref - cycle_length
             if _is_valid_cycle(cycle_start, extended_ref_seq, extended_alt_seq):
+                _set_location_from_interval(
+                    new_allele, new_ival, start_pos_type, end_pos_type
+                )
+                # 5.c.2
                 return _define_rle_allele(
                     new_allele,
                     len_extended_alt,
@@ -224,11 +202,73 @@ def _normalize_allele(input_allele, data_proxy, rle_seq_limit=50):
                     rle_seq_limit,
                     extended_alt_seq,
                 )
+        # 5.c.3
+        _set_location_from_interval(new_allele, new_ival, start_pos_type, end_pos_type)
+        new_allele.state = models.LiteralSequenceExpression(
+            sequence=models.sequenceString(extended_alt_seq)
+        )
+        return new_allele
 
+    # 5.d identity (lengths equal and sequences match)
+    if (
+        len_extended_alt == len_extended_ref
+        and extended_alt_seq == extended_ref_seq
+        and seed_length
+    ):
+        cycle_length = _smallest_cycle_length(extended_ref_seq)
+
+        # EXPAND moved and found a smaller repeat unit
+        if new_ival != trim_ival and cycle_length and cycle_length < seed_length:
+            _set_location_from_interval(
+                new_allele, new_ival, start_pos_type, end_pos_type
+            )
+            return _define_rle_allele(
+                new_allele,
+                len_extended_alt,
+                cycle_length,
+                rle_seq_limit,
+                extended_alt_seq,
+            )
+
+        # EXPAND stayed put or no smaller unit; keep original span/seed
+        _set_location_from_interval(new_allele, trim_ival, start_pos_type, end_pos_type)
+        return _define_rle_allele(
+            new_allele, seed_length, seed_length, rle_seq_limit, trim_alt_seq
+        )
+
+    _set_location_from_interval(new_allele, new_ival, start_pos_type, end_pos_type)
     new_allele.state = models.LiteralSequenceExpression(
         sequence=models.sequenceString(extended_alt_seq)
     )
     return new_allele
+
+
+def _trim_for_normalization(ref_seq, ival, alleles, start, end):
+    """Trim common prefix and suffix from the intervals.
+
+    Allow reference-identity alleles to fall through by returning the original ival and sequence.
+    """
+    try:
+        trim_ival, trim_alleles = _normalize(
+            ref_seq, ival, alleles, mode=None, trim=True
+        )
+    except ValueError as e:
+        ref_at_location = ref_seq[start.value : end.value]
+        alt_seq = alleles[1]
+        if ref_at_location == alt_seq:
+            return (ival, (None, ref_at_location))
+        msg = (
+            "Unexpected bioutils trim error for non reference allele: "
+            f"ref='{ref_at_location}', alt='{alt_seq}'"
+        )
+        raise ValueError(msg) from e
+
+    return trim_ival, trim_alleles
+
+
+def _set_location_from_interval(allele, ival, start_pos_type, end_pos_type):
+    allele.location.start = _get_new_allele_location_pos(ival[0], start_pos_type)
+    allele.location.end = _get_new_allele_location_pos(ival[1], end_pos_type)
 
 
 def denormalize_reference_length_expression(
@@ -291,6 +331,19 @@ def _is_valid_cycle(template_start, template, target):
         if char != next(cycle):
             return False
     return True
+
+
+def _smallest_cycle_length(seq: str) -> int:
+    """Return the smallest cycle length that can generate `seq` (partial final copy allowed)."""
+    if not seq:
+        return 0
+    n = len(seq)
+    for cycle_length in range(1, n + 1):
+        pattern = seq[:cycle_length]
+        repeat_count, remainder = divmod(n, cycle_length)
+        if pattern * repeat_count + pattern[:remainder] == seq:
+            return cycle_length
+    return n
 
 
 # TODO _normalize_genotype?
