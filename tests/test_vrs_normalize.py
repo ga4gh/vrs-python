@@ -403,3 +403,56 @@ def test_normalize_clinvar_rle(rest_dataproxy):
     assert microsatellite_insertion_norm == models.Allele(
         **clinvar_microsatellite_insertion_normalized
     )
+
+
+@pytest.mark.vcr
+def test_normalize_microsatellite_counts(rest_dataproxy):
+    """Test microsatellite deletion, insertion, and no-change
+
+    https://github.com/ga4gh/vrs-python/discussions/592
+    """
+    inputs = [
+        # https://www.ncbi.nlm.nih.gov/clinvar/variation/3038970
+        # 21bp repeat subunit, delete 1 copy from 3 reference copies + 8bp right flanking partial copy
+        {
+            "hgvs-microsatellite": "NC_000001.11:g.930090TTCCTCTCCTCCTGCCCCACC[2]",
+            "hgvs-del-ins": "NC_000001.11:g.930132_930152del",
+            "spdi": "NC_000001.11:930081:GCCCCACCTTCCTCTCCTCCTGCCCCACCTTCCTCTCCTCCTGCCCCACCTTCCTCTCCTCCTGCCCCACC:GCCCCACCTTCCTCTCCTCCTGCCCCACCTTCCTCTCCTCCTGCCCCACC",
+            "expected": {
+                "id": "ga4gh:VA.DqozDL1k644wgQiHgjVp8PODJkDFn2dS",
+                "type": "Allele",
+                "digest": "DqozDL1k644wgQiHgjVp8PODJkDFn2dS",
+                "location": {
+                    "id": "ga4gh:SL.Z2axmOUY_oy7Sy26jzOduCprU3WIKzAf",
+                    "type": "SequenceLocation",
+                    "digest": "Z2axmOUY_oy7Sy26jzOduCprU3WIKzAf",
+                    "sequenceReference": {
+                        "type": "SequenceReference",
+                        "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
+                    },
+                    "start": 930081,
+                    "end": 930152,
+                },
+                "state": {
+                    "type": "ReferenceLengthExpression",
+                    "length": 50,
+                    "sequence": "GCCCCACCTTCCTCTCCTCCTGCCCCACCTTCCTCTCCTCCTGCCCCACC",
+                    "repeatSubunitLength": 21,
+                },
+            },
+        },
+        # Same as above, but insertion of 1 copy
+        # {
+        #     "hgvs-microsatellite": "NC_000001.11:g.930090TTCCTCTCCTCCTGCCCCACC[4]",
+        #     "hgvs-del-ins": "",
+        #     "spdi": "",
+        # },
+        # TODO lookup source in clinvar
+        # "NC_000001.11:g.930139CCT[1]",
+        # TODO lookup source in clinvar
+        # "NC_000001.11:g.930212AAG[1]",
+    ]
+    inp = inputs[0]
+
+    inp_normalized = normalize(inp["hgvs-del-ins"], rest_dataproxy, rle_seq_limit=0)
+    assert inp_normalized == inp["expected"]
