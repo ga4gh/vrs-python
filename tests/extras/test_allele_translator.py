@@ -860,6 +860,119 @@ def test_reference_allele_rle(tlr):
     assert to_spdi[0] == spdi_ref_allele
 
 
+# Microsatellite test cases for 21bp repeat unit
+# https://github.com/ga4gh/vrs-python/discussions/592
+# Tests deletion, insertion, and identity (no-change) variations
+# Deletion/insertion: VOCA normalize to 930081-930152 with repeatSubunitLength=21
+# Identity: Keep input coordinates 930089-930152 with repeatSubunitLength=63 (no VOCA normalization)
+microsatellite_21bp_cases = [
+    {
+        "id": "deletion",
+        "description": "Delete 1 copy from 3 copies (3->2 copies)",
+        "hgvs": "NC_000001.11:g.930132_930152del",
+        "spdi": "NC_000001.11:930081:GCCCCACCTTCCTCTCCTCCTGCCCCACCTTCCTCTCCTCCTGCCCCACCTTCCTCTCCTCCTGCCCCACC:GCCCCACCTTCCTCTCCTCCTGCCCCACCTTCCTCTCCTCCTGCCCCACC",
+        "expected": {
+            "type": "Allele",
+            "location": {
+                "type": "SequenceLocation",
+                "sequenceReference": {
+                    "type": "SequenceReference",
+                    "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
+                },
+                "start": 930081,
+                "end": 930152,
+            },
+            "state": {
+                "type": "ReferenceLengthExpression",
+                "length": 50,
+                "sequence": "GCCCCACCTTCCTCTCCTCCTGCCCCACCTTCCTCTCCTCCTGCCCCACC",
+                "repeatSubunitLength": 21,
+            },
+        },
+    },
+    {
+        "id": "insertion",
+        "description": "Insert 1 copy to 3 copies (3->4 copies)",
+        "hgvs": "NC_000001.11:g.930152_930153insTTCCTCTCCTCCTGCCCCACC",
+        "spdi": "NC_000001.11:930081:GCCCCACCTTCCTCTCCTCCTGCCCCACCTTCCTCTCCTCCTGCCCCACCTTCCTCTCCTCCTGCCCCACC:GCCCCACCTTCCTCTCCTCCTGCCCCACCTTCCTCTCCTCCTGCCCCACCTTCCTCTCCTCCTGCCCCACCTTCCTCTCCTCCTGCCCCACC",
+        "expected": {
+            "type": "Allele",
+            "location": {
+                "type": "SequenceLocation",
+                "sequenceReference": {
+                    "type": "SequenceReference",
+                    "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
+                },
+                "start": 930081,
+                "end": 930152,
+            },
+            "state": {
+                "type": "ReferenceLengthExpression",
+                "length": 92,
+                "sequence": "GCCCCACCTTCCTCTCCTCCTGCCCCACCTTCCTCTCCTCCTGCCCCACCTTCCTCTCCTCCTGCCCCACCTTCCTCTCCTCCTGCCCCACC",
+                "repeatSubunitLength": 21,
+            },
+        },
+    },
+    {
+        "id": "identity",
+        "description": "No change, 3 copies (same-as-ref does NOT do VOCA normalization)",
+        "hgvs": "NC_000001.11:g.930090_930152=",
+        "spdi": "NC_000001.11:930089:TTCCTCTCCTCCTGCCCCACCTTCCTCTCCTCCTGCCCCACCTTCCTCTCCTCCTGCCCCACC:TTCCTCTCCTCCTGCCCCACCTTCCTCTCCTCCTGCCCCACCTTCCTCTCCTCCTGCCCCACC",
+        "expected": {
+            "type": "Allele",
+            "location": {
+                "type": "SequenceLocation",
+                "sequenceReference": {
+                    "type": "SequenceReference",
+                    "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
+                },
+                "start": 930089,
+                "end": 930152,
+            },
+            "state": {
+                "type": "ReferenceLengthExpression",
+                "length": 63,
+                "sequence": "TTCCTCTCCTCCTGCCCCACCTTCCTCTCCTCCTGCCCCACCTTCCTCTCCTCCTGCCCCACC",
+                "repeatSubunitLength": 63,
+            },
+        },
+    },
+]
+
+
+@pytest.mark.parametrize("case", microsatellite_21bp_cases, ids=lambda c: c["id"])
+@pytest.mark.vcr
+def test_normalize_microsatellite_counts(tlr, case):
+    """Test microsatellite deletion, insertion, and identity normalization behavior
+
+    Tests three variations of a 21bp microsatellite:
+    - Deletion and insertion: Apply VOCA normalization (roll left, find repeat unit)
+    - Identity (same-as-ref): Do NOT apply VOCA normalization, use input coordinates
+
+    https://github.com/ga4gh/vrs-python/discussions/592
+
+    The microsatellite has a 21bp repeat unit when fully normalized.
+    For deletion/insertion: normalize to 930081-930152 with repeatSubunitLength=21
+    For identity: keep input coordinates (930089-930152) with repeatSubunitLength=63
+    """
+    # Test HGVS format
+    allele_hgvs = tlr.translate_from(
+        case["hgvs"], "hgvs", normalize=True, rle_seq_limit=100
+    )
+    assert allele_hgvs.model_dump(exclude_none=True) == case["expected"], (
+        f"HGVS failed: {case['description']}"
+    )
+
+    # Test SPDI format
+    allele_spdi = tlr.translate_from(
+        case["spdi"], "spdi", normalize=True, rle_seq_limit=100
+    )
+    assert allele_spdi.model_dump(exclude_none=True) == case["expected"], (
+        f"SPDI failed: {case['description']}"
+    )
+
+
 # TODO: Readd these tests
 # @pytest.mark.vcr
 # def test_errors(tlr):
