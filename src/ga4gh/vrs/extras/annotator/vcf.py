@@ -207,7 +207,7 @@ class AbstractVcfAnnotator(abc.ABC):
                 info_field_num,
                 "Integer",
                 (
-                    "The repeat subunit length values from ReferenceLengthExpression states for the GA4GH VRS "
+                    "The repeatSubunitLength values from ReferenceLengthExpression states for the GA4GH VRS "
                     f"Alleles corresponding to the GT indexes of the {info_field_desc} alleles"
                 ),
             )
