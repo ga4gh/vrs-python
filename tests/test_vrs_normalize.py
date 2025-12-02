@@ -36,7 +36,7 @@ allele_dict1_normalized = {
     "type": "Allele",
 }
 
-# Ambiguous indefinite outer 2 bp deletion. Should become RLE.
+# Ambiguous indefinite-outer 2 bp deletion. Should become RLE.
 allele_dict2 = {
     "type": "Allele",
     "location": {
@@ -189,6 +189,82 @@ allele_dict6_normalized = {
     },
 }
 
+# Multi-base substitution (step 2.b). ClinVar 1530016
+# HGVS: NC_000001.11:g.939146_939147delinsTT
+# VCF: 1-939146-GA-TT
+# Substitutions remain as LiteralSequenceExpression (both ref and alt non-empty after trim)
+clinvar_substitution_2bp = {
+    "type": "Allele",
+    "location": {
+        "type": "SequenceLocation",
+        "sequenceReference": {
+            "type": "SequenceReference",
+            "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
+        },
+        "start": 939145,
+        "end": 939147,
+    },
+    "state": {
+        "type": "LiteralSequenceExpression",
+        "sequence": "TT",
+    },
+}
+
+clinvar_substitution_normalized_2bp = {
+    "type": "Allele",
+    "location": {
+        "type": "SequenceLocation",
+        "sequenceReference": {
+            "type": "SequenceReference",
+            "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
+        },
+        "start": 939145,
+        "end": 939147,
+    },
+    "state": {
+        "type": "LiteralSequenceExpression",
+        "sequence": "TT",
+    },
+}
+
+# Unambiguous insertion in a repeat region (step 5.a).
+# Insert "CGT" into a poly-A run at chr1:236900409-236900417.
+# Terminal bases (C, T) don't match surrounding A's, so no rolling occurs.
+# Should remain as LiteralSequenceExpression at the original position.
+unambiguous_insertion_in_repeat = {
+    "type": "Allele",
+    "location": {
+        "type": "SequenceLocation",
+        "sequenceReference": {
+            "type": "SequenceReference",
+            "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
+        },
+        "start": 236900413,
+        "end": 236900413,
+    },
+    "state": {
+        "type": "LiteralSequenceExpression",
+        "sequence": "CGT",
+    },
+}
+
+unambiguous_insertion_in_repeat_normalized = {
+    "type": "Allele",
+    "location": {
+        "type": "SequenceLocation",
+        "sequenceReference": {
+            "type": "SequenceReference",
+            "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
+        },
+        "start": 236900413,
+        "end": 236900413,
+    },
+    "state": {
+        "type": "LiteralSequenceExpression",
+        "sequence": "CGT",
+    },
+}
+
 
 @pytest.mark.vcr
 def test_normalize_allele(rest_dataproxy):
@@ -202,7 +278,7 @@ def test_normalize_allele(rest_dataproxy):
     assert allele1 != allele2
     assert allele2 == models.Allele(**allele_dict2_normalized)
 
-    # Definite ranges are not normalized
+    # Definite ambiguous ranges are not normalized
     allele3 = models.Allele(**allele_dict3)
     allele3_after_norm = normalize(allele3, rest_dataproxy)
     assert allele3_after_norm == allele3
@@ -222,6 +298,20 @@ def test_normalize_allele(rest_dataproxy):
     allele6 = models.Allele(**allele_dict6)
     allele6_after_norm = normalize(allele6, rest_dataproxy)
     assert allele6_after_norm == models.Allele(**allele_dict6_normalized)
+
+    # Multi-base substitution (step 2.b): both ref and alt non-empty after trim
+    # Should remain as LiteralSequenceExpression, not converted to RLE
+    substitution = models.Allele(**clinvar_substitution_2bp)
+    substitution_norm = normalize(substitution, rest_dataproxy)
+    assert substitution_norm == models.Allele(**clinvar_substitution_normalized_2bp)
+
+    # Unambiguous insertion in a repeat region (step 5.a)
+    # Terminal bases don't match context, so no rolling - stays at original position
+    unambig_ins = models.Allele(**unambiguous_insertion_in_repeat)
+    unambig_ins_norm = normalize(unambig_ins, rest_dataproxy)
+    assert unambig_ins_norm == models.Allele(
+        **unambiguous_insertion_in_repeat_normalized
+    )
 
 
 # Simple deletion. ClinVar 3385321
@@ -260,6 +350,7 @@ clinvar_deletion_normalized = {
         "repeatSubunitLength": 1,
     },
 }
+
 
 # Microsatellite deletion: ClinVar 4286633
 # SPDI: NC_000001.11:766399:AATAAATA:AATA

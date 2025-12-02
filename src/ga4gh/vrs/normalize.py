@@ -151,7 +151,7 @@ def _normalize_allele(input_allele: models.Allele, data_proxy, rle_seq_limit=50)
     len_trimmed_ref = len(trim_ref_seq)
     len_trimmed_alt = len(trim_alt_seq)
     seed_length = len_trimmed_ref if len_trimmed_ref else len_trimmed_alt
-    identity_case = len_trimmed_ref and len_trimmed_alt and trim_ref_seq == trim_alt_seq
+    identity_case = trim_ref_seq == trim_alt_seq
 
     new_allele: models.Allele = pydantic_copy(input_allele)
 
