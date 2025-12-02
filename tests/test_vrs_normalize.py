@@ -314,7 +314,7 @@ def test_normalize_allele(rest_dataproxy):
     )
 
 
-# Simple deletion. ClinVar 3385321
+# Simple deletion from non-repeating region (no trim/rolling involved). ClinVar 3385321
 # SPDI: NC_000001.11:66926:G:
 clinvar_deletion = {
     "type": "Allele",
@@ -494,3 +494,438 @@ def test_normalize_clinvar_rle(rest_dataproxy):
     assert microsatellite_insertion_norm == models.Allele(
         **clinvar_microsatellite_insertion_normalized
     )
+
+
+###############################################################################
+# Partial repeat insertion/deletion edge cases in CCT repeat region
+# Region: chr1:1752908-1752936 = CCTCCTCCTCCTCCTCCTCCTCCTCCTC (9 full CCT units + trailing C)
+# These tests verify behavior when insertions/deletions don't align with repeat boundaries
+###############################################################################
+#### MIDDLE INSERTIONS (around position 1752915, in unit 3) ####
+
+# Insert "CT" (2 bases, < repeat unit) in middle of CCT region
+# SPDI: NC_000001.11:1752915::CT
+# Reference: CCT CCT C      CT CCT ...  (positions 1752908-...)
+#                    ^-- insert "CT" at interbase position 1752915
+# Variant:  CCT CCT C[CT]CT CCT ...
+# The ref "CCT" (3bp) becomes "CCTCT" (5bp), which cycles with period 2 (CT CT C)
+partial_repeat_insertion = {
+    "type": "Allele",
+    "location": {
+        "type": "SequenceLocation",
+        "sequenceReference": {
+            "type": "SequenceReference",
+            "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
+        },
+        "start": 1752915,
+        "end": 1752915,
+    },
+    "state": {
+        "type": "LiteralSequenceExpression",
+        "sequence": "CT",
+    },
+}
+
+partial_repeat_insertion_normalized = {
+    "type": "Allele",
+    "location": {
+        "type": "SequenceLocation",
+        "sequenceReference": {
+            "type": "SequenceReference",
+            "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
+        },
+        # Expands to 3 ref bases (1752915-1752918: "CCT"), not the full CCT repeat region,
+        # because the inserted "CT" creates a 2-base cycle pattern locally
+        "start": 1752915,
+        "end": 1752918,
+    },
+    "state": {
+        "type": "ReferenceLengthExpression",
+        # ref "CCT" (3 bases) + ins "CT" (2 bases) = "CCTCT" (5 bases), cycles with period 2
+        "length": 5,
+        "repeatSubunitLength": 2,
+    },
+}
+
+
+# Insert "CCTC" (4 bases, > repeat unit) in middle of CCT region
+# SPDI: NC_000001.11:1752915::CCTC
+# Reference: CCT CCT C      CT CCT CCT ...  (positions 1752908-...)
+#                     ^-- insert "CCTC" at interbase position 1752915 (between C at char 1752914 and C at 1752915)
+# Variant:   CCT CCT C[CCTC]CT CCT ...
+# In the variant sequence, the subunit now identified is now CCTC (CCTC CCTC C)
+# And the ref "CCTCC" (5bp) becomes "CCTCCCTCC" (9bp, period 4)
+middle_ins_4bp = {
+    "type": "Allele",
+    "location": {
+        "type": "SequenceLocation",
+        "sequenceReference": {
+            "type": "SequenceReference",
+            "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
+        },
+        "start": 1752915,
+        "end": 1752915,
+    },
+    "state": {
+        "type": "LiteralSequenceExpression",
+        "sequence": "CCTC",
+    },
+}
+
+middle_ins_4bp_normalized = {
+    "type": "Allele",
+    "location": {
+        "type": "SequenceLocation",
+        "sequenceReference": {
+            "type": "SequenceReference",
+            "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
+        },
+        # Rolls left to 1752911, expands to 5 ref bases (CCTCC)
+        "start": 1752911,
+        "end": 1752916,
+    },
+    "state": {
+        "type": "ReferenceLengthExpression",
+        # ref "CCTCC" (5 bases) + ins "CCTC" (4 bases) = 9 bases, cycles with period 4
+        "length": 9,
+        "repeatSubunitLength": 4,
+    },
+}
+
+#### TAIL INSERTIONS (at position 1752934, end of unit 9) ####
+
+# Insert "CT" (2 bases, < repeat unit) at tail of CCT region
+# SPDI: NC_000001.11:1752934::CT
+# Reference: ...CCT CCT CCT C G A  (positions 1752926-1752938)
+#                        ^-- insert "CT" at interbase position 1752934 (after T, before trailing C)
+# Variant:   ...CCT CCT CCT[CT]C G A
+# Result: Stays as LSE - at boundary where next base (C) doesn't continue the CT pattern
+# No expansion occurs; output is the unchanged insertion
+tail_ins_2bp = {
+    "type": "Allele",
+    "location": {
+        "type": "SequenceLocation",
+        "sequenceReference": {
+            "type": "SequenceReference",
+            "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
+        },
+        "start": 1752934,
+        "end": 1752934,
+    },
+    "state": {
+        "type": "LiteralSequenceExpression",
+        "sequence": "CT",
+    },
+}
+
+tail_ins_2bp_normalized = {
+    "type": "Allele",
+    "location": {
+        "type": "SequenceLocation",
+        "sequenceReference": {
+            "type": "SequenceReference",
+            "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
+        },
+        # No expansion - stays at original position
+        "start": 1752934,
+        "end": 1752934,
+    },
+    "state": {
+        # Stays as LSE because insertion at boundary doesn't form repeating pattern
+        "type": "LiteralSequenceExpression",
+        "sequence": "CT",
+    },
+}
+
+# Insert "CCTC" (4 bases, > repeat unit) at tail of CCT region
+# SPDI: NC_000001.11:1752934::CCTC
+# Reference: ...CCT CCT CCT C G A  (positions 1752926-1752938)
+#                        ^-- insert "CCTC" at interbase position 1752934 (after T, before trailing C)
+# Variant:   ...CCT CCT CCT[CCTC]C G A → ...CCT CCT CCTCCCTC G A
+# Left-aligns: ref "T" (1752933-1752934) + ins "CCTC" = "CCCTC" after normalization
+# Result: Stays as LSE with sequence "CCCTC" - doesn't form repeating pattern at boundary
+tail_ins_4bp = {
+    "type": "Allele",
+    "location": {
+        "type": "SequenceLocation",
+        "sequenceReference": {
+            "type": "SequenceReference",
+            "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
+        },
+        "start": 1752934,
+        "end": 1752934,
+    },
+    "state": {
+        "type": "LiteralSequenceExpression",
+        "sequence": "CCTC",
+    },
+}
+
+tail_ins_4bp_normalized = {
+    "type": "Allele",
+    "location": {
+        "type": "SequenceLocation",
+        "sequenceReference": {
+            "type": "SequenceReference",
+            "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
+        },
+        # Rolls left by 1 to include the T at 1752933
+        "start": 1752933,
+        "end": 1752934,
+    },
+    "state": {
+        # Stays as LSE - ref "T" + ins "CCTC" = "CCCTC" after left-alignment
+        "type": "LiteralSequenceExpression",
+        "sequence": "CCCTC",
+    },
+}
+
+#### MIDDLE DELETIONS (around positions 1752912-1752916) ####
+
+# Delete "CTCC" (4 bases, > repeat unit) in middle of CCT region
+# SPDI: NC_000001.11:1752912:CTCC:
+# Reference: CCT CCT CCT CCT CCT ...  (positions 1752908-...)
+#               C[CTCC]T CCT ...      <-- delete positions 1752912-1752916
+# Variant:   CCT C     T CCT ... → CCTCTCCT...
+# Left-aligns to 1752911: ref span becomes "CCTCC" (5 bases)
+# Ref "CCTCC" - del "CTCC" = 1 base remaining; CTCC has period 4, so repeatSubunitLength=4
+deletion_spanning_boundary = {
+    "type": "Allele",
+    "location": {
+        "type": "SequenceLocation",
+        "sequenceReference": {
+            "type": "SequenceReference",
+            "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
+        },
+        "start": 1752912,
+        "end": 1752916,
+    },
+    "state": {
+        "type": "LiteralSequenceExpression",
+        "sequence": "",
+    },
+}
+
+deletion_spanning_boundary_normalized = {
+    "type": "Allele",
+    "location": {
+        "type": "SequenceLocation",
+        "sequenceReference": {
+            "type": "SequenceReference",
+            "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
+        },
+        # Rolls left by 1 to 1752911; ref span becomes "CCTCC" (5 bases)
+        # Doesn't expand to full CCT repeat region because deleted "CTCC" has period 4, not 3
+        "start": 1752911,
+        "end": 1752916,
+    },
+    "state": {
+        "type": "ReferenceLengthExpression",
+        # ref "CCTCC" (5 bases) - del "CTCC" (4 bases) = 1 base remaining
+        # repeatSubunitLength=4 reflects the deletion size, not the original CCT repeat
+        "length": 1,
+        "repeatSubunitLength": 4,
+    },
+}
+
+# Delete "TC" (2 bases, < repeat unit) in middle of CCT region
+# SPDI: NC_000001.11:1752913:TC:
+# Reference: CCT CCT CCT CCT CCT ...  (positions 1752908-...)
+#               T[TC]CT CCT ...       <-- delete positions 1752913-1752915
+# Variant:   CCT T  CT CCT ... → CCTTCTCCT...
+# Left-aligns to 1752912: ref span becomes "CTC" (3 bases)
+# Ref "CTC" - del "TC" = 1 base remaining; TC has period 2, so repeatSubunitLength=2
+middle_del_2bp = {
+    "type": "Allele",
+    "location": {
+        "type": "SequenceLocation",
+        "sequenceReference": {
+            "type": "SequenceReference",
+            "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
+        },
+        "start": 1752913,
+        "end": 1752915,
+    },
+    "state": {
+        "type": "LiteralSequenceExpression",
+        "sequence": "",
+    },
+}
+
+middle_del_2bp_normalized = {
+    "type": "Allele",
+    "location": {
+        "type": "SequenceLocation",
+        "sequenceReference": {
+            "type": "SequenceReference",
+            "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
+        },
+        # Rolls left by 1 to 1752912; ref span becomes "CTC" (3 bases)
+        "start": 1752912,
+        "end": 1752915,
+    },
+    "state": {
+        "type": "ReferenceLengthExpression",
+        # ref "CTC" (3 bases) - del "TC" (2 bases) = 1 base remaining
+        "length": 1,
+        "repeatSubunitLength": 2,
+    },
+}
+
+#### TAIL DELETIONS (at positions 1752932-1752936) ####
+
+# Delete "TC" (2 bases, < repeat unit) at tail of CCT region
+# SPDI: NC_000001.11:1752934:TC:
+# Reference: ...CCT CCT CCT C G A  (positions 1752926-1752938)
+#                       T[TC]G A   <-- delete positions 1752934-1752936 (T from CCT + trailing C)
+# Variant:   ...CCT CCT CC   G A → ...CCTCCTCCGA
+# Left-aligns to 1752933: ref span becomes "TTC" (3 bases, positions 1752933-1752936)
+# Ref "TTC" - del "TC" = 1 base remaining; TC has period 2, so repeatSubunitLength=2
+tail_del_2bp = {
+    "type": "Allele",
+    "location": {
+        "type": "SequenceLocation",
+        "sequenceReference": {
+            "type": "SequenceReference",
+            "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
+        },
+        "start": 1752934,
+        "end": 1752936,
+    },
+    "state": {
+        "type": "LiteralSequenceExpression",
+        "sequence": "",
+    },
+}
+
+tail_del_2bp_normalized = {
+    "type": "Allele",
+    "location": {
+        "type": "SequenceLocation",
+        "sequenceReference": {
+            "type": "SequenceReference",
+            "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
+        },
+        # Rolls left by 1 to 1752933; ref span becomes "TTC" (3 bases)
+        "start": 1752933,
+        "end": 1752936,
+    },
+    "state": {
+        "type": "ReferenceLengthExpression",
+        # ref "TTC" (3 bases) - del "TC" (2 bases) = 1 base remaining
+        "length": 1,
+        "repeatSubunitLength": 2,
+    },
+}
+
+# Delete "CCTC" (4 bases, > repeat unit) at tail of CCT region
+# SPDI: NC_000001.11:1752932:CCTC:
+# Reference: ...CCT CCT [CCTC] G A  (positions 1752926-1752938)
+#                       ^-- delete positions 1752932-1752936 (CCTC = unit 9 CCT + trailing C)
+# Variant:   ...CCT CCT       G A → ...CCTCCTGA
+# Left-aligns: ref span stays at 1752932-1752936 = "CCTC" (4 bases)
+# Ref "CCTC" - del "CCTC" = 0 bases remaining; CCTC has period 4, so repeatSubunitLength=4
+tail_del_4bp = {
+    "type": "Allele",
+    "location": {
+        "type": "SequenceLocation",
+        "sequenceReference": {
+            "type": "SequenceReference",
+            "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
+        },
+        "start": 1752932,
+        "end": 1752936,
+    },
+    "state": {
+        "type": "LiteralSequenceExpression",
+        "sequence": "",
+    },
+}
+
+tail_del_4bp_normalized = {
+    "type": "Allele",
+    "location": {
+        "type": "SequenceLocation",
+        "sequenceReference": {
+            "type": "SequenceReference",
+            "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
+        },
+        # No rolling - stays at original position
+        "start": 1752932,
+        "end": 1752936,
+    },
+    "state": {
+        "type": "ReferenceLengthExpression",
+        # ref "CCTC" (4 bases) - del "CCTC" (4 bases) = 0 bases remaining
+        "length": 0,
+        "repeatSubunitLength": 4,
+    },
+}
+
+
+@pytest.mark.vcr
+def test_normalize_partial_rle_del_ins(rest_dataproxy):
+    """Test normalization of partial repeat insertions/deletions in CCT repeat region.
+
+    Tests insertions and deletions that don't align with the 3-base CCT repeat boundary.
+    Region: chr1:1752908-1752936 = CCTCCTCCTCCTCCTCCTCCTCCTCCTC
+
+    Cases tested:
+    - Middle insertions: 2bp and 4bp insertions within the repeat region
+    - Tail insertions: 2bp and 4bp insertions at the end of the repeat region
+    - Middle deletions: 2bp and 4bp deletions within the repeat region
+    - Tail deletions: 2bp and 4bp deletions at the end of the repeat region
+    """
+    # === MIDDLE INSERTIONS ===
+
+    # Middle ins 2bp: Insert "CT" at 1752915 (already tested in partial_repeat_insertion)
+    partial_ins = models.Allele(**partial_repeat_insertion)
+    partial_ins_norm = normalize(partial_ins, rest_dataproxy, rle_seq_limit=0)
+    assert partial_ins_norm == models.Allele(**partial_repeat_insertion_normalized)
+
+    # Middle ins 4bp: Insert "CCTC" at 1752915
+    # 4-base insertion into 3-base repeat creates period-4 RLE
+    mid_ins_4 = models.Allele(**middle_ins_4bp)
+    mid_ins_4_norm = normalize(mid_ins_4, rest_dataproxy, rle_seq_limit=0)
+    assert mid_ins_4_norm == models.Allele(**middle_ins_4bp_normalized)
+
+    # === TAIL INSERTIONS ===
+
+    # Tail ins 2bp: Insert "CT" at 1752934
+    # At boundary, stays as LSE (doesn't form repeating pattern)
+    tail_ins_2 = models.Allele(**tail_ins_2bp)
+    tail_ins_2_norm = normalize(tail_ins_2, rest_dataproxy, rle_seq_limit=0)
+    assert tail_ins_2_norm == models.Allele(**tail_ins_2bp_normalized)
+
+    # Tail ins 4bp: Insert "CCTC" at 1752934
+    # At boundary, stays as LSE with left-aligned sequence
+    tail_ins_4 = models.Allele(**tail_ins_4bp)
+    tail_ins_4_norm = normalize(tail_ins_4, rest_dataproxy, rle_seq_limit=0)
+    assert tail_ins_4_norm == models.Allele(**tail_ins_4bp_normalized)
+
+    # === MIDDLE DELETIONS ===
+
+    # Middle del 4bp: Delete "CTCC" at 1752912-1752916 (already tested in deletion_spanning_boundary)
+    span_del = models.Allele(**deletion_spanning_boundary)
+    span_del_norm = normalize(span_del, rest_dataproxy, rle_seq_limit=0)
+    assert span_del_norm == models.Allele(**deletion_spanning_boundary_normalized)
+
+    # Middle del 2bp: Delete "TC" at 1752913-1752915
+    # 2-base deletion creates period-2 RLE
+    mid_del_2 = models.Allele(**middle_del_2bp)
+    mid_del_2_norm = normalize(mid_del_2, rest_dataproxy, rle_seq_limit=0)
+    assert mid_del_2_norm == models.Allele(**middle_del_2bp_normalized)
+
+    # === TAIL DELETIONS ===
+
+    # Tail del 2bp: Delete "TC" at 1752934-1752936
+    # At boundary, still becomes RLE with period 2
+    tail_del_2 = models.Allele(**tail_del_2bp)
+    tail_del_2_norm = normalize(tail_del_2, rest_dataproxy, rle_seq_limit=0)
+    assert tail_del_2_norm == models.Allele(**tail_del_2bp_normalized)
+
+    # Tail del 4bp: Delete "CCTC" at 1752932-1752936
+    # Complete 4-base deletion, RLE with length=0
+    tail_del_4 = models.Allele(**tail_del_4bp)
+    tail_del_4_norm = normalize(tail_del_4, rest_dataproxy, rle_seq_limit=0)
+    assert tail_del_4_norm == models.Allele(**tail_del_4bp_normalized)
