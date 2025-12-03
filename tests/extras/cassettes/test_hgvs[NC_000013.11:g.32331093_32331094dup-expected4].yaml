@@ -276,20 +276,6 @@ interactions:
     uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nucleotide&id=NC_000013.11&rettype=fasta&seq_start=32331093&seq_stop=32331094&tool=bioutils&email=biocommons-dev@googlegroups.com
   response:
     body:
-      string: '{"error":"API rate limit exceeded","api-key":"69.173.97.130","count":"4","limit":"3"}
-
-        '
-    headers: {}
-    status:
-      code: 429
-      message: Too Many Requests
-- request:
-    body: null
-    headers: {}
-    method: GET
-    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nucleotide&id=NC_000013.11&rettype=fasta&seq_start=32331093&seq_stop=32331094&tool=bioutils&email=biocommons-dev@googlegroups.com
-  response:
-    body:
       string: '>NC_000013.11:32331093-32331094 Homo sapiens chromosome 13, GRCh38.p14
         Primary Assembly
 
