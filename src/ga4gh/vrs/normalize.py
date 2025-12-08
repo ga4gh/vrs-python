@@ -11,6 +11,7 @@ from typing import NamedTuple
 
 from bioutils.normalize import NormalizationMode
 from bioutils.normalize import normalize as _normalize
+from pydantic.main import BaseModel
 
 from ga4gh.core import ga4gh_digest, is_pydantic_instance, pydantic_copy
 from ga4gh.vrs import models
@@ -83,7 +84,7 @@ def _get_new_allele_location_pos(
     return val
 
 
-def _normalize_allele(input_allele, data_proxy, rle_seq_limit=50):
+def _normalize_allele(input_allele, data_proxy, rle_seq_limit: int = 50):
     """Normalize Allele using "fully-justified" normalization adapted from NCBI's
     VOCA. Fully-justified normalization expands such ambiguous representation over the
     entire region of ambiguity, resulting in an unambiguous representation that may be
@@ -248,7 +249,7 @@ def denormalize_reference_length_expression(
     return alt
 
 
-def _factor_gen(n):
+def _factor_gen(n: int):
     """Yield all factors of an integer `n`, in descending order"""
     lower_factors = []
     i = 1
@@ -262,7 +263,11 @@ def _factor_gen(n):
 
 
 def _define_rle_allele(
-    allele, length, repeat_subunit_length, rle_seq_limit, extended_alt_seq
+    allele: BaseModel,
+    length: int,
+    repeat_subunit_length: int,
+    rle_seq_limit,
+    extended_alt_seq,
 ):
     # Otherwise, create the Allele as an RLE
     allele.state = models.ReferenceLengthExpression(
@@ -275,7 +280,7 @@ def _define_rle_allele(
     return allele
 
 
-def _is_valid_cycle(template_start, template, target):
+def _is_valid_cycle(template_start, template: str, target) -> bool:
     cycle = itertools.cycle(template[template_start:])
     for char in target[len(template) :]:  # noqa: SIM110
         if char != next(cycle):

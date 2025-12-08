@@ -50,7 +50,7 @@ from ga4gh.core.pydantic import get_pydantic_root, getattr_in
 def flatten(vals):
     """Flatten vals recursively, lazily using yield"""
 
-    def is_coll(thing):
+    def is_coll(thing) -> bool:
         """Return True if the thing looks like a collection.
 
         This is not exhaustive, do not use in general.
@@ -77,7 +77,7 @@ def flatten_type(t):
     return [t]
 
 
-def overlaps(a: list, b: list):
+def overlaps(a: list, b: list) -> bool:
     """Return true if there are any elements in common between a and b"""
     return len(set(a).intersection(set(b))) > 0
 
@@ -248,7 +248,7 @@ class _ValueObject(Entity, ABC):
     See https://en.wikipedia.org/wiki/Value_object for more on Value Objects.
     """
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return encode_canonical_json(self.ga4gh_serialize()).decode("utf-8").__hash__()
 
     def ga4gh_serialize(self) -> dict:
@@ -280,14 +280,14 @@ class Ga4ghIdentifiableObject(_ValueObject, ABC):
         description="A sha512t24u digest created using the VRS Computed Identifier algorithm.",
     )
 
-    def __lt__(self, other):
+    def __lt__(self, other) -> bool:
         return self.get_or_create_digest() < other.get_or_create_digest()
 
     @staticmethod
     def is_ga4gh_identifiable() -> bool:
         return True
 
-    def has_valid_ga4gh_id(self):
+    def has_valid_ga4gh_id(self) -> bool | str | None:
         return self.id and GA4GH_IR_REGEXP.match(self.id) is not None
 
     def compute_digest(
@@ -354,7 +354,7 @@ class Ga4ghIdentifiableObject(_ValueObject, ABC):
         else:
             return self.compute_ga4gh_identifier(recompute)
 
-    def compute_ga4gh_identifier(self, recompute: bool = False, as_version=None):
+    def compute_ga4gh_identifier(self, recompute: bool = False, as_version=None) -> str:
         """Return a GA4GH Computed Identifier.
 
         If ``as_version`` is provided, other parameters are ignored and a computed
@@ -611,7 +611,7 @@ class SequenceLocation(Ga4ghIdentifiableObject, BaseModelForbidExtra):
                 raise ValueError(err_msg)
         return v
 
-    def ga4gh_serialize_as_version(self, as_version: PrevVrsVersion):
+    def ga4gh_serialize_as_version(self, as_version: PrevVrsVersion) -> str:
         """Return a serialized string following the conventions for SequenceLocation
         serialization as defined in the VRS version specified by ``as_version``.
 
@@ -643,7 +643,7 @@ class SequenceLocation(Ga4ghIdentifiableObject, BaseModelForbidExtra):
         msg = f"Received an unexpected value for `as_version`: {as_version}. MUST be an instance of `PrevVrsVersion`."
         raise TypeError(msg)
 
-    def get_refget_accession(self):
+    def get_refget_accession(self) -> str | None:
         if isinstance(self.sequenceReference, SequenceReference):
             return self.sequenceReference.refgetAccession
         if isinstance(self.sequenceReference, iriReference):
@@ -685,7 +685,7 @@ class Allele(_VariationBase, BaseModelForbidExtra):
         Field(..., description="An expression of the sequence state")
     )
 
-    def ga4gh_serialize_as_version(self, as_version: PrevVrsVersion):
+    def ga4gh_serialize_as_version(self, as_version: PrevVrsVersion) -> str:
         """Return a serialized string following the conventions for
         Allele serialization as defined in the VRS version specified by 'as_version`.
 

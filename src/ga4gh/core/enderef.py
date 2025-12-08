@@ -11,6 +11,8 @@ build_class_referable_attribute_map() in .models.py.
 
 import logging
 
+from pydantic.main import BaseModel
+
 from .identifiers import ga4gh_identify, is_ga4gh_identifier
 from .pydantic import (
     get_pydantic_root,
@@ -22,7 +24,12 @@ from .pydantic import (
 _logger = logging.getLogger(__name__)
 
 
-def ga4gh_enref(o, cra_map, object_store=None, return_id_obj_tuple=False) -> tuple:  # noqa: ANN001
+def ga4gh_enref(
+    o,  # noqa: ANN001
+    cra_map,  # noqa: ANN001
+    object_store=None,  # noqa: ANN001
+    return_id_obj_tuple: bool = False,
+) -> tuple:
     """Recursively convert "referable attributes" from inlined to
     referenced form.  Returns a new object.
 
@@ -35,13 +42,13 @@ def ga4gh_enref(o, cra_map, object_store=None, return_id_obj_tuple=False) -> tup
     :raise TypeError: if any object IDs are non-GA4GH CURIEs
     """
 
-    def _id_and_store(o):  # noqa: ANN202 ANN001
+    def _id_and_store(o) -> str | None:  # noqa: ANN001
         _id = ga4gh_identify(o)
         if _id and object_store is not None:
             object_store[_id] = o
         return _id
 
-    def _enref(o):  # noqa: ANN202 ANN001
+    def _enref(o: BaseModel) -> str | None:
         """depth-first recursive, in-place enref of object; returns id of object"""
         ref_att_names = cra_map.get(o.type, [])
         for ran in ref_att_names:
@@ -76,7 +83,7 @@ def ga4gh_enref(o, cra_map, object_store=None, return_id_obj_tuple=False) -> tup
     return (_id, o) if return_id_obj_tuple else o
 
 
-def ga4gh_deref(o, cra_map, object_store):  # noqa: ANN201 ANN001
+def ga4gh_deref(o, cra_map, object_store) -> BaseModel:  # noqa: ANN001
     """Convert "referable attributes" in-place from referenced to inlined
     form.
 
@@ -87,7 +94,7 @@ def ga4gh_deref(o, cra_map, object_store):  # noqa: ANN201 ANN001
 
     """
 
-    def _deref(o):  # noqa: ANN202 ANN001
+    def _deref(o: BaseModel):  # noqa: ANN202
         """depth-first recursive, in-place deref of object; returns id of object"""
         if o.type not in cra_map:
             _logger.warning("%s not in cra_map %s", o.type, cra_map)

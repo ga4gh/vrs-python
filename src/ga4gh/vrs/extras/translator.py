@@ -75,7 +75,7 @@ class _Translator(ABC):  # noqa: B024
         default_assembly_name: str = "GRCh38",
         identify: bool = True,
         rle_seq_limit: int | None = 50,
-    ):
+    ) -> None:
         self.default_assembly_name = default_assembly_name
         self.data_proxy = data_proxy
         self.identify = identify
@@ -175,7 +175,7 @@ class AlleleTranslator(_Translator):
         data_proxy: _DataProxy,
         default_assembly_name: str = "GRCh38",
         identify: bool = True,
-    ):
+    ) -> None:
         """Initialize AlleleTranslator class"""
         super().__init__(data_proxy, default_assembly_name, identify)
 
@@ -528,7 +528,7 @@ class CnvTranslator(_Translator):
         data_proxy: _DataProxy,
         default_assembly_name: str = "GRCh38",
         identify: bool = True,
-    ):
+    ) -> None:
         """Initialize CnvTranslator class"""
         super().__init__(data_proxy, default_assembly_name, identify)
         self.from_translators = {
