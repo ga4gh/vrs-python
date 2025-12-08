@@ -247,7 +247,7 @@ class SeqRepoRESTDataProxy(_SeqRepoDataProxyBase):
 
     rest_version = "1"
 
-    def __init__(self, base_url: str):
+    def __init__(self, base_url: str) -> None:
         """Initialize REST-based dataproxy instance.
 
         :param base_url: root URL to server
@@ -284,12 +284,12 @@ class SequenceProxy(Sequence):
 
     """
 
-    def __init__(self, dp: _DataProxy, alias: str):  # noqa: D107
+    def __init__(self, dp: _DataProxy, alias: str) -> None:  # noqa: D107
         self.dp = dp
         self.alias = alias
         self._md = self.dp.get_metadata(self.alias)
 
-    def __str__(self):  # noqa: D105 ANN204
+    def __str__(self) -> str:  # noqa: D105
         return self.dp.get_sequence(self.alias)
 
     def __len__(self):  # noqa: D105 ANN204
@@ -299,7 +299,7 @@ class SequenceProxy(Sequence):
         msg = "Reversed iteration of a SequenceProxy is not implemented"
         raise NotImplementedError(msg)
 
-    def __getitem__(self, key):  # noqa: ANN001 ANN204
+    def __getitem__(self, key) -> str:  # noqa: ANN001
         """Return sequence for key (slice), fetching if necessary"""
         if isinstance(key, int):
             key = slice(key, key + 1)
