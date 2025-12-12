@@ -233,7 +233,13 @@ def _normalize_allele(input_allele: models.Allele, data_proxy, rle_seq_limit=50)
     return new_allele
 
 
-def _trim_for_normalization(ref_seq: SequenceProxy, ival: tuple[int, int], alleles: tuple[None, str], start: LocationPos, end: LocationPos):
+def _trim_for_normalization(
+    ref_seq: SequenceProxy,
+    ival: tuple[int, int],
+    alleles: tuple[None, str],
+    start: LocationPos,
+    end: LocationPos,
+):
     """Trim common prefix and suffix from the intervals.
 
     Return the trimmed interval and trimmed alleles:
@@ -261,8 +267,13 @@ def _trim_for_normalization(ref_seq: SequenceProxy, ival: tuple[int, int], allel
     return trim_ival, trim_alleles
 
 
-def _set_location_from_interval(allele: models.Allele, ival: tuple[int, int], start_pos_type: PosType, end_pos_type: PosType) -> None:
-"""Update ``allele`` start and end location""" 
+def _set_location_from_interval(
+    allele: models.Allele,
+    ival: tuple[int, int],
+    start_pos_type: PosType,
+    end_pos_type: PosType,
+) -> None:
+    """Update ``allele`` start and end location"""
     allele.location.start = _get_new_allele_location_pos(ival[0], start_pos_type)
     allele.location.end = _get_new_allele_location_pos(ival[1], end_pos_type)
 
