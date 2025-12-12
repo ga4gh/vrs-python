@@ -329,19 +329,6 @@ def _is_valid_cycle(template_start, template, target):
     return True
 
 
-def _smallest_cycle_length(seq: str) -> int:
-    """Return the smallest cycle length that can generate `seq` (partial final copy allowed)."""
-    if not seq:
-        return 0
-    n = len(seq)
-    for cycle_length in range(1, n + 1):
-        pattern = seq[:cycle_length]
-        repeat_count, remainder = divmod(n, cycle_length)
-        if pattern * repeat_count + pattern[:remainder] == seq:
-            return cycle_length
-    return n
-
-
 # TODO _normalize_genotype?
 
 
