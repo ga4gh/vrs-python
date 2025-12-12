@@ -16,7 +16,7 @@ from ga4gh.core.identifiers import (
 from ga4gh.vrs import VRS_VERSION, __version__
 from ga4gh.vrs.dataproxy import _DataProxy
 from ga4gh.vrs.extras.translator import AlleleTranslator
-from ga4gh.vrs.models import Allele, Range, sequenceString
+from ga4gh.vrs.models import Allele, Range
 
 _logger = logging.getLogger(__name__)
 
@@ -52,18 +52,10 @@ VCF_ESCAPE_MAP = str.maketrans(
     }
 )
 
-# Short State.sequence will be included in output VCF if <= this value,
-# otherwise output will be emitted as the "." character.
-MAX_LITERAL_STATE_LENGTH = 15
-
-
-def _sequence_value_for_info(sequence: str | sequenceString) -> str | None:
-    """Return a literal sequence suitable for INFO fields if it is short enough."""
-    if not sequence:
-        return None
-    seq = getattr(sequence, "root", sequence)
-    seq_str = str(seq)
-    return seq_str if len(seq_str) <= MAX_LITERAL_STATE_LENGTH else None
+# ReferenceLengthExpression .sequence values will be included in output VCF if
+# length <= this value. This field is optional for RLE since it can be derived
+# from the reference sequence. Set to None to always include the sequence.
+RLE_SEQ_LIMIT = 50
 
 
 def dump_alleles_to_pkl(alleles: list[Allele], output_pkl_path: Path) -> None:
@@ -408,16 +400,13 @@ class AbstractVcfAnnotator(abc.ABC):
                     start = vrs_obj.location.start
                     end = vrs_obj.location.end
                     state = vrs_obj.state
-
-                    # State-specific fields
                     state_type = state.type
-                    alt = _sequence_value_for_info(getattr(state, "sequence", None))
 
-                    if state_type in (
-                        "ReferenceLengthExpression",
-                        "LengthExpression",
-                    ):
-                        # For RLE and LE, populate length
+                    if state_type == "LiteralSequenceExpression":
+                        # Sequence is required
+                        alt = state.sequence.root
+                    elif state_type == "ReferenceLengthExpression":
+                        # Length is required, sequence is optional
                         length = state.length
                         if length is None:
                             err_msg = f"{state_type} requires a non-empty length: {vcf_coords}"
@@ -425,13 +414,24 @@ class AbstractVcfAnnotator(abc.ABC):
                         if isinstance(length, Range):
                             err_msg = f"{state_type} with Range length not supported for VCF annotation: {vcf_coords}"
                             raise VcfAnnotatorError(err_msg)
-                        # For RLE only, also populate repeatSubunitLength
-                        if state_type == "ReferenceLengthExpression":
-                            repeat_subunit_length = state.repeatSubunitLength
-                    else:
-                        if state_type != "LiteralSequenceExpression":
-                            err_msg = f"Unsupported state type '{state_type}' for VCF annotation: {vcf_coords}"
+                        repeat_subunit_length = state.repeatSubunitLength
+                        # Only include sequence if within rle_seq_limit
+                        if state.sequence is not None and (
+                            RLE_SEQ_LIMIT is None or length <= RLE_SEQ_LIMIT
+                        ):
+                            alt = state.sequence.root
+                    elif state_type == "LengthExpression":
+                        # Length is required, no sequence field
+                        length = state.length
+                        if length is None:
+                            err_msg = f"{state_type} requires a non-empty length: {vcf_coords}"
                             raise VcfAnnotatorError(err_msg)
+                        if isinstance(length, Range):
+                            err_msg = f"{state_type} with Range length not supported for VCF annotation: {vcf_coords}"
+                            raise VcfAnnotatorError(err_msg)
+                    else:
+                        err_msg = f"Unsupported state type '{state_type}' for VCF annotation: {vcf_coords}"
+                        raise VcfAnnotatorError(err_msg)
 
                 vrs_field_data[FieldName.STARTS_FIELD].append(start)
                 vrs_field_data[FieldName.ENDS_FIELD].append(end)
