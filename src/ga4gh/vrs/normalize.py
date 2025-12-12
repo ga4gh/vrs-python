@@ -138,7 +138,7 @@ def _normalize_allele(input_allele: models.Allele, data_proxy, rle_seq_limit=50)
     ival = (start.value, end.value)
     start_pos_type = start.pos_type
     end_pos_type = end.pos_type
-    alt_seq = input_allele.state.sequence.root if input_allele.state.sequence else ""
+    alt_seq = input_allele.state.sequence.root or ""
     alleles = (None, alt_seq)
 
     # 1: trim shared flanking sequence
@@ -150,7 +150,7 @@ def _normalize_allele(input_allele: models.Allele, data_proxy, rle_seq_limit=50)
     trim_alt_seq = trim_alleles[1]
     len_trimmed_ref = len(trim_ref_seq)
     len_trimmed_alt = len(trim_alt_seq)
-    seed_length = len_trimmed_ref if len_trimmed_ref else len_trimmed_alt
+    seed_length = len_trimmed_ref or len_trimmed_alt
     identity_case = trim_ref_seq == trim_alt_seq
 
     new_allele: models.Allele = pydantic_copy(input_allele)
@@ -233,7 +233,7 @@ def _normalize_allele(input_allele: models.Allele, data_proxy, rle_seq_limit=50)
     return new_allele
 
 
-def _trim_for_normalization(ref_seq, ival, alleles, start, end):
+def _trim_for_normalization(ref_seq: SequenceProxy, ival: tuple[int, int], alleles: tuple[None, str], start: LocationPos, end: LocationPos):
     """Trim common prefix and suffix from the intervals.
 
     Return the trimmed interval and trimmed alleles:
@@ -261,7 +261,8 @@ def _trim_for_normalization(ref_seq, ival, alleles, start, end):
     return trim_ival, trim_alleles
 
 
-def _set_location_from_interval(allele, ival, start_pos_type, end_pos_type):
+def _set_location_from_interval(allele: models.Allele, ival: tuple[int, int], start_pos_type: PosType, end_pos_type: PosType) -> None:
+"""Update ``allele`` start and end location""" 
     allele.location.start = _get_new_allele_location_pos(ival[0], start_pos_type)
     allele.location.end = _get_new_allele_location_pos(ival[1], end_pos_type)
 
