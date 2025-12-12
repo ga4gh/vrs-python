@@ -489,7 +489,6 @@ class AbstractVcfAnnotator(abc.ABC):
         # Get VRS data for alts
         alts = record.alts or []
         alleles = [f"{gnomad_loc}-{record.ref}-{a}" for a in [*alts]]
-        data = f"{record.chrom}\t{record.pos}\t{record.ref}\t{record.alts}"
         for allele in alleles:
             if "*" in allele:
                 _logger.debug("Star allele found: %s", allele)
@@ -501,7 +500,6 @@ class AbstractVcfAnnotator(abc.ABC):
                     allele_collection,
                     vrs_field_data,
                     assembly,
-                    vrs_data_key=data,  # TODO unused?
                     vrs_attributes=vrs_attributes,
                     require_validation=require_validation,
                 )
