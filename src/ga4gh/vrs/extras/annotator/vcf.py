@@ -13,7 +13,7 @@ from ga4gh.core.identifiers import (
     VrsObjectIdentifierIs,
     use_ga4gh_compute_identifier_when,
 )
-from ga4gh.vrs import VRS_VERSION, __version__
+from ga4gh.vrs import VRS_VERSION, VrsType, __version__
 from ga4gh.vrs.dataproxy import _DataProxy
 from ga4gh.vrs.extras.translator import AlleleTranslator
 from ga4gh.vrs.models import Allele, Range
@@ -402,10 +402,10 @@ class AbstractVcfAnnotator(abc.ABC):
                     state = vrs_obj.state
                     state_type = state.type
 
-                    if state_type == "LiteralSequenceExpression":
+                    if state_type == VrsType.LIT_SEQ_EXPR:
                         # Sequence is required
                         alt = state.sequence.root
-                    elif state_type == "ReferenceLengthExpression":
+                    elif state_type == VrsType.REF_LEN_EXPR:
                         # Length is required, sequence is optional
                         length = state.length
                         if length is None:
@@ -420,7 +420,7 @@ class AbstractVcfAnnotator(abc.ABC):
                             RLE_SEQ_LIMIT is None or length <= RLE_SEQ_LIMIT
                         ):
                             alt = state.sequence.root
-                    elif state_type == "LengthExpression":
+                    elif state_type == VrsType.LEN_EXPR:
                         # Length is required, no sequence field
                         length = state.length
                         if length is None:
