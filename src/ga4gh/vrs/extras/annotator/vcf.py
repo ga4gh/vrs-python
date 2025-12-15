@@ -13,10 +13,10 @@ from ga4gh.core.identifiers import (
     VrsObjectIdentifierIs,
     use_ga4gh_compute_identifier_when,
 )
-from ga4gh.vrs import VRS_VERSION, __version__
+from ga4gh.vrs import VRS_VERSION, VrsType, __version__
 from ga4gh.vrs.dataproxy import _DataProxy
 from ga4gh.vrs.extras.translator import AlleleTranslator
-from ga4gh.vrs.models import Allele
+from ga4gh.vrs.models import Allele, Range
 
 _logger = logging.getLogger(__name__)
 
@@ -36,16 +36,9 @@ class FieldName(str, Enum):
     STARTS_FIELD = "VRS_Starts"
     ENDS_FIELD = "VRS_Ends"
     STATES_FIELD = "VRS_States"
+    LENGTHS_FIELD = "VRS_Lengths"
+    REPEAT_SUBUNIT_LENGTHS_FIELD = "VRS_RepeatSubunitLengths"
     ERROR_FIELD = "VRS_Error"
-
-    def default_value(self) -> Literal[".", -1]:
-        """Provide value to use for default/null case in VCF INFO field
-
-        :return: either ``"."`` or ``-1``
-        """
-        if self in (FieldName.IDS_FIELD, FieldName.STATES_FIELD, FieldName.ERROR_FIELD):
-            return "."
-        return -1
 
 
 # VCF character escape map
@@ -58,6 +51,11 @@ VCF_ESCAPE_MAP = str.maketrans(
         "\n": "%0A",
     }
 )
+
+# ReferenceLengthExpression .sequence values will be included in output VCF if
+# length <= this value. This field is optional for RLE since it can be derived
+# from the reference sequence. Set to None to always include the sequence.
+RLE_SEQ_LIMIT = 50
 
 
 def dump_alleles_to_pkl(alleles: list[Allele], output_pkl_path: Path) -> None:
@@ -187,6 +185,24 @@ class AbstractVcfAnnotator(abc.ABC):
                     f"corresponding to the GT indexes of the {info_field_desc} alleles"
                 ),
             )
+            vcf.header.info.add(
+                FieldName.LENGTHS_FIELD.value,
+                info_field_num,
+                "Integer",
+                (
+                    "The length values from ReferenceLengthExpression states for the GA4GH VRS "
+                    f"Alleles corresponding to the GT indexes of the {info_field_desc} alleles"
+                ),
+            )
+            vcf.header.info.add(
+                FieldName.REPEAT_SUBUNIT_LENGTHS_FIELD.value,
+                info_field_num,
+                "Integer",
+                (
+                    "The repeatSubunitLength values from ReferenceLengthExpression states for the GA4GH VRS "
+                    f"Alleles corresponding to the GT indexes of the {info_field_desc} alleles"
+                ),
+            )
 
     @use_ga4gh_compute_identifier_when(VrsObjectIdentifierIs.MISSING)
     def annotate(
@@ -244,6 +260,8 @@ class AbstractVcfAnnotator(abc.ABC):
                         FieldName.STARTS_FIELD,
                         FieldName.ENDS_FIELD,
                         FieldName.STATES_FIELD,
+                        FieldName.LENGTHS_FIELD,
+                        FieldName.REPEAT_SUBUNIT_LENGTHS_FIELD,
                     ]
             else:
                 # no INFO field names need to be designated if not producing an annotated VCF
@@ -275,8 +293,10 @@ class AbstractVcfAnnotator(abc.ABC):
 
             if output_vcf_path and vcf_out:
                 for k in additional_info_fields:
+                    # Convert "" and None values (but not 0) to None.
+                    # Pysam outputs "." for missing values.
                     record.info[k.value] = [
-                        value or k.default_value() for value in vrs_field_data[k.value]
+                        None if v in ("", None) else v for v in vrs_field_data[k.value]
                     ]
                 vcf_out.write(record)
 
@@ -369,20 +389,57 @@ class AbstractVcfAnnotator(abc.ABC):
             vrs_field_data[FieldName.IDS_FIELD].append(allele_id)
 
             if vrs_attributes:
+                # Initialize fields with None for missing values
+                # pysam will convert None to "." in VCF output
+                start = end = None
+                alt = None
+                length = repeat_subunit_length = None
+
                 if vrs_obj:
+                    # Common fields for all state types
                     start = vrs_obj.location.start
                     end = vrs_obj.location.end
-                    alt = (
-                        str(vrs_obj.state.sequence.root)
-                        if vrs_obj.state.sequence
-                        else ""
-                    )
-                else:
-                    start = end = alt = ""
+                    state = vrs_obj.state
+                    state_type = state.type
+
+                    if state_type == VrsType.LIT_SEQ_EXPR:
+                        # Sequence is required
+                        alt = state.sequence.root
+                    elif state_type == VrsType.REF_LEN_EXPR:
+                        # Length is required, sequence is optional
+                        length = state.length
+                        if length is None:
+                            err_msg = f"{state_type} requires a non-empty length: {vcf_coords}"
+                            raise VcfAnnotatorError(err_msg)
+                        if isinstance(length, Range):
+                            err_msg = f"{state_type} with Range length not supported for VCF annotation: {vcf_coords}"
+                            raise VcfAnnotatorError(err_msg)
+                        repeat_subunit_length = state.repeatSubunitLength
+                        # Only include sequence if within rle_seq_limit
+                        if state.sequence is not None and (
+                            RLE_SEQ_LIMIT is None or length <= RLE_SEQ_LIMIT
+                        ):
+                            alt = state.sequence.root
+                    elif state_type == VrsType.LEN_EXPR:
+                        # Length is required, no sequence field
+                        length = state.length
+                        if length is None:
+                            err_msg = f"{state_type} requires a non-empty length: {vcf_coords}"
+                            raise VcfAnnotatorError(err_msg)
+                        if isinstance(length, Range):
+                            err_msg = f"{state_type} with Range length not supported for VCF annotation: {vcf_coords}"
+                            raise VcfAnnotatorError(err_msg)
+                    else:
+                        err_msg = f"Unsupported state type '{state_type}' for VCF annotation: {vcf_coords}"
+                        raise VcfAnnotatorError(err_msg)
 
                 vrs_field_data[FieldName.STARTS_FIELD].append(start)
                 vrs_field_data[FieldName.ENDS_FIELD].append(end)
                 vrs_field_data[FieldName.STATES_FIELD].append(alt)
+                vrs_field_data[FieldName.LENGTHS_FIELD].append(length)
+                vrs_field_data[FieldName.REPEAT_SUBUNIT_LENGTHS_FIELD].append(
+                    repeat_subunit_length
+                )
 
     def _get_vrs_data(
         self,
@@ -432,7 +489,6 @@ class AbstractVcfAnnotator(abc.ABC):
         # Get VRS data for alts
         alts = record.alts or []
         alleles = [f"{gnomad_loc}-{record.ref}-{a}" for a in [*alts]]
-        data = f"{record.chrom}\t{record.pos}\t{record.ref}\t{record.alts}"
         for allele in alleles:
             if "*" in allele:
                 _logger.debug("Star allele found: %s", allele)
@@ -444,7 +500,6 @@ class AbstractVcfAnnotator(abc.ABC):
                     allele_collection,
                     vrs_field_data,
                     assembly,
-                    vrs_data_key=data,
                     vrs_attributes=vrs_attributes,
                     require_validation=require_validation,
                 )

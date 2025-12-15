@@ -1,0 +1,674 @@
+interactions:
+- request:
+    body: null
+    headers: {}
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO?start=930131&end=930152
+  response:
+    body:
+      string: TTCCTCTCCTCCTGCCCCACC
+    headers: {}
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers: {}
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO?start=930130&end=930131
+  response:
+    body:
+      string: C
+    headers: {}
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers: {}
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO?start=930129&end=930130
+  response:
+    body:
+      string: C
+    headers: {}
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers: {}
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO?start=930128&end=930129
+  response:
+    body:
+      string: A
+    headers: {}
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers: {}
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO?start=930127&end=930128
+  response:
+    body:
+      string: C
+    headers: {}
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers: {}
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO?start=930126&end=930127
+  response:
+    body:
+      string: C
+    headers: {}
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers: {}
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO?start=930125&end=930126
+  response:
+    body:
+      string: C
+    headers: {}
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers: {}
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO?start=930124&end=930125
+  response:
+    body:
+      string: C
+    headers: {}
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers: {}
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO?start=930123&end=930124
+  response:
+    body:
+      string: G
+    headers: {}
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers: {}
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO?start=930122&end=930123
+  response:
+    body:
+      string: T
+    headers: {}
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers: {}
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO?start=930121&end=930122
+  response:
+    body:
+      string: C
+    headers: {}
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers: {}
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO?start=930120&end=930121
+  response:
+    body:
+      string: C
+    headers: {}
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers: {}
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO?start=930119&end=930120
+  response:
+    body:
+      string: T
+    headers: {}
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers: {}
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO?start=930118&end=930119
+  response:
+    body:
+      string: C
+    headers: {}
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers: {}
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO?start=930117&end=930118
+  response:
+    body:
+      string: C
+    headers: {}
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers: {}
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO?start=930116&end=930117
+  response:
+    body:
+      string: T
+    headers: {}
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers: {}
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO?start=930115&end=930116
+  response:
+    body:
+      string: C
+    headers: {}
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers: {}
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO?start=930114&end=930115
+  response:
+    body:
+      string: T
+    headers: {}
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers: {}
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO?start=930113&end=930114
+  response:
+    body:
+      string: C
+    headers: {}
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers: {}
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO?start=930112&end=930113
+  response:
+    body:
+      string: C
+    headers: {}
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers: {}
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO?start=930111&end=930112
+  response:
+    body:
+      string: T
+    headers: {}
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers: {}
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO?start=930110&end=930111
+  response:
+    body:
+      string: T
+    headers: {}
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers: {}
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO?start=930109&end=930110
+  response:
+    body:
+      string: C
+    headers: {}
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers: {}
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO?start=930108&end=930109
+  response:
+    body:
+      string: C
+    headers: {}
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers: {}
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO?start=930107&end=930108
+  response:
+    body:
+      string: A
+    headers: {}
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers: {}
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO?start=930106&end=930107
+  response:
+    body:
+      string: C
+    headers: {}
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers: {}
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO?start=930105&end=930106
+  response:
+    body:
+      string: C
+    headers: {}
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers: {}
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO?start=930104&end=930105
+  response:
+    body:
+      string: C
+    headers: {}
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers: {}
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO?start=930103&end=930104
+  response:
+    body:
+      string: C
+    headers: {}
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers: {}
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO?start=930102&end=930103
+  response:
+    body:
+      string: G
+    headers: {}
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers: {}
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO?start=930101&end=930102
+  response:
+    body:
+      string: T
+    headers: {}
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers: {}
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO?start=930100&end=930101
+  response:
+    body:
+      string: C
+    headers: {}
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers: {}
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO?start=930099&end=930100
+  response:
+    body:
+      string: C
+    headers: {}
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers: {}
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO?start=930098&end=930099
+  response:
+    body:
+      string: T
+    headers: {}
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers: {}
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO?start=930097&end=930098
+  response:
+    body:
+      string: C
+    headers: {}
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers: {}
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO?start=930096&end=930097
+  response:
+    body:
+      string: C
+    headers: {}
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers: {}
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO?start=930095&end=930096
+  response:
+    body:
+      string: T
+    headers: {}
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers: {}
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO?start=930094&end=930095
+  response:
+    body:
+      string: C
+    headers: {}
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers: {}
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO?start=930093&end=930094
+  response:
+    body:
+      string: T
+    headers: {}
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers: {}
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO?start=930092&end=930093
+  response:
+    body:
+      string: C
+    headers: {}
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers: {}
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO?start=930091&end=930092
+  response:
+    body:
+      string: C
+    headers: {}
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers: {}
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO?start=930090&end=930091
+  response:
+    body:
+      string: T
+    headers: {}
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers: {}
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO?start=930089&end=930090
+  response:
+    body:
+      string: T
+    headers: {}
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers: {}
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO?start=930088&end=930089
+  response:
+    body:
+      string: C
+    headers: {}
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers: {}
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO?start=930087&end=930088
+  response:
+    body:
+      string: C
+    headers: {}
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers: {}
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO?start=930086&end=930087
+  response:
+    body:
+      string: A
+    headers: {}
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers: {}
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO?start=930085&end=930086
+  response:
+    body:
+      string: C
+    headers: {}
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers: {}
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO?start=930084&end=930085
+  response:
+    body:
+      string: C
+    headers: {}
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers: {}
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO?start=930083&end=930084
+  response:
+    body:
+      string: C
+    headers: {}
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers: {}
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO?start=930082&end=930083
+  response:
+    body:
+      string: C
+    headers: {}
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers: {}
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO?start=930081&end=930082
+  response:
+    body:
+      string: G
+    headers: {}
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers: {}
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO?start=930080&end=930081
+  response:
+    body:
+      string: A
+    headers: {}
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers: {}
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO?start=930152&end=930153
+  response:
+    body:
+      string: A
+    headers: {}
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers: {}
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO?start=930081&end=930131
+  response:
+    body:
+      string: GCCCCACCTTCCTCTCCTCCTGCCCCACCTTCCTCTCCTCCTGCCCCACC
+    headers: {}
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers: {}
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO?start=930152&end=930152
+  response:
+    body:
+      string: ''
+    headers: {}
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers: {}
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO?start=930081&end=930152
+  response:
+    body:
+      string: GCCCCACCTTCCTCTCCTCCTGCCCCACCTTCCTCTCCTCCTGCCCCACCTTCCTCTCCTCCTGCCCCACC
+    headers: {}
+    status:
+      code: 200
+      message: OK
+version: 1
