@@ -123,6 +123,11 @@ cleaner: clean
 cleanest: cleaner
 	rm -fr .eggs venv
 
+#=> clean-cassettes: delete YAML VCR cassettes under tests/**/casette/
+.PHONY: clean-cassettes
+clean-cassettes:
+	find ./tests -type f -path '*/cassettes/*.yaml' -print0 | ${XRM}
+
 
 ## <LICENSE>
 ## Copyright 2016 Source Code Committers

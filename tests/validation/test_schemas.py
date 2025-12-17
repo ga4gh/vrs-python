@@ -24,7 +24,7 @@ class GKSSchemaMapping(BaseModel):
     base_classes: set = set()
     concrete_classes: set = set()
     primitives: set = set()
-    schema: dict = {}
+    schema_name: dict = {}
 
 
 def _update_gks_schema_mapping(
@@ -39,7 +39,7 @@ def _update_gks_schema_mapping(
         cls_def = json.load(rf)
 
     spec_class = cls_def["title"]
-    gks_schema_mapping.schema[spec_class] = cls_def
+    gks_schema_mapping.schema_name[spec_class] = cls_def
 
     if "properties" in cls_def:
         gks_schema_mapping.concrete_classes.add(spec_class)
@@ -99,13 +99,13 @@ def test_schema_class_fields(gks_schema, pydantic_models):
     """
     mapping = GKS_SCHEMA_MAPPING[gks_schema]
     for schema_model in mapping.concrete_classes:
-        schema_properties = mapping.schema[schema_model]["properties"]
+        schema_properties = mapping.schema_name[schema_model]["properties"]
         pydantic_model = getattr(pydantic_models, schema_model)
         assert set(pydantic_model.model_fields) == set(schema_properties), schema_model
 
-        required_schema_fields = set(mapping.schema[schema_model]["required"])
+        required_schema_fields = set(mapping.schema_name[schema_model]["required"])
 
-        if mapping.schema[schema_model].get("additionalProperties") is False:
+        if mapping.schema_name[schema_model].get("additionalProperties") is False:
             assert pydantic_model.model_config.get("extra") == "forbid", (
                 f"{pydantic_model} should forbid extra attributes"
             )
@@ -144,7 +144,10 @@ def test_ga4gh_keys(gks_schema, pydantic_models):
     """Ensure ga4gh inherent defined in schema model exist in corresponding Pydantic model"""
     mapping = GKS_SCHEMA_MAPPING[gks_schema]
     for schema_model in mapping.concrete_classes:
-        if mapping.schema[schema_model].get("ga4gh", {}).get("inherent", None) is None:
+        if (
+            mapping.schema_name[schema_model].get("ga4gh", {}).get("inherent", None)
+            is None
+        ):
             continue
 
         pydantic_model = getattr(pydantic_models, schema_model)
@@ -155,5 +158,5 @@ def test_ga4gh_keys(gks_schema, pydantic_models):
             raise AttributeError(schema_model) from e
 
         assert set(pydantic_model_digest_inherent) == set(
-            mapping.schema[schema_model]["ga4gh"]["inherent"]
+            mapping.schema_name[schema_model]["ga4gh"]["inherent"]
         ), schema_model

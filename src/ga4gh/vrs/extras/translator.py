@@ -11,6 +11,8 @@ from abc import ABC
 from collections.abc import Mapping
 from typing import Protocol
 
+from typing_extensions import deprecated
+
 from ga4gh.core import ga4gh_identify
 from ga4gh.vrs import models, normalize
 from ga4gh.vrs.dataproxy import SequenceProxy, _DataProxy
@@ -213,6 +215,7 @@ class AlleleTranslator(_Translator):
         allele = models.Allele(location=location, state=state)
         return self._post_process_imported_allele(allele, **kwargs)
 
+    @deprecated("This method does not match the Beacon spec and will be removed in v3.")
     def _from_beacon(self, beacon_expr: str, **kwargs) -> models.Allele | None:
         """Parse beacon expression into VRS Allele
 

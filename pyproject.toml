@@ -41,6 +41,7 @@ dependencies = [
     "requests",
     "canonicaljson",
     "setuptools>=78.1.0", # TODO remove this pin caused by HGVS issue
+    "typing-extensions",
 ]
 
 [project.optional-dependencies]
@@ -48,10 +49,11 @@ extras = [
     "psycopg2-binary",
     "biocommons.seqrepo>=0.5.1",
     "bioutils>=0.5.2",
-    "hgvs>=1.4",
+    "hgvs>=1.4,<1.5.5",
     "dill~=0.3.7",
     "click",
-    "pysam>=0.23.0",
+    "pysam==0.23.0",  # pinned pending https://github.com/ga4gh/vrs-python/issues/560
+    "typing_extensions",
 ]
 dev = [
     # tests

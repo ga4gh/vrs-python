@@ -1,0 +1,9 @@
+##fileformat=VCFv4.2
+##reference=GRCh38
+##contig=<ID=1,assembly=GRCh38>
+##INFO=<ID=VARID,Number=1,Type=String,Description="ClinVar Variation ID">
+##INFO=<ID=VARNAME,Number=1,Type=String,Description="Variation Name">
+##INFO=<ID=VARTYPE,Number=1,Type=String,Description="Variation Type">
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO
+1	100210778	.	AA	A	.	.	VARID=1663061;VARNAME=NM_001918.5(DBT):c.940-7del;VARTYPE=Deletion
+1	102995989	.	CTTT	CTTTCTTT	.	.	VARID=3727769;VARNAME=NM_001854.4(COL11A1):c.2292_2295dup;VARTYPE=Duplication

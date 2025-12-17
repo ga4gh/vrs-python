@@ -335,18 +335,21 @@ def test_from_invalid(tlr):
 @pytest.mark.vcr
 def test_from_beacon(tlr):
     do_normalize = False
-    assert (
-        tlr._from_beacon(snv_inputs["beacon"], do_normalize=do_normalize).model_dump(
-            exclude_none=True
+    with pytest.deprecated_call():
+        assert (
+            tlr._from_beacon(
+                snv_inputs["beacon"], do_normalize=do_normalize
+            ).model_dump(exclude_none=True)
+            == snv_output
         )
-        == snv_output
-    )
-    assert (
-        tlr._from_beacon(mito_inputs["beacon"], do_normalize=do_normalize).model_dump(
-            exclude_none=True
+
+    with pytest.deprecated_call():
+        assert (
+            tlr._from_beacon(
+                mito_inputs["beacon"], do_normalize=do_normalize
+            ).model_dump(exclude_none=True)
+            == mito_output
         )
-        == mito_output
-    )
 
 
 @pytest.mark.vcr
@@ -535,12 +538,8 @@ hgvs_tests = (
     (
         "NC_000013.11:g.32936732=",
         {
-            "digest": "GJ2JySBMXePcV2yItyvCfbGBUoawOBON",
-            "id": "ga4gh:VA.GJ2JySBMXePcV2yItyvCfbGBUoawOBON",
             "location": {
-                "digest": "28YsnRvD40gKu1x3nev0gRzRz-5OTlpS",
                 "end": 32936732,
-                "id": "ga4gh:SL.28YsnRvD40gKu1x3nev0gRzRz-5OTlpS",
                 "sequenceReference": {
                     "refgetAccession": "SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT",
                     "type": "SequenceReference",
@@ -548,19 +547,20 @@ hgvs_tests = (
                 "start": 32936731,
                 "type": "SequenceLocation",
             },
-            "state": {"sequence": "C", "type": "LiteralSequenceExpression"},
+            "state": {
+                "length": 1,
+                "repeatSubunitLength": 1,
+                "sequence": "C",
+                "type": "ReferenceLengthExpression",
+            },
             "type": "Allele",
         },
     ),
     (
         "NC_000007.14:g.55181320A>T",
         {
-            "digest": "Hy2XU_-rp4IMh6I_1NXNecBo8Qx8n0oE",
-            "id": "ga4gh:VA.Hy2XU_-rp4IMh6I_1NXNecBo8Qx8n0oE",
             "location": {
-                "digest": "_G2K0qSioM74l_u3OaKR0mgLYdeTL7Xd",
                 "end": 55181320,
-                "id": "ga4gh:SL._G2K0qSioM74l_u3OaKR0mgLYdeTL7Xd",
                 "sequenceReference": {
                     "refgetAccession": "SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul",
                     "type": "SequenceReference",
@@ -575,12 +575,8 @@ hgvs_tests = (
     (
         "NC_000007.14:g.55181220del",
         {
-            "digest": "klRMVChjvV73ZxS9Ajq1Rb8WU-p_HbLu",
-            "id": "ga4gh:VA.klRMVChjvV73ZxS9Ajq1Rb8WU-p_HbLu",
             "location": {
-                "digest": "ljan7F0ePe9uiD6f2u80ZG5gDtx9Mr0V",
                 "end": 55181220,
-                "id": "ga4gh:SL.ljan7F0ePe9uiD6f2u80ZG5gDtx9Mr0V",
                 "sequenceReference": {
                     "refgetAccession": "SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul",
                     "type": "SequenceReference",
@@ -600,12 +596,8 @@ hgvs_tests = (
     (
         "NC_000007.14:g.55181230_55181231insGGCT",
         {
-            "digest": "CLOvnFRJXGNRB9aTuNbvsLqc7syRYb55",
-            "id": "ga4gh:VA.CLOvnFRJXGNRB9aTuNbvsLqc7syRYb55",
             "location": {
-                "digest": "lh4dRt_xWPi3wrubcfomi5DkD7fu6wd2",
                 "end": 55181230,
-                "id": "ga4gh:SL.lh4dRt_xWPi3wrubcfomi5DkD7fu6wd2",
                 "sequenceReference": {
                     "refgetAccession": "SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul",
                     "type": "SequenceReference",
@@ -620,12 +612,8 @@ hgvs_tests = (
     (
         "NC_000013.11:g.32331093_32331094dup",
         {
-            "digest": "swY2caCgv1kP6YqKyPlcEzJqTvou15vC",
-            "id": "ga4gh:VA.swY2caCgv1kP6YqKyPlcEzJqTvou15vC",
             "location": {
-                "digest": "ikECYncPpE1xh6f_LiComrFGevocjDHQ",
                 "end": 32331094,
-                "id": "ga4gh:SL.ikECYncPpE1xh6f_LiComrFGevocjDHQ",
                 "sequenceReference": {
                     "refgetAccession": "SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT",
                     "type": "SequenceReference",
@@ -645,12 +633,8 @@ hgvs_tests = (
     (
         "NC_000013.11:g.32316467dup",
         {
-            "digest": "96ak7XdY3DNbp71aHEXw-NHSfeHGW-KT",
-            "id": "ga4gh:VA.96ak7XdY3DNbp71aHEXw-NHSfeHGW-KT",
             "location": {
-                "digest": "fwfHu8VaD2-6Qvay9MJSINXPS767RYSw",
                 "end": 32316467,
-                "id": "ga4gh:SL.fwfHu8VaD2-6Qvay9MJSINXPS767RYSw",
                 "sequenceReference": {
                     "refgetAccession": "SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT",
                     "type": "SequenceReference",
@@ -670,12 +654,8 @@ hgvs_tests = (
     (
         "NM_001331029.1:c.722A>G",
         {
-            "digest": "DPe4AO-S0Yu4wzSCmys7eGn4p4sO0zaC",
-            "id": "ga4gh:VA.DPe4AO-S0Yu4wzSCmys7eGn4p4sO0zaC",
             "location": {
-                "digest": "7hcVmPnIspQNDfZKBzRJFc8K9GaJuAlY",
                 "end": 872,
-                "id": "ga4gh:SL.7hcVmPnIspQNDfZKBzRJFc8K9GaJuAlY",
                 "sequenceReference": {
                     "refgetAccession": "SQ.MBIgVnoHFw34aFqNUVGM0zgjC3d-v8dK",
                     "type": "SequenceReference",
@@ -690,12 +670,8 @@ hgvs_tests = (
     (
         "NM_181798.1:c.1007G>T",
         {
-            "digest": "vSL4aV7mPQKQLX7Jk-PmXN0APs0cBIr9",
-            "id": "ga4gh:VA.vSL4aV7mPQKQLX7Jk-PmXN0APs0cBIr9",
             "location": {
-                "digest": "EtvHvoj1Lsq-RruzIzWbKOIAW-bt193w",
                 "end": 1263,
-                "id": "ga4gh:SL.EtvHvoj1Lsq-RruzIzWbKOIAW-bt193w",
                 "sequenceReference": {
                     "refgetAccession": "SQ.KN07u-RFqd1dTyOWOG98HnOq87Nq-ZIg",
                     "type": "SequenceReference",
@@ -710,13 +686,9 @@ hgvs_tests = (
     (
         "NC_000019.10:g.289464_289465insCACA",
         {
-            "digest": "YFUR4oR_84b-rRFf0UzOjfI4eE5FTKAP",
-            "id": "ga4gh:VA.YFUR4oR_84b-rRFf0UzOjfI4eE5FTKAP",
             "type": "Allele",
             "location": {
-                "digest": "L145KFLJeJ334YnOVm59pPlbdqfHhgXZ",
                 "end": 289466,
-                "id": "ga4gh:SL.L145KFLJeJ334YnOVm59pPlbdqfHhgXZ",
                 "sequenceReference": {
                     "refgetAccession": "SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl",
                     "type": "SequenceReference",
@@ -735,13 +707,9 @@ hgvs_tests = (
     (
         "NC_000019.10:g.289485_289500del",
         {
-            "digest": "Djc_SwVDFunsArqwUM00PciVaF70VTcU",
-            "id": "ga4gh:VA.Djc_SwVDFunsArqwUM00PciVaF70VTcU",
             "type": "Allele",
             "location": {
-                "digest": "WTE7jyihK4qvRRzEqM7u5nSD4iS2k3xp",
                 "end": 289501,
-                "id": "ga4gh:SL.WTE7jyihK4qvRRzEqM7u5nSD4iS2k3xp",
                 "sequenceReference": {
                     "refgetAccession": "SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl",
                     "type": "SequenceReference",
@@ -769,7 +737,6 @@ hgvs_tests_to_hgvs_map = {
 @pytest.mark.vcr
 def test_hgvs(tlr, hgvsexpr, expected):
     # do_normalize defaults to true
-    tlr.identify = True
     allele = tlr.translate_from(hgvsexpr, "hgvs")
     assert allele.model_dump(exclude_none=True) == expected
 
@@ -786,15 +753,9 @@ def test_rle_seq_limit(tlr):
     rle_seq_limit is set to None.
     """
     # do_normalize defaults to true
-    tlr.identify = True
-
     a_dict = {
-        "digest": "j7qUzb1uvmdxLAbtdCPiay4kIRQmyZNv",
-        "id": "ga4gh:VA.j7qUzb1uvmdxLAbtdCPiay4kIRQmyZNv",
         "location": {
-            "digest": "88oOqkUgALP7fnN8P8lbvCosFhG8YpY0",
             "end": 32331094,
-            "id": "ga4gh:SL.88oOqkUgALP7fnN8P8lbvCosFhG8YpY0",
             "sequenceReference": {
                 "refgetAccession": "SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT",
                 "type": "SequenceReference",
@@ -854,6 +815,162 @@ def test_to_hgvs_iri_ref_keyerror(tlr):
         # we have to add functionality to address the handling of iri-references in the future
         tlr.translate_to(iri_vo, "hgvs")
     assert str(e.value) == "'ga4gh:seqrefs.jsonc#/NM_181798.1'"
+
+
+@pytest.mark.vcr
+def test_reference_allele_rle(tlr):
+    """Test that reference alleles (REF==ALT) are normalized to ReferenceLengthExpression.
+
+    Added to address https://github.com/ga4gh/vrs-python/issues/587
+    """
+    # Test with gnomad format
+    gnomad_ref_allele = "1-100210778-AA-AA"
+    allele = tlr._from_gnomad(gnomad_ref_allele)
+
+    expected = {
+        "type": "Allele",
+        "location": {
+            "type": "SequenceLocation",
+            "sequenceReference": {
+                "type": "SequenceReference",
+                "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
+            },
+            "start": 100210777,
+            "end": 100210779,
+        },
+        "state": {
+            "type": "ReferenceLengthExpression",
+            "length": 2,
+            "repeatSubunitLength": 2,
+            "sequence": "AA",
+        },
+    }
+
+    assert allele.model_dump(exclude_none=True) == expected
+
+    # Test with SPDI format (REF==ALT)
+    spdi_ref_allele = "NC_000001.11:100210777:AA:AA"
+    allele_spdi = tlr._from_spdi(spdi_ref_allele)
+
+    assert allele_spdi.model_dump(exclude_none=True) == expected
+
+    # Test round-trip to SPDI
+    to_spdi = tlr.translate_to(allele_spdi, "spdi", ref_seq_limit=None)
+    assert len(to_spdi) == 1
+    assert to_spdi[0] == spdi_ref_allele
+
+
+# Microsatellite test cases for 21bp repeat unit
+# https://github.com/ga4gh/vrs-python/discussions/592
+# Tests deletion, insertion, and identity (no-change) variations
+# Deletion/insertion: VOCA normalize to 930081-930152 with repeatSubunitLength=21
+# Identity: Keep input coordinates 930089-930152 with repeatSubunitLength=63 (no VOCA normalization)
+microsatellite_21bp_cases = [
+    {
+        "id": "deletion",
+        "description": "Delete 1 copy from 3 copies (3->2 copies)",
+        "hgvs": "NC_000001.11:g.930132_930152del",
+        "spdi": "NC_000001.11:930081:GCCCCACCTTCCTCTCCTCCTGCCCCACCTTCCTCTCCTCCTGCCCCACCTTCCTCTCCTCCTGCCCCACC:GCCCCACCTTCCTCTCCTCCTGCCCCACCTTCCTCTCCTCCTGCCCCACC",
+        "expected": {
+            "type": "Allele",
+            "location": {
+                "type": "SequenceLocation",
+                "sequenceReference": {
+                    "type": "SequenceReference",
+                    "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
+                },
+                "start": 930081,
+                "end": 930152,
+            },
+            "state": {
+                "type": "ReferenceLengthExpression",
+                "length": 50,
+                "sequence": "GCCCCACCTTCCTCTCCTCCTGCCCCACCTTCCTCTCCTCCTGCCCCACC",
+                "repeatSubunitLength": 21,
+            },
+        },
+    },
+    {
+        "id": "insertion",
+        "description": "Insert 1 copy to 3 copies (3->4 copies)",
+        "hgvs": "NC_000001.11:g.930152_930153insTTCCTCTCCTCCTGCCCCACC",
+        "spdi": "NC_000001.11:930081:GCCCCACCTTCCTCTCCTCCTGCCCCACCTTCCTCTCCTCCTGCCCCACCTTCCTCTCCTCCTGCCCCACC:GCCCCACCTTCCTCTCCTCCTGCCCCACCTTCCTCTCCTCCTGCCCCACCTTCCTCTCCTCCTGCCCCACCTTCCTCTCCTCCTGCCCCACC",
+        "expected": {
+            "type": "Allele",
+            "location": {
+                "type": "SequenceLocation",
+                "sequenceReference": {
+                    "type": "SequenceReference",
+                    "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
+                },
+                "start": 930081,
+                "end": 930152,
+            },
+            "state": {
+                "type": "ReferenceLengthExpression",
+                "length": 92,
+                "sequence": "GCCCCACCTTCCTCTCCTCCTGCCCCACCTTCCTCTCCTCCTGCCCCACCTTCCTCTCCTCCTGCCCCACCTTCCTCTCCTCCTGCCCCACC",
+                "repeatSubunitLength": 21,
+            },
+        },
+    },
+    {
+        "id": "identity",
+        "description": "No change, 3 copies (same-as-ref does NOT do VOCA normalization)",
+        "hgvs": "NC_000001.11:g.930090_930152=",
+        "spdi": "NC_000001.11:930089:TTCCTCTCCTCCTGCCCCACCTTCCTCTCCTCCTGCCCCACCTTCCTCTCCTCCTGCCCCACC:TTCCTCTCCTCCTGCCCCACCTTCCTCTCCTCCTGCCCCACCTTCCTCTCCTCCTGCCCCACC",
+        "expected": {
+            "type": "Allele",
+            "location": {
+                "type": "SequenceLocation",
+                "sequenceReference": {
+                    "type": "SequenceReference",
+                    "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
+                },
+                "start": 930089,
+                "end": 930152,
+            },
+            "state": {
+                "type": "ReferenceLengthExpression",
+                "length": 63,
+                "sequence": "TTCCTCTCCTCCTGCCCCACCTTCCTCTCCTCCTGCCCCACCTTCCTCTCCTCCTGCCCCACC",
+                "repeatSubunitLength": 63,
+            },
+        },
+    },
+]
+
+
+@pytest.mark.parametrize("case", microsatellite_21bp_cases, ids=lambda c: c["id"])
+@pytest.mark.vcr
+def test_normalize_microsatellite_counts(tlr, case):
+    """Test microsatellite deletion, insertion, and identity normalization behavior
+
+    Tests three variations of a 21bp microsatellite:
+    - Deletion and insertion: Apply VOCA normalization (roll left, find repeat unit)
+    - Identity (same-as-ref): Do NOT apply VOCA normalization, use input coordinates
+
+    https://github.com/ga4gh/vrs-python/discussions/592
+
+    The microsatellite has a 21bp repeat unit when fully normalized.
+    For deletion/insertion: normalize to 930081-930152 with repeatSubunitLength=21
+    For identity: keep input coordinates (930089-930152) with repeatSubunitLength=63
+    """
+    # Test HGVS format
+    allele_hgvs = tlr.translate_from(
+        case["hgvs"], "hgvs", normalize=True, rle_seq_limit=100
+    )
+    assert allele_hgvs.model_dump(exclude_none=True) == case["expected"], (
+        f"HGVS failed: {case['description']}"
+    )
+
+    # Test SPDI format
+    allele_spdi = tlr.translate_from(
+        case["spdi"], "spdi", normalize=True, rle_seq_limit=100
+    )
+    assert allele_spdi.model_dump(exclude_none=True) == case["expected"], (
+        f"SPDI failed: {case['description']}"
+    )
 
 
 # TODO: Readd these tests

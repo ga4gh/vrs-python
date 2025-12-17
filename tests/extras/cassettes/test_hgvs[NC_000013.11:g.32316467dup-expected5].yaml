@@ -1,165 +1,67 @@
 interactions:
 - request:
     body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      User-Agent:
-      - python-requests/2.32.3
+    headers: {}
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/NC_000013.11?start=32316466&end=32316467
   response:
     body:
       string: A
-    headers:
-      Connection:
-      - close
-      Content-Length:
-      - '1'
-      Content-Type:
-      - text/plain; charset=utf-8
-      Date:
-      - Mon, 10 Mar 2025 16:22:58 GMT
-      Server:
-      - Werkzeug/2.2.3 Python/3.10.12
+    headers: {}
     status:
       code: 200
       message: OK
 - request:
     body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      User-Agent:
-      - python-requests/2.32.3
+    headers: {}
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT?start=32316466&end=32316467
   response:
     body:
       string: A
-    headers:
-      Connection:
-      - close
-      Content-Length:
-      - '1'
-      Content-Type:
-      - text/plain; charset=utf-8
-      Date:
-      - Mon, 10 Mar 2025 16:22:58 GMT
-      Server:
-      - Werkzeug/2.2.3 Python/3.10.12
+    headers: {}
     status:
       code: 200
       message: OK
 - request:
     body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      User-Agent:
-      - python-requests/2.32.3
+    headers: {}
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT?start=32316467&end=32316467
   response:
     body:
       string: ''
-    headers:
-      Connection:
-      - close
-      Content-Length:
-      - '0'
-      Content-Type:
-      - text/plain; charset=utf-8
-      Date:
-      - Mon, 10 Mar 2025 16:22:58 GMT
-      Server:
-      - Werkzeug/2.2.3 Python/3.10.12
+    headers: {}
     status:
       code: 200
       message: OK
 - request:
     body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      User-Agent:
-      - python-requests/2.32.3
+    headers: {}
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT?start=32316465&end=32316466
   response:
     body:
       string: T
-    headers:
-      Connection:
-      - close
-      Content-Length:
-      - '1'
-      Content-Type:
-      - text/plain; charset=utf-8
-      Date:
-      - Mon, 10 Mar 2025 16:22:58 GMT
-      Server:
-      - Werkzeug/2.2.3 Python/3.10.12
+    headers: {}
     status:
       code: 200
       message: OK
 - request:
     body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      User-Agent:
-      - python-requests/2.32.3
+    headers: {}
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT?start=32316467&end=32316468
   response:
     body:
       string: T
-    headers:
-      Connection:
-      - close
-      Content-Length:
-      - '1'
-      Content-Type:
-      - text/plain; charset=utf-8
-      Date:
-      - Mon, 10 Mar 2025 16:22:58 GMT
-      Server:
-      - Werkzeug/2.2.3 Python/3.10.12
+    headers: {}
     status:
       code: 200
       message: OK
 - request:
     body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      User-Agent:
-      - python-requests/2.32.3
+    headers: {}
     method: GET
     uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nucleotide&id=NC_000013.11&rettype=fasta&seq_start=32316467&seq_stop=32316467&tool=bioutils&email=biocommons-dev@googlegroups.com
   response:
@@ -171,64 +73,13 @@ interactions:
 
 
         '
-    headers:
-      Access-Control-Allow-Origin:
-      - '*'
-      Access-Control-Expose-Headers:
-      - X-RateLimit-Limit,X-RateLimit-Remaining
-      Cache-Control:
-      - private
-      Connection:
-      - Keep-Alive
-      Content-Disposition:
-      - attachment; filename="sequence.fasta"
-      Content-Security-Policy:
-      - upgrade-insecure-requests
-      Content-Type:
-      - text/plain
-      Date:
-      - Mon, 10 Mar 2025 16:22:57 GMT
-      Keep-Alive:
-      - timeout=4, max=40
-      NCBI-PHID:
-      - 322C1EB26B7FD5C500003E6886B10019.1.1.m_5
-      NCBI-SID:
-      - FCA6F5765141935F_9ED1SID
-      Referrer-Policy:
-      - origin-when-cross-origin
-      Server:
-      - Finatra
-      Set-Cookie:
-      - ncbi_sid=FCA6F5765141935F_9ED1SID; domain=.nih.gov; path=/; expires=Tue, 10
-        Mar 2026 16:22:58 GMT
-      Strict-Transport-Security:
-      - max-age=31536000; includeSubDomains; preload
-      Transfer-Encoding:
-      - chunked
-      X-RateLimit-Limit:
-      - '3'
-      X-RateLimit-Remaining:
-      - '0'
-      X-UA-Compatible:
-      - IE=Edge
-      X-XSS-Protection:
-      - 1; mode=block
-      content-encoding:
-      - gzip
+    headers: {}
     status:
       code: 200
       message: OK
 - request:
     body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      User-Agent:
-      - python-requests/2.32.3
+    headers: {}
     method: GET
     uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nucleotide&id=NC_000013.11&rettype=fasta&seq_start=32316467&seq_stop=32316487&tool=bioutils&email=biocommons-dev@googlegroups.com
   response:
@@ -240,50 +91,7 @@ interactions:
 
 
         '
-    headers:
-      Access-Control-Allow-Origin:
-      - '*'
-      Access-Control-Expose-Headers:
-      - X-RateLimit-Limit,X-RateLimit-Remaining
-      Cache-Control:
-      - private
-      Connection:
-      - Keep-Alive
-      Content-Disposition:
-      - attachment; filename="sequence.fasta"
-      Content-Security-Policy:
-      - upgrade-insecure-requests
-      Content-Type:
-      - text/plain
-      Date:
-      - Mon, 10 Mar 2025 16:22:58 GMT
-      Keep-Alive:
-      - timeout=4, max=40
-      NCBI-PHID:
-      - D0BDD793D08B964500003F6AC5AD35EB.1.1.m_5
-      NCBI-SID:
-      - 64DB9D0ADA04B826_34FESID
-      Referrer-Policy:
-      - origin-when-cross-origin
-      Server:
-      - Finatra
-      Set-Cookie:
-      - ncbi_sid=64DB9D0ADA04B826_34FESID; domain=.nih.gov; path=/; expires=Tue, 10
-        Mar 2026 16:22:58 GMT
-      Strict-Transport-Security:
-      - max-age=31536000; includeSubDomains; preload
-      Transfer-Encoding:
-      - chunked
-      X-RateLimit-Limit:
-      - '3'
-      X-RateLimit-Remaining:
-      - '0'
-      X-UA-Compatible:
-      - IE=Edge
-      X-XSS-Protection:
-      - 1; mode=block
-      content-encoding:
-      - gzip
+    headers: {}
     status:
       code: 200
       message: OK

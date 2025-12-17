@@ -1,15 +1,7 @@
 interactions:
 - request:
     body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      User-Agent:
-      - python-requests/2.32.3
+    headers: {}
     method: GET
     uri: http://localhost:5000/seqrepo/1/metadata/ga4gh:SQ.0iKlIQk2oZLoeOG9P1riRU6hvL5Ux8TV
   response:
@@ -26,61 +18,25 @@ interactions:
         \   \"SHA1:599b9a4e5475a88471ac9e5da46d99d3275ea97e\",\n    \"VMC:GS_0iKlIQk2oZLoeOG9P1riRU6hvL5Ux8TV\",\n
         \   \"sha512t24u:0iKlIQk2oZLoeOG9P1riRU6hvL5Ux8TV\",\n    \"ga4gh:SQ.0iKlIQk2oZLoeOG9P1riRU6hvL5Ux8TV\"\n
         \ ],\n  \"alphabet\": \"ACGNTY\",\n  \"length\": 170805979\n}\n"
-    headers:
-      Connection:
-      - close
-      Content-Length:
-      - '975'
-      Content-Type:
-      - application/json
-      Date:
-      - Mon, 10 Mar 2025 16:23:25 GMT
-      Server:
-      - Werkzeug/2.2.3 Python/3.10.12
+    headers: {}
     status:
       code: 200
       message: OK
 - request:
     body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      User-Agent:
-      - python-requests/2.32.3
+    headers: {}
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.0iKlIQk2oZLoeOG9P1riRU6hvL5Ux8TV?start=26090950&end=26090951
   response:
     body:
       string: C
-    headers:
-      Connection:
-      - close
-      Content-Length:
-      - '1'
-      Content-Type:
-      - text/plain; charset=utf-8
-      Date:
-      - Mon, 10 Mar 2025 16:23:25 GMT
-      Server:
-      - Werkzeug/2.2.3 Python/3.10.12
+    headers: {}
     status:
       code: 200
       message: OK
 - request:
     body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      User-Agent:
-      - python-requests/2.32.3
+    headers: {}
     method: GET
     uri: http://localhost:5000/seqrepo/1/metadata/ga4gh:SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP
   response:
@@ -97,557 +53,283 @@ interactions:
         \   \"SHA1:67d41b42bacf8e98d748c25eb0362a0b7038de50\",\n    \"VMC:GS_w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP\",\n
         \   \"sha512t24u:w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP\",\n    \"ga4gh:SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP\"\n
         \ ],\n  \"alphabet\": \"ACGNRSTWY\",\n  \"length\": 156040895\n}\n"
-    headers:
-      Connection:
-      - close
-      Content-Length:
-      - '978'
-      Content-Type:
-      - application/json
-      Date:
-      - Mon, 10 Mar 2025 16:23:25 GMT
-      Server:
-      - Werkzeug/2.2.3 Python/3.10.12
+    headers: {}
     status:
       code: 200
       message: OK
 - request:
     body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      User-Agent:
-      - python-requests/2.32.3
+    headers: {}
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP?start=155980375&end=155980377
   response:
     body:
       string: TA
-    headers:
-      Connection:
-      - close
-      Content-Length:
-      - '2'
-      Content-Type:
-      - text/plain; charset=utf-8
-      Date:
-      - Mon, 10 Mar 2025 16:23:25 GMT
-      Server:
-      - Werkzeug/2.2.3 Python/3.10.12
+    headers: {}
     status:
       code: 200
       message: OK
 - request:
     body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      User-Agent:
-      - python-requests/2.32.3
+    headers: {}
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP?start=155980374&end=155980375
   response:
     body:
       string: T
-    headers:
-      Connection:
-      - close
-      Content-Length:
-      - '1'
-      Content-Type:
-      - text/plain; charset=utf-8
-      Date:
-      - Mon, 10 Mar 2025 16:23:25 GMT
-      Server:
-      - Werkzeug/2.2.3 Python/3.10.12
+    headers: {}
     status:
       code: 200
       message: OK
 - request:
     body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      User-Agent:
-      - python-requests/2.32.3
+    headers: {}
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP?start=155980377&end=155980378
   response:
     body:
       string: A
-    headers:
-      Connection:
-      - close
-      Content-Length:
-      - '1'
-      Content-Type:
-      - text/plain; charset=utf-8
-      Date:
-      - Mon, 10 Mar 2025 16:23:25 GMT
-      Server:
-      - Werkzeug/2.2.3 Python/3.10.12
+    headers: {}
     status:
       code: 200
       message: OK
 - request:
     body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      User-Agent:
-      - python-requests/2.32.3
+    headers: {}
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP?start=155980375&end=155980375
   response:
     body:
       string: ''
-    headers:
-      Connection:
-      - close
-      Content-Length:
-      - '0'
-      Content-Type:
-      - text/plain; charset=utf-8
-      Date:
-      - Mon, 10 Mar 2025 16:23:25 GMT
-      Server:
-      - Werkzeug/2.2.3 Python/3.10.12
+    headers: {}
     status:
       code: 200
       message: OK
 - request:
     body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      User-Agent:
-      - python-requests/2.32.3
+    headers: {}
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP?start=155980377&end=155980377
   response:
     body:
       string: ''
-    headers:
-      Connection:
-      - close
-      Content-Length:
-      - '0'
-      Content-Type:
-      - text/plain; charset=utf-8
-      Date:
-      - Mon, 10 Mar 2025 16:23:25 GMT
-      Server:
-      - Werkzeug/2.2.3 Python/3.10.12
+    headers: {}
     status:
       code: 200
       message: OK
 - request:
     body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      User-Agent:
-      - python-requests/2.32.3
+    headers: {}
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP?start=155980373&end=155980375
   response:
     body:
       string: GT
-    headers:
-      Connection:
-      - close
-      Content-Length:
-      - '2'
-      Content-Type:
-      - text/plain; charset=utf-8
-      Date:
-      - Mon, 10 Mar 2025 16:23:25 GMT
-      Server:
-      - Werkzeug/2.2.3 Python/3.10.12
+    headers: {}
     status:
       code: 200
       message: OK
 - request:
     body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      User-Agent:
-      - python-requests/2.32.3
+    headers: {}
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP?start=155980373&end=155980374
   response:
     body:
       string: G
-    headers:
-      Connection:
-      - close
-      Content-Length:
-      - '1'
-      Content-Type:
-      - text/plain; charset=utf-8
-      Date:
-      - Mon, 10 Mar 2025 16:23:25 GMT
-      Server:
-      - Werkzeug/2.2.3 Python/3.10.12
+    headers: {}
     status:
       code: 200
       message: OK
 - request:
     body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      User-Agent:
-      - python-requests/2.32.3
+    headers: {}
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP?start=155980372&end=155980373
   response:
     body:
       string: G
-    headers:
-      Connection:
-      - close
-      Content-Length:
-      - '1'
-      Content-Type:
-      - text/plain; charset=utf-8
-      Date:
-      - Mon, 10 Mar 2025 16:23:25 GMT
-      Server:
-      - Werkzeug/2.2.3 Python/3.10.12
+    headers: {}
     status:
       code: 200
       message: OK
 - request:
     body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      User-Agent:
-      - python-requests/2.32.3
+    headers: {}
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP?start=155980375&end=155980376
   response:
     body:
       string: T
-    headers:
-      Connection:
-      - close
-      Content-Length:
-      - '1'
-      Content-Type:
-      - text/plain; charset=utf-8
-      Date:
-      - Mon, 10 Mar 2025 16:23:25 GMT
-      Server:
-      - Werkzeug/2.2.3 Python/3.10.12
+    headers: {}
     status:
       code: 200
       message: OK
 - request:
     body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      User-Agent:
-      - python-requests/2.32.3
+    headers: {}
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl?start=289464&end=289464
   response:
     body:
       string: ''
-    headers:
-      Connection:
-      - close
-      Content-Length:
-      - '0'
-      Content-Type:
-      - text/plain; charset=utf-8
-      Date:
-      - Mon, 10 Mar 2025 16:23:25 GMT
-      Server:
-      - Werkzeug/2.2.3 Python/3.10.12
+    headers: {}
     status:
       code: 200
       message: OK
 - request:
     body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      User-Agent:
-      - python-requests/2.32.3
+    headers: {}
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl?start=289463&end=289464
   response:
     body:
       string: T
-    headers:
-      Connection:
-      - close
-      Content-Length:
-      - '1'
-      Content-Type:
-      - text/plain; charset=utf-8
-      Date:
-      - Mon, 10 Mar 2025 16:23:25 GMT
-      Server:
-      - Werkzeug/2.2.3 Python/3.10.12
+    headers: {}
     status:
       code: 200
       message: OK
 - request:
     body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      User-Agent:
-      - python-requests/2.32.3
+    headers: {}
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl?start=289464&end=289465
   response:
     body:
       string: C
-    headers:
-      Connection:
-      - close
-      Content-Length:
-      - '1'
-      Content-Type:
-      - text/plain; charset=utf-8
-      Date:
-      - Mon, 10 Mar 2025 16:23:25 GMT
-      Server:
-      - Werkzeug/2.2.3 Python/3.10.12
+    headers: {}
     status:
       code: 200
       message: OK
 - request:
     body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      User-Agent:
-      - python-requests/2.32.3
+    headers: {}
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl?start=289465&end=289466
   response:
     body:
       string: A
-    headers:
-      Connection:
-      - close
-      Content-Length:
-      - '1'
-      Content-Type:
-      - text/plain; charset=utf-8
-      Date:
-      - Mon, 10 Mar 2025 16:23:25 GMT
-      Server:
-      - Werkzeug/2.2.3 Python/3.10.12
+    headers: {}
     status:
       code: 200
       message: OK
 - request:
     body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      User-Agent:
-      - python-requests/2.32.3
+    headers: {}
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl?start=289466&end=289467
   response:
     body:
       string: G
-    headers:
-      Connection:
-      - close
-      Content-Length:
-      - '1'
-      Content-Type:
-      - text/plain; charset=utf-8
-      Date:
-      - Mon, 10 Mar 2025 16:23:25 GMT
-      Server:
-      - Werkzeug/2.2.3 Python/3.10.12
+    headers: {}
     status:
       code: 200
       message: OK
 - request:
     body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      User-Agent:
-      - python-requests/2.32.3
+    headers: {}
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl?start=289467&end=289468
   response:
     body:
       string: C
-    headers:
-      Connection:
-      - close
-      Content-Length:
-      - '1'
-      Content-Type:
-      - text/plain; charset=utf-8
-      Date:
-      - Mon, 10 Mar 2025 16:23:25 GMT
-      Server:
-      - Werkzeug/2.2.3 Python/3.10.12
+    headers: {}
     status:
       code: 200
       message: OK
 - request:
     body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      User-Agent:
-      - python-requests/2.32.3
+    headers: {}
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl?start=289468&end=289469
   response:
     body:
       string: A
-    headers:
-      Connection:
-      - close
-      Content-Length:
-      - '1'
-      Content-Type:
-      - text/plain; charset=utf-8
-      Date:
-      - Mon, 10 Mar 2025 16:23:25 GMT
-      Server:
-      - Werkzeug/2.2.3 Python/3.10.12
+    headers: {}
     status:
       code: 200
       message: OK
 - request:
     body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      User-Agent:
-      - python-requests/2.32.3
+    headers: {}
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl?start=289469&end=289470
   response:
     body:
       string: C
-    headers:
-      Connection:
-      - close
-      Content-Length:
-      - '1'
-      Content-Type:
-      - text/plain; charset=utf-8
-      Date:
-      - Mon, 10 Mar 2025 16:23:25 GMT
-      Server:
-      - Werkzeug/2.2.3 Python/3.10.12
+    headers: {}
     status:
       code: 200
       message: OK
 - request:
     body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      User-Agent:
-      - python-requests/2.32.3
+    headers: {}
     method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl?start=289464&end=289469
   response:
     body:
       string: CAGCA
-    headers:
-      Connection:
-      - close
-      Content-Length:
-      - '5'
-      Content-Type:
-      - text/plain; charset=utf-8
-      Date:
-      - Mon, 10 Mar 2025 16:23:25 GMT
-      Server:
-      - Werkzeug/2.2.3 Python/3.10.12
+    headers: {}
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers: {}
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO?start=100210777&end=100210779
+  response:
+    body:
+      string: AA
+    headers: {}
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers: {}
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO?start=939145&end=939147
+  response:
+    body:
+      string: GA
+    headers: {}
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers: {}
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO?start=236900413&end=236900413
+  response:
+    body:
+      string: ''
+    headers: {}
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers: {}
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO?start=236900412&end=236900413
+  response:
+    body:
+      string: A
+    headers: {}
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers: {}
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO?start=236900413&end=236900414
+  response:
+    body:
+      string: A
+    headers: {}
     status:
       code: 200
       message: OK
