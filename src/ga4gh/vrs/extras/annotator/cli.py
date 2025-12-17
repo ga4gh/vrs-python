@@ -11,7 +11,6 @@ from pathlib import Path
 from timeit import default_timer as timer
 
 import click
-import requests
 
 from ga4gh.vrs.dataproxy import create_dataproxy
 from ga4gh.vrs.extras.annotator.vcf import VcfAnnotator, VcfAnnotatorArgsError
@@ -200,14 +199,6 @@ def _annotate_vcf_cli(
      * seqrepo+:../relative/path/to/seqrepo/root
     """  # noqa: D301
     data_proxy = create_dataproxy(dataproxy_uri)
-    try:
-        data_proxy.get_metadata("GRCh38:1")
-    except requests.exceptions.ConnectionError:
-        msg = f"Connection to SeqRepo dataproxy at {dataproxy_uri} failed. Is the REST service running?"
-        _logger.exception(msg)
-        if not silent:
-            click.echo(msg, err=True)
-        exit(1)
     annotator = VcfAnnotator(data_proxy)
     start = timer()
     msg = f"Annotating {vcf_in} with the VCF Annotator..."

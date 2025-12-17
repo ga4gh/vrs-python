@@ -182,6 +182,7 @@ def test_annotate_vcf_vcf_only(
     assert not Path(output_vrs_pkl).exists()
 
 
+@pytest.mark.vcr
 def test_annotate_vcf_input_validation(vcf_annotator: VcfAnnotator, input_vcf: Path):
     with pytest.raises(
         VcfAnnotatorError,
