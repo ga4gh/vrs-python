@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 from abc import ABC
-from enum import Enum
-from typing import Annotated, Any
+from enum import StrEnum
+from typing import Annotated, Any, Literal
 
 from pydantic import (
     BaseModel,
@@ -25,7 +25,7 @@ class BaseModelForbidExtra(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
 
-class Relation(str, Enum):
+class Relation(StrEnum):
     """A mapping relation between concepts as defined by the Simple Knowledge
     Organization System (SKOS).
     """
@@ -35,6 +35,20 @@ class Relation(str, Enum):
     BROAD_MATCH = "broadMatch"
     NARROW_MATCH = "narrowMatch"
     RELATED_MATCH = "relatedMatch"
+
+
+class MembershipOperator(StrEnum):
+    """The logical relationship between concepts in the set, in the context of some
+    knowledge reported about them. The value 'AND' indicates that the concepts are
+    dependent and occur together in this context - i.e. the reported assertion is not
+    necessarily true for each concept on its own - only in combination with the
+    other(s). The value 'OR' indicates that each concept applies independently in this
+    context - i.e. the reported assertion is necessarily true for each concept on its
+    own, independent of the presence of the other(s).
+    """
+
+    AND = "AND"
+    OR = "OR"
 
 
 #########################################
@@ -172,6 +186,29 @@ class ConceptMapping(Element, BaseModelForbidExtra):
     relation: Relation = Field(
         ...,
         description="A mapping relation between concepts as defined by the Simple Knowledge Organization System (SKOS).",
+    )
+
+
+class ConceptSet(Element, BaseModelForbidExtra):
+    """A set of concepts that may be considered as dependent (occurring together), or
+    independent (existing separately) in the context of some knowledge reported about
+    them, as indicated by a set membership operator. e.g. a set of independent molecular
+    consequences that both result from the presence of a particular genetic variant
+    (membership operator = OR).
+    """
+
+    type: Literal["ConceptSet"] = Field(
+        default="ConceptSet",
+        description='MUST be "ConceptSet"',
+    )
+    concepts: list[MappableConcept] | list[ConceptSet] = Field(
+        ...,
+        description="A list of concepts that are dependent (occurring together), or independent (existing separately), depending on the",
+        min_length=2,
+    )
+    membershipOperator: MembershipOperator = Field(  # noqa: N815
+        ...,
+        description="The logical relationship between concepts in the set, in the context of some knowledge reported about them. The value 'AND' indicates that the concepts are dependent and occur together in this context - i.e. the reported assertion is not necessarily true for each concept on its own - only in combination with the other(s). The value 'OR' indicates that each concept applies independently in this context - i.e. the reported assertion is necessarily true for each concept on its own, independent of the presence of the other(s).",
     )
 
 
