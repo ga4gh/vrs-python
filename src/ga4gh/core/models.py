@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from abc import ABC
-from enum import StrEnum
+from enum import Enum
 from typing import Annotated, Any, Literal
 
 from pydantic import (
@@ -25,7 +25,7 @@ class BaseModelForbidExtra(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
 
-class Relation(StrEnum):
+class Relation(str, Enum):
     """A mapping relation between concepts as defined by the Simple Knowledge
     Organization System (SKOS).
     """
@@ -37,7 +37,7 @@ class Relation(StrEnum):
     RELATED_MATCH = "relatedMatch"
 
 
-class MembershipOperator(StrEnum):
+class MembershipOperator(str, Enum):
     """The logical relationship between concepts in the set, in the context of some
     knowledge reported about them. The value 'AND' indicates that the concepts are
     dependent and occur together in this context - i.e. the reported assertion is not
