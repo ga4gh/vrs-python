@@ -199,7 +199,7 @@ class ConceptSet(Element, BaseModelForbidExtra):
 
     type: Literal["ConceptSet"] = Field(
         default="ConceptSet",
-        description='MUST be "ConceptSet"',
+        description='MUST be "ConceptSet".',
     )
     concepts: list[MappableConcept] | list[ConceptSet] = Field(
         ...,
