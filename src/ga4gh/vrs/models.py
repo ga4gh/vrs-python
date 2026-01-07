@@ -161,7 +161,10 @@ class VrsType(str, Enum):
     LIT_SEQ_EXPR = "LiteralSequenceExpression"
     SEQ_REF = "SequenceReference"
     SEQ_LOC = "SequenceLocation"
+    SEQ_OFFSET_LOCATION = "SequenceOffsetLocation"
+    RELATIVE_SEQ_LOC = "RelativeSequenceLocation"
     ALLELE = "Allele"
+    RELATIVE_ALLELE = "RelativeAllele"
     CIS_PHASED_BLOCK = "CisPhasedBlock"
     ADJACENCY = "Adjacency"
     TERMINUS = "Terminus"
@@ -227,6 +230,21 @@ class Syntax(str, Enum):
     HGVS_ISCN = "iscn"
     GNOMAD = "gnomad"
     SPDI = "spdi"
+
+
+class AnchorOrientation(str, Enum):
+    """Indicates which side of a discontinuous anchor on the sequenceReference is used
+    as the reference point for interpreting offsetStart/offsetEnd. The anchor is an
+    inter-residue coordinate on the sequenceReference. When that anchor corresponds to a
+    boundary whose realization on a base sequence yields two distinct locations (e.g.,
+    an exon junction), this property disambiguates which anchor side on the
+    sequenceReference is intended. `left` denotes the side immediately preceding the
+    anchor in sequenceReference coordinate order; `right` denotes the side immediately
+    following the anchor in sequenceReference coordinate order.
+    """
+
+    LEFT = "left"
+    RIGHT = "right"
 
 
 def _recurse_ga4gh_serialize(obj):
@@ -656,6 +674,70 @@ class SequenceLocation(Ga4ghIdentifiableObject, BaseModelForbidExtra):
         inherent = ["end", "sequenceReference", "start", "type"]
 
 
+class SequenceOffsetLocation(_ValueObject, BaseModelForbidExtra):
+    """A location defined by an offset relative to an anchor on a mapped sequence
+    reference.
+    """
+
+    type: Literal["SequenceOffsetLocation"] = Field(
+        default=VrsType.SEQ_OFFSET_LOCATION.value,
+        description=f'MUST be "{VrsType.SEQ_OFFSET_LOCATION.value}"',
+    )
+    sequenceReference: SequenceReference | iriReference | None = Field(
+        default=None,
+        description="A sequence reference that has been mapped from which a relative location is defined.",
+    )
+    anchor: int | None = Field(
+        default=None,
+        description="The position on the sequence reference from which the relative location offset is calculated.",
+    )
+    anchorOrientation: AnchorOrientation | None = Field(
+        default=None,
+        description="Indicates which side of a discontinuous anchor on the sequenceReference is used as the reference point for interpreting offsetStart/offsetEnd. The anchor is an inter-residue coordinate on the sequenceReference. When that anchor corresponds to a boundary whose realization on a base sequence yields two distinct locations (e.g., an exon junction), this property disambiguates which anchor side on the sequenceReference is intended. `left` denotes the side immediately preceding the anchor in sequenceReference coordinate order; `right` denotes the side immediately following the anchor in sequenceReference coordinate order.",
+    )
+    offsetStart: int | Range | None = Field(
+        default=None,
+        description="The start offset, in inter-residue coordinates, from the anchor realization selected by anchorOrientation on the sequenceReference.",
+    )
+    offsetEnd: int | Range | None = Field(
+        default=None,
+        description="The end offset, in inter-residue coordinates, from the anchor realization selected by anchorOrientation on the sequenceReference.",
+    )
+
+    class ga4gh(_ValueObject.ga4gh):
+        inherent = [
+            "sequenceReference",
+            "anchor",
+            "anchorOrientation",
+            "offsetStart",
+            "offsetEnd",
+            "type",
+        ]
+
+
+class RelativeSequenceLocation(Ga4ghIdentifiableObject, BaseModelForbidExtra):
+    """A location on a base sequence and its position relative to a boundary offset on a
+    mapped sequence gap. Typically used to describe intronic locations that exist with
+    respect to a mapped RNA transcript sequence.
+    """
+
+    type: Literal["RelativeSequenceLocation"] = Field(
+        default=VrsType.RELATIVE_SEQ_LOC.value,
+        description=f'MUST be "{VrsType.RELATIVE_SEQ_LOC.value}"',
+    )
+    baseSequenceLocation: SequenceLocation | iriReference | None = Field(
+        default=None, description="An absolute location on a sequence."
+    )
+    mappedSequenceLocation: SequenceOffsetLocation | iriReference | None = Field(
+        default=None,
+        description="A location relative to an offset on a mapped sequence.",
+    )
+
+    class ga4gh(Ga4ghIdentifiableObject.ga4gh):
+        prefix = "RSL"
+        inherent = ["baseSequenceLocation", "mappedSequenceLocation", "type"]
+
+
 #########################################
 # base variation
 #########################################
@@ -714,6 +796,35 @@ class Allele(_VariationBase, BaseModelForbidExtra):
         prefix = "VA"
         priorPrefix = {PrevVrsVersion.V1_3.value: "VA"}  # noqa: N815
         inherent = ["location", "state", "type"]
+
+
+class RelativeAllele(_VariationBase, BaseModelForbidExtra):
+    """An Allele defined on a mapped location relative to a base location. Often used to describe intronic variants."""
+
+    type: Literal["RelativeAllele"] = Field(
+        default=VrsType.RELATIVE_ALLELE.value,
+        description=f'MUST be "{VrsType.RELATIVE_ALLELE.value}"',
+    )
+    relativeState: (
+        LiteralSequenceExpression | ReferenceLengthExpression | LengthExpression | None
+    ) = Field(
+        default=None,
+        description='The state of the RelativeAllele as expressed on the mapped sequence. This will differ from the base state when mapping to a reverse complement sequence, commonly observed when representing the state on transcripts mapped to the "negative strand" of a chromosome.',
+    )
+    baseState: (
+        LiteralSequenceExpression | ReferenceLengthExpression | LengthExpression | None
+    ) = Field(
+        default=None,
+        description="The state of the RelativeAllele as expressed on the base sequence.",
+    )
+    relativeLocation: RelativeSequenceLocation | iriReference | None = Field(
+        default=None,
+        description="The relative location at which the baseState and relativeState are expressed.",
+    )
+
+    class ga4gh(Ga4ghIdentifiableObject.ga4gh):
+        prefix = "RA"
+        inherent = ["relativeState", "baseState", "relativeLocation", "type"]
 
 
 class CisPhasedBlock(_VariationBase, BaseModelForbidExtra):
@@ -921,7 +1032,14 @@ class CopyNumberChange(_VariationBase, BaseModelForbidExtra):
 class MolecularVariation(RootModel):
     """A `variation` on a contiguous molecule."""
 
-    root: Allele | CisPhasedBlock | Adjacency | Terminus | DerivativeMolecule = Field(
+    root: (
+        Allele
+        | RelativeAllele
+        | CisPhasedBlock
+        | Adjacency
+        | Terminus
+        | DerivativeMolecule
+    ) = Field(
         ...,
         json_schema_extra={"description": "A `variation` on a contiguous molecule."},
         discriminator="type",
@@ -943,7 +1061,7 @@ class SequenceExpression(RootModel):
 class Location(RootModel):
     """A contiguous segment of a biological sequence."""
 
-    root: SequenceLocation = Field(
+    root: SequenceLocation | RelativeSequenceLocation = Field(
         ...,
         json_schema_extra={
             "description": "A contiguous segment of a biological sequence."
