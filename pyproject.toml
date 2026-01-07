@@ -40,7 +40,6 @@ dependencies = [
     "bioutils",
     "requests",
     "canonicaljson",
-    "setuptools>=78.1.0", # TODO remove this pin caused by HGVS issue
     "typing-extensions",
 ]
 
@@ -53,7 +52,6 @@ extras = [
     "dill~=0.3.7",
     "click",
     "pysam==0.23.0",  # pinned pending https://github.com/ga4gh/vrs-python/issues/560
-    "typing_extensions",
 ]
 dev = [
     # tests
@@ -71,7 +69,6 @@ dev = [
 ]
 notebooks = [
     "jupyter",
-    "tabulate",
     "pyyaml"
 ]
 
