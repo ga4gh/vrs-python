@@ -683,16 +683,16 @@ class SequenceOffsetLocation(_ValueObject, BaseModelForbidExtra):
         default=VrsType.SEQ_OFFSET_LOCATION.value,
         description=f'MUST be "{VrsType.SEQ_OFFSET_LOCATION.value}"',
     )
-    sequenceReference: SequenceReference | iriReference | None = Field(
-        default=None,
+    sequenceReference: SequenceReference | iriReference = Field(
+        ...,
         description="A sequence reference that has been mapped from which a relative location is defined.",
     )
-    anchor: int | None = Field(
-        default=None,
+    anchor: int = Field(
+        ...,
         description="The position on the sequence reference from which the relative location offset is calculated.",
     )
-    anchorOrientation: AnchorOrientation | None = Field(
-        default=None,
+    anchorOrientation: AnchorOrientation = Field(
+        ...,
         description="Indicates which side of a discontinuous anchor on the sequenceReference is used as the reference point for interpreting offsetStart/offsetEnd. The anchor is an inter-residue coordinate on the sequenceReference. When that anchor corresponds to a boundary whose realization on a base sequence yields two distinct locations (e.g., an exon junction), this property disambiguates which anchor side on the sequenceReference is intended. `left` denotes the side immediately preceding the anchor in sequenceReference coordinate order; `right` denotes the side immediately following the anchor in sequenceReference coordinate order.",
     )
     offsetStart: int | Range | None = Field(
@@ -725,11 +725,11 @@ class RelativeSequenceLocation(Ga4ghIdentifiableObject, BaseModelForbidExtra):
         default=VrsType.RELATIVE_SEQ_LOC.value,
         description=f'MUST be "{VrsType.RELATIVE_SEQ_LOC.value}"',
     )
-    baseSequenceLocation: SequenceLocation | iriReference | None = Field(
-        default=None, description="An absolute location on a sequence."
+    baseSequenceLocation: SequenceLocation | iriReference = Field(
+        ..., description="An absolute location on a sequence."
     )
-    mappedSequenceLocation: SequenceOffsetLocation | iriReference | None = Field(
-        default=None,
+    mappedSequenceLocation: SequenceOffsetLocation | iriReference = Field(
+        ...,
         description="A location relative to an offset on a mapped sequence.",
     )
 
@@ -806,19 +806,19 @@ class RelativeAllele(_VariationBase, BaseModelForbidExtra):
         description=f'MUST be "{VrsType.RELATIVE_ALLELE.value}"',
     )
     relativeState: (
-        LiteralSequenceExpression | ReferenceLengthExpression | LengthExpression | None
+        LiteralSequenceExpression | ReferenceLengthExpression | LengthExpression
     ) = Field(
-        default=None,
+        ...,
         description='The state of the RelativeAllele as expressed on the mapped sequence. This will differ from the base state when mapping to a reverse complement sequence, commonly observed when representing the state on transcripts mapped to the "negative strand" of a chromosome.',
     )
     baseState: (
-        LiteralSequenceExpression | ReferenceLengthExpression | LengthExpression | None
+        LiteralSequenceExpression | ReferenceLengthExpression | LengthExpression
     ) = Field(
-        default=None,
+        ...,
         description="The state of the RelativeAllele as expressed on the base sequence.",
     )
-    relativeLocation: RelativeSequenceLocation | iriReference | None = Field(
-        default=None,
+    relativeLocation: RelativeSequenceLocation | iriReference = Field(
+        ...,
         description="The relative location at which the baseState and relativeState are expressed.",
     )
 

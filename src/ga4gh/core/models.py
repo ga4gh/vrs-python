@@ -203,7 +203,7 @@ class ConceptSet(Element, BaseModelForbidExtra):
     )
     concepts: list[MappableConcept] | list[ConceptSet] = Field(
         ...,
-        description="A list of concepts that are dependent (occurring together), or independent (existing separately), depending on the",
+        description="A list of concepts that are dependent (occurring together), or independent (existing separately), depending on the membership operator.",
         min_length=2,
     )
     membershipOperator: MembershipOperator = Field(  # noqa: N815
