@@ -3,6 +3,7 @@
 import abc
 import logging
 import pickle
+import time
 from enum import Enum
 from pathlib import Path
 from typing import Literal
@@ -213,6 +214,7 @@ class AbstractVcfAnnotator(abc.ABC):
         assembly: str = "GRCh38",
         compute_for_ref: bool = True,
         require_validation: bool = True,
+        log_every: int = 0,
         **kwargs,
     ) -> None:
         """Given a VCF, produce an output VCF annotated with VRS allele IDs, and/or
@@ -230,6 +232,7 @@ class AbstractVcfAnnotator(abc.ABC):
             object for a record. If `False` then VRS object will be returned even if
             validation checks fail, although all instances of failed validation are
             logged as warnings regardless.
+        :param log_every: If > 0, log progress every N records to stderr
         :raise VCFAnnotatorError: if no output formats are selected
         """
         self.raise_for_output_args(output_vcf_path, **kwargs)
@@ -252,7 +255,20 @@ class AbstractVcfAnnotator(abc.ABC):
             if (self.collect_alleles and self.should_collect_alleles(**kwargs))
             else None
         )
+        record_count = 0
+        start_time = time.monotonic()
         for record in vcf:
+            record_count += 1
+            if log_every > 0 and record_count % log_every == 0:
+                elapsed = time.monotonic() - start_time
+                rate = record_count / elapsed if elapsed > 0 else 0
+                _logger.info(
+                    "Processed %d records (%.1f/sec) at %s:%s",
+                    record_count,
+                    rate,
+                    record.chrom,
+                    record.pos,
+                )
             if vcf_out:
                 additional_info_fields = [FieldName.IDS_FIELD]
                 if vrs_attributes:
@@ -304,6 +320,16 @@ class AbstractVcfAnnotator(abc.ABC):
 
         if vcf_out:
             vcf_out.close()
+
+        if log_every > 0:
+            elapsed = time.monotonic() - start_time
+            rate = record_count / elapsed if elapsed > 0 else 0
+            _logger.info(
+                "Annotation complete: %d records in %.1fs (%.1f/sec)",
+                record_count,
+                elapsed,
+                rate,
+            )
 
         if allele_collection is not None:
             self.on_vrs_object_collection(allele_collection, **kwargs)
@@ -537,6 +563,7 @@ class VcfAnnotator(AbstractVcfAnnotator):
         assembly: str = "GRCh38",
         compute_for_ref: bool = True,
         require_validation: bool = True,
+        log_every: int = 0,
         **kwargs,
     ) -> None:
         """Given a VCF, produce an output VCF annotated with VRS allele IDs, and/or
@@ -554,6 +581,7 @@ class VcfAnnotator(AbstractVcfAnnotator):
             object for a record. If `False` then VRS object will be returned even if
             validation checks fail, although all instances of failed validation are
             logged as warnings regardless.
+        :param log_every: If > 0, log progress every N records to stderr
         :kwparam output_pkl_path: Optional path to output PKL dump of all alleles
         :kwparam output_ndjson_path: Optional path to output NDJSON dump of all alleles
         :raise VCFAnnotatorError: if no output formats are selected
@@ -565,6 +593,7 @@ class VcfAnnotator(AbstractVcfAnnotator):
             assembly,
             compute_for_ref,
             require_validation,
+            log_every=log_every,
             **kwargs,
         )
 

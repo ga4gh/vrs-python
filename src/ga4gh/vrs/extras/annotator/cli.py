@@ -5,6 +5,8 @@ $ vrs-annotate vcf input.vcf.gz --vcf_out output.vcf.gz --vrs_pickle_out vrs_obj
 """
 
 import logging
+import logging.config
+import os
 from collections.abc import Callable
 from enum import Enum
 from pathlib import Path
@@ -21,11 +23,19 @@ _logger = logging.getLogger(__name__)
 @click.group()
 def _cli() -> None:
     """Annotate input files with VRS variation objects."""
-    logging.basicConfig(
-        filename="vrs-annotate.log",
-        level=logging.INFO,
-        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    )
+    log_config = os.environ.get("VRS_ANNOTATE_LOG_CONFIG")
+    if log_config:
+        import yaml
+
+        with open(log_config) as f:  # noqa: PTH123
+            config = yaml.safe_load(f)
+        logging.config.dictConfig(config)
+    else:
+        logging.basicConfig(
+            filename="vrs-annotate.log",
+            level=logging.INFO,
+            format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+        )
 
 
 class _LogLevel(str, Enum):
@@ -165,6 +175,12 @@ class PathOrDash(click.ParamType):
     default=False,
     help="Suppress messages printed to stdout",
 )
+@click.option(
+    "--log-every",
+    type=int,
+    default=0,
+    help="Log progress every N records to stderr. 0 disables progress logging.",
+)
 def _annotate_vcf_cli(
     vcf_in: Path | str,
     vcf_out: Path | str | None,
@@ -176,6 +192,7 @@ def _annotate_vcf_cli(
     skip_ref: bool,
     require_validation: bool,
     silent: bool,
+    log_every: int,
 ) -> None:
     """Extract VRS objects from VCF located at VCF_IN. VCF_IN can be "-" to read from stdin.
 
@@ -212,6 +229,7 @@ def _annotate_vcf_cli(
             assembly=assembly,
             compute_for_ref=(not skip_ref),
             require_validation=require_validation,
+            log_every=log_every,
             output_pkl_path=pkl_out,
             output_ndjson_path=ndjson_out,
         )
