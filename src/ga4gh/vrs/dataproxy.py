@@ -172,6 +172,9 @@ class _DataProxy(ABC):
         :raises DataProxyValidationError: If excepted reference sequence does not match
             the actual reference sequence and ``require_validation`` is ``True``.
         """
+        if not require_validation:
+            return
+
         correct_ref = self.get_sequence(sequence_id, start_pos, end_pos)
 
         if correct_ref != ref:

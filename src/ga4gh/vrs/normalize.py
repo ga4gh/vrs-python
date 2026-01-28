@@ -126,7 +126,6 @@ def _normalize_allele(input_allele: models.Allele, data_proxy, rle_seq_limit=50)
         return input_allele
 
     # 0: Get reference sequence and interval
-    ref_seq = SequenceProxy(data_proxy, alias)
     start = _get_allele_location_pos(input_allele, use_start=True)
     if start is None:
         return input_allele
@@ -139,6 +138,29 @@ def _normalize_allele(input_allele: models.Allele, data_proxy, rle_seq_limit=50)
     start_pos_type = start.pos_type
     end_pos_type = end.pos_type
     alt_seq = input_allele.state.sequence.root or ""
+
+    # Optimized copy: shallow-copy the allele, then shallow-copy only the
+    # mutable nested fields (location and state). This avoids the cost of
+    # full model_dump()/re-validation or copy.deepcopy while still ensuring
+    # the returned allele is independent from the input.
+    def _copy_allele(a: models.Allele) -> models.Allele:
+        new = a.model_copy()
+        new.location = a.location.model_copy()
+        new.state = a.state.model_copy()
+        return new
+
+    # Fast-path for single-base substitutions (SNPs): trim is a no-op when both
+    # ref and alt spans are exactly 1 base, so skip SequenceProxy creation,
+    # _trim_for_normalization, and bioutils.normalize entirely.
+    if end.value - start.value == 1 and len(alt_seq) == 1:
+        ref_seq = SequenceProxy(data_proxy, alias)
+        ref_base = ref_seq[start.value : end.value]
+        if ref_base != alt_seq:
+            # Substitution: return copy with same coordinates and alt sequence
+            return _copy_allele(input_allele)
+        # Identity (ref == alt): fall through to full pipeline for RLE handling
+
+    ref_seq = SequenceProxy(data_proxy, alias)
     alleles = (None, alt_seq)
 
     # 1: trim shared flanking sequence
@@ -153,7 +175,7 @@ def _normalize_allele(input_allele: models.Allele, data_proxy, rle_seq_limit=50)
     seed_length = len_trimmed_ref or len_trimmed_alt
     identity_case = trim_ref_seq == trim_alt_seq
 
-    new_allele: models.Allele = pydantic_copy(input_allele)
+    new_allele: models.Allele = _copy_allele(input_allele)
 
     # 2.a: Reference allele (ref==alt after trim): use original span and return RLE
     # length = repeatSubunitLength = seed_length (the input sequence length)
