@@ -25,10 +25,10 @@ def _cli() -> None:
     """Annotate input files with VRS variation objects."""
     log_config = os.environ.get("VRS_ANNOTATE_LOG_CONFIG")
     if log_config:
-        import yaml
+        import json
 
         with open(log_config) as f:  # noqa: PTH123
-            config = yaml.safe_load(f)
+            config = json.load(f)
         logging.config.dictConfig(config)
     else:
         logging.basicConfig(
