@@ -42,6 +42,18 @@ class FieldName(str, Enum):
     ERROR_FIELD = "VRS_Error"
 
 
+# String-typed INFO fields where pysam incorrectly converts None → b""
+# (empty bytes) instead of the VCF missing value ".". Integer/Float fields
+# are unaffected because pysam uses proper BCF missing sentinels for those.
+_STRING_FIELDS = frozenset(
+    {
+        FieldName.IDS_FIELD,
+        FieldName.STATES_FIELD,
+        FieldName.ERROR_FIELD,
+    }
+)
+
+
 # VCF character escape map
 VCF_ESCAPE_MAP = str.maketrans(
     {
@@ -309,11 +321,20 @@ class AbstractVcfAnnotator(abc.ABC):
 
             if output_vcf_path and vcf_out:
                 for k in additional_info_fields:
-                    # Convert "" and None values (but not 0) to None.
-                    # Pysam outputs "." for missing values.
-                    record.info[k.value] = [
-                        None if v in ("", None) else v for v in vrs_field_data[k.value]
-                    ]
+                    # pysam correctly converts None → "." for Integer/Float
+                    # INFO fields, but for String fields it converts None →
+                    # "" (empty bytes), violating the VCF spec.  Work around
+                    # by using the literal string "." for String-typed fields.
+                    if k in _STRING_FIELDS:
+                        record.info[k.value] = [
+                            "." if v in ("", None) else v
+                            for v in vrs_field_data[k.value]
+                        ]
+                    else:
+                        record.info[k.value] = [
+                            None if v in ("", None) else v
+                            for v in vrs_field_data[k.value]
+                        ]
                 vcf_out.write(record)
 
         vcf.close()
