@@ -805,7 +805,7 @@ class RelativeAllele(_VariationBase, BaseModelForbidExtra):
         default=VrsType.RELATIVE_ALLELE.value,
         description=f'MUST be "{VrsType.RELATIVE_ALLELE.value}"',
     )
-    relativeState: (
+    mappedState: (
         LiteralSequenceExpression | ReferenceLengthExpression | LengthExpression
     ) = Field(
         ...,
@@ -819,12 +819,12 @@ class RelativeAllele(_VariationBase, BaseModelForbidExtra):
     )
     relativeLocation: RelativeSequenceLocation | iriReference = Field(
         ...,
-        description="The relative location at which the baseState and relativeState are expressed.",
+        description="The relative location at which the baseState and mappedState are expressed.",
     )
 
     class ga4gh(Ga4ghIdentifiableObject.ga4gh):
         prefix = "RA"
-        inherent = ["relativeState", "baseState", "relativeLocation", "type"]
+        inherent = ["mappedState", "baseState", "relativeLocation", "type"]
 
 
 class CisPhasedBlock(_VariationBase, BaseModelForbidExtra):
