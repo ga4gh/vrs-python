@@ -13,7 +13,9 @@ class Sqlite3MutableMapping(MutableMapping):
     If not used as a contextmanager, user must call commit and/or close.
     """
 
-    def __init__(self, sqlite3_db: str | sqlite3.Connection, autocommit: bool = True):
+    def __init__(
+        self, sqlite3_db: str | sqlite3.Connection, autocommit: bool = True
+    ) -> None:
         """Connect to the sqlite3 database specified by an existing sqlite3.Connection
         or a connection string.
 
@@ -96,10 +98,10 @@ class Sqlite3MutableMapping(MutableMapping):
         finally:
             cur.close()
 
-    def commit(self):
+    def commit(self) -> None:
         self.db.commit()
 
-    def close(self):
+    def close(self) -> None:
         with self._closed_lock:
             if not self._closed:
                 self.commit()
@@ -110,5 +112,5 @@ class Sqlite3MutableMapping(MutableMapping):
         self.db.__enter__()
         return self
 
-    def __exit__(self, exc_type, exc_value, traceback):
+    def __exit__(self, exc_type, exc_value, traceback) -> None:
         self.db.__exit__(exc_type, exc_value, traceback)
