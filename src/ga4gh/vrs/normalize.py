@@ -84,7 +84,9 @@ def _get_new_allele_location_pos(
     return val
 
 
-def _normalize_allele(input_allele, data_proxy, rle_seq_limit: int = 50):
+def _normalize_allele(
+    input_allele: models.Allele, data_proxy: _DataProxy, rle_seq_limit: int = 50
+):
     """Normalize Allele using "fully-justified" normalization adapted from NCBI's
     VOCA. Fully-justified normalization expands such ambiguous representation over the
     entire region of ambiguity, resulting in an unambiguous representation that may be
@@ -94,16 +96,29 @@ def _normalize_allele(input_allele, data_proxy, rle_seq_limit: int = 50):
     the `allele.location.sequenceReference`. If a `SequenceReference` is not provided, the allele
     will be returned as is with no normalization.
 
+    Does not attempt to normalize Alleles with definite ranges or non-LiteralSequenceExpression
+    states and will instead return the `input_allele`.
+
+    If attempting to re-normalize a ReferenceLengthExpression allele,
+    use denormalize_reference_length_expression to construct a LiteralSequenceExpression
+    allele and then call normalize() on that LiteralSequenceExpression allele.
+
+    See: https://vrs.ga4gh.org/en/2.0/conventions/normalization.html#literalsequenceexpression-alleles
+
     :param input_allele: Input VRS Allele object
     :param data_proxy: SeqRepo dataproxy
     :param rle_seq_limit: If RLE is set as the new state, set the limit for the length
         of the `sequence`.
         To exclude `sequence` from the response, set to 0.
         For no limit, set to `None`.
-
-    Does not attempt to normalize Alleles with definite ranges and will instead return the
-        `input_allele`
     """
+    # Algorithm applies to LiteralSequenceExpression alleles only; other states are returned unchanged
+    if not isinstance(input_allele.state, models.LiteralSequenceExpression):
+        _logger.warning(
+            "`input_allele.state` was not a LiteralSequenceExpression, returning `input_allele` with no normalization."
+        )
+        return input_allele
+
     if isinstance(input_allele.location.sequenceReference, models.SequenceReference):
         alias = f"ga4gh:{input_allele.location.sequenceReference.refgetAccession}"
     else:
@@ -113,7 +128,7 @@ def _normalize_allele(input_allele, data_proxy, rle_seq_limit: int = 50):
         )
         return input_allele
 
-    # Get reference sequence and interval
+    # 0: Get reference sequence and interval
     ref_seq = SequenceProxy(data_proxy, alias)
     start = _get_allele_location_pos(input_allele, use_start=True)
     if start is None:
@@ -124,90 +139,81 @@ def _normalize_allele(input_allele, data_proxy, rle_seq_limit: int = 50):
         return input_allele
 
     ival = (start.value, end.value)
-    alleles = (
-        (None, input_allele.state.sequence.root)
-        if input_allele.state.sequence
-        else (None, "")
+    start_pos_type = start.pos_type
+    end_pos_type = end.pos_type
+    alt_seq = input_allele.state.sequence.root or ""
+    alleles = (None, alt_seq)
+
+    # 1: trim shared flanking sequence
+    trim_ival, trim_alleles = _trim_for_normalization(
+        ref_seq, ival, alleles, start, end
     )
 
-    # Trim common flanking sequence from Allele sequences.
-    try:
-        trim_ival, trim_alleles = _normalize(
-            ref_seq, ival, alleles, mode=None, trim=True
+    trim_ref_seq = ref_seq[trim_ival[0] : trim_ival[1]]
+    trim_alt_seq = trim_alleles[1]
+    len_trimmed_ref = len(trim_ref_seq)
+    len_trimmed_alt = len(trim_alt_seq)
+    seed_length = len_trimmed_ref or len_trimmed_alt
+    identity_case = trim_ref_seq == trim_alt_seq
+
+    new_allele: models.Allele = pydantic_copy(input_allele)
+
+    # 2.a: Reference allele (ref==alt after trim): use original span and return RLE
+    # length = repeatSubunitLength = seed_length (the input sequence length)
+    if identity_case:
+        _set_location_from_interval(new_allele, ival, start_pos_type, end_pos_type)
+        return _define_rle_allele(
+            new_allele, seed_length, seed_length, rle_seq_limit, alt_seq
         )
-    except ValueError:
-        # Occurs for ref agree Alleles (when alt = ref)
-        len_trimmed_ref = len_trimmed_alt = 0
-        # TODO: Return RLE for ref agree Alleles
-    else:
-        trim_ref_seq = ref_seq[trim_ival[0] : trim_ival[1]]
-        trim_alt_seq = trim_alleles[1]
-        len_trimmed_ref = len(trim_ref_seq)
-        len_trimmed_alt = len(trim_alt_seq)
 
-    # Compare the two allele sequences
-    if not len_trimmed_ref and not len_trimmed_alt:
-        return input_allele
-
-    new_allele = pydantic_copy(input_allele)
-
+    # 2.b: Substitution: both sides non-empty and different after trim.
     if len_trimmed_ref and len_trimmed_alt:
-        new_allele.location.start = _get_new_allele_location_pos(
-            trim_ival[0], start.pos_type
-        )
-        new_allele.location.end = _get_new_allele_location_pos(
-            trim_ival[1], end.pos_type
-        )
-        new_allele.state.sequence = models.sequenceString(trim_alleles[1])
+        _set_location_from_interval(new_allele, trim_ival, start_pos_type, end_pos_type)
+        new_allele.state.sequence = models.sequenceString(trim_alt_seq)
         return new_allele
-    seed_length = len_trimmed_ref if len_trimmed_ref else len_trimmed_alt
 
-    # Determine bounds of ambiguity
+    # 3: Expand ambiguity by rolling left + right
     new_ival, new_alleles = _normalize(
-        ref_seq, trim_ival, (None, trim_alleles[1]), mode=NormalizationMode.EXPAND
+        ref_seq,
+        trim_ival,
+        (None, trim_alt_seq),
+        mode=NormalizationMode.EXPAND,
+        trim=not identity_case,  # bioutils will not trim identical alleles
     )
 
-    new_allele.location.start = _get_new_allele_location_pos(
-        new_ival[0], start.pos_type
-    )
-    new_allele.location.end = _get_new_allele_location_pos(new_ival[1], end.pos_type)
-
+    # 4: Get the extended sequences
     extended_ref_seq = ref_seq[new_ival[0] : new_ival[1]]
     extended_alt_seq = new_alleles[1]
+    len_extended_alt = len(extended_alt_seq)
+    len_extended_ref = len(extended_ref_seq)
 
+    # 5.a
     if not extended_ref_seq:
-        # If the reference sequence is empty this is an unambiguous insertion.
-        # Return a new Allele with the trimmed alternate sequence as a Literal
-        # Sequence Expression
+        _set_location_from_interval(new_allele, new_ival, start_pos_type, end_pos_type)
         new_allele.state = models.LiteralSequenceExpression(
             sequence=models.sequenceString(extended_alt_seq)
         )
         return new_allele
 
-    # Otherwise, determine if this is reference-derived (an RLE allele).
-    len_extended_alt = len(extended_alt_seq)
-    len_extended_ref = len(extended_ref_seq)
-
+    # 5.b
     if len_extended_alt < len_extended_ref:
-        # If this is a deletion, it is reference-derived
+        _set_location_from_interval(new_allele, new_ival, start_pos_type, end_pos_type)
         return _define_rle_allele(
             new_allele, len_extended_alt, seed_length, rle_seq_limit, extended_alt_seq
         )
 
+    # 5.c
     if len_extended_alt > len_extended_ref:
-        # If this is an insertion, it may or may not be reference-derived.
-        #
-        # Determine the greatest factor `d` of the `seed length` such that `d`
-        # is less than or equal to the length of the modified `reference sequence`,
-        # and there exists a subsequence of length `d` derived from the modified
-        # `reference sequence` that can be circularly expanded to recreate
-        # the modified `alternate sequence`.
         factors = _factor_gen(seed_length)
         for cycle_length in factors:
             if cycle_length > len_extended_ref:
                 continue
             cycle_start = len_extended_ref - cycle_length
             if _is_valid_cycle(cycle_start, extended_ref_seq, extended_alt_seq):
+                _set_location_from_interval(
+                    new_allele, new_ival, start_pos_type, end_pos_type
+                )
+                # 5.c.2 / 5.d: reference-derived ambiguous insertion
                 return _define_rle_allele(
                     new_allele,
                     len_extended_alt,
@@ -215,11 +221,64 @@ def _normalize_allele(input_allele, data_proxy, rle_seq_limit: int = 50):
                     rle_seq_limit,
                     extended_alt_seq,
                 )
+        # 5.c.3
+        _set_location_from_interval(new_allele, new_ival, start_pos_type, end_pos_type)
+        new_allele.state = models.LiteralSequenceExpression(
+            sequence=models.sequenceString(extended_alt_seq)
+        )
+        return new_allele
 
+    # 5.e: Otherwise return literal Allele using expanded interval/state (spec step 5 final bullet)
+    _set_location_from_interval(new_allele, new_ival, start_pos_type, end_pos_type)
     new_allele.state = models.LiteralSequenceExpression(
         sequence=models.sequenceString(extended_alt_seq)
     )
     return new_allele
+
+
+def _trim_for_normalization(
+    ref_seq: SequenceProxy,
+    ival: tuple[int, int],
+    alleles: tuple[None, str],
+    start: LocationPos,
+    end: LocationPos,
+):
+    """Trim common prefix and suffix from the intervals.
+
+    Return the trimmed interval and trimmed alleles:
+        ((trim_start, trim_end), (trim_ref, trim_alt))
+
+    If the alleles are the same, return the original interval and alleles.
+    The first allele (ref) will be populated by bioutils.
+    """
+    try:
+        trim_ival, trim_alleles = _normalize(
+            ref_seq, ival, alleles, mode=None, trim=True
+        )
+    except ValueError as e:
+        ref_at_location = ref_seq[start.value : end.value]
+        alt_seq = alleles[1]
+        if ref_at_location == alt_seq:
+            # return (ival, (None, ref_at_location))
+            return ival, alleles
+        msg = (
+            "Unexpected bioutils trim error for non reference allele: "
+            f"ref='{ref_at_location}', alt='{alt_seq}'"
+        )
+        raise ValueError(msg) from e
+
+    return trim_ival, trim_alleles
+
+
+def _set_location_from_interval(
+    allele: models.Allele,
+    ival: tuple[int, int],
+    start_pos_type: PosType,
+    end_pos_type: PosType,
+) -> None:
+    """Update ``allele`` start and end location"""
+    allele.location.start = _get_new_allele_location_pos(ival[0], start_pos_type)
+    allele.location.end = _get_new_allele_location_pos(ival[1], end_pos_type)
 
 
 def denormalize_reference_length_expression(
@@ -312,7 +371,8 @@ def normalize(vo, data_proxy: _DataProxy | None = None, **kwargs):
     :param data_proxy: GA4GH sequence dataproxy instance, if needed
     :keyword rle_seq_limit: If RLE is set as the new state, set the limit for the length
         of the `sequence`. To exclude `state.sequence`, set to 0.
-    :return: normalized object
+    :return: normalized object, or unmodified input object if the normalization algorithm
+        does not provide normalization steps for the given type.
     :raise TypeError: if given object isn't a pydantic.BaseModel
     """
     if not is_pydantic_instance(vo):

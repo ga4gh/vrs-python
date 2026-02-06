@@ -247,13 +247,17 @@ class SeqRepoRESTDataProxy(_SeqRepoDataProxyBase):
 
     rest_version = "1"
 
-    def __init__(self, base_url: str) -> None:
+    def __init__(self, base_url: str, disable_healthcheck: bool = False) -> None:
         """Initialize REST-based dataproxy instance.
 
         :param base_url: root URL to server
         """
         super().__init__()
         self.base_url = f"{base_url}/{self.rest_version}/"
+        if not disable_healthcheck:
+            ping_url = self.base_url + "ping"
+            ping_resp = requests.get(ping_url)  # noqa: S113
+            ping_resp.raise_for_status()
 
     def _get_sequence(
         self, identifier: str, start: int | None = None, end: int | None = None
