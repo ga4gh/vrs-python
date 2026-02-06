@@ -130,6 +130,16 @@ class Element(BaseModel, ABC):
         description="A list of extensions to the Entity, that allow for capture of information not directly supported by elements defined in the model.",
     )
 
+    def get_extensions_by_name(self, name: str) -> list[Extension]:
+        """Fetch all contained extension exactly matching the provided name
+
+        :param name: name of extension to fetch
+        :return: a list of all matching extensions, empty if no matches found (or if instance contains no extensions)
+        """
+        if not self.extensions:
+            return []
+        return [e for e in self.extensions if e.name == name]
+
 
 #########################################
 # General-purpose data classes
