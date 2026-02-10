@@ -350,8 +350,7 @@ def create_dataproxy(
 ) -> _DataProxy:
     """Create a dataproxy from uri or GA4GH_VRS_DATAPROXY_URI
 
-    :param: uri: Dataproxy URI
-        Currently accepted URI schemes:
+    :param uri: Dataproxy URI. Currently accepted URI schemes:
 
         * seqrepo+file:///path/to/seqrepo/root
         * seqrepo+:../relative/path/to/seqrepo/root
