@@ -11,7 +11,7 @@ import hgvs.variantmapper
 from hgvs.sequencevariant import SequenceVariant as HgvsSequenceVariant
 
 from ga4gh.vrs import models
-from ga4gh.vrs.dataproxy import _DataProxy
+from ga4gh.vrs.dataproxy import DataProxy
 
 _logger = logging.getLogger(__name__)
 
@@ -24,13 +24,13 @@ class HgvsTools:
         uta_conn: The UTA (Universal Transcript Archive) connection object.
         normalizer: The HGVS normalizer object.
         variant_mapper: The HGVS variant mapper object.
-        data_proxy (_DataProxy): The data proxy object.
+        data_proxy (DataProxy): The data proxy object.
 
     """
 
     hgvs_re = re.compile(r"[^:]+:[cgmnpr]\.")
 
-    def __init__(self, data_proxy: _DataProxy | None = None) -> None:
+    def __init__(self, data_proxy: DataProxy | None = None) -> None:
         """Initialize object.
 
         :param data_proxy: GA4GH data proxy instance

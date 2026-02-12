@@ -3,7 +3,7 @@ import os
 import pytest
 from biocommons.seqrepo import SeqRepo
 
-from ga4gh.vrs.dataproxy import SeqRepoDataProxy, SeqRepoRESTDataProxy
+from ga4gh.vrs.dataproxy_seqrepo import SeqRepoDataProxy, SeqRepoRESTDataProxy
 
 
 def remove_request_headers(request):

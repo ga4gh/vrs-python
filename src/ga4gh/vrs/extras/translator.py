@@ -15,7 +15,7 @@ from typing_extensions import deprecated
 
 from ga4gh.core import ga4gh_identify
 from ga4gh.vrs import models, normalize
-from ga4gh.vrs.dataproxy import SequenceProxy, _DataProxy
+from ga4gh.vrs.dataproxy import DataProxy, SequenceProxy
 from ga4gh.vrs.extras.decorators import lazy_property
 from ga4gh.vrs.normalize import denormalize_reference_length_expression
 from ga4gh.vrs.utils.hgvs_tools import HgvsTools
@@ -71,7 +71,7 @@ class _Translator(ABC):  # noqa: B024
 
     def __init__(
         self,
-        data_proxy: _DataProxy,
+        data_proxy: DataProxy,
         default_assembly_name: str = "GRCh38",
         identify: bool = True,
         rle_seq_limit: int | None = 50,
@@ -172,7 +172,7 @@ class AlleleTranslator(_Translator):
 
     def __init__(
         self,
-        data_proxy: _DataProxy,
+        data_proxy: DataProxy,
         default_assembly_name: str = "GRCh38",
         identify: bool = True,
     ) -> None:
@@ -525,7 +525,7 @@ class CnvTranslator(_Translator):
 
     def __init__(
         self,
-        data_proxy: _DataProxy,
+        data_proxy: DataProxy,
         default_assembly_name: str = "GRCh38",
         identify: bool = True,
     ) -> None:
