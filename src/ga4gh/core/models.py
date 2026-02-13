@@ -197,6 +197,8 @@ class ConceptSet(Element, BaseModelForbidExtra):
     (membership operator = OR).
     """
 
+    model_config = ConfigDict(use_enum_values=True)
+
     type: Literal["ConceptSet"] = Field(
         default="ConceptSet",
         description='MUST be "ConceptSet".',

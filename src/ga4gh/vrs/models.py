@@ -679,6 +679,8 @@ class SequenceOffsetLocation(_ValueObject, BaseModelForbidExtra):
     reference.
     """
 
+    model_config = ConfigDict(use_enum_values=True)
+
     type: Literal["SequenceOffsetLocation"] = Field(
         default=VrsType.SEQ_OFFSET_LOCATION.value,
         description=f'MUST be "{VrsType.SEQ_OFFSET_LOCATION.value}"',
