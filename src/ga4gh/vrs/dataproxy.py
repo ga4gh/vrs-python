@@ -199,6 +199,74 @@ class DataProxy(SequenceDataProxy, AliasDataProxy):
     """
 
 
+class CompositeDataProxy(DataProxy):
+    """Composes a SequenceDataProxy and AliasDataProxy into a full DataProxy.
+
+    For sequence methods: tries the sequence backend first; on KeyError,
+    translates the identifier to a GA4GH digest via the alias backend and retries.
+    For alias methods: delegates directly to the alias backend.
+    """
+
+    def __init__(
+        self, sequence_proxy: SequenceDataProxy, alias_proxy: AliasDataProxy
+    ) -> None:
+        """Initialize CompositeDataProxy.
+
+        :param sequence_proxy: Backend for sequence retrieval
+        :param alias_proxy: Backend for alias / identifier resolution
+        """
+        super().__init__()
+        self._sequence_proxy = sequence_proxy
+        self._alias_proxy = alias_proxy
+
+    def _resolve_ga4gh_identifier(self, identifier: str) -> str:
+        """Translate identifier to a GA4GH SQ digest via the alias backend.
+
+        :param identifier: Sequence identifier in any namespace
+        :return: GA4GH identifier (``ga4gh:SQ.…``)
+        :raises KeyError: if no GA4GH alias is found
+        """
+        aliases = self._alias_proxy.translate_sequence_identifier(
+            identifier, namespace="ga4gh"
+        )
+        sq_aliases = [a for a in aliases if a.startswith("ga4gh:SQ.")]
+        if not sq_aliases:
+            raise KeyError(identifier)
+        return sq_aliases[0]
+
+    def get_sequence(
+        self, identifier: str, start: int | None = None, end: int | None = None
+    ) -> str:
+        """Return the specified sequence or subsequence.
+
+        Tries the sequence backend first; on KeyError, resolves the identifier
+        to a GA4GH digest via the alias backend and retries.
+        """
+        try:
+            return self._sequence_proxy.get_sequence(identifier, start, end)
+        except KeyError:
+            pass
+        ga4gh_id = self._resolve_ga4gh_identifier(identifier)
+        return self._sequence_proxy.get_sequence(ga4gh_id, start, end)
+
+    def get_sequence_length(self, identifier: str) -> int:
+        """Return the length of the specified sequence.
+
+        Tries the sequence backend first; on KeyError, resolves the identifier
+        to a GA4GH digest via the alias backend and retries.
+        """
+        try:
+            return self._sequence_proxy.get_sequence_length(identifier)
+        except KeyError:
+            pass
+        ga4gh_id = self._resolve_ga4gh_identifier(identifier)
+        return self._sequence_proxy.get_sequence_length(ga4gh_id)
+
+    def get_aliases(self, identifier: str) -> list[str]:
+        """Return all aliases for the specified sequence, delegating to the alias backend."""
+        return self._alias_proxy.get_aliases(identifier)
+
+
 class SequenceProxy(Sequence):
     """Provides efficient and transparent string-like access, including
     random access slicing and reversing, to a biological sequence that
