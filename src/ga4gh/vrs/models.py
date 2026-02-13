@@ -521,7 +521,7 @@ class ReferenceLengthExpression(_ValueObject, BaseModelForbidExtra):
     )
     sequence: sequenceString | None = Field(
         default=None,
-        description="the literal Sequence encoded by the Reference Length Expression.",
+        description="the literal sequence encoded by the Reference Length Expression.",
     )
     repeatSubunitLength: int = Field(
         ..., description="The number of residues in the repeat subunit."
@@ -689,7 +689,7 @@ class SequenceOffsetLocation(_ValueObject, BaseModelForbidExtra):
     )
     anchor: int = Field(
         ...,
-        description="The position on the sequence reference from which the relative location offset is calculated.",
+        description="The inter-residue position on the sequence reference from which the relative location offset is calculated.",
     )
     anchorOrientation: AnchorOrientation = Field(
         ...,
