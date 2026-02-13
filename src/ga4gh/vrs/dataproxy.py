@@ -247,10 +247,11 @@ class SeqRepoRESTDataProxy(_SeqRepoDataProxyBase):
 
     rest_version = "1"
 
-    def __init__(self, base_url: str, disable_healthcheck: bool = False):
+    def __init__(self, base_url: str, disable_healthcheck: bool = False) -> None:
         """Initialize REST-based dataproxy instance.
 
         :param base_url: root URL to server
+        :param disable_healthcheck: Whether healthcheck should be disabled
         """
         super().__init__()
         self.base_url = f"{base_url}/{self.rest_version}/"
@@ -288,12 +289,12 @@ class SequenceProxy(Sequence):
 
     """
 
-    def __init__(self, dp: _DataProxy, alias: str):  # noqa: D107
+    def __init__(self, dp: _DataProxy, alias: str) -> None:  # noqa: D107
         self.dp = dp
         self.alias = alias
         self._md = self.dp.get_metadata(self.alias)
 
-    def __str__(self):  # noqa: D105 ANN204
+    def __str__(self) -> str:  # noqa: D105
         return self.dp.get_sequence(self.alias)
 
     def __len__(self):  # noqa: D105 ANN204
@@ -303,7 +304,7 @@ class SequenceProxy(Sequence):
         msg = "Reversed iteration of a SequenceProxy is not implemented"
         raise NotImplementedError(msg)
 
-    def __getitem__(self, key):  # noqa: ANN001 ANN204
+    def __getitem__(self, key) -> str:  # noqa: ANN001
         """Return sequence for key (slice), fetching if necessary"""
         if isinstance(key, int):
             key = slice(key, key + 1)
@@ -344,16 +345,18 @@ def _isoformat(o: datetime.datetime) -> str:
 #         self.base_url = base_url
 
 
-def create_dataproxy(uri: str | None = None) -> _DataProxy:
+def create_dataproxy(
+    uri: str | None = None, disable_healthcheck: bool = False
+) -> _DataProxy:
     """Create a dataproxy from uri or GA4GH_VRS_DATAPROXY_URI
 
-    Currently accepted URI schemes:
+    :param uri: Dataproxy URI. Currently accepted URI schemes:
 
-    * seqrepo+file:///path/to/seqrepo/root
-    * seqrepo+:../relative/path/to/seqrepo/root
-    * seqrepo+http://localhost:5000/seqrepo
-    * seqrepo+https://somewhere:5000/seqrepo
-
+        * seqrepo+file:///path/to/seqrepo/root
+        * seqrepo+:../relative/path/to/seqrepo/root
+        * seqrepo+http://localhost:5000/seqrepo
+        * seqrepo+https://somewhere:5000/seqrepo
+    :param disable_healthcheck: Whether healthcheck should be disabled in REST dataproxy
     :raise ValueError: if URI doesn't match recognized schemes, e.g. is missing provider
         prefix (`"seqrepo+"`)
     """
@@ -379,7 +382,9 @@ def create_dataproxy(uri: str | None = None) -> _DataProxy:
             sr = SeqRepo(root_dir=parsed_uri.path)
             dp = SeqRepoDataProxy(sr)
         elif proto in ("http", "https"):
-            dp = SeqRepoRESTDataProxy(uri[len(provider) + 1 :])
+            dp = SeqRepoRESTDataProxy(
+                uri[len(provider) + 1 :], disable_healthcheck=disable_healthcheck
+            )
         else:
             msg = f"SeqRepo URI scheme {parsed_uri.scheme} not implemented"
             raise ValueError(msg)

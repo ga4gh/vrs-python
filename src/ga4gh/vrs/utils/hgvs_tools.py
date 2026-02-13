@@ -30,7 +30,7 @@ class HgvsTools:
 
     hgvs_re = re.compile(r"[^:]+:[cgmnpr]\.")
 
-    def __init__(self, data_proxy: _DataProxy | None = None):
+    def __init__(self, data_proxy: _DataProxy | None = None) -> None:
         """Initialize object.
 
         :param data_proxy: GA4GH data proxy instance

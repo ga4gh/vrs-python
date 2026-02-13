@@ -85,14 +85,14 @@ class use_ga4gh_compute_identifier_when(ContextDecorator):  # noqa: N801
     def my_method():
     """
 
-    def __init__(self, when: VrsObjectIdentifierIs):
+    def __init__(self, when: VrsObjectIdentifierIs) -> None:
         self.when = when
         self.token = None
 
-    def __enter__(self):  # noqa: ANN204
+    def __enter__(self) -> None:
         self.token = ga4gh_compute_identifier_when.set(self.when)
 
-    def __exit__(self, exc_type, exc, exc_tb):  # noqa: ANN204 ANN001
+    def __exit__(self, exc_type, exc, exc_tb) -> None:  # noqa: ANN001
         ga4gh_compute_identifier_when.reset(self.token)
 
 
