@@ -22,7 +22,7 @@ jobs:
     name: Build distribution
     runs-on: ubuntu-latest
     needs: get_branch
-    if: needs.get_branch.outputs.branch_name == 'main'
+    if: needs.get_branch.outputs.branch_name == '2.1.0-snapshot.2026-02'
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python
