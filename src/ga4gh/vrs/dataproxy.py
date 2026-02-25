@@ -7,6 +7,7 @@ See https://vr-spec.readthedocs.io/en/1.1/impl-guide/required_data.html
 
 from __future__ import annotations
 
+import functools
 import logging
 import os
 from abc import ABC, abstractmethod
@@ -219,6 +220,7 @@ class CompositeDataProxy(DataProxy):
         self._sequence_proxy = sequence_proxy
         self._alias_proxy = alias_proxy
 
+    @functools.lru_cache(maxsize=512)
     def _resolve_ga4gh_identifier(self, identifier: str) -> str:
         """Translate identifier to a GA4GH SQ digest via the alias backend.
 

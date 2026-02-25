@@ -9,6 +9,7 @@ Requires the ``refget`` optional dependency group: ``pip install ga4gh.vrs[refge
 
 from __future__ import annotations
 
+import functools
 from typing import TYPE_CHECKING
 from urllib.parse import ParseResult
 
@@ -99,6 +100,7 @@ class RefgetSequenceDataProxy(SequenceDataProxy):
             raise KeyError(identifier)
         return result
 
+    @functools.lru_cache(maxsize=512)  # noqa: B019
     def get_sequence_length(self, identifier: str) -> int:
         """Return the length of the specified sequence from the refget store.
 

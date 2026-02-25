@@ -36,6 +36,7 @@ class SeqRepoDataProxy(DataProxy):
         """Return the specified sequence or subsequence from local SeqRepo."""
         return self.sr.fetch_uri(coerce_namespace(identifier), start, end)
 
+    @functools.lru_cache(maxsize=512)  # noqa: B019
     def get_sequence_length(self, identifier: str) -> int:
         """Return the length of the specified sequence from local SeqRepo."""
         ns, a = coerce_namespace(identifier).split(":", 2)
@@ -46,6 +47,7 @@ class SeqRepoDataProxy(DataProxy):
         seqinfo = self.sr.sequences.fetch_seqinfo(seq_id)
         return seqinfo["len"]
 
+    @functools.lru_cache(maxsize=512)  # noqa: B019
     def get_aliases(self, identifier: str) -> list[str]:
         """Return all aliases for the specified sequence from local SeqRepo."""
         ns, a = coerce_namespace(identifier).split(":", 2)
