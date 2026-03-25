@@ -227,12 +227,11 @@ class MappableConcept(Element, BaseModelForbidExtra):
 
     @model_validator(mode="before")
     @classmethod
-    def require_name_or_primary_coding(cls, values: Any) -> Any:
+    def require_name_or_primary_coding(cls, values: Any) -> Any:  # noqa: ANN401
         """Ensure that ``name`` or ``primaryCoding`` is provided"""
-        if isinstance(values, dict):
-            if values.get("primaryCoding") is None and values.get("name") is None:
-                err_msg = "One of `name` or `primaryCoding` must be provided."
-                raise ValueError(err_msg)
+        if isinstance(values, dict) and values.get("primaryCoding") is None and values.get("name") is None:
+            err_msg = "One of `name` or `primaryCoding` must be provided."
+            raise ValueError(err_msg)
         return values
 
 
