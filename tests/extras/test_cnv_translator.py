@@ -161,3 +161,15 @@ def test_from_hgvs_cn(tlr, hgvsexpr, copies, expected):
     """Test that _from_hgvs works correctly for copy number count"""
     cn = tlr._from_hgvs(hgvsexpr, copies=copies)
     assert cn.model_dump(exclude_none=True) == expected
+
+
+@pytest.mark.vcr
+def test_from_hgvs_cn_copies_zero(tlr):
+    """Test that copies=0 produces CopyNumberCount, not CopyNumberChange.
+
+    copies=0 is a valid input (homozygous deletion), but 0 is falsy in Python
+    so it was previously treated as missing and fell through to CopyNumberChange.
+    """
+    cn = tlr._from_hgvs("NC_000013.11:g.26440969_26443305del", copies=0)
+    assert cn.type == "CopyNumberCount"
+    assert cn.copies == 0
