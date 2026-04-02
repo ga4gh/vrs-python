@@ -11,7 +11,7 @@ jobs:
           submodules: recursive
       - uses: actions/setup-python@v5
       - name: Install dependencies
-        run: pip install -e '.[dev]'
+        run: pip install -e '.[lint]'
       - name: Check style
         run: python3 -m ruff check --output-format=github
       - name: Check formatting
@@ -43,7 +43,7 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
       run: |
-        pip install -e .[dev,extras]
+        pip install -e .[tests,extras]
     - name: Test with pytest
       run: |
         python -m pytest --vcr-record=none
