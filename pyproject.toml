@@ -53,7 +53,7 @@ extras = [
     "click",
     "pysam==0.23.0",  # pinned pending https://github.com/ga4gh/vrs-python/issues/560
 ]
-test = [
+tests = [
     "pytest",
     "pytest-cov",
     "pytest-vcr",
@@ -67,9 +67,6 @@ lint = [
 docs = [
     "sphinx",
     "sphinx_rtd_theme",
-]
-dev = [
-    "ga4gh.vrs[test,lint,docs]",
 ]
 notebooks = [
     "jupyter",
