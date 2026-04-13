@@ -1,0 +1,43 @@
+# Assemblies to ingest into the custom vrs-python refgetstore archive.
+#
+# Each [[assembly]] entry produces a collection in the store plus per-sequence
+# and collection alias rows under namespaces derived from `namespace`.
+#
+# Fields
+#   namespace   Sequence-alias namespace to populate from this assembly's
+#               report. Alias values come from the UCSC-style-name and
+#               GenBank-Accn columns of the assembly report. The cross-assembly
+#               `refseq` and `insdc` namespaces are populated regardless.
+#   fasta_url   URL of the genomic FASTA file. NCBI .fna.gz is supported
+#               directly by gtars' fasta loader (no decompress step).
+#   report_url  URL of the NCBI assembly_report.txt for this assembly.
+#   load_fasta  If true, ingest the FASTA into the store. If false, only add
+#               aliases for rows whose RefSeq-Accn already resolves to a
+#               digest in the store (useful for cheap patch fanout).
+#   fasta_path  Optional local path overriding the downloaded FASTA. Used to
+#               avoid re-downloading the initial GRCh38 FASTA we already have.
+
+[[assembly]]
+namespace = "GRCh38"
+fasta_url = "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.26_GRCh38/GCF_000001405.26_GRCh38_genomic.fna.gz"
+report_url = "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.26_GRCh38/GCF_000001405.26_GRCh38_assembly_report.txt"
+load_fasta = true
+fasta_path = "GCF_000001405.26_GRCh38_genomic.fna.gz"
+
+[[assembly]]
+namespace = "GRCh38.p14"
+fasta_url = "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.40_GRCh38.p14/GCF_000001405.40_GRCh38.p14_genomic.fna.gz"
+report_url = "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.40_GRCh38.p14/GCF_000001405.40_GRCh38.p14_assembly_report.txt"
+load_fasta = true
+
+[[assembly]]
+namespace = "GRCh37"
+fasta_url = "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.13_GRCh37/GCF_000001405.13_GRCh37_genomic.fna.gz"
+report_url = "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.13_GRCh37/GCF_000001405.13_GRCh37_assembly_report.txt"
+load_fasta = true
+
+[[assembly]]
+namespace = "GRCh37.p13"
+fasta_url = "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.25_GRCh37.p13/GCF_000001405.25_GRCh37.p13_genomic.fna.gz"
+report_url = "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.25_GRCh37.p13/GCF_000001405.25_GRCh37.p13_assembly_report.txt"
+load_fasta = true
