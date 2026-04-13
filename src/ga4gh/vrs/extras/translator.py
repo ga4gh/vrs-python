@@ -188,6 +188,7 @@ class AlleleTranslator(_Translator):
         }
 
         self.to_translators = {
+            "gnomad": self._to_gnomad,
             "hgvs": self._to_hgvs,
             "spdi": self._to_spdi,
         }
@@ -416,39 +417,15 @@ class AlleleTranslator(_Translator):
 
         return self._create_allele(values, **kwargs)
 
-    def _to_hgvs(
-        self,
-        vo: models.Allele,
-        namespace: str | None = "refseq",
-        **kwargs,  # noqa: ARG002
-    ) -> list[str]:
-        return self.hgvs_tools.from_allele(vo, namespace)
-
-    def _to_spdi(
+    def _to_gnomad(
         self, vo: models.Allele, namespace: str | None = "refseq", **kwargs
     ) -> list[str]:
-        """Generate a *list* of SPDI expressions for VRS Allele.
-
-        If `namespace` is not None, returns SPDI strings for the
-        specified namespace.
-
-        If `namespace` is None, returns SPDI strings for all alias
-        translations.
-
-        If `ref_seq_limit` is specified, the reference sequence is
-        included in the SPDI expression only if it is below the limit.
-        Otherwise only the length of the reference sequence is
-        included. If the limit is None, the reference sequence is
-        always included. In all cases, the alt sequence is included.
-        Default is 0 (never include reference sequence).
+        """Generate a *list* of gnomAD-style identifiers for VRS Allele.
 
         If no alias translations are available, an empty list is
         returned.
 
-        If the VRS object cannot be expressed as SPDI, raises ValueError.
-
-        SPDI and VRS use identical normalization. The incoming Allele
-        is expected to be normalized per VRS spec.
+        If the VRS object cannot be expressed in gnomAD-style, raises ValueError.
         """
         sequence = f"ga4gh:{vo.location.get_refget_accession()}"
         aliases = self.data_proxy.translate_sequence_identifier(sequence, namespace)
@@ -490,6 +467,106 @@ class AlleleTranslator(_Translator):
             spdi_exprs.append(spdi_expr)
 
         return spdi_exprs
+
+    def _to_hgvs(
+        self,
+        vo: models.Allele,
+        namespace: str | None = "refseq",
+        **kwargs,  # noqa: ARG002
+    ) -> list[str]:
+        return self.hgvs_tools.from_allele(vo, namespace)
+
+    def _to_gnomad(
+        self,
+        vo: models.Allele,
+        namespace: str | None = None,
+        **kwargs,  # noqa: ARG002
+    ) -> list[str]:
+        """Generate a *list* of gnomAD-style identifiers for VRS Allele.
+
+        If no alias translations are available, an empty list is returned.
+
+        If the VRS object cannot be expressed in gnomAD-style, raises ValueError.
+        """
+        namespace = namespace or self.default_assembly_name
+        if not namespace.startswith('GRCh'):
+            raise ValueError(f"gnomAD-style identifiers require a GRCh reference sequence namespace, but got '{namespace}'")
+        return self._to_location_expression(
+            "{alias}-{start}-{ref_seq}-{alt_seq}", vo, namespace,
+        )
+
+    def _to_spdi(
+        self, vo: models.Allele, namespace: str | None = "refseq", **kwargs
+    ) -> list[str]:
+        """Generate a *list* of SPDI expressions for VRS Allele.
+
+        If `namespace` is not None, returns SPDI strings for the
+        specified namespace.
+
+        If `namespace` is None, returns SPDI strings for all alias
+        translations.
+
+        If `ref_seq_limit` is specified, the reference sequence is
+        included in the SPDI expression only if it is below the limit.
+        Otherwise only the length of the reference sequence is
+        included. If the limit is None, the reference sequence is
+        always included. In all cases, the alt sequence is included.
+        Default is 0 (never include reference sequence).
+
+        If no alias translations are available, an empty list is
+        returned.
+
+        If the VRS object cannot be expressed as SPDI, raises ValueError.
+
+        SPDI and VRS use identical normalization. The incoming Allele
+        is expected to be normalized per VRS spec.
+        """
+        ref_seq_limit = kwargs.get("ref_seq_limit", 0)
+        return self._to_location_expression(
+            "{alias}:{start}:{ref_seq}:{alt_seq}", vo, namespace, ref_seq_limi=ref_seq_limit,
+        )
+
+    def _to_location_expression(
+        self, id_template: str, vo: models.Allele, namespace: str | None , ref_seq_limit: int | None = None,
+    ) -> list[str]:
+        sequence = f"ga4gh:{vo.location.get_refget_accession()}"
+        aliases = self.data_proxy.translate_sequence_identifier(sequence, namespace)
+        aliases = [a.split(":")[1] for a in aliases]
+        seq_proxies = {a: SequenceProxy(self.data_proxy, a) for a in aliases}
+        start, end = vo.location.start, vo.location.end
+        exprs = []
+
+        for alias in aliases:
+            # Get the reference sequence
+            seq_proxy = seq_proxies[alias]
+            ref_seq = seq_proxy[start:end]
+
+            if vo.state.type == models.VrsType.REF_LEN_EXPR.value:
+                # Derived from reference. sequence included if under limit, but
+                # we can derive it again from the reference.
+                alt_seq = denormalize_reference_length_expression(
+                    ref_seq=ref_seq,
+                    repeat_subunit_length=vo.state.repeatSubunitLength,
+                    alt_length=vo.state.length,
+                )
+                # Warn if the derived sequence is different from the one in the object
+                if vo.state.sequence and vo.state.sequence.root != alt_seq:
+                    _logger.warning(
+                        "Derived sequence '%s' is different from provided state.sequence '%s'",
+                        alt_seq,
+                        vo.state.sequence.root,
+                    )
+            else:
+                alt_seq = vo.state.sequence.root
+
+            # Optionally allow using the length of the reference sequence
+            # instead of the sequence itself.
+            if ref_seq_limit is not None and len(ref_seq) > int(ref_seq_limit):
+                ref_seq = len(ref_seq)
+
+            exprs.append(id_template.format(alias=alias, start=start, ref_seq=ref_seq, alt_seq=alt_seq))
+
+        return exprs
 
     def _post_process_imported_allele(
         self, allele: models.Allele, **kwargs
