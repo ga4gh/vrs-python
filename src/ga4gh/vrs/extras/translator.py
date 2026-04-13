@@ -438,14 +438,15 @@ class AlleleTranslator(_Translator):
         If `namespace` is not None, returns gnomAD strings for the
         specified namespace if applicable, or throws ValueError if not.
 
-        If `namespace` is None, returns gnomAD strings based oof of the
+        If `namespace` is None, returns gnomAD strings based off of the
         `default_assembly_name`.
 
         If the VRS object cannot be expressed in gnomAD-style, raises ValueError.
         """
         namespace = namespace or self.default_assembly_name
-        if not namespace.startswith('GRCh'):
-            raise ValueError(f"gnomAD-style identifiers require a GRCh reference sequence namespace, but got '{namespace}'")
+        if not namespace.startswith("GRCh"):
+            error = f"Invalid gnomAD-style namespace '{namespace}'"
+            raise ValueError(error)
         return self._to_location_expression(
             "{alias}-{start}-{ref_seq}-{alt_seq}", vo, namespace,
         )
