@@ -435,6 +435,12 @@ class AlleleTranslator(_Translator):
 
         If no alias translations are available, an empty list is returned.
 
+        If `namespace` is not None, returns gnomAD strings for the
+        specified namespace if applicable, or throws ValueError if not.
+
+        If `namespace` is None, returns gnomAD strings based oof of the
+        `default_assembly_name`.
+
         If the VRS object cannot be expressed in gnomAD-style, raises ValueError.
         """
         namespace = namespace or self.default_assembly_name
