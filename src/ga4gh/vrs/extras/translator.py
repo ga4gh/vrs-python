@@ -417,57 +417,6 @@ class AlleleTranslator(_Translator):
 
         return self._create_allele(values, **kwargs)
 
-    def _to_gnomad(
-        self, vo: models.Allele, namespace: str | None = "refseq", **kwargs
-    ) -> list[str]:
-        """Generate a *list* of gnomAD-style identifiers for VRS Allele.
-
-        If no alias translations are available, an empty list is
-        returned.
-
-        If the VRS object cannot be expressed in gnomAD-style, raises ValueError.
-        """
-        sequence = f"ga4gh:{vo.location.get_refget_accession()}"
-        aliases = self.data_proxy.translate_sequence_identifier(sequence, namespace)
-        aliases = [a.split(":")[1] for a in aliases]
-        seq_proxies = {a: SequenceProxy(self.data_proxy, a) for a in aliases}
-        start, end = vo.location.start, vo.location.end
-        spdi_exprs = []
-
-        for alias in aliases:
-            # Get the reference sequence
-            seq_proxy = seq_proxies[alias]
-            ref_seq = seq_proxy[start:end]
-
-            if vo.state.type == models.VrsType.REF_LEN_EXPR.value:
-                # Derived from reference. sequence included if under limit, but
-                # we can derive it again from the reference.
-                alt_seq = denormalize_reference_length_expression(
-                    ref_seq=ref_seq,
-                    repeat_subunit_length=vo.state.repeatSubunitLength,
-                    alt_length=vo.state.length,
-                )
-                # Warn if the derived sequence is different from the one in the object
-                if vo.state.sequence and vo.state.sequence.root != alt_seq:
-                    _logger.warning(
-                        "Derived sequence '%s' is different from provided state.sequence '%s'",
-                        alt_seq,
-                        vo.state.sequence.root,
-                    )
-            else:
-                alt_seq = vo.state.sequence.root
-
-            # Optionally allow using the length of the reference sequence
-            # instead of the sequence itself.
-            ref_seq_limit = kwargs.get("ref_seq_limit", 0)
-            if ref_seq_limit is not None and len(ref_seq) > int(ref_seq_limit):
-                ref_seq = len(ref_seq)
-
-            spdi_expr = f"{alias}:{start}:{ref_seq}:{alt_seq}"
-            spdi_exprs.append(spdi_expr)
-
-        return spdi_exprs
-
     def _to_hgvs(
         self,
         vo: models.Allele,
