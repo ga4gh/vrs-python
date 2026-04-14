@@ -326,6 +326,7 @@ def create_dataproxy(
         * seqrepo+:../relative/path/to/seqrepo/root
         * seqrepo+http://localhost:5000/seqrepo
         * seqrepo+https://somewhere:5000/seqrepo
+        * refget+file:///path/to/refgetstore/root
     :param disable_healthcheck: Whether healthcheck should be disabled in REST dataproxy
     :raise ValueError: if URI doesn't match recognized schemes, e.g. is missing provider
         prefix (``"seqrepo+"``)
@@ -355,6 +356,13 @@ def create_dataproxy(
 
         return _create_seqrepo_dataproxy(
             uri, parsed_uri, proto, disable_healthcheck=disable_healthcheck
+        )
+
+    if provider == "refget":
+        from ga4gh.vrs.dataproxy_refget import _create_refget_dataproxy
+
+        return _create_refget_dataproxy(
+            parsed_uri, proto, disable_healthcheck=disable_healthcheck
         )
 
     msg = f"DataProxy provider {provider} not implemented"
