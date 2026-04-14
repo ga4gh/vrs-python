@@ -573,7 +573,7 @@ class CnvTranslator(_Translator):
         )
 
         copies = kwargs.get("copies")
-        if copies:
+        if copies is not None:
             cnv = models.CopyNumberCount(location=location, copies=copies)
         else:
             copy_change = kwargs.get("copy_change")
