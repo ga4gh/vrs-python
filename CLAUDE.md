@@ -37,7 +37,7 @@ VRS-Python is the reference implementation of the GA4GH Variation Representation
 - **`src/ga4gh/vrs/enderef.py`** - Converting between inlined and referenced VRS object forms
 
 ### Key Modules
-- **`src/ga4gh/vrs/extras/translator.py`** - Translates between VRS and external formats (HGVS, SPDI, gnomAD, Beacon)
+- **`src/ga4gh/vrs/extras/translator.py`** - Translates between VRS and external formats (HGVS, SPDI, gnomAD)
 - **`src/ga4gh/vrs/extras/annotator/`** - VCF annotation tools with VRS identifiers
 - **`src/ga4gh/vrs/utils/hgvs_tools.py`** - HGVS parsing and validation utilities
 - **`src/ga4gh/core/`** - Core GA4GH models and identifier generation
