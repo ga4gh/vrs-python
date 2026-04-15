@@ -66,6 +66,24 @@ class RefgetSequenceDataProxy(SequenceDataProxy):
         """
         super().__init__()
         self.store = store
+        # Track which digests we've already promoted from Stub to Full so
+        # subsequent substring fetches skip the per-digest file read.
+        self._loaded_digests: set[str] = set()
+
+    def _ensure_sequence_loaded(self, digest: str) -> None:
+        """Lazily materialize sequence bytes for ``digest`` in the store.
+
+        ``open_local()`` reads ``sequences.rgsi`` and inserts a Stub record
+        for every sequence in the store, so metadata lookups work without
+        any preload. But byte-level access (``get_substring``) needs the
+        per-digest payload read in via ``load_sequence(digest)``. We call
+        that on first access for each digest and memoize the result — no
+        sequence bytes are loaded until a caller actually asks for them.
+        """
+        if digest in self._loaded_digests:
+            return
+        self.store.load_sequence(digest)  # type: ignore[attr-defined]
+        self._loaded_digests.add(digest)
 
     def get_sequence(
         self, identifier: str, start: int | None = None, end: int | None = None
@@ -81,6 +99,8 @@ class RefgetSequenceDataProxy(SequenceDataProxy):
         digest = _extract_digest(identifier)
         if digest is None:
             raise KeyError(identifier)
+
+        self._ensure_sequence_loaded(digest)
 
         # Full sequence shortcut — no bounds needed
         if start is None and end is None:
