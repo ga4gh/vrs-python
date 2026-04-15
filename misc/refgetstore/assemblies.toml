@@ -1,21 +1,33 @@
-# Assemblies to ingest into the custom vrs-python refgetstore archive.
+# Sequences to ingest into the custom vrs-python refgetstore archive.
 #
-# Each [[assembly]] entry produces a collection in the store plus per-sequence
-# and collection alias rows under namespaces derived from `namespace`.
+# Two entry kinds:
 #
-# Fields
-#   namespace   Sequence-alias namespace to populate from this assembly's
-#               report. Alias values come from the UCSC-style-name and
-#               GenBank-Accn columns of the assembly report. The cross-assembly
-#               `refseq` and `insdc` namespaces are populated regardless.
-#   fasta_url   URL of the genomic FASTA file. NCBI .fna.gz is supported
-#               directly by gtars' fasta loader (no decompress step).
-#   report_url  URL of the NCBI assembly_report.txt for this assembly.
-#   load_fasta  If true, ingest the FASTA into the store. If false, only add
-#               aliases for rows whose RefSeq-Accn already resolves to a
-#               digest in the store (useful for cheap patch fanout).
-#   fasta_path  Optional local path overriding the downloaded FASTA. Used to
-#               avoid re-downloading the initial GRCh38 FASTA we already have.
+#   [[assembly]]  An assembled genome FASTA + matching NCBI assembly_report.txt.
+#                 Produces one collection and derives per-sequence aliases
+#                 (UCSC chr names, GenBank accns, RefSeq accns) from the
+#                 report. The cross-assembly `refseq` and `insdc` namespaces
+#                 are populated regardless of the entry's own `namespace`.
+#
+#   [[seqset]]    A flat FASTA (or sharded set of FASTAs) where the accession
+#                 is the FASTA header's first token. Used for NCBI RefSeq
+#                 transcript/protein shards. Each shard becomes its own
+#                 collection; aliases map header-name -> digest under the
+#                 configured namespace.
+#
+# Assembly fields
+#   namespace    Per-assembly alias namespace (e.g. "GRCh38.p14").
+#   fasta_url    URL of the genomic FASTA (.fna.gz supported directly by gtars).
+#   report_url   URL of the NCBI assembly_report.txt.
+#   load_fasta   If true, ingest the FASTA. If false, reuse digests already
+#                present in the store (cheap patch fanout).
+#   fasta_path   Optional local path override, relative to repo root.
+#
+# Seqset fields
+#   name         Human-readable id for logs + summary.
+#   namespace    Alias namespace for every ingested sequence (e.g. "refseq").
+#   url_template URL with "{shard}" placeholder, or a plain URL if unsharded.
+#   shard_range  [min, max] inclusive integer range substituted into
+#                url_template. Omit for a single-file seqset.
 
 [[assembly]]
 namespace = "GRCh38"
@@ -41,3 +53,15 @@ namespace = "GRCh37.p13"
 fasta_url = "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.25_GRCh37.p13/GCF_000001405.25_GRCh37.p13_genomic.fna.gz"
 report_url = "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.25_GRCh37.p13/GCF_000001405.25_GRCh37.p13_assembly_report.txt"
 load_fasta = true
+
+[[seqset]]
+name = "refseq_human_rna"
+namespace = "refseq"
+url_template = "https://ftp.ncbi.nlm.nih.gov/refseq/H_sapiens/mRNA_Prot/human.{shard}.rna.fna.gz"
+shard_range = [1, 32]
+
+[[seqset]]
+name = "refseq_human_protein"
+namespace = "refseq"
+url_template = "https://ftp.ncbi.nlm.nih.gov/refseq/H_sapiens/mRNA_Prot/human.{shard}.protein.faa.gz"
+shard_range = [1, 32]

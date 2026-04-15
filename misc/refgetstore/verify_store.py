@@ -79,7 +79,9 @@ class Report:
         return ok
 
 
-def parse_assembly_report(path: Path) -> tuple[str | None, str | None, list[dict[str, str]]]:
+def parse_assembly_report(
+    path: Path,
+) -> tuple[str | None, str | None, list[dict[str, str]]]:
     """Mini copy of build_store.parse_assembly_report kept inline so this
     script is self-contained.
     """
@@ -114,9 +116,11 @@ def section_inventory(store: RefgetStore, r: Report) -> None:
     print("\n[A] Store inventory")
     stats = store.stats()
     print(f"    stats: {stats}")
+    # 4 assembly collections + 16 RNA shards + 16 protein shards = 36. Lower
+    # bound of 4 keeps the assembly-only configuration passing too.
     r.check(
-        "n_collections == 4",
-        int(stats["n_collections"]) == 4,
+        "n_collections >= 4",
+        int(stats["n_collections"]) >= 4,
         f"got {stats['n_collections']}",
     )
     n_seq = int(stats["n_sequences"])

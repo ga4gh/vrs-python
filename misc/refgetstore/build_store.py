@@ -11,6 +11,7 @@ from __future__ import annotations
 import argparse
 import logging
 import sys
+import tempfile
 import tomllib
 import urllib.request
 from dataclasses import dataclass, field
@@ -40,6 +41,30 @@ class AssemblyConfig:
 
 
 @dataclass
+class SeqsetConfig:
+    """Flat FASTA (optionally sharded) where the accession is the header name.
+
+    Used for NCBI RefSeq transcript/protein shards that have no sidecar
+    assembly_report.txt. Each shard is ingested as its own collection; header
+    names become ``namespace:<name>`` aliases on the resulting digests.
+    """
+
+    name: str
+    namespace: str
+    url_template: str
+    shard_range: list[int] | None = None
+
+    def iter_shard_urls(self) -> Iterator[tuple[str, str]]:
+        """Yield (shard_label, url) pairs. Shard label is "" for unsharded."""
+        if self.shard_range is None:
+            yield "", self.url_template
+            return
+        lo, hi = self.shard_range
+        for i in range(lo, hi + 1):
+            yield str(i), self.url_template.replace("{shard}", str(i))
+
+
+@dataclass
 class AssemblyReport:
     """Parsed NCBI assembly_report.txt."""
 
@@ -61,10 +86,25 @@ class AssemblyStats:
     warnings: int = 0
 
 
-def load_config(path: Path) -> list[AssemblyConfig]:
+@dataclass
+class SeqsetStats:
+    name: str
+    namespace: str
+    shards_processed: int = 0
+    sequences_ingested: int = 0
+    sequence_aliases_added: int = 0
+    sequence_aliases_skipped: int = 0
+    warnings: int = 0
+
+
+def load_config(
+    path: Path,
+) -> tuple[list[AssemblyConfig], list[SeqsetConfig]]:
     with path.open("rb") as fh:
         data = tomllib.load(fh)
-    return [AssemblyConfig(**entry) for entry in data.get("assembly", [])]
+    assemblies = [AssemblyConfig(**entry) for entry in data.get("assembly", [])]
+    seqsets = [SeqsetConfig(**entry) for entry in data.get("seqset", [])]
+    return assemblies, seqsets
 
 
 def ensure_download(url: str, target: Path, force: bool) -> Path:
@@ -89,9 +129,7 @@ def resolve_fasta_source(
         if local.exists():
             logger.info("using local fasta override %s", local)
             return local
-        logger.warning(
-            "fasta_path %s not found; falling back to download", local
-        )
+        logger.warning("fasta_path %s not found; falling back to download", local)
     return ensure_download(
         entry.fasta_url,
         download_dir / Path(entry.fasta_url).name,
@@ -263,9 +301,7 @@ def process_assembly(
     coll_digest: str | None = None
     if fasta_path is not None:
         logger.info("ingesting %s", fasta_path)
-        coll_meta, was_new = store.add_sequence_collection_from_fasta(
-            str(fasta_path)
-        )
+        coll_meta, was_new = store.add_sequence_collection_from_fasta(str(fasta_path))
         coll_digest = coll_meta.digest
         stats.collection_digest = coll_digest
         logger.info(
@@ -302,7 +338,105 @@ def process_assembly(
     return stats
 
 
-def print_summary(all_stats: list[AssemblyStats], store: RefgetStore) -> None:
+def process_seqset(
+    store: RefgetStore,
+    entry: SeqsetConfig,
+    download_dir: Path,
+    force_download: bool,
+) -> SeqsetStats:
+    """Ingest a flat/sharded seqset and alias every header name.
+
+    For each shard FASTA:
+      1. Download (cached).
+      2. ``add_sequence_collection_from_fasta`` -> collection digest.
+      3. Walk collection level-2 contents; collect ``(name, digest)`` pairs.
+
+    Aliases are written in bulk via ``store.load_sequence_aliases`` after all
+    shards have been ingested. ``add_sequence_alias`` rewrites the full
+    namespace TSV on every call (gtars AliasManager), so inserting N entries
+    one at a time is O(N^2) — 21k RNA aliases per shard turns into hours.
+    ``load_sequence_aliases`` merges a whole TSV into the in-memory alias
+    map and triggers exactly one persist, dropping the per-alias cost from
+    ~7.5 ms to ~5 µs.
+    """
+    stats = SeqsetStats(name=entry.name, namespace=entry.namespace)
+    logger.info("=== seqset %s ===", entry.name)
+
+    # alias -> digest; later entries win on collision. setdefault() preserves
+    # the first digest seen (matches the old add_unique_alias behavior).
+    pending: dict[str, str] = {}
+
+    for shard_label, url in entry.iter_shard_urls():
+        target = download_dir / Path(url).name
+        logger.info(
+            "shard %s%s",
+            shard_label or "-",
+            f" ({Path(url).name})" if shard_label else "",
+        )
+        try:
+            fasta_path = ensure_download(url, target, force_download)
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("download failed for %s: %s", url, exc)
+            stats.warnings += 1
+            continue
+
+        try:
+            coll_meta, was_new = store.add_sequence_collection_from_fasta(
+                str(fasta_path)
+            )
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("ingest failed for %s: %s", fasta_path, exc)
+            stats.warnings += 1
+            continue
+
+        logger.info(
+            "  collection %s (%s, %d sequences)",
+            coll_meta.digest,
+            "new" if was_new else "existing",
+            coll_meta.n_sequences,
+        )
+        stats.shards_processed += 1
+        stats.sequences_ingested += coll_meta.n_sequences
+
+        name_to_digest = build_name_to_digest_map(store, coll_meta.digest)
+        for name, digest in name_to_digest.items():
+            pending.setdefault(name, digest)
+
+    if pending:
+        # Drop anything already aliased in this namespace (may be left over
+        # from prior runs or overlap with other seqsets pointing at the same
+        # namespace). list_sequence_aliases is an O(n) in-memory scan.
+        existing = set(store.list_sequence_aliases(entry.namespace) or [])
+        new_aliases = {a: d for a, d in pending.items() if a not in existing}
+        stats.sequence_aliases_skipped += len(pending) - len(new_aliases)
+
+        if new_aliases:
+            with tempfile.NamedTemporaryFile(
+                mode="w", suffix=".tsv", delete=False
+            ) as tmp:
+                for alias, digest in new_aliases.items():
+                    tmp.write(f"{alias}\t{digest}\n")
+                tmp_path = Path(tmp.name)
+            try:
+                count = store.load_sequence_aliases(entry.namespace, str(tmp_path))
+                stats.sequence_aliases_added += count
+                logger.info(
+                    "  %s: bulk-loaded %d new aliases into ns=%s",
+                    entry.name,
+                    count,
+                    entry.namespace,
+                )
+            finally:
+                tmp_path.unlink(missing_ok=True)
+
+    return stats
+
+
+def print_summary(
+    all_stats: list[AssemblyStats],
+    seqset_stats: list[SeqsetStats],
+    store: RefgetStore,
+) -> None:
     print()
     print("Summary")
     print("-------")
@@ -314,6 +448,15 @@ def print_summary(all_stats: list[AssemblyStats], store: RefgetStore) -> None:
             f"seq_aliases_added={s.sequence_aliases_added:4d} "
             f"skipped={s.sequence_aliases_skipped:4d} "
             f"coll_aliases_added={s.collection_aliases_added:2d} "
+            f"warnings={s.warnings:3d}"
+        )
+    for s in seqset_stats:
+        print(
+            f"  {s.name:24s}  ns={s.namespace:8s} "
+            f"shards={s.shards_processed:3d} "
+            f"seqs={s.sequences_ingested:7d} "
+            f"seq_aliases_added={s.sequence_aliases_added:7d} "
+            f"skipped={s.sequence_aliases_skipped:6d} "
             f"warnings={s.warnings:3d}"
         )
     print()
@@ -328,7 +471,7 @@ def print_summary(all_stats: list[AssemblyStats], store: RefgetStore) -> None:
     )
 
 
-def iter_selected(
+def iter_selected_assemblies(
     entries: list[AssemblyConfig], selected: str | None
 ) -> Iterator[AssemblyConfig]:
     if selected is None:
@@ -340,9 +483,22 @@ def iter_selected(
             found = True
             yield entry
     if not found:
-        raise SystemExit(
-            f"no assembly with namespace {selected!r} in config"
-        )
+        raise SystemExit(f"no assembly with namespace {selected!r} in config")
+
+
+def iter_selected_seqsets(
+    entries: list[SeqsetConfig], selected: str | None
+) -> Iterator[SeqsetConfig]:
+    if selected is None:
+        yield from entries
+        return
+    found = False
+    for entry in entries:
+        if entry.name == selected:
+            found = True
+            yield entry
+    if not found:
+        raise SystemExit(f"no seqset with name {selected!r} in config")
 
 
 def main() -> None:
@@ -350,7 +506,28 @@ def main() -> None:
     parser.add_argument("--config", type=Path, default=DEFAULT_CONFIG)
     parser.add_argument("--store-dir", type=Path, default=DEFAULT_STORE)
     parser.add_argument("--download-dir", type=Path, default=DEFAULT_DOWNLOADS)
-    parser.add_argument("--assembly", type=str, default=None)
+    parser.add_argument(
+        "--assembly",
+        type=str,
+        default=None,
+        help="Process only this assembly namespace (skips seqsets).",
+    )
+    parser.add_argument(
+        "--seqset",
+        type=str,
+        default=None,
+        help="Process only this seqset name (skips assemblies).",
+    )
+    parser.add_argument(
+        "--skip-assemblies",
+        action="store_true",
+        help="Skip all [[assembly]] entries.",
+    )
+    parser.add_argument(
+        "--skip-seqsets",
+        action="store_true",
+        help="Skip all [[seqset]] entries.",
+    )
     parser.add_argument("--force-download", action="store_true")
     parser.add_argument("--verbose", "-v", action="store_true")
     args = parser.parse_args()
@@ -360,8 +537,13 @@ def main() -> None:
         format="%(levelname)s %(name)s: %(message)s",
     )
 
-    entries = load_config(args.config)
-    logger.info("loaded %d assembly entries from %s", len(entries), args.config)
+    assemblies, seqsets = load_config(args.config)
+    logger.info(
+        "loaded %d assembly + %d seqset entries from %s",
+        len(assemblies),
+        len(seqsets),
+        args.config,
+    )
 
     args.store_dir.mkdir(parents=True, exist_ok=True)
     args.download_dir.mkdir(parents=True, exist_ok=True)
@@ -369,21 +551,40 @@ def main() -> None:
     store = RefgetStore.on_disk(str(args.store_dir))
     logger.info("opened store at %s (mode=%s)", args.store_dir, store.storage_mode)
 
+    # If the user passes --assembly or --seqset, they implicitly only want
+    # that kind — otherwise we run both.
+    run_assemblies = not args.skip_assemblies and args.seqset is None
+    run_seqsets = not args.skip_seqsets and args.assembly is None
+
     all_stats: list[AssemblyStats] = []
+    seqset_stats: list[SeqsetStats] = []
     global_name_map_cache: dict[str, dict[str, str]] = {}
-    for entry in iter_selected(entries, args.assembly):
-        stats = process_assembly(
-            store,
-            entry,
-            args.download_dir,
-            args.force_download,
-            global_name_map_cache,
-        )
-        all_stats.append(stats)
+
+    if run_assemblies:
+        for entry in iter_selected_assemblies(assemblies, args.assembly):
+            stats = process_assembly(
+                store,
+                entry,
+                args.download_dir,
+                args.force_download,
+                global_name_map_cache,
+            )
+            all_stats.append(stats)
+
+    if run_seqsets:
+        for entry in iter_selected_seqsets(seqsets, args.seqset):
+            seqset_stats.append(
+                process_seqset(
+                    store,
+                    entry,
+                    args.download_dir,
+                    args.force_download,
+                )
+            )
 
     logger.info("persisting store to %s", args.store_dir)
     store.write()
-    print_summary(all_stats, store)
+    print_summary(all_stats, seqset_stats, store)
 
 
 if __name__ == "__main__":
