@@ -199,6 +199,27 @@ class DataProxy(SequenceDataProxy, AliasDataProxy):
     data source.
     """
 
+    def get_metadata(self, identifier: str) -> dict:
+        """Return sequence length and aliases for the given identifier.
+
+        Composes :meth:`get_sequence_length` and :meth:`get_aliases`. Backends
+        with a cheaper native path (e.g. a single REST call that returns both)
+        should override this method.
+
+        If the given sequence does not exist, KeyError is raised.
+
+        >> dp.get_metadata("NM_000551.3")
+        {'length': 4560,
+         'aliases': ['MD5:215137b1973c1a5afcf86be7d999574a',
+                     'RefSeq:NM_000551.3',
+                     'ga4gh:SQ.v_QTc1p-MUYdgrRv4LMT6ByXIOsdw3C_',
+                     ...]}
+        """
+        return {
+            "length": self.get_sequence_length(identifier),
+            "aliases": self.get_aliases(identifier),
+        }
+
 
 class CompositeDataProxy(DataProxy):
     """Composes a SequenceDataProxy and AliasDataProxy into a full DataProxy.

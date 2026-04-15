@@ -116,6 +116,15 @@ class SeqRepoRESTDataProxy(DataProxy):
         md = self._get_metadata(identifier)
         return list(md["aliases"])
 
+    def get_metadata(self, identifier: str) -> dict:
+        """Return length and aliases in a single REST round-trip.
+
+        Overrides the default :meth:`DataProxy.get_metadata` to avoid the two
+        sequential calls that would otherwise each hit ``_get_metadata``.
+        """
+        md = self._get_metadata(identifier)
+        return {"length": md["length"], "aliases": list(md["aliases"])}
+
 
 def _isoformat(o: datetime.datetime) -> str:
     """Convert datetime.datetime to iso formatted timestamp.
