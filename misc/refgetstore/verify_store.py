@@ -397,6 +397,60 @@ def section_ensembl(store: RefgetStore, r: Report) -> None:
     )
 
 
+KNOWN_DIVERGENT_PATH = HERE / "ensembl_known_divergent.txt"
+
+
+def section_known_divergent(store: RefgetStore, r: Report) -> None:
+    """Regression test for Ensembl accessions with known seqrepo digest divergence.
+
+    Loads the list of accessions from ``ensembl_known_divergent.txt`` and
+    verifies that each one still resolves in the store with the expected
+    sha512t24u digest. A change here means the store was rebuilt with
+    different Ensembl data and the divergent list needs refreshing.
+    """
+    print("\n[I] Known-divergent Ensembl accessions")
+    if not KNOWN_DIVERGENT_PATH.exists():
+        r.check("known-divergent file exists", False, f"not found at {KNOWN_DIVERGENT_PATH}")
+        return
+
+    entries: list[tuple[str, str]] = []
+    with KNOWN_DIVERGENT_PATH.open("r") as f:
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            parts = line.split("\t")
+            if len(parts) >= 3:
+                # accession, seqrepo_seq_id, refget_sha512t24u, [cause]
+                entries.append((parts[0], parts[2]))
+
+    r.check(
+        f"known-divergent entries loaded ({len(entries)})",
+        len(entries) >= 100,
+        f"got {len(entries)}",
+    )
+
+    # Spot-check first 10 entries: verify each resolves with expected digest
+    checked = 0
+    for accession, expected_digest in entries[:10]:
+        rec = store.get_sequence_by_alias("ensembl", accession)
+        if rec is None:
+            r.check(f"{accession} resolves", False, "not found in store")
+            continue
+        r.check(
+            f"{accession} digest unchanged",
+            rec.metadata.sha512t24u == expected_digest,
+            f"expected {expected_digest}, got {rec.metadata.sha512t24u}",
+        )
+        checked += 1
+
+    r.check(
+        f"spot-checked {checked} known-divergent entries",
+        checked >= 10,
+        f"checked {checked}",
+    )
+
+
 def main() -> int:
     if not STORE_PATH.exists():
         print(f"ERROR: store not found at {STORE_PATH}", file=sys.stderr)
@@ -413,6 +467,7 @@ def main() -> int:
     section_sequence_bytes(store, r)
     section_collection_aliases(store, r)
     section_ensembl(store, r)
+    section_known_divergent(store, r)
 
     print()
     print(f"{r.passed} passed, {r.failed} failed")

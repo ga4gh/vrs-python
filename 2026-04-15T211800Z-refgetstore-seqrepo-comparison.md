@@ -203,65 +203,70 @@ The ~639 "other" seqrepo Ensembl aliases are things like `CHR_*` and
 under the Ensembl namespace in an older seqrepo load. We don't
 reproduce them.
 
-## 4. Open issue — 116 Ensembl digest mismatches
+## 4. Resolved — 116 Ensembl digest mismatches
 
-Same versioned accession, **different** sha512t24u on the two sides.
-That would normally be impossible: if the version is bumped, the
-content is (supposed to be) frozen. This needs investigation before we
-ship Ensembl as a trusted alternative to seqrepo's copy.
+**Status**: Investigated and root-caused (2026-04-16). See
+[`misc/refgetstore/diagnose_ensembl_mismatches.py`](misc/refgetstore/diagnose_ensembl_mismatches.py)
+and [`misc/refgetstore/diagnosis_report.json`](misc/refgetstore/diagnosis_report.json).
 
-**Distribution**: 115 ENSP + 1 ENST. 99% of the mismatches are on
-proteins.
+**Distribution**: 115 ENSP + 1 ENST.
 
-**Sample** (from the cross-check run):
+### Root cause: two distinct mechanisms
+
+#### 4a. `*` (stop codon) normalization — 115 ENSP mismatches
+
+The underlying sequence bytes are **identical** in both stores.
+The digest difference is caused by `bioutils.sequences.normalize_sequence()`
+stripping `*` characters (and whitespace) before hashing:
+
+- **SeqRepo** computes its `seq_id` via `bioutils.digests.seq_seqhash(seq)`,
+  which calls `normalize_sequence(seq)` → strips `*` → uppercases →
+  SHA-512 → truncate to 24 bytes → base64url. The resulting digest
+  becomes the `ga4gh:SQ.{digest}` alias.
+- **RefgetStore** (gtars) computes `sha512t24u` directly from the raw
+  FASTA bytes, including `*`. This is the GA4GH VRS-conformant approach.
+
+For protein sequences without `*`, the two algorithms produce the same
+digest (as confirmed by the 322,286 agreeing aliases). Only the 115
+ENSPs that contain embedded stop codons diverge.
+
+Example (ENSP00000340011.8, KIR2DS4, 297 aa, 3 internal `*`):
 
 ```
-ENSP00000340011.8  seqrepo=fv4uQW4AfrwGj3dx9D4xfpccU7Qnqtia  refget=8Co4fICavUFj9qH_GGXd5cbWbzh8oSZ0  (our len=297)
-ENSP00000375609.1  seqrepo=0wFdmvBugnimf4tOFjCVdckpw3P6GmOx  refget=Qg7FS7qyO-pfHp7HYd4wvr26DEx1oov4  (our len=225)
-ENSP00000385765.6  seqrepo=lV7Y-VqQL6dNPJ2ZKWTqw46p_da8Eodm  refget=YL07fWvAjY43qO_0ZnVw5BxCvo_M_0x-  (our len=230)
-ENSP00000402491.1  seqrepo=e6sQaY-e_N_HsVyuY3ymiFysYBMBFk9W  refget=dBxeQN4GInX8eFSsicpYD8N5Nn_0My2g
-ENSP00000411913.1  seqrepo=_RbUr7Oq9qE22xU9fnMC2uLA8RIp2Hri  refget=TQ93TCrFm5e-mb-tkSHz3d_DYaAlo4i3
+seqrepo seq_id (normalized): fv4uQW4AfrwGj3dx9D4xfpccU7Qnqtia  ← sha512t24u("...TEQ TARILM...")
+refget sha512t24u (raw):     8Co4fICavUFj9qH_GGXd5cbWbzh8oSZ0  ← sha512t24u("...TEQ*TARILM...")
+                                                                    ^ this * is the difference
 ```
 
-**Hypotheses, ranked**:
+**Conclusion**: refgetstore's digest is correct per the GA4GH VRS
+specification (sha512t24u of the raw bytes). SeqRepo's digest is a
+legacy artifact of `bioutils.normalize_sequence()` stripping `*` before
+hashing. This does NOT affect DNA sequences.
 
-1. **Ensembl silently re-published proteins under the same version
-   number**. Unlikely by policy, but if it happened it would explain
-   the concentration in ENSP and the .1/.6/.8 mix. Worth querying the
-   Ensembl release-113 changelog for "protein updates" and comparing
-   against an archived older release.
-2. **Seqrepo's loader stripped something from the protein FASTA
-   defline that we kept (or vice versa)** — e.g. a stop codon `*`
-   character, trailing whitespace, upper/lower case. For sequence
-   lengths ~200-300 aa, a single trailing character would definitely
-   change the digest. Check: does one side strip `*`? Does one side
-   upcase?
-3. **Cross-release contamination in seqrepo**. Seqrepo accumulates
-   aliases across multiple historical loads. If some old release had
-   ENSP00000340011.8 and release 113 repurposed the same version
-   number (very much against policy), we'd disagree. Verification:
-   check seqrepo's `added` timestamp for the mismatched rows — if
-   they're all from e.g. 2016, that's a clue the 2016 release had
-   different bytes and the version didn't get bumped.
-4. **Ambiguity from isoform equivalence classes**. Ensembl proteins
-   sometimes have the same ENSP accession for what are technically
-   different CDS codings. Unlikely to affect the sequence itself.
-5. **A bug in our ingest path** — but the 322 286 matches make this
-   unlikely unless it's a narrow edge case.
+#### 4b. Sequence content divergence — 1 ENST mismatch
 
-**Next diagnostic step**: fetch one mismatched ENSP directly from the
-Ensembl REST API (`https://rest.ensembl.org/sequence/id/ENSP00000340011.8?type=protein`),
-compare the bytes against both `seqrepo.fetch("Ensembl", "ENSP00000340011.8")`
-and `refgetstore.get_sequence("ga4gh:SQ.8Co4fICavUFj9qH_GGXd5cbWbzh8oSZ0")`,
-and see which side matches the REST-authoritative version. That
-identifies whose source data drifted.
+ENST00000668831.1 has genuinely different content: seqrepo loaded
+1,214 bp (added 2020-04-12, from an older Ensembl release), while
+refgetstore has 1,120 bp from release 113. The sequences share no
+homology at position 0 — Ensembl re-annotated this transcript between
+releases under the same version number.
 
-**Risk / urgency**: 115 / 115 171 = 0.1% of protein rows. For VRS
-workloads, this only matters if a caller passes one of these specific
-ENSPs and then tries to use the resulting digest as an identifier
-that's supposed to be round-trip-stable with a seqrepo-based
-downstream tool. Worth fixing before we advertise refgetstore as a
-seqrepo drop-in, but not an immediate blocker.
+Both stores are self-consistent (sha512t24u matches their own stored
+bytes). The refgetstore carries the r113 version, which is
+authoritative for that release.
+
+### Impact on VRS interoperability
+
+For vrs-python's primary use case (genomic DNA variants), this has
+**zero impact** — DNA sequences never contain `*` and the digest
+algorithms agree exactly. The divergence only affects callers who:
+
+1. Look up protein sequences with embedded `*` (stop codons)
+2. AND use the resulting `ga4gh:SQ.*` identifier for cross-system
+   comparison between seqrepo and refgetstore
+
+The 115 affected ENSPs are listed in
+[`misc/refgetstore/ensembl_known_divergent.txt`](misc/refgetstore/ensembl_known_divergent.txt).
 
 ## 5. What this snapshot does NOT include
 
@@ -299,11 +304,10 @@ seqrepo drop-in, but not an immediate blocker.
 
 ## 7. Suggested next steps (in rough priority order)
 
-1. **Investigate the 115 ENSP digest mismatches**. Start with option
-   (2) from §4 — diff the first-token parsing between seqrepo's
-   `parse_defline` and our gtars FASTA ingest for a single
-   mismatched protein. If not there, fetch from REST and see which
-   side is wrong.
+1. ~~**Investigate the 115 ENSP digest mismatches**~~ — **Done** (§4).
+   Root cause: `bioutils.normalize_sequence()` strips `*` before
+   hashing. RefgetStore digest is GA4GH-conformant; seqrepo's is not.
+   No code fix needed — documented and accessions listed.
 2. **Run a translator-path bulk_equivalence comparison that
    specifically stresses ENST/ENSP inputs** (e.g. feed
    `NM_*:c.1A>T`-style HGVS expressions that coerce into Ensembl via

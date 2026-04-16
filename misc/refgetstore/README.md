@@ -127,3 +127,47 @@ Per seqset run, the loader adds:
 Aliases for `sha512t24u:…` and `ga4gh:SQ.…` are intentionally NOT written —
 they are the raw digest with a prefix and are synthesized at query time by
 `RefgetAliasDataProxy`.
+
+## Version-drift policy
+
+The refgetstore pins **one version** of each source:
+
+- **NCBI assemblies**: pinned by GCF accession (e.g. `GCF_000001405.40` for
+  GRCh38.p14). Each patch is a superset of the prior, so only the latest
+  patch of each major assembly is loaded.
+- **NCBI RefSeq transcripts/proteins**: the FTP shards
+  (`human.*.rna.fna.gz` / `human.*.protein.faa.gz`) publish only the
+  current version of each accession. Older versions are not available.
+- **Ensembl**: pinned to a single release (currently **r113**, set in
+  `assemblies.toml`). Only the latest version of each ENST/ENSP in that
+  release is included.
+
+This differs from seqrepo's accumulative model, which retains every
+version it has ever loaded across multiple historical imports. Callers that
+depend on older transcript/protein versions will encounter `KeyError` on
+accessions the refgetstore has not loaded.
+
+### Known digest divergence on Ensembl proteins with `*`
+
+For ~0.1% of Ensembl protein sequences (115 ENSPs containing embedded
+stop codon `*` characters), the refgetstore and seqrepo produce different
+`ga4gh:SQ.*` identifiers **despite storing identical sequence bytes**.
+This is caused by `bioutils.sequences.normalize_sequence()` stripping `*`
+before computing the digest in seqrepo, while gtars computes `sha512t24u`
+directly from the raw FASTA bytes. The refgetstore digest is correct per
+the GA4GH VRS specification. See `ensembl_known_divergent.txt` and
+`diagnosis_report.json` for the full list and investigation details.
+
+DNA sequences are not affected — the divergence only applies to protein
+sequences containing `*`.
+
+## Verification scripts
+
+| Script | Purpose |
+| --- | --- |
+| `verify_store.py` | 67+ post-build checks: inventory, ground-truth digests, coverage, Ensembl, known-divergent regression |
+| `compare_against_seqrepo.py` | 3-phase functional equivalence against seqrepo 2024-12-20 |
+| `vcf_equivalence.py` | VCF annotator backend comparison + timing |
+| `bulk_equivalence.py` | Translator backend comparison on 1M VCF records |
+| `ensembl_translator_equivalence.py` | SPDI-based translator comparison using Ensembl transcript accessions |
+| `diagnose_ensembl_mismatches.py` | Root-cause analysis of the 116 Ensembl digest mismatches |
