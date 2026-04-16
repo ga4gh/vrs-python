@@ -27,6 +27,7 @@ EXPECTED_SEQ_NAMESPACES = {
     "GRCh37.p13",
     "refseq",
     "insdc",
+    "ensembl",
 }
 EXPECTED_COLL_NAMESPACES = {"refseq", "insdc"}
 FORBIDDEN_SEQ_NAMESPACES = {
@@ -58,6 +59,23 @@ EXPECTED_COLL_REFSEQ_ALIASES = {
     "GCF_000001405.40",
     "GCF_000001405.13",
     "GCF_000001405.25",
+}
+
+# (namespace, alias) -> (sha512t24u, length). Captured from the build_store.py
+# run that ingested Ensembl release 113 FASTAs. These are the canonical
+# latest versions in release 113 for a few well-known genes across all three
+# biotypes we load (cdna, ncrna, pep). Bumping the Ensembl release will
+# likely invalidate some of these — update after the rebuild.
+ENSEMBL_GROUND_TRUTH: dict[tuple[str, str], tuple[str, int]] = {
+    # cdna (protein-coding transcript)
+    ("ensembl", "ENST00000256474.3"): ("xBKOKptLLDr-k4hTyCetvARn16pDS_rW", 4414),  # VHL
+    ("ensembl", "ENST00000357654.9"): ("oR9jzdHf6J23TozeyuvTXtwlm6PpUHHl", 7088),  # BRCA1
+    # ncrna (non-coding transcript)
+    ("ensembl", "ENST00000429829.6"): ("FHnP3_NSzX0WZLjoHIPFjv89fSl18Xwk", 19245),  # XIST lncRNA
+    # pep (protein)
+    ("ensembl", "ENSP00000256474.3"): ("z-Oa0pZkJ6GHJHOYM7h5mY_umc0SJzTu", 213),   # VHL
+    ("ensembl", "ENSP00000350283.3"): ("nUzIPnHMyQV52hzgBbKl5vlbSwx8M8_Y", 1863),  # BRCA1
+    ("ensembl", "ENSP00000269305.4"): ("KAxM06sYzBF6zFftFaYq9E_18wsnn7al", 393),   # TP53
 }
 
 
@@ -327,6 +345,58 @@ def section_collection_aliases(store: RefgetStore, r: Report) -> None:
     )
 
 
+def section_ensembl(store: RefgetStore, r: Report) -> None:
+    """Ensembl coverage checks.
+
+    Asserts that each canonical ENST/ENSP identifier in
+    ``ENSEMBL_GROUND_TRUTH`` resolves, its metadata matches the captured
+    digest and length, and that at least one sequence's bytes can be
+    read via ``get_substring`` (smoke-tests the full read path through
+    ``RefgetSequenceDataProxy._ensure_sequence_loaded``).
+    """
+    print("\n[H] Ensembl coverage smoke test")
+    for (ns, alias), (expected_digest, expected_length) in ENSEMBL_GROUND_TRUTH.items():
+        rec = store.get_sequence_by_alias(ns, alias)
+        if rec is None:
+            r.check(f"{ns}:{alias}", False, "record not found")
+            continue
+        md = rec.metadata
+        r.check(
+            f"{ns}:{alias} digest",
+            md.sha512t24u == expected_digest,
+            f"expected {expected_digest}, got {md.sha512t24u}",
+        )
+        r.check(
+            f"{ns}:{alias} length == {expected_length}",
+            md.length == expected_length,
+            f"got {md.length}",
+        )
+
+    # Sequence bytes smoke test on VHL cDNA — proves the FASTA payload
+    # made it to disk for an Ensembl-loaded seqset, not just the alias row.
+    rec = store.get_sequence_by_alias("ensembl", "ENST00000256474.3")
+    if rec is None:
+        r.check("VHL cDNA byte fetch", False, "record not found")
+        return
+    digest = rec.metadata.sha512t24u
+    try:
+        store.load_sequence(digest)  # type: ignore[attr-defined]
+        data = store.get_substring(digest, 0, 50)
+    except Exception as exc:  # noqa: BLE001
+        r.check("VHL cDNA byte fetch", False, f"load/get_substring raised: {exc}")
+        return
+    r.check(
+        "VHL cDNA slice length == 50",
+        data is not None and len(data) == 50,
+        f"got len={len(data) if data else None}",
+    )
+    r.check(
+        "VHL cDNA slice is ACGTN-only",
+        data is not None and set(data.upper()) <= set("ACGTN"),
+        f"unexpected chars: {sorted(set(data.upper()) - set('ACGTN')) if data else None}",
+    )
+
+
 def main() -> int:
     if not STORE_PATH.exists():
         print(f"ERROR: store not found at {STORE_PATH}", file=sys.stderr)
@@ -342,6 +412,7 @@ def main() -> int:
     section_invariants(store, r)
     section_sequence_bytes(store, r)
     section_collection_aliases(store, r)
+    section_ensembl(store, r)
 
     print()
     print(f"{r.passed} passed, {r.failed} failed")

@@ -65,3 +65,29 @@ name = "refseq_human_protein"
 namespace = "refseq"
 url_template = "https://ftp.ncbi.nlm.nih.gov/refseq/H_sapiens/mRNA_Prot/human.{shard}.protein.faa.gz"
 shard_range = [1, 32]
+
+# Ensembl human GRCh38 transcripts + proteins, pinned to release 113
+# (October 2024). Bump the release number in all three URLs to update.
+# Archive index: https://www.ensembl.org/info/website/archives/
+# ENST.N / ENSP.N accessions are content-addressable, so the digests are
+# stable across releases; only the version suffixes change.
+#
+# cdna/ ships protein-coding transcripts; ncrna/ ships non-coding
+# transcripts (disjoint ENST space). cds/ is intentionally NOT loaded —
+# it reuses the same ENST accessions as cdna/ but with UTRs stripped,
+# which would collide in the bulk alias merge.
+
+[[seqset]]
+name = "ensembl_human_cdna"
+namespace = "ensembl"
+url_template = "https://ftp.ensembl.org/pub/release-113/fasta/homo_sapiens/cdna/Homo_sapiens.GRCh38.cdna.all.fa.gz"
+
+[[seqset]]
+name = "ensembl_human_ncrna"
+namespace = "ensembl"
+url_template = "https://ftp.ensembl.org/pub/release-113/fasta/homo_sapiens/ncrna/Homo_sapiens.GRCh38.ncrna.fa.gz"
+
+[[seqset]]
+name = "ensembl_human_pep"
+namespace = "ensembl"
+url_template = "https://ftp.ensembl.org/pub/release-113/fasta/homo_sapiens/pep/Homo_sapiens.GRCh38.pep.all.fa.gz"

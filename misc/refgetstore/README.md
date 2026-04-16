@@ -7,8 +7,11 @@ its alias backend (replacing seqrepo for alias mapping). This covers:
 - Assembly aliases: `GRCh38:chr1`, `GRCh38.p14:chrM`, etc.
 - Cross-assembly genomic accessions: `refseq:NC_000001.11`, `insdc:CM000663.2`.
 - Collection-level: `refseq:GCF_*`, `insdc:GCA_*`.
-- **Transcripts + proteins**: `refseq:NM_000551.3`, `refseq:NP_000542.1`, etc.,
-  loaded from NCBI RefSeq mRNA/Prot shards.
+- **NCBI RefSeq transcripts + proteins**: `refseq:NM_000551.3`,
+  `refseq:NP_000542.1`, etc., loaded from NCBI RefSeq mRNA/Prot shards.
+- **Ensembl transcripts + proteins**: `ensembl:ENST00000256474.3`,
+  `ensembl:ENSP00000256474.3`, etc., loaded from Ensembl release cdna /
+  ncrna / pep FASTAs (release is pinned in `assemblies.toml`).
 
 No dependency on `bioutils` or `biocommons.seqrepo` — the loader reads NCBI
 assembly reports directly and derives transcript/protein aliases from FASTA
@@ -17,12 +20,14 @@ header names.
 ## Prerequisites
 
 - `gtars.refget` (already a vrs-python extras dependency).
-- Network access to `ftp.ncbi.nlm.nih.gov` (or pre-populated cache dirs).
+- Network access to `ftp.ncbi.nlm.nih.gov` and `ftp.ensembl.org` (or
+  pre-populated cache dirs).
 - Disk:
   - ~5 GB for one GRCh38 major + GRCh38.p14 assemblies (the `.fna.gz` files
     are ~900 MB each; the Encoded store is ~2–3 GB).
   - ~3-5 GB additional for the RefSeq mRNA+protein shards (64 files,
     ~50-100 MB each).
+  - ~500 MB additional for the Ensembl cdna + ncrna + pep FASTAs.
 
 ## Layout
 
@@ -80,9 +85,13 @@ Each `[[seqset]]` block (flat FASTA where the header name is the accession):
 | field | required | description |
 | --- | --- | --- |
 | `name` | yes | Human id for logs + CLI selection. |
-| `namespace` | yes | Alias namespace for every ingested sequence (usually `refseq`). |
+| `namespace` | yes | Alias namespace for every ingested sequence (e.g. `refseq`, `ensembl`). |
 | `url_template` | yes | URL with `{shard}` placeholder, or plain URL if unsharded. |
 | `shard_range` | no | `[min, max]` inclusive substituted into `{shard}`. Omit for a single-file seqset. |
+
+The same schema handles both the NCBI RefSeq mRNA/Prot shards (sharded
+with a `{shard}` placeholder) and the Ensembl cdna / ncrna / pep
+releases (single-file, `shard_range` omitted).
 
 ## What gets written
 
@@ -103,10 +112,17 @@ Per assembly run, the loader adds:
 
 Per seqset run, the loader adds:
 
-- One sequence collection per shard FASTA (each `human.<shard>.rna.fna.gz`
-  becomes its own collection).
+- One sequence collection per FASTA file ingested (each
+  `human.<shard>.rna.fna.gz` and each Ensembl `*.fa.gz` becomes its own
+  collection).
 - Per-sequence aliases under `<namespace>` using each FASTA header's first
-  token (e.g. `refseq:NM_000551.3` → digest).
+  token. Examples:
+  - NCBI RefSeq shards: `refseq:NM_000551.3`, `refseq:NP_000542.1`,
+    `refseq:XM_*`, `refseq:XP_*`.
+  - Ensembl cdna: `ensembl:ENST00000256474.3` (protein-coding transcripts).
+  - Ensembl ncrna: `ensembl:ENST00000429829.6` (non-coding — XIST, miRNAs,
+    snoRNAs, etc.).
+  - Ensembl pep: `ensembl:ENSP00000256474.3`.
 
 Aliases for `sha512t24u:…` and `ga4gh:SQ.…` are intentionally NOT written —
 they are the raw digest with a prefix and are synthesized at query time by
