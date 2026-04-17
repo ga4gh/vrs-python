@@ -243,9 +243,7 @@ class TestUncertainRangePosEdit:
         failing and the workaround can be re-evaluated.
         """
         ival = hgvs.location.Interval(
-            start=_vrs_pos_to_hgvs(
-                models.Range(root=[99, 199]), side="start"
-            ),
+            start=_vrs_pos_to_hgvs(models.Range(root=[99, 199]), side="start"),
             end=_vrs_pos_to_hgvs(models.Range(root=[299, 399]), side="end"),
         )
         posedit = hgvs.posedit.PosEdit(
