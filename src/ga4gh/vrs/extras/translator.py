@@ -16,7 +16,7 @@ from ga4gh.vrs import models, normalize
 from ga4gh.vrs.dataproxy import SequenceProxy, _DataProxy
 from ga4gh.vrs.extras.decorators import lazy_property
 from ga4gh.vrs.normalize import denormalize_reference_length_expression
-from ga4gh.vrs.utils.hgvs_tools import HgvsTools, _hgvs_pos_to_vrs
+from ga4gh.vrs.utils.hgvs_tools import HgvsTools
 
 _logger = logging.getLogger(__name__)
 
@@ -496,17 +496,7 @@ class CnvTranslator(_Translator):
         if not refget_accession:
             return None
 
-        # translate coding coordinates to positional coordinates, if necessary
-        if sv.type == "c":
-            sv = self.hgvs_tools.c_to_n(sv)
-
-        location = models.SequenceLocation(
-            sequenceReference=models.SequenceReference(
-                refgetAccession=refget_accession
-            ),
-            start=_hgvs_pos_to_vrs(sv.posedit.pos.start, side="start"),
-            end=_hgvs_pos_to_vrs(sv.posedit.pos.end, side="end"),
-        )
+        location = self.hgvs_tools.build_cnv_location(sv, refget_accession)
 
         copies = kwargs.get("copies")
         if copies is not None:

@@ -300,6 +300,27 @@ class HgvsTools:
             "literal_sequence": state,
         }
 
+    def build_cnv_location(
+        self, sv: HgvsSequenceVariant, refget_accession: str
+    ) -> models.SequenceLocation:
+        """Build a VRS :class:`SequenceLocation` from a parsed hgvs CNV variant.
+
+        CDS-relative (``c.``) inputs are translated to transcript-relative
+        (``n.``) coordinates first; without that step the VRS location would
+        point into the 5' UTR. Handles both certain positions and uncertain-
+        range endpoints; the resulting ``start`` / ``end`` are ints for exact
+        positions and :class:`models.Range` values for uncertain ranges.
+        """
+        if sv.type == "c":
+            sv = self.c_to_n(sv)
+        return models.SequenceLocation(
+            sequenceReference=models.SequenceReference(
+                refgetAccession=refget_accession
+            ),
+            start=_hgvs_pos_to_vrs(sv.posedit.pos.start, side="start"),
+            end=_hgvs_pos_to_vrs(sv.posedit.pos.end, side="end"),
+        )
+
     def from_allele(self, vo: models.Allele, namespace: str | None = None) -> list[str]:
         """Generate a *list* of HGVS expressions for VRS Allele.
 
