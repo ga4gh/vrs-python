@@ -2,7 +2,7 @@
 
 import logging
 import re
-from typing import Literal
+from typing import Literal, TypeGuard
 
 import hgvs
 import hgvs.dataproviders.uta
@@ -31,7 +31,7 @@ _HgvsPos = (
 )
 
 
-def _is_uncertain_range(pos: _HgvsPos) -> bool:
+def _is_uncertain_range(pos: _HgvsPos) -> TypeGuard[hgvs.location.Interval]:
     """Return True if ``pos`` is a nested :class:`hgvs.location.Interval`
     representing an uncertain range (e.g. ``(A_B)`` from ``(A_B)_(C_D)del``).
 
@@ -64,11 +64,17 @@ def _hgvs_pos_to_vrs(pos: _HgvsPos, side: _Side) -> int | models.Range | None:
     corresponding VRS value for :attr:`models.SequenceLocation.start` /
     :attr:`models.SequenceLocation.end`.
 
-    :param pos: A position object from ``sv.posedit.pos.start`` / ``.end``. May
-        be a :class:`hgvs.location.SimplePosition` /
-        :class:`hgvs.location.BaseOffsetPosition` (certain position) or a nested
-        :class:`hgvs.location.Interval` (uncertain range, e.g. parsed from
-        ``(A_B)`` in ``(A_B)_(C_D)dup``).
+    Handles three shapes of ``pos``:
+
+    * :class:`hgvs.location.SimplePosition` / :class:`hgvs.location.BaseOffsetPosition`
+      — a certain position; returns an ``int``.
+    * :class:`hgvs.location.Interval` with ``uncertain=True`` — a nested
+      uncertain range (e.g. ``(A_B)`` from ``(A_B)_(C_D)dup``); returns a
+      :class:`models.Range`.
+    * :class:`hgvs.location.Interval` with ``uncertain=False`` — the
+      ``start==end`` wrapper hgvs emits for the exact side of a mixed
+      expression like ``g.100_(200_?)del``; unwrapped to an ``int``.
+
     :param side: ``"start"`` if ``pos`` is the outer-left side of the variant
         (HGVS→VRS subtracts 1), ``"end"`` for the outer-right side (no shift).
     :returns: An ``int`` for a certain position, a :class:`models.Range` for an
