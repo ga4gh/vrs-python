@@ -24,8 +24,14 @@ _logger = logging.getLogger(__name__)
 # position N-1; for the outer-right side, HGVS N corresponds to VRS N.
 _Side = Literal["start", "end"]
 
+_HgvsPos = (
+    hgvs.location.SimplePosition
+    | hgvs.location.BaseOffsetPosition
+    | hgvs.location.Interval
+)
 
-def _is_uncertain_range(pos: object) -> bool:
+
+def _is_uncertain_range(pos: _HgvsPos) -> bool:
     """Return True if ``pos`` is a nested :class:`hgvs.location.Interval`
     representing an uncertain range (e.g. ``(A_B)`` from ``(A_B)_(C_D)del``).
 
@@ -53,7 +59,7 @@ def _shift_vrs_to_hgvs(value: int | None, side: _Side) -> int | None:
     return value + 1 if side == "start" else value
 
 
-def _hgvs_pos_to_vrs(pos: object, side: _Side) -> int | models.Range | None:
+def _hgvs_pos_to_vrs(pos: _HgvsPos, side: _Side) -> int | models.Range | None:
     """Convert the ``pos.start`` or ``pos.end`` of a parsed hgvs variant to the
     corresponding VRS value for :attr:`models.SequenceLocation.start` /
     :attr:`models.SequenceLocation.end`.
