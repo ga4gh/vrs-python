@@ -967,10 +967,11 @@ def test_normalize_microsatellite_counts(tlr, case):
 #         tlr._from_spdi("NM_182763.2:c.688+403C>T")
 
 
-@pytest.mark.vcr
 def test_from_hgvs_uncertain_range_raises(tlr):
     """Uncertain-range HGVS cannot be represented as an Allele with a literal
     sequence state; use CnvTranslator instead. See issue #609.
+
+    No cassette needed: the rejection happens before any data-proxy call.
     """
     with pytest.raises(ValueError, match="Uncertain-range"):
         tlr._from_hgvs("NC_000019.9:g.(11211022_11213339)_(11217364_11218067)dup")

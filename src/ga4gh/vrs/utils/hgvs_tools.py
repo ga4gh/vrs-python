@@ -200,20 +200,9 @@ class HgvsTools:
             tuple: A tuple containing the start position, end position, and state of the variant.
 
         Raises:
-            ValueError: If the HGVS variant type is unsupported, or if either
-                endpoint of the variant is an uncertain range (which cannot be
-                represented as an Allele with a literal sequence state).
+            ValueError: If the HGVS variant type is unsupported.
 
         """
-        if _is_uncertain_range(sv.posedit.pos.start) or _is_uncertain_range(
-            sv.posedit.pos.end
-        ):
-            msg = (
-                "Uncertain-range HGVS expressions are not supported for Allele "
-                "translation; use CnvTranslator for del/dup"
-            )
-            raise ValueError(msg)
-
         if sv.posedit.edit.type == "ins":
             start = sv.posedit.pos.start.base
             end = sv.posedit.pos.start.base
@@ -280,6 +269,15 @@ class HgvsTools:
         sv = self.parse(hgvs_expr)
         if not sv:
             return None
+
+        if _is_uncertain_range(sv.posedit.pos.start) or _is_uncertain_range(
+            sv.posedit.pos.end
+        ):
+            msg = (
+                "Uncertain-range HGVS expressions are not supported for Allele "
+                "translation; use CnvTranslator for del/dup"
+            )
+            raise ValueError(msg)
 
         if self.is_intronic(sv):
             msg = "Intronic HGVS variants are not supported"
