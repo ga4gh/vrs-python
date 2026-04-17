@@ -496,6 +496,10 @@ class CnvTranslator(_Translator):
         if not refget_accession:
             return None
 
+        # translate coding coordinates to positional coordinates, if necessary
+        if sv.type == "c":
+            sv = self.hgvs_tools.c_to_n(sv)
+
         location = models.SequenceLocation(
             sequenceReference=models.SequenceReference(
                 refgetAccession=refget_accession
