@@ -7,6 +7,7 @@ nested :class:`hgvs.location.Interval` objects on ``sv.posedit.pos.start`` and
 """
 
 import hgvs.edit
+import hgvs.exceptions
 import hgvs.location
 import hgvs.parser
 import hgvs.posedit
@@ -200,3 +201,55 @@ class TestVrsPosToHgvs:
         end_hgvs = _vrs_pos_to_hgvs(end_vrs, side="end")
         assert str(start_hgvs) == str(sv.posedit.pos.start)
         assert str(end_hgvs) == str(sv.posedit.pos.end)
+
+
+class TestUncertainRangePosEdit:
+    """End-to-end formatting tests for the uncertain-range path in
+    :meth:`HgvsTools._to_sequence_variant`. Network-free: exercises
+    :func:`_vrs_pos_to_hgvs` together with the hgvs ``Interval`` +
+    ``NARefAlt`` + ``PosEdit`` construction used there.
+    """
+
+    @pytest.mark.parametrize(
+        ("start", "end", "expected"),
+        [
+            # Exact start, uncertain-range end.
+            (99, models.Range(root=[200, 300]), "100_(200_300)del"),
+            # Uncertain-range start, exact end.
+            (models.Range(root=[99, 199]), 300, "(100_200)_300del"),
+            # Uncertain on both sides.
+            (
+                models.Range(root=[99, 199]),
+                models.Range(root=[300, 400]),
+                "(100_200)_(300_400)del",
+            ),
+        ],
+    )
+    def test_mixed_and_full_uncertain_formatting(self, start, end, expected):
+        ival = hgvs.location.Interval(
+            start=_vrs_pos_to_hgvs(start, side="start", as_interval=True),
+            end=_vrs_pos_to_hgvs(end, side="end", as_interval=True),
+        )
+        posedit = hgvs.posedit.PosEdit(
+            pos=ival, edit=hgvs.edit.NARefAlt(ref="", alt=None)
+        )
+        assert str(posedit) == expected
+
+    def test_ref_none_fails_for_uncertain_range(self):
+        """The ``ref=""`` workaround in :meth:`HgvsTools._to_sequence_variant`
+        exists because hgvs refuses to format a ``NARefAlt`` when both ``ref``
+        and ``alt`` are undefined. This regression test locks that behavior
+        in: if a future hgvs release relaxes the constraint, this test starts
+        failing and the workaround can be re-evaluated.
+        """
+        ival = hgvs.location.Interval(
+            start=_vrs_pos_to_hgvs(
+                models.Range(root=[99, 199]), side="start"
+            ),
+            end=_vrs_pos_to_hgvs(models.Range(root=[299, 399]), side="end"),
+        )
+        posedit = hgvs.posedit.PosEdit(
+            pos=ival, edit=hgvs.edit.NARefAlt(ref=None, alt=None)
+        )
+        with pytest.raises(hgvs.exceptions.HGVSError):
+            str(posedit)
