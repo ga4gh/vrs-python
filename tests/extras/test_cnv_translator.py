@@ -173,3 +173,29 @@ def test_from_hgvs_cn_copies_zero(tlr):
     cn = tlr._from_hgvs("NC_000013.11:g.26440969_26443305del", copies=0)
     assert cn.type == "CopyNumberCount"
     assert cn.copies == 0
+
+
+@pytest.mark.vcr
+def test_from_hgvs_coding_coordinates(tlr):
+    """CDS-relative (``c.``) inputs are converted to transcript-relative
+    coordinates via ``c_to_n`` before the VRS location is built; without the
+    conversion the resulting ``SequenceLocation`` would point into the 5' UTR.
+    """
+    cx = tlr._from_hgvs("NM_001331029.1:c.100_200del")
+    assert cx.model_dump(exclude_none=True) == {
+        "id": "ga4gh:CX.lJiuo6QPsrSEKI7EeX0xpX5Iqx0R_Kal",
+        "type": "CopyNumberChange",
+        "digest": "lJiuo6QPsrSEKI7EeX0xpX5Iqx0R_Kal",
+        "location": {
+            "id": "ga4gh:SL.K0g9SmC4z2-ayJsTHFHuIAygGNv1UMgi",
+            "type": "SequenceLocation",
+            "digest": "K0g9SmC4z2-ayJsTHFHuIAygGNv1UMgi",
+            "sequenceReference": {
+                "type": "SequenceReference",
+                "refgetAccession": "SQ.MBIgVnoHFw34aFqNUVGM0zgjC3d-v8dK",
+            },
+            "start": 249,
+            "end": 350,
+        },
+        "copyChange": "loss",
+    }
