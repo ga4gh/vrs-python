@@ -28,8 +28,13 @@ _Side = Literal["start", "end"]
 def _is_uncertain_range(pos: object) -> bool:
     """Return True if ``pos`` is a nested :class:`hgvs.location.Interval`
     representing an uncertain range (e.g. ``(A_B)`` from ``(A_B)_(C_D)del``).
+
+    Note that hgvs 2.0.0a0 also emits a non-uncertain ``Interval`` (with
+    ``start == end``) for the exact side of a mixed expression like
+    ``g.100_(200_?)del``, so the ``.uncertain`` check is required to distinguish
+    real uncertain ranges from that wrapper shape.
     """
-    return isinstance(pos, hgvs.location.Interval)
+    return isinstance(pos, hgvs.location.Interval) and pos.uncertain
 
 
 def _shift_hgvs_to_vrs(base: int | None, side: _Side) -> int | None:
@@ -67,6 +72,11 @@ def _hgvs_pos_to_vrs(pos: object, side: _Side) -> int | models.Range | None:
         lo = _shift_hgvs_to_vrs(pos.start.base, side)
         hi = _shift_hgvs_to_vrs(pos.end.base, side)
         return models.Range(root=[lo, hi])
+    if isinstance(pos, hgvs.location.Interval):
+        # Exact side of a mixed expression like g.100_(200_?)del: hgvs wraps
+        # the certain endpoint in a non-uncertain Interval with start==end so
+        # both outer sides share a type. Unwrap to the underlying base.
+        return _shift_hgvs_to_vrs(pos.start.base, side)
     return _shift_hgvs_to_vrs(pos.base, side)
 
 

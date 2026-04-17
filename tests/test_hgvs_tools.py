@@ -6,8 +6,10 @@ nested :class:`hgvs.location.Interval` objects on ``sv.posedit.pos.start`` and
 ``.end``. See https://github.com/biocommons/hgvs/issues/225 for background.
 """
 
+import hgvs.edit
 import hgvs.location
 import hgvs.parser
+import hgvs.posedit
 import pytest
 
 from ga4gh.vrs import models
@@ -107,6 +109,34 @@ class TestHgvsPosToVrs:
         end = _hgvs_pos_to_vrs(sv.posedit.pos.end, side="end")
         assert start.root == expected_start
         assert end.root == expected_end
+
+    @pytest.mark.parametrize(
+        ("hgvs_expr", "expected_start", "expected_end"),
+        [
+            # Exact left, uncertain right: start must be a plain int, not a
+            # degenerate Range([99, 99]). Digest-level correctness depends on
+            # this (a Range produces a different SequenceLocation digest).
+            (
+                "NC_000019.9:g.100_(200_?)del",
+                99,
+                models.Range(root=[200, None]),
+            ),
+            # Uncertain left, exact right: end must be a plain int.
+            (
+                "NC_000019.9:g.(?_200)_300del",
+                models.Range(root=[None, 199]),
+                300,
+            ),
+        ],
+    )
+    def test_mixed_endpoint_parse(
+        self, hgvs_parser, hgvs_expr, expected_start, expected_end
+    ):
+        sv = hgvs_parser.parse_hgvs_variant(hgvs_expr)
+        start = _hgvs_pos_to_vrs(sv.posedit.pos.start, side="start")
+        end = _hgvs_pos_to_vrs(sv.posedit.pos.end, side="end")
+        assert start == expected_start
+        assert end == expected_end
 
 
 class TestVrsPosToHgvs:
