@@ -227,6 +227,17 @@ class HgvsTools:
             return None
         return self.parser.parse_hgvs_variant(hgvs_str)
 
+    def has_uncertain_range(self, sv: HgvsSequenceVariant) -> bool:
+        """Return True if either endpoint of ``sv.posedit.pos`` is a nested
+        uncertain :class:`hgvs.location.Interval` (e.g. the ``(A_B)`` sides of
+        ``(A_B)_(C_D)del``). Surfaces the module-private
+        :func:`_is_uncertain_range` check to external callers without
+        requiring them to import an underscore helper across module boundaries.
+        """
+        return _is_uncertain_range(sv.posedit.pos.start) or _is_uncertain_range(
+            sv.posedit.pos.end
+        )
+
     def is_intronic(self, sv: HgvsSequenceVariant) -> bool:
         """Check if the given SequenceVariant is intronic.
 
@@ -332,15 +343,6 @@ class HgvsTools:
         sv = self.parse(hgvs_expr)
         if not sv:
             return None
-
-        if _is_uncertain_range(sv.posedit.pos.start) or _is_uncertain_range(
-            sv.posedit.pos.end
-        ):
-            msg = (
-                "Uncertain-range HGVS expressions are not supported for Allele "
-                "translation; use CnvTranslator for del/dup"
-            )
-            raise ValueError(msg)
 
         if self.is_intronic(sv):
             msg = "Intronic HGVS variants are not supported"
