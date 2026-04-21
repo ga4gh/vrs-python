@@ -11,10 +11,11 @@ import hgvs.exceptions
 import hgvs.location
 import hgvs.parser
 import hgvs.posedit
+import hgvs.sequencevariant
 import pytest
 
 from ga4gh.vrs import models
-from ga4gh.vrs.utils.hgvs_tools import _hgvs_pos_to_vrs, _vrs_pos_to_hgvs
+from ga4gh.vrs.utils.hgvs_tools import HgvsTools, _hgvs_pos_to_vrs, _vrs_pos_to_hgvs
 
 
 @pytest.fixture(scope="module")
@@ -297,3 +298,64 @@ class TestUncertainRangePosEdit:
         )
         with pytest.raises(hgvs.exceptions.HGVSError):
             str(posedit)
+
+
+class TestGetPositionAndState:
+    """Tests for :meth:`HgvsTools.get_position_and_state`.
+
+    These tests use ``HgvsTools.__new__(HgvsTools)`` to bypass ``__init__``'s
+    UTA network connection. Each test uses an edit type (``del``) that does
+    not touch ``self.data_proxy``, so no proxy mock is needed.
+    """
+
+    @pytest.fixture
+    def tools(self):
+        return HgvsTools.__new__(HgvsTools)
+
+    def test_uncertain_range_returns_range_for_del(self, hgvs_parser, tools):
+        """Uncertain-range rejection is a translator-layer concern (see
+        :meth:`AlleleTranslator._from_hgvs`), not a helper-layer one. At the
+        helper level, passing an uncertain-range ``sv`` directly returns
+        :class:`models.Range` values for ``start`` and ``end`` — quiet but
+        deterministic, and the boundary is locked by this test.
+        """
+        sv = hgvs_parser.parse_hgvs_variant(
+            "NC_000019.9:g.(11211022_11213339)_(11217364_11218067)del"
+        )
+        start, end, state = tools.get_position_and_state(sv)
+        assert isinstance(start, models.Range)
+        assert isinstance(end, models.Range)
+        assert start.root == [11211021, 11213338]
+        assert end.root == [11217364, 11218067]
+        assert state == ""
+
+    def test_intronic_position_raises(self, hgvs_parser, tools):
+        """Intronic positions (non-zero BaseOffsetPosition.offset) have no
+        faithful VRS coordinate; the helper must raise rather than silently
+        drop the offset.
+        """
+        sv = hgvs_parser.parse_hgvs_variant("NM_000059.4:n.100+5_200-3del")
+        with pytest.raises(ValueError, match="Intronic position"):
+            tools.get_position_and_state(sv)
+
+    def test_base_offset_interval_raises(self, tools):
+        """A ``BaseOffsetInterval`` on ``pos.start`` is not a VRS coordinate;
+        the helper must raise. Build the ``sv`` by hand because hgvs parsing
+        doesn't naturally produce this shape at ``pos.start`` alone.
+        """
+        inner_ival = hgvs.location.BaseOffsetInterval(
+            start=hgvs.location.BaseOffsetPosition(base=100, offset=0),
+            end=hgvs.location.BaseOffsetPosition(base=200, offset=0),
+        )
+        outer = hgvs.location.Interval(
+            start=inner_ival,
+            end=hgvs.location.SimplePosition(base=300),
+        )
+        posedit = hgvs.posedit.PosEdit(
+            pos=outer, edit=hgvs.edit.NARefAlt(ref="N", alt=None)
+        )
+        sv = hgvs.sequencevariant.SequenceVariant(
+            ac="NC_000019.9", type="g", posedit=posedit
+        )
+        with pytest.raises(TypeError, match="BaseOffsetInterval"):
+            tools.get_position_and_state(sv)

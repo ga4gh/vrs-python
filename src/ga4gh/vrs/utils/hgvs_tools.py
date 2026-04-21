@@ -257,36 +257,42 @@ class HgvsTools:
             tuple: A tuple containing the start position, end position, and state of the variant.
 
         Raises:
-            ValueError: If the HGVS variant type is unsupported.
+            ValueError: If the HGVS variant type is unsupported, or if ``pos``
+                is an intronic :class:`~hgvs.location.BaseOffsetPosition`.
+            TypeError: If ``pos`` is a :class:`~hgvs.location.BaseOffsetInterval`.
 
         """
-        if sv.posedit.edit.type == "ins":
-            start = sv.posedit.pos.start.base
-            end = sv.posedit.pos.start.base
-            state = sv.posedit.edit.alt
+        pos = sv.posedit.pos
+        edit_type = sv.posedit.edit.type
 
-        elif sv.posedit.edit.type in ("sub", "del", "delins", "identity"):
-            start = sv.posedit.pos.start.base - 1
-            end = sv.posedit.pos.end.base
-            if sv.posedit.edit.type == "identity":
-                state = self.data_proxy.get_sequence(
-                    sv.ac,
-                    start=sv.posedit.pos.start.base - 1,
-                    end=sv.posedit.pos.end.base,
-                )
+        # hgvs insertion semantics: the insertion sits between pos.start and
+        # pos.start+1, so both VRS bounds take pos.start.base with no -1
+        # shift. Doesn't fit the side="start"/"end" convention, so bypass
+        # _hgvs_pos_to_vrs here and read the attribute directly.
+        if edit_type == "ins":
+            start = end = pos.start.base
+            state = sv.posedit.edit.alt
+            return start, end, state
+
+        # For every other edit type, pos.start and pos.end convert to VRS
+        # coordinates the same way. _hgvs_pos_to_vrs raises typed errors for
+        # intronic offsets and BaseOffsetInterval inputs, so the arithmetic
+        # below is safe against those shapes without explicit guards here.
+        start = _hgvs_pos_to_vrs(pos.start, side="start")
+        end = _hgvs_pos_to_vrs(pos.end, side="end")
+
+        if edit_type in ("sub", "del", "delins", "identity"):
+            if edit_type == "identity":
+                state = self.data_proxy.get_sequence(sv.ac, start=start, end=end)
             else:
                 state = sv.posedit.edit.alt or ""
 
-        elif sv.posedit.edit.type == "dup":
-            start = sv.posedit.pos.start.base - 1
-            end = sv.posedit.pos.end.base
-            ref = self.data_proxy.get_sequence(
-                sv.ac, start=sv.posedit.pos.start.base - 1, end=sv.posedit.pos.end.base
-            )
+        elif edit_type == "dup":
+            ref = self.data_proxy.get_sequence(sv.ac, start=start, end=end)
             state = ref + ref
 
         else:
-            msg = f"HGVS variant type {sv.posedit.edit.type} is unsupported"
+            msg = f"HGVS variant type {edit_type} is unsupported"
             raise ValueError(msg)
 
         return start, end, state
