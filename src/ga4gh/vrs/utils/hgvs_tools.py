@@ -43,6 +43,19 @@ def _is_uncertain_range(pos: _HgvsPos) -> TypeGuard[hgvs.location.Interval]:
     return isinstance(pos, hgvs.location.Interval) and pos.uncertain
 
 
+def _has_intron_offset(pos: _HgvsPos) -> bool:
+    """Return True if ``pos`` is a :class:`hgvs.location.BaseOffsetPosition`
+    with a non-zero intron offset (e.g. ``100+5`` or ``200-3``).
+
+    VRS :class:`SequenceLocation` coordinates are transcript-relative; a
+    non-zero offset means the position lies inside an intron, which has no
+    faithful single-integer representation in VRS. This helper lets the
+    low-level converters refuse such inputs defensively; upstream callers
+    typically reject at the variant level via :meth:`HgvsTools.is_intronic`.
+    """
+    return isinstance(pos, hgvs.location.BaseOffsetPosition) and bool(pos.offset)
+
+
 def _shift_hgvs_to_vrs(base: int | None, side: _Side) -> int | None:
     """Convert an HGVS 1-based inclusive coordinate to a VRS 0-based interbase
     coordinate, accounting for which side of the outer interval it is on.
@@ -75,20 +88,52 @@ def _hgvs_pos_to_vrs(pos: _HgvsPos, side: _Side) -> int | models.Range | None:
       ``start==end`` wrapper hgvs emits for the exact side of a mixed
       expression like ``g.100_(200_?)del``; unwrapped to an ``int``.
 
+    Does **not** accept :class:`hgvs.location.BaseOffsetInterval` or any
+    intronic :class:`~hgvs.location.BaseOffsetPosition` (non-zero ``offset``):
+    those have no faithful single-integer VRS representation, and this helper
+    raises rather than silently dropping offset information. Callers that want
+    a variant-level error (rather than a position-level one) may reject with
+    :meth:`HgvsTools.is_intronic` first.
+
     :param side: ``"start"`` if ``pos`` is the outer-left side of the variant
         (HGVS→VRS subtracts 1), ``"end"`` for the outer-right side (no shift).
     :returns: An ``int`` for a certain position, a :class:`models.Range` for an
         uncertain range, or ``None`` if the position is fully unknown.
+    :raises TypeError: if ``pos`` is a :class:`~hgvs.location.BaseOffsetInterval`
+        (c./n. transcript range), which has no VRS equivalent.
+    :raises ValueError: if ``pos`` is an intronic
+        :class:`~hgvs.location.BaseOffsetPosition` (non-zero ``offset``).
     """
-    if _is_uncertain_range(pos):
-        lo = _shift_hgvs_to_vrs(pos.start.base, side)
-        hi = _shift_hgvs_to_vrs(pos.end.base, side)
-        return models.Range(root=[lo, hi])
     if isinstance(pos, hgvs.location.Interval):
+        if isinstance(pos, hgvs.location.BaseOffsetInterval):
+            msg = (
+                "BaseOffsetInterval (c./n. transcript range) is not "
+                "representable as a VRS SequenceLocation coordinate"
+            )
+            raise TypeError(msg)
+        if pos.uncertain:
+            lo = _shift_hgvs_to_vrs(pos.start.base, side)
+            hi = _shift_hgvs_to_vrs(pos.end.base, side)
+            return models.Range(root=[lo, hi])
         # Exact side of a mixed expression like g.100_(200_?)del: hgvs wraps
         # the certain endpoint in a non-uncertain Interval with start==end so
-        # both outer sides share a type. Unwrap to the underlying base.
+        # both outer sides share a type. Unwrap to the underlying base. The
+        # inner positions are plain SimplePositions here (this wrapper shape
+        # only appears for g. expressions), so no intron-offset check needed.
+        if pos.start.base != pos.end.base:
+            msg = (
+                f"Unexpected non-uncertain Interval with start.base "
+                f"({pos.start.base}) != end.base ({pos.end.base}); only the "
+                f"hgvs mixed-endpoint wrapper shape is supported here"
+            )
+            raise ValueError(msg)
         return _shift_hgvs_to_vrs(pos.start.base, side)
+    if _has_intron_offset(pos):
+        msg = (
+            "Intronic position (non-zero BaseOffsetPosition.offset) is not "
+            "representable as a VRS SequenceLocation coordinate"
+        )
+        raise ValueError(msg)
     return _shift_hgvs_to_vrs(pos.base, side)
 
 

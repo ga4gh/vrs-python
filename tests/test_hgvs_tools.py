@@ -139,6 +139,52 @@ class TestHgvsPosToVrs:
         assert start == expected_start
         assert end == expected_end
 
+    def test_base_offset_position_exonic_passes_through(self):
+        """A c./n. exact position with ``offset == 0`` (exonic) is representable
+        as a plain int; the helper accepts it.
+        """
+        pos = hgvs.location.BaseOffsetPosition(base=100, offset=0)
+        assert _hgvs_pos_to_vrs(pos, side="start") == 99
+        assert _hgvs_pos_to_vrs(pos, side="end") == 100
+
+    @pytest.mark.parametrize("offset", [5, -3])
+    def test_intronic_base_offset_position_raises(self, offset):
+        """An intronic c./n. position (non-zero offset) has no faithful
+        single-integer VRS representation; the helper raises rather than
+        silently dropping the offset.
+        """
+        pos = hgvs.location.BaseOffsetPosition(base=100, offset=offset)
+        with pytest.raises(ValueError, match="Intronic position"):
+            _hgvs_pos_to_vrs(pos, side="start")
+
+    def test_non_uncertain_interval_with_unequal_bases_raises(self):
+        """The non-uncertain ``Interval`` wrapper that hgvs emits for mixed
+        expressions like ``g.100_(200_?)del`` always has ``start.base ==
+        end.base`` (it's a wrapper around a single certain endpoint). If hgvs
+        ever emits a non-uncertain Interval with unequal bases, our current
+        code would silently use only ``pos.start.base``; this guard ensures
+        we raise instead of dropping ``pos.end.base``.
+        """
+        pos = hgvs.location.Interval(
+            start=hgvs.location.SimplePosition(base=100),
+            end=hgvs.location.SimplePosition(base=200),
+            uncertain=False,
+        )
+        with pytest.raises(ValueError, match="Unexpected non-uncertain Interval"):
+            _hgvs_pos_to_vrs(pos, side="start")
+
+    def test_base_offset_interval_raises(self):
+        """A ``BaseOffsetInterval`` (outer c./n. transcript range) is not a
+        VRS SequenceLocation coordinate; passing one in by mistake should
+        raise instead of silently reading ``.start.base``.
+        """
+        pos = hgvs.location.BaseOffsetInterval(
+            start=hgvs.location.BaseOffsetPosition(base=100, offset=0),
+            end=hgvs.location.BaseOffsetPosition(base=200, offset=0),
+        )
+        with pytest.raises(TypeError, match="BaseOffsetInterval"):
+            _hgvs_pos_to_vrs(pos, side="start")
+
 
 class TestVrsPosToHgvs:
     """Tests for :func:`_vrs_pos_to_hgvs`."""
