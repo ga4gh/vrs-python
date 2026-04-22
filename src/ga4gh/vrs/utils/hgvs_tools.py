@@ -29,6 +29,7 @@ _HgvsPos = (
     | hgvs.location.BaseOffsetPosition
     | hgvs.location.Interval
 )
+_VrsPos = int | models.Range | None
 
 
 def _is_uncertain_range(pos: _HgvsPos) -> TypeGuard[hgvs.location.Interval]:
@@ -72,7 +73,7 @@ def _shift_vrs_to_hgvs(value: int | None, side: _Side) -> int | None:
     return value + 1 if side == "start" else value
 
 
-def _hgvs_pos_to_vrs(pos: _HgvsPos, side: _Side) -> int | models.Range | None:
+def _hgvs_pos_to_vrs(pos: _HgvsPos, side: _Side) -> _VrsPos:
     """Convert the ``pos.start`` or ``pos.end`` of a parsed hgvs variant to the
     corresponding VRS value for :attr:`models.SequenceLocation.start` /
     :attr:`models.SequenceLocation.end`.
@@ -258,14 +259,19 @@ class HgvsTools:
             return None
         return sv.posedit.edit.type
 
-    def get_position_and_state(self, sv: HgvsSequenceVariant) -> tuple[int, int, str]:
+    def get_position_and_state(
+        self, sv: HgvsSequenceVariant
+    ) -> tuple[_VrsPos, _VrsPos, str]:
         """Get the details of a sequence variant.
 
         Args:
             sv (hgvs.sequencevariant.SequenceVariant): The sequence variant object.
 
         Returns:
-            tuple: A tuple containing the start position, end position, and state of the variant.
+            tuple: A tuple containing the VRS start position, end position,
+            and state of the variant. Exact allele-style inputs return integer
+            bounds; uncertain-range inputs passed directly may return
+            :class:`models.Range` bounds.
 
         Raises:
             ValueError: If the HGVS variant type is unsupported, or if ``pos``
