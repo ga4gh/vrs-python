@@ -479,7 +479,7 @@ class AlleleTranslator(_Translator):
         """
         ref_seq_limit = kwargs.get("ref_seq_limit", 0)
         return self._to_location_expression(
-            "{alias}:{start}:{ref_seq}:{alt_seq}", vo, namespace, ref_seq_limi=ref_seq_limit,
+            "{alias}:{start}:{ref_seq}:{alt_seq}", vo, namespace, ref_seq_limit=ref_seq_limit,
         )
 
     def _to_location_expression(
