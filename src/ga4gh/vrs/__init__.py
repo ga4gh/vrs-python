@@ -15,7 +15,7 @@ finally:
     del version, PackageNotFoundError
 
 
-VRS_VERSION = "2.0.1"
+VRS_VERSION = "2.1.0-snapshot.2026-02.2"
 
 __all__ = [
     "VRS_VERSION",
