@@ -331,6 +331,11 @@ def test_from_invalid(tlr):
     ):
         tlr.translate_from("BRAF amplication")
 
+    with pytest.raises(
+        ValueError, match="Unable to parse data as beacon, gnomad, hgvs, spdi, vrs"
+    ):
+        tlr.translate_from("BRAF amplication", assembly_name="GRCh37")
+
 
 @pytest.mark.vcr
 def test_from_beacon(tlr):
