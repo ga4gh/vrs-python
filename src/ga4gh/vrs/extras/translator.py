@@ -154,7 +154,7 @@ class _Translator(ABC):  # noqa: B024
         """Instantiate and return an HgvsTools instance"""
         return HgvsTools(self.data_proxy)
 
-    def _from_vrs(self, var: dict) -> models._VariationBase | None:
+    def _from_vrs(self, var: dict, **kwargs) -> models._VariationBase | None:  # noqa: ARG002
         """Convert from dict representation of VRS JSON to VRS object"""
         if not isinstance(var, Mapping):
             return None
