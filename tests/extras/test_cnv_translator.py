@@ -199,3 +199,106 @@ def test_from_hgvs_coding_coordinates(tlr):
         },
         "copyChange": "loss",
     }
+
+
+# Uncertain-range HGVS expressions. See https://github.com/biocommons/hgvs/issues/225
+# for the full list of ClinVar examples; this covers 4 balanced/one-sided/both-sided
+# cases from that list. The remaining expressions (e.g. ClinVar 565301, 220591,
+# 254064, 237630, 11692, 251062 with GRCh37 accessions) can be added here as more
+# sequence data becomes available in the local seqrepo test fixture.
+from_hgvs_uncertain_range_tests = (
+    # Balanced uncertain range on both sides (ClinVar 11692)
+    (
+        "NC_000023.11:g.(133661675_133661730)_(133661850_133661926)del",
+        {
+            "copyChange": "loss",
+            "digest": "5owdE9qzsgtoRCJjuPuyGOX1sf04yt_Q",
+            "id": "ga4gh:CX.5owdE9qzsgtoRCJjuPuyGOX1sf04yt_Q",
+            "location": {
+                "digest": "PYFrFoP4BanWt5cE-VukSpVTtde4vCUM",
+                "end": [133661850, 133661926],
+                "id": "ga4gh:SL.PYFrFoP4BanWt5cE-VukSpVTtde4vCUM",
+                "sequenceReference": {
+                    "refgetAccession": "SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP",
+                    "type": "SequenceReference",
+                },
+                "start": [133661674, 133661729],
+                "type": "SequenceLocation",
+            },
+            "type": "CopyNumberChange",
+        },
+    ),
+    # Left side unknown (ClinVar 425669)
+    (
+        "NC_000002.12:g.(?_202376935)_(202377551_202464808)del",
+        {
+            "copyChange": "loss",
+            "digest": "BazsTr3EQi7sWmQcG0k9Pa2p9IMi-mDu",
+            "id": "ga4gh:CX.BazsTr3EQi7sWmQcG0k9Pa2p9IMi-mDu",
+            "location": {
+                "digest": "fs4VrXLo-EoFBXN32RS7yMwHPaUeqpIz",
+                "end": [202377551, 202464808],
+                "id": "ga4gh:SL.fs4VrXLo-EoFBXN32RS7yMwHPaUeqpIz",
+                "sequenceReference": {
+                    "refgetAccession": "SQ.pnAqCRBrTsUoBghSD1yp_jXWSmlbdh4g",
+                    "type": "SequenceReference",
+                },
+                "start": [None, 202376934],
+                "type": "SequenceLocation",
+            },
+            "type": "CopyNumberChange",
+        },
+    ),
+    # Right side unknown (ClinVar 425698)
+    (
+        "NC_000002.12:g.(202377551_202464808)_(202559947_?)del",
+        {
+            "copyChange": "loss",
+            "digest": "X_DqftAyv19jqe5nFiUEdZamCwC7jwUl",
+            "id": "ga4gh:CX.X_DqftAyv19jqe5nFiUEdZamCwC7jwUl",
+            "location": {
+                "digest": "mlA8Y2369Re_FK00IjFNwGRIFtRHAyLr",
+                "end": [202559947, None],
+                "id": "ga4gh:SL.mlA8Y2369Re_FK00IjFNwGRIFtRHAyLr",
+                "sequenceReference": {
+                    "refgetAccession": "SQ.pnAqCRBrTsUoBghSD1yp_jXWSmlbdh4g",
+                    "type": "SequenceReference",
+                },
+                "start": [202377550, 202464807],
+                "type": "SequenceLocation",
+            },
+            "type": "CopyNumberChange",
+        },
+    ),
+    # Both sides unknown (ClinVar 220591)
+    (
+        "NC_000017.11:g.(?_58709859)_(58734342_?)del",
+        {
+            "copyChange": "loss",
+            "digest": "KzAPXUkzFNk5KUOb8RyjdoPFZ8DCkfBt",
+            "id": "ga4gh:CX.KzAPXUkzFNk5KUOb8RyjdoPFZ8DCkfBt",
+            "location": {
+                "digest": "WLMVDKSlxtyE9Py_t27VFaLrc8Uoqkme",
+                "end": [58734342, None],
+                "id": "ga4gh:SL.WLMVDKSlxtyE9Py_t27VFaLrc8Uoqkme",
+                "sequenceReference": {
+                    "refgetAccession": "SQ.dLZ15tNO1Ur0IcGjwc3Sdi_0A6Yf4zm7",
+                    "type": "SequenceReference",
+                },
+                "start": [None, 58709858],
+                "type": "SequenceLocation",
+            },
+            "type": "CopyNumberChange",
+        },
+    ),
+)
+
+
+@pytest.mark.parametrize(("hgvsexpr", "expected"), from_hgvs_uncertain_range_tests)
+@pytest.mark.vcr
+def test_from_hgvs_uncertain_range(tlr, hgvsexpr, expected):
+    """Test uncertain-range HGVS expressions produce SequenceLocations with
+    Range start/end (VRS 2.x).
+    """
+    cx = tlr._from_hgvs(hgvsexpr)
+    assert cx.model_dump(exclude_none=True) == expected

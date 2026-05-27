@@ -283,6 +283,19 @@ class AlleleTranslator(_Translator):
         return self._create_allele(values, **kwargs)
 
     def _from_hgvs(self, hgvs_expr: str, **kwargs) -> models.Allele | None:
+        # Uncertain-range expressions (e.g. g.(A_B)_(C_D)del) have no faithful
+        # Allele representation — their endpoints aren't single positions.
+        # Reject here rather than inside HgvsTools so that helper layer stays
+        # unaware of sibling translator classes. CnvTranslator handles the
+        # uncertain-range del/dup path.
+        sv = self.hgvs_tools.parse(hgvs_expr)
+        if sv is not None and self.hgvs_tools.has_uncertain_range(sv):
+            msg = (
+                "Uncertain-range HGVS expressions are not supported for Allele "
+                "translation; use CnvTranslator for del/dup"
+            )
+            raise ValueError(msg)
+
         allele_values = self.hgvs_tools.extract_allele_values(hgvs_expr)
         if allele_values:
             return self._create_allele(allele_values, **kwargs)
@@ -496,17 +509,7 @@ class CnvTranslator(_Translator):
         if not refget_accession:
             return None
 
-        # translate coding coordinates to positional coordinates, if necessary
-        if sv.type == "c":
-            sv = self.hgvs_tools.c_to_n(sv)
-
-        location = models.SequenceLocation(
-            sequenceReference=models.SequenceReference(
-                refgetAccession=refget_accession
-            ),
-            start=sv.posedit.pos.start.base - 1,
-            end=sv.posedit.pos.end.base,
-        )
+        location = self.hgvs_tools.build_cnv_location(sv, refget_accession)
 
         copies = kwargs.get("copies")
         if copies is not None:

@@ -965,3 +965,33 @@ def test_normalize_microsatellite_counts(tlr, case):
 #
 #     with pytest.raises(ValueError):
 #         tlr._from_spdi("NM_182763.2:c.688+403C>T")
+
+
+def test_from_hgvs_uncertain_range_raises(tlr):
+    """Uncertain-range HGVS cannot be represented as an Allele with a literal
+    sequence state; use CnvTranslator instead. See issue #609.
+
+    No cassette needed: the rejection happens before any data-proxy call.
+    """
+    with pytest.raises(ValueError, match="Uncertain-range"):
+        tlr._from_hgvs("NC_000019.9:g.(11211022_11213339)_(11217364_11218067)dup")
+
+
+@pytest.mark.vcr
+def test_to_hgvs_uncertain_range(tlr):
+    """An Allele with a ``Range`` SequenceLocation.start/end round-trips to
+    uncertain-range HGVS syntax. See issue #609.
+    """
+    allele = models.Allele(
+        location=models.SequenceLocation(
+            sequenceReference=models.SequenceReference(
+                refgetAccession="SQ.pnAqCRBrTsUoBghSD1yp_jXWSmlbdh4g"
+            ),
+            start=models.Range(root=[None, 202376934]),
+            end=models.Range(root=[202377551, 202464808]),
+        ),
+        state=models.LiteralSequenceExpression(sequence=models.sequenceString(root="")),
+    )
+    assert tlr.translate_to(allele, "hgvs") == [
+        "NC_000002.12:g.(?_202376935)_(202377551_202464808)del"
+    ]

@@ -2,11 +2,15 @@
 
 import logging
 import re
+from typing import Literal, TypeGuard
 
 import hgvs
 import hgvs.dataproviders.uta
+import hgvs.edit
+import hgvs.location
 import hgvs.normalizer
 import hgvs.parser
+import hgvs.posedit
 import hgvs.variantmapper
 from hgvs.sequencevariant import SequenceVariant as HgvsSequenceVariant
 
@@ -14,6 +18,163 @@ from ga4gh.vrs import models
 from ga4gh.vrs.dataproxy import _DataProxy
 
 _logger = logging.getLogger(__name__)
+
+# HGVS uses 1-based inclusive coordinates; VRS uses 0-based interbase. For the
+# outer-left side of a variant interval, HGVS position N corresponds to VRS
+# position N-1; for the outer-right side, HGVS N corresponds to VRS N.
+_Side = Literal["start", "end"]
+
+_HgvsPos = (
+    hgvs.location.SimplePosition
+    | hgvs.location.BaseOffsetPosition
+    | hgvs.location.Interval
+)
+_VrsPos = int | models.Range | None
+
+
+def _is_uncertain_range(pos: _HgvsPos) -> TypeGuard[hgvs.location.Interval]:
+    """Return True if ``pos`` is a nested :class:`hgvs.location.Interval`
+    representing an uncertain range (e.g. ``(A_B)`` from ``(A_B)_(C_D)del``).
+
+    Note that hgvs 2.0.0a0 also emits a non-uncertain ``Interval`` (with
+    ``start == end``) for the exact side of a mixed expression like
+    ``g.100_(200_?)del``, so the ``.uncertain`` check is required to distinguish
+    real uncertain ranges from that wrapper shape.
+    """
+    return isinstance(pos, hgvs.location.Interval) and pos.uncertain
+
+
+def _has_intron_offset(pos: _HgvsPos) -> bool:
+    """Return True if ``pos`` is a :class:`hgvs.location.BaseOffsetPosition`
+    with a non-zero intron offset (e.g. ``100+5`` or ``200-3``).
+
+    VRS :class:`SequenceLocation` coordinates are transcript-relative; a
+    non-zero offset means the position lies inside an intron, which has no
+    faithful single-integer representation in VRS. This helper lets the
+    low-level converters refuse such inputs defensively; upstream callers
+    typically reject at the variant level via :meth:`HgvsTools.is_intronic`.
+    """
+    return isinstance(pos, hgvs.location.BaseOffsetPosition) and bool(pos.offset)
+
+
+def _shift_hgvs_to_vrs(base: int | None, side: _Side) -> int | None:
+    """Convert an HGVS 1-based inclusive coordinate to a VRS 0-based interbase
+    coordinate, accounting for which side of the outer interval it is on.
+    """
+    if base is None:
+        return None
+    return base - 1 if side == "start" else base
+
+
+def _shift_vrs_to_hgvs(value: int | None, side: _Side) -> int | None:
+    """Inverse of :func:`_shift_hgvs_to_vrs`."""
+    if value is None:
+        return None
+    return value + 1 if side == "start" else value
+
+
+def _hgvs_pos_to_vrs(pos: _HgvsPos, side: _Side) -> _VrsPos:
+    """Convert the ``pos.start`` or ``pos.end`` of a parsed hgvs variant to the
+    corresponding VRS value for :attr:`models.SequenceLocation.start` /
+    :attr:`models.SequenceLocation.end`.
+
+    Handles three shapes of ``pos``:
+
+    * :class:`hgvs.location.SimplePosition` / :class:`hgvs.location.BaseOffsetPosition`
+      — a certain position; returns an ``int``.
+    * :class:`hgvs.location.Interval` with ``uncertain=True`` — a nested
+      uncertain range (e.g. ``(A_B)`` from ``(A_B)_(C_D)dup``); returns a
+      :class:`models.Range`.
+    * :class:`hgvs.location.Interval` with ``uncertain=False`` — the
+      ``start==end`` wrapper hgvs emits for the exact side of a mixed
+      expression like ``g.100_(200_?)del``; unwrapped to an ``int``.
+
+    Does **not** accept :class:`hgvs.location.BaseOffsetInterval` or any
+    intronic :class:`~hgvs.location.BaseOffsetPosition` (non-zero ``offset``):
+    those have no faithful single-integer VRS representation, and this helper
+    raises rather than silently dropping offset information. Callers that want
+    a variant-level error (rather than a position-level one) may reject with
+    :meth:`HgvsTools.is_intronic` first.
+
+    :param side: ``"start"`` if ``pos`` is the outer-left side of the variant
+        (HGVS→VRS subtracts 1), ``"end"`` for the outer-right side (no shift).
+    :returns: An ``int`` for a certain position, a :class:`models.Range` for an
+        uncertain range, or ``None`` if the position is fully unknown.
+    :raises TypeError: if ``pos`` is a :class:`~hgvs.location.BaseOffsetInterval`
+        (c./n. transcript range), which has no VRS equivalent.
+    :raises ValueError: if ``pos`` is an intronic
+        :class:`~hgvs.location.BaseOffsetPosition` (non-zero ``offset``).
+    """
+    if isinstance(pos, hgvs.location.Interval):
+        if isinstance(pos, hgvs.location.BaseOffsetInterval):
+            msg = (
+                "BaseOffsetInterval (c./n. transcript range) is not "
+                "representable as a VRS SequenceLocation coordinate"
+            )
+            raise TypeError(msg)
+        if pos.uncertain:
+            lo = _shift_hgvs_to_vrs(pos.start.base, side)
+            hi = _shift_hgvs_to_vrs(pos.end.base, side)
+            return models.Range(root=[lo, hi])
+        # Exact side of a mixed expression like g.100_(200_?)del: hgvs wraps
+        # the certain endpoint in a non-uncertain Interval with start==end so
+        # both outer sides share a type. Unwrap to the underlying base. The
+        # inner positions are plain SimplePositions here (this wrapper shape
+        # only appears for g. expressions), so no intron-offset check needed.
+        if pos.start.base != pos.end.base:
+            msg = (
+                f"Unexpected non-uncertain Interval with start.base "
+                f"({pos.start.base}) != end.base ({pos.end.base}); only the "
+                f"hgvs mixed-endpoint wrapper shape is supported here"
+            )
+            raise ValueError(msg)
+        return _shift_hgvs_to_vrs(pos.start.base, side)
+    if _has_intron_offset(pos):
+        msg = (
+            "Intronic position (non-zero BaseOffsetPosition.offset) is not "
+            "representable as a VRS SequenceLocation coordinate"
+        )
+        raise ValueError(msg)
+    return _shift_hgvs_to_vrs(pos.base, side)
+
+
+def _vrs_pos_to_hgvs(
+    value: int | models.Range | list[int | None] | None,
+    side: _Side,
+    *,
+    as_interval: bool = False,
+) -> hgvs.location.SimplePosition | hgvs.location.Interval:
+    """Convert a VRS :attr:`models.SequenceLocation.start` / ``end`` value to
+    the corresponding hgvs position object.
+
+    For an ``int``, returns a :class:`hgvs.location.SimplePosition`. For a
+    :class:`models.Range` (or equivalent 2-element list), returns a nested
+    :class:`hgvs.location.Interval` with ``uncertain=True``. ``None`` bounds
+    within a Range become ``SimplePosition(base=None)`` (rendered as ``?``).
+
+    When ``as_interval`` is True, an ``int`` value is wrapped in a non-uncertain
+    ``Interval`` with ``start == end``. This matches the hgvs parser's
+    representation of mixed certain/uncertain outer intervals (e.g.
+    ``g.N_(M_?)del``), where both sides of the outer interval must have the
+    same kind of inner position for the hgvs formatter to work.
+    """
+    if isinstance(value, models.Range):
+        value = value.root
+    if isinstance(value, list):
+        lo = _shift_vrs_to_hgvs(value[0], side)
+        hi = _shift_vrs_to_hgvs(value[1], side)
+        return hgvs.location.Interval(
+            start=hgvs.location.SimplePosition(base=lo),
+            end=hgvs.location.SimplePosition(base=hi),
+            uncertain=True,
+        )
+    base = _shift_vrs_to_hgvs(value, side)
+    if as_interval:
+        return hgvs.location.Interval(
+            start=hgvs.location.SimplePosition(base=base),
+            end=hgvs.location.SimplePosition(base=base),
+        )
+    return hgvs.location.SimplePosition(base=base)
 
 
 class HgvsTools:
@@ -67,6 +228,17 @@ class HgvsTools:
             return None
         return self.parser.parse_hgvs_variant(hgvs_str)
 
+    def has_uncertain_range(self, sv: HgvsSequenceVariant) -> bool:
+        """Return True if either endpoint of ``sv.posedit.pos`` is a nested
+        uncertain :class:`hgvs.location.Interval` (e.g. the ``(A_B)`` sides of
+        ``(A_B)_(C_D)del``). Surfaces the module-private
+        :func:`_is_uncertain_range` check to external callers without
+        requiring them to import an underscore helper across module boundaries.
+        """
+        return _is_uncertain_range(sv.posedit.pos.start) or _is_uncertain_range(
+            sv.posedit.pos.end
+        )
+
     def is_intronic(self, sv: HgvsSequenceVariant) -> bool:
         """Check if the given SequenceVariant is intronic.
 
@@ -87,46 +259,57 @@ class HgvsTools:
             return None
         return sv.posedit.edit.type
 
-    def get_position_and_state(self, sv: HgvsSequenceVariant) -> tuple[int, int, str]:
+    def get_position_and_state(
+        self, sv: HgvsSequenceVariant
+    ) -> tuple[_VrsPos, _VrsPos, str]:
         """Get the details of a sequence variant.
 
         Args:
             sv (hgvs.sequencevariant.SequenceVariant): The sequence variant object.
 
         Returns:
-            tuple: A tuple containing the start position, end position, and state of the variant.
+            tuple: A tuple containing the VRS start position, end position,
+            and state of the variant. Exact allele-style inputs return integer
+            bounds; uncertain-range inputs passed directly may return
+            :class:`models.Range` bounds.
 
         Raises:
-            ValueError: If the HGVS variant type is unsupported.
+            ValueError: If the HGVS variant type is unsupported, or if ``pos``
+                is an intronic :class:`~hgvs.location.BaseOffsetPosition`.
+            TypeError: If ``pos`` is a :class:`~hgvs.location.BaseOffsetInterval`.
 
         """
-        if sv.posedit.edit.type == "ins":
-            start = sv.posedit.pos.start.base
-            end = sv.posedit.pos.start.base
-            state = sv.posedit.edit.alt
+        pos = sv.posedit.pos
+        edit_type = sv.posedit.edit.type
 
-        elif sv.posedit.edit.type in ("sub", "del", "delins", "identity"):
-            start = sv.posedit.pos.start.base - 1
-            end = sv.posedit.pos.end.base
-            if sv.posedit.edit.type == "identity":
-                state = self.data_proxy.get_sequence(
-                    sv.ac,
-                    start=sv.posedit.pos.start.base - 1,
-                    end=sv.posedit.pos.end.base,
-                )
+        # hgvs insertion semantics: the insertion sits between pos.start and
+        # pos.start+1, so both VRS bounds take pos.start.base with no -1
+        # shift. Doesn't fit the side="start"/"end" convention, so bypass
+        # _hgvs_pos_to_vrs here and read the attribute directly.
+        if edit_type == "ins":
+            start = end = pos.start.base
+            state = sv.posedit.edit.alt
+            return start, end, state
+
+        # For every other edit type, pos.start and pos.end convert to VRS
+        # coordinates the same way. _hgvs_pos_to_vrs raises typed errors for
+        # intronic offsets and BaseOffsetInterval inputs, so the arithmetic
+        # below is safe against those shapes without explicit guards here.
+        start = _hgvs_pos_to_vrs(pos.start, side="start")
+        end = _hgvs_pos_to_vrs(pos.end, side="end")
+
+        if edit_type in ("sub", "del", "delins", "identity"):
+            if edit_type == "identity":
+                state = self.data_proxy.get_sequence(sv.ac, start=start, end=end)
             else:
                 state = sv.posedit.edit.alt or ""
 
-        elif sv.posedit.edit.type == "dup":
-            start = sv.posedit.pos.start.base - 1
-            end = sv.posedit.pos.end.base
-            ref = self.data_proxy.get_sequence(
-                sv.ac, start=sv.posedit.pos.start.base - 1, end=sv.posedit.pos.end.base
-            )
+        elif edit_type == "dup":
+            ref = self.data_proxy.get_sequence(sv.ac, start=start, end=end)
             state = ref + ref
 
         else:
-            msg = f"HGVS variant type {sv.posedit.edit.type} is unsupported"
+            msg = f"HGVS variant type {edit_type} is unsupported"
             raise ValueError(msg)
 
         return start, end, state
@@ -187,6 +370,27 @@ class HgvsTools:
             "end": end,
             "literal_sequence": state,
         }
+
+    def build_cnv_location(
+        self, sv: HgvsSequenceVariant, refget_accession: str
+    ) -> models.SequenceLocation:
+        """Build a VRS :class:`SequenceLocation` from a parsed hgvs CNV variant.
+
+        CDS-relative (``c.``) inputs are translated to transcript-relative
+        (``n.``) coordinates first; without that step the VRS location would
+        point into the 5' UTR. Handles both certain positions and uncertain-
+        range endpoints; the resulting ``start`` / ``end`` are ints for exact
+        positions and :class:`models.Range` values for uncertain ranges.
+        """
+        if sv.type == "c":
+            sv = self.c_to_n(sv)
+        return models.SequenceLocation(
+            sequenceReference=models.SequenceReference(
+                refgetAccession=refget_accession
+            ),
+            start=_hgvs_pos_to_vrs(sv.posedit.pos.start, side="start"),
+            end=_hgvs_pos_to_vrs(sv.posedit.pos.end, side="end"),
+        )
 
     def from_allele(self, vo: models.Allele, namespace: str | None = None) -> list[str]:
         """Generate a *list* of HGVS expressions for VRS Allele.
@@ -273,17 +477,30 @@ class HgvsTools:
         start, end = vo.location.start, vo.location.end
         # ib: 0 1 2 3 4 5
         #  h:  1 2 3 4 5
-        if start == end:  # insert: hgvs uses *exclusive coords*
-            ref = None
-            end += 1
-        else:  # else: hgvs uses *inclusive coords*
-            ref = self.data_proxy.get_sequence(sequence, start, end)
-            start += 1
+        if isinstance(start, models.Range) or isinstance(end, models.Range):
+            # Uncertain-range bounds: emit nested uncertain Intervals. The
+            # reference sequence is unknown; pass "" so hgvs formats a bare
+            # "del"/"delins"-style edit rather than erroring on ref=None. If
+            # only one side is uncertain, wrap the certain side in a non-
+            # uncertain Interval(start==end) so hgvs's outer Interval format
+            # can compare start and end (it asserts matching types).
+            ref = ""
+            ival = hgvs.location.Interval(
+                start=_vrs_pos_to_hgvs(start, side="start", as_interval=True),
+                end=_vrs_pos_to_hgvs(end, side="end", as_interval=True),
+            )
+        else:
+            if start == end:  # insert: hgvs uses *exclusive coords*
+                ref = None
+                end += 1
+            else:  # else: hgvs uses *inclusive coords*
+                ref = self.data_proxy.get_sequence(sequence, start, end)
+                start += 1
 
-        ival = hgvs.location.Interval(
-            start=hgvs.location.SimplePosition(start),
-            end=hgvs.location.SimplePosition(end),
-        )
+            ival = hgvs.location.Interval(
+                start=hgvs.location.SimplePosition(start),
+                end=hgvs.location.SimplePosition(end),
+            )
         alt = str(vo.state.sequence.root) or None  # "" => None
         edit = hgvs.edit.NARefAlt(ref=ref, alt=alt)
 

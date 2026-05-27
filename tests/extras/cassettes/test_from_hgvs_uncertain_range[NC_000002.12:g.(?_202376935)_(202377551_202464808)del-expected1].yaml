@@ -1,0 +1,25 @@
+interactions:
+- request:
+    body: null
+    headers: {}
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/metadata/refseq:NC_000002.12
+  response:
+    body:
+      string: "{\n  \"added\": \"2016-08-27T21:18:24Z\",\n  \"aliases\": [\n    \"GRCh38:2\",\n
+        \   \"GRCh38:chr2\",\n    \"GRCh38.p1:2\",\n    \"GRCh38.p1:chr2\",\n    \"GRCh38.p10:2\",\n
+        \   \"GRCh38.p10:chr2\",\n    \"GRCh38.p11:2\",\n    \"GRCh38.p11:chr2\",\n
+        \   \"GRCh38.p12:2\",\n    \"GRCh38.p12:chr2\",\n    \"GRCh38.p2:2\",\n    \"GRCh38.p2:chr2\",\n
+        \   \"GRCh38.p3:2\",\n    \"GRCh38.p3:chr2\",\n    \"GRCh38.p4:2\",\n    \"GRCh38.p4:chr2\",\n
+        \   \"GRCh38.p5:2\",\n    \"GRCh38.p5:chr2\",\n    \"GRCh38.p6:2\",\n    \"GRCh38.p6:chr2\",\n
+        \   \"GRCh38.p7:2\",\n    \"GRCh38.p7:chr2\",\n    \"GRCh38.p8:2\",\n    \"GRCh38.p8:chr2\",\n
+        \   \"GRCh38.p9:2\",\n    \"GRCh38.p9:chr2\",\n    \"MD5:f98db672eb0993dcfdabafe2a882905c\",\n
+        \   \"NCBI:NC_000002.12\",\n    \"refseq:NC_000002.12\",\n    \"SEGUID:pBoFMQaDoXC+x2bJzzt0ZgzG7Yg\",\n
+        \   \"SHA1:a41a05310683a170bec766c9cf3b74660cc6ed88\",\n    \"VMC:GS_pnAqCRBrTsUoBghSD1yp_jXWSmlbdh4g\",\n
+        \   \"sha512t24u:pnAqCRBrTsUoBghSD1yp_jXWSmlbdh4g\",\n    \"ga4gh:SQ.pnAqCRBrTsUoBghSD1yp_jXWSmlbdh4g\"\n
+        \ ],\n  \"alphabet\": \"ACGKMNRTWY\",\n  \"length\": 242193529\n}\n"
+    headers: {}
+    status:
+      code: 200
+      message: OK
+version: 1
