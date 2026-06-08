@@ -142,8 +142,14 @@ class _Translator(ABC):  # noqa: B024
         kwargs:
             ref_seq_limit Optional(int):
                 If vo.state is a ReferenceLengthExpression, and `ref_seq_limit` is specified, and `fmt` is `spdi`, the reference sequence is included in the SPDI expression if it is below the limit Otherwise only the length of the reference sequence is included. If the limit is None, the reference sequence is always included. In all cases, the alt sequence is included. Default is 0 (never include reference sequence).
+        :raise NotImplementedError: If `fmt` is not supported
         """
-        t = self.to_translators[fmt]
+        try:
+            t = self.to_translators[fmt]
+        except KeyError as e:
+            msg = f"{fmt} is not supported"
+            raise NotImplementedError(msg) from e
+
         return t(vo, **kwargs)
 
     ############################################################################
