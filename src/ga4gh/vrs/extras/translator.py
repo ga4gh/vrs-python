@@ -142,8 +142,14 @@ class _Translator(ABC):  # noqa: B024
         kwargs:
             ref_seq_limit Optional(int):
                 If vo.state is a ReferenceLengthExpression, and `ref_seq_limit` is specified, and `fmt` is `spdi`, the reference sequence is included in the SPDI expression if it is below the limit Otherwise only the length of the reference sequence is included. If the limit is None, the reference sequence is always included. In all cases, the alt sequence is included. Default is 0 (never include reference sequence).
+        :raise NotImplementedError: If `fmt` is not supported
         """
-        t = self.to_translators[fmt]
+        try:
+            t = self.to_translators[fmt]
+        except KeyError as e:
+            msg = f"{fmt} is not supported"
+            raise NotImplementedError(msg) from e
+
         return t(vo, **kwargs)
 
     ############################################################################
@@ -154,7 +160,7 @@ class _Translator(ABC):  # noqa: B024
         """Instantiate and return an HgvsTools instance"""
         return HgvsTools(self.data_proxy)
 
-    def _from_vrs(self, var: dict) -> models._VariationBase | None:
+    def _from_vrs(self, var: dict, **kwargs) -> models._VariationBase | None:  # noqa: ARG002
         """Convert from dict representation of VRS JSON to VRS object"""
         if not isinstance(var, Mapping):
             return None
@@ -573,7 +579,7 @@ class CnvTranslator(_Translator):
         )
 
         copies = kwargs.get("copies")
-        if copies:
+        if copies is not None:
             cnv = models.CopyNumberCount(location=location, copies=copies)
         else:
             copy_change = kwargs.get("copy_change")

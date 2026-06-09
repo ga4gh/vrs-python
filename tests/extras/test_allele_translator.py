@@ -331,6 +331,11 @@ def test_from_invalid(tlr):
     ):
         tlr.translate_from("BRAF amplication")
 
+    with pytest.raises(
+        ValueError, match="Unable to parse data as beacon, gnomad, hgvs, spdi, vrs"
+    ):
+        tlr.translate_from("BRAF amplication", assembly_name="GRCh37")
+
 
 @pytest.mark.vcr
 def test_from_beacon(tlr):
@@ -973,20 +978,7 @@ def test_normalize_microsatellite_counts(tlr, case):
     )
 
 
-# TODO: Readd these tests
-# @pytest.mark.vcr
-# def test_errors(tlr):
-#     with pytest.raises(ValueError):
-#         tlr._from_beacon("bogus")
-#
-#     with pytest.raises(ValueError):
-#         tlr._from_gnomad("NM_182763.2:c.688+403C>T")
-#
-#     with pytest.raises(ValueError):
-#         tlr._from_hgvs("NM_182763.2:c.688+403C>T")
-#
-#     with pytest.raises(ValueError):
-#         tlr._from_hgvs("NM_182763.2:c.688_690inv")
-#
-#     with pytest.raises(ValueError):
-#         tlr._from_spdi("NM_182763.2:c.688+403C>T")
+@pytest.mark.vcr
+def test_translate_to_invalid_fmt(tlr):
+    with pytest.raises(NotImplementedError, match="gnomad is not supported"):
+        tlr.translate_to(models.Allele.model_validate(snv_output), fmt="gnomad")
