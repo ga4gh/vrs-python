@@ -27,6 +27,11 @@ def hgvs_tools():
         ("NR_000000.1:r.76-1g>a", True),  # intronic (acceptor side)
         ("NR_000000.1:r.77+1g>a", True),  # intronic (donor side)
         ("NR_000000.1:r.100a>u", False),  # exonic
+        # RNA (r.) exonic - real-world ClinVar pins from issue #628 (offset 0)
+        ("NR_001566.1:r.398_399del", False),
+        ("NR_001566.1:r.245del", False),
+        ("NM_001374385.1:r.2843_2931del", False),
+        ("NM_001323289.2:r.2632c>a", False),
         # genomic (g.) - no base-offset positions, never intronic
         ("NC_000001.11:g.100A>T", False),
     ],
