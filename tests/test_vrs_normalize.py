@@ -1166,3 +1166,107 @@ def test_normalize_rle_subunit_mode_round_trip(dataproxy, case, mode):
         )
         == normalized.state.sequence.root
     )
+
+
+# Pre-existing corpus alleles that normalize to a ReferenceLengthExpression, with the
+# expected RLE parameters and the literal alternate sequence each reconstructs to. The
+# `*_normalized` dicts above cannot supply the alt sequence: most of those tests pass
+# `rle_seq_limit=0`, so they omit `state.sequence` entirely. Declaring it here is what
+# makes the round trip a real assertion rather than a self-comparison.
+#
+# `allele_dict2` is intentionally absent: its location uses indefinite `Range`
+# positions, so there is no single reference span to reconstruct the alt from.
+rle_denormalize_tests = [
+    {"input": allele_dict1, "repeat_subunit_length": 1, "length": 1, "alt": "C"},
+    {"input": allele_dict4, "repeat_subunit_length": 2, "length": 4, "alt": "GTGT"},
+    {
+        "input": allele_dict5,
+        "repeat_subunit_length": 3,
+        "length": 11,
+        "alt": "CAGCAGCAGCA",
+    },
+    {"input": allele_dict6, "repeat_subunit_length": 2, "length": 2, "alt": "AA"},
+    {"input": clinvar_deletion, "repeat_subunit_length": 1, "length": 0, "alt": ""},
+    {
+        "input": clinvar_microsatellite,
+        "repeat_subunit_length": 4,
+        "length": 4,
+        "alt": "AATA",
+    },
+    {
+        "input": clinvar_tandem_repeat,
+        "repeat_subunit_length": 3,
+        "length": 5,
+        "alt": "CTCCT",
+    },
+    {
+        "input": clinvar_microsatellite_insertion,
+        "repeat_subunit_length": 3,
+        "length": 31,
+        "alt": "CCTCCTCCTCCTCCTCCTCCTCCTCCTCCTC",
+    },
+    {
+        "input": partial_repeat_insertion,
+        "repeat_subunit_length": 2,
+        "length": 5,
+        "alt": "CTCTC",
+    },
+    {
+        "input": middle_ins_4bp,
+        "repeat_subunit_length": 4,
+        "length": 9,
+        "alt": "CCTCCCTCC",
+    },
+    {
+        "input": deletion_spanning_boundary,
+        "repeat_subunit_length": 4,
+        "length": 1,
+        "alt": "C",
+    },
+    {"input": middle_del_2bp, "repeat_subunit_length": 2, "length": 1, "alt": "C"},
+    {"input": tail_del_2bp, "repeat_subunit_length": 2, "length": 1, "alt": "C"},
+    {"input": tail_del_4bp, "repeat_subunit_length": 4, "length": 0, "alt": ""},
+]
+
+rle_denormalize_test_ids = [
+    "allele_dict1",
+    "allele_dict4",
+    "allele_dict5",
+    "allele_dict6",
+    "clinvar_deletion",
+    "clinvar_microsatellite",
+    "clinvar_tandem_repeat",
+    "clinvar_microsatellite_insertion",
+    "partial_repeat_insertion",
+    "middle_ins_4bp",
+    "deletion_spanning_boundary",
+    "middle_del_2bp",
+    "tail_del_2bp",
+    "tail_del_4bp",
+]
+
+
+@pytest.mark.parametrize("case", rle_denormalize_tests, ids=rle_denormalize_test_ids)
+def test_normalize_rle_denormalize_round_trip(dataproxy, case):
+    """Corpus alleles round-trip: input -> RLE -> denormalize -> literal alt sequence"""
+    normalized = normalize(
+        models.Allele(**case["input"]), dataproxy, rle_seq_limit=None
+    )
+
+    assert isinstance(normalized.state, models.ReferenceLengthExpression)
+    assert normalized.state.repeatSubunitLength == case["repeat_subunit_length"]
+    assert normalized.state.length == case["length"]
+    assert normalized.state.sequence.root == case["alt"]
+
+    ref_seq = SequenceProxy(
+        dataproxy, f"ga4gh:{normalized.location.get_refget_accession()}"
+    )[normalized.location.start : normalized.location.end]
+
+    assert (
+        denormalize_reference_length_expression(
+            ref_seq=ref_seq,
+            repeat_subunit_length=normalized.state.repeatSubunitLength,
+            alt_length=normalized.state.length,
+        )
+        == case["alt"]
+    )
