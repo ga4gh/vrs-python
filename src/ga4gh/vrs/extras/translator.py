@@ -17,7 +17,10 @@ from ga4gh.core import ga4gh_identify
 from ga4gh.vrs import models, normalize
 from ga4gh.vrs.dataproxy import SequenceProxy, _DataProxy
 from ga4gh.vrs.extras.decorators import lazy_property
-from ga4gh.vrs.normalize import denormalize_reference_length_expression
+from ga4gh.vrs.normalize import (
+    RleSubunitMode,
+    denormalize_reference_length_expression,
+)
 from ga4gh.vrs.utils.hgvs_tools import HgvsTools
 
 _logger = logging.getLogger(__name__)
@@ -75,11 +78,13 @@ class _Translator(ABC):  # noqa: B024
         default_assembly_name: str = "GRCh38",
         identify: bool = True,
         rle_seq_limit: int | None = 50,
+        rle_subunit_mode: RleSubunitMode = RleSubunitMode.LARGEST,
     ) -> None:
         self.default_assembly_name = default_assembly_name
         self.data_proxy = data_proxy
         self.identify = identify
         self.rle_seq_limit = rle_seq_limit
+        self.rle_subunit_mode = rle_subunit_mode
         self.from_translators: dict[str, VariationFromStrProtocol] = {}
         self.to_translators: dict[str, VariationToStrProtocol] = {}
 
@@ -111,6 +116,10 @@ class _Translator(ABC):  # noqa: B024
                     To exclude `sequence` from the response, set to 0.
                     For no limit, set to `None`.
                     Defaults value set in instance variable, `rle_seq_limit`.
+                rle_subunit_mode (RleSubunitMode): Which valid factor of the seed
+                    length to select as the `repeatSubunitLength` for a
+                    reference-derived ambiguous insertion.
+                    Defaults value set in instance variable, `rle_subunit_mode`.
                 do_normalize (bool): `True` if fully justified normalization should be
                     performed. `False` otherwise. Defaults to `True`
         """
@@ -181,9 +190,21 @@ class AlleleTranslator(_Translator):
         data_proxy: _DataProxy,
         default_assembly_name: str = "GRCh38",
         identify: bool = True,
+        rle_subunit_mode: RleSubunitMode = RleSubunitMode.LARGEST,
     ) -> None:
-        """Initialize AlleleTranslator class"""
-        super().__init__(data_proxy, default_assembly_name, identify)
+        """Initialize AlleleTranslator class
+
+        :param rle_subunit_mode: Default mode for selecting the `repeatSubunitLength` of
+            a reference-derived ambiguous insertion normalized to a
+            `ReferenceLengthExpression`. Overridable per call via the
+            `rle_subunit_mode` kwarg. See `RleSubunitMode`.
+        """
+        super().__init__(
+            data_proxy,
+            default_assembly_name,
+            identify,
+            rle_subunit_mode=rle_subunit_mode,
+        )
 
         self.from_translators = {
             "beacon": self._from_beacon,
@@ -232,6 +253,10 @@ class AlleleTranslator(_Translator):
                 To exclude `sequence` from the response, set to 0.
                 For no limit, set to `None`.
                 Defaults value set in instance variable, `rle_seq_limit`.
+            rle_subunit_mode (RleSubunitMode): Which valid factor of the seed length
+                to select as the `repeatSubunitLength` for a reference-derived
+                ambiguous insertion.
+                Defaults value set in instance variable, `rle_subunit_mode`.
             do_normalize (bool): `True` if fully justified normalization should be
                 performed. `False` otherwise. Defaults to `True`
 
@@ -297,6 +322,10 @@ class AlleleTranslator(_Translator):
                 To exclude `sequence` from the response, set to 0.
                 For no limit, set to `None`.
                 Defaults value set in instance variable, `rle_seq_limit`.
+            rle_subunit_mode (RleSubunitMode): Which valid factor of the seed length
+                to select as the `repeatSubunitLength` for a reference-derived
+                ambiguous insertion.
+                Defaults value set in instance variable, `rle_subunit_mode`.
             do_normalize (bool): `True` if fully justified normalization should be
                 performed. `False` otherwise. Defaults to `True`
 
@@ -371,6 +400,10 @@ class AlleleTranslator(_Translator):
                 To exclude `sequence` from the response, set to 0.
                 For no limit, set to `None`.
                 Defaults value set in instance variable, `rle_seq_limit`.
+            rle_subunit_mode (RleSubunitMode): Which valid factor of the seed length
+                to select as the `repeatSubunitLength` for a reference-derived
+                ambiguous insertion.
+                Defaults value set in instance variable, `rle_subunit_mode`.
             do_normalize (bool): `True` if fully justified normalization should be
                 performed. `False` otherwise. Defaults to `True`
 
@@ -509,6 +542,9 @@ class AlleleTranslator(_Translator):
                 normalization, this sets the limit for the length of the `sequence`.
                 To exclude `sequence` from the response, set to 0.
                 For no limit, set to `None`.
+            rle_subunit_mode (RleSubunitMode): Which valid factor of the seed length to
+                select as the `repeatSubunitLength` for a reference-derived ambiguous
+                insertion. Defaults value set in instance variable, `rle_subunit_mode`.
             do_normalize (bool): `True` if fully justified normalization should be
                 performed. `False` otherwise. Defaults to `True`
         """
@@ -517,6 +553,7 @@ class AlleleTranslator(_Translator):
                 allele,
                 self.data_proxy,
                 rle_seq_limit=kwargs.get("rle_seq_limit", self.rle_seq_limit),
+                rle_subunit_mode=kwargs.get("rle_subunit_mode", self.rle_subunit_mode),
             )
 
         if self.identify:
