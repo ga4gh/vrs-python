@@ -1,6 +1,11 @@
 import pytest
 
 from ga4gh.vrs import models, normalize
+from ga4gh.vrs.dataproxy import SequenceProxy
+from ga4gh.vrs.normalize import (
+    RleSubunitMode,
+    denormalize_reference_length_expression,
+)
 
 # Single nucleotide same-as-reference allele.
 allele_dict1 = {
@@ -929,3 +934,235 @@ def test_normalize_partial_rle_del_ins(rest_dataproxy):
     tail_del_4 = models.Allele(**tail_del_4bp)
     tail_del_4_norm = normalize(tail_del_4, rest_dataproxy, rle_seq_limit=0)
     assert tail_del_4_norm == models.Allele(**tail_del_4bp_normalized)
+
+
+#############################################################################
+# RLE repeat subunit mode
+#
+# For a reference-derived ambiguous insertion, more than one factor of the seed
+# length may be circularly expandable to recreate the alternate sequence. VRS
+# <= 2.0 selects the greatest such factor as the `repeatSubunitLength`
+# (`RleSubunitMode.LARGEST`); ga4gh/vrs#700 changes this to the smallest
+# (`RleSubunitMode.SMALLEST`).
+#
+# `repeatSubunitLength` is inherent to the `ReferenceLengthExpression` digest,
+# so the two modes can yield different computed identifiers for one input
+# Allele. `LARGEST` remains the default for backwards compatibility.
+#
+# Only step 6.c of the algorithm (reference-derived ambiguous insertion) is
+# affected. Reference-agree alleles, substitutions and deletions derive
+# `repeatSubunitLength` from the seed length directly and are mode-invariant.
+#############################################################################
+
+# NC_000001.11, homopolymer: ...CTATTAAAAAAAAAGAAGG... (A x 9 at 236900409-236900418)
+_HOMOPOLYMER_AC = "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO"
+# NC_000001.11, GT microsatellite: ATGCAC[GTGTGTGTGT]CAAGCT (1007173-1007183)
+_MICROSAT_AC = "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO"
+# NC_000002.12, short GT repeat at 155980373
+_GT_REPEAT_AC = "SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP"
+# NC_000019.10, CAG repeat at 289464
+_CAG_REPEAT_AC = "SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl"
+# NC_000011.10, non-repetitive locus
+_PLAIN_AC = "SQ.0iKlIQk2oZLoeOG9P1riRU6hvL5Ux8TV"
+
+
+def _rle(length: int, sequence: str, repeat_subunit_length: int) -> dict:
+    """Build an expected ReferenceLengthExpression state dict"""
+    return {
+        "type": "ReferenceLengthExpression",
+        "length": length,
+        "sequence": sequence,
+        "repeatSubunitLength": repeat_subunit_length,
+    }
+
+
+# Each case declares the unnormalized input, the span the Allele normalizes to
+# (identical under both modes, since only `state` is mode-dependent), and the
+# expected `state` under each mode. Cases where both states are equal assert
+# that the mode does not perturb that branch of the algorithm.
+rle_subunit_mode_tests = [
+    {
+        "id": "homopolymer_ins_2bp",
+        # A x 9 -> A x 11. seed length 2; factors 2 and 1 both valid.
+        # The repeating unit is plainly "A", which only SMALLEST reports.
+        "input": (_HOMOPOLYMER_AC, 236900409, 236900418, "A" * 11),
+        "normalized_span": (236900409, 236900418),
+        "largest_state": _rle(11, "A" * 11, 2),
+        "smallest_state": _rle(11, "A" * 11, 1),
+    },
+    {
+        "id": "homopolymer_ins_9bp",
+        # A x 9 -> A x 18. seed length 9; LARGEST tracks the insertion size
+        # rather than the repeat unit.
+        "input": (_HOMOPOLYMER_AC, 236900409, 236900418, "A" * 18),
+        "normalized_span": (236900409, 236900418),
+        "largest_state": _rle(18, "A" * 18, 9),
+        "smallest_state": _rle(18, "A" * 18, 1),
+    },
+    {
+        "id": "homopolymer_ins_11bp_prime_seed",
+        # A x 9 -> A x 20. seed length 11 is prime and exceeds the modified
+        # reference length (9), so LARGEST already falls through to 1. This is
+        # the non-monotonicity that motivated ga4gh/vrs#699.
+        "input": (_HOMOPOLYMER_AC, 236900409, 236900418, "A" * 20),
+        "normalized_span": (236900409, 236900418),
+        "largest_state": _rle(20, "A" * 20, 1),
+        "smallest_state": _rle(20, "A" * 20, 1),
+    },
+    {
+        "id": "microsatellite_ins_1_unit",
+        # One GT unit into a GT x 5 tract. seed length 2, so 2 is both the
+        # greatest and the smallest valid factor.
+        "input": (_MICROSAT_AC, 1007183, 1007183, "GT"),
+        "normalized_span": (1007173, 1007183),
+        "largest_state": _rle(12, "GT" * 6, 2),
+        "smallest_state": _rle(12, "GT" * 6, 2),
+    },
+    {
+        "id": "microsatellite_ins_2_units",
+        # Two GT units. seed length 4; both 4 and 2 are valid, and the true
+        # repeat unit is "GT". Demonstrates the mode is not homopolymer-only.
+        "input": (_MICROSAT_AC, 1007183, 1007183, "GTGT"),
+        "normalized_span": (1007173, 1007183),
+        "largest_state": _rle(14, "GT" * 7, 4),
+        "smallest_state": _rle(14, "GT" * 7, 2),
+    },
+    {
+        "id": "microsatellite_ins_3_units",
+        # Three GT units. seed length 6; LARGEST reports 6, SMALLEST 2.
+        "input": (_MICROSAT_AC, 1007183, 1007183, "GTGTGT"),
+        "normalized_span": (1007173, 1007183),
+        "largest_state": _rle(16, "GT" * 8, 6),
+        "smallest_state": _rle(16, "GT" * 8, 2),
+    },
+    {
+        "id": "tandem_dup_gt",
+        # Tandem duplication of GT in a tract too short for a larger factor to
+        # be valid; SMALLEST must not shrink this below the real unit length.
+        "input": (_GT_REPEAT_AC, 155980373, 155980375, "GTGT"),
+        "normalized_span": (155980373, 155980375),
+        "largest_state": _rle(4, "GTGT", 2),
+        "smallest_state": _rle(4, "GTGT", 2),
+    },
+    {
+        "id": "trinucleotide_ins_cag",
+        # Two CAG units into a CAG tract. seed length 6 exceeds the modified
+        # reference length, so 3 is selected under both modes.
+        "input": (_CAG_REPEAT_AC, 289464, 289464, "CAGCAG"),
+        "normalized_span": (289464, 289469),
+        "largest_state": _rle(11, "CAGCAGCAGCA", 3),
+        "smallest_state": _rle(11, "CAGCAGCAGCA", 3),
+    },
+    {
+        "id": "deletion_2bp",
+        # Deletion (step 6.b): repeatSubunitLength is the seed length, no
+        # factoring, so the mode is irrelevant.
+        "input": (_GT_REPEAT_AC, 155980375, 155980377, ""),
+        "normalized_span": (155980375, 155980377),
+        "largest_state": _rle(0, "", 2),
+        "smallest_state": _rle(0, "", 2),
+    },
+    {
+        "id": "reference_agree",
+        # Reference-agree allele (step 3.a): repeatSubunitLength is the input
+        # sequence length, no factoring.
+        "input": (_PLAIN_AC, 26090950, 26090951, "C"),
+        "normalized_span": (26090950, 26090951),
+        "largest_state": _rle(1, "C", 1),
+        "smallest_state": _rle(1, "C", 1),
+    },
+    {
+        "id": "substitution",
+        # Substitution (step 3.b): stays a LiteralSequenceExpression.
+        "input": (_PLAIN_AC, 26090950, 26090951, "G"),
+        "normalized_span": (26090950, 26090951),
+        "largest_state": {"type": "LiteralSequenceExpression", "sequence": "G"},
+        "smallest_state": {"type": "LiteralSequenceExpression", "sequence": "G"},
+    },
+]
+
+
+def _build_allele(refget_accession: str, start: int, end: int, sequence: str) -> dict:
+    """Build an unnormalized LiteralSequenceExpression Allele dict"""
+    return {
+        "type": "Allele",
+        "location": {
+            "type": "SequenceLocation",
+            "sequenceReference": {
+                "type": "SequenceReference",
+                "refgetAccession": refget_accession,
+            },
+            "start": start,
+            "end": end,
+        },
+        "state": {"type": "LiteralSequenceExpression", "sequence": sequence},
+    }
+
+
+def _expected_allele(case: dict, mode: RleSubunitMode) -> dict:
+    """Build the expected normalized Allele dict for `case` under `mode`"""
+    refget_accession = case["input"][0]
+    start, end = case["normalized_span"]
+    state = case[
+        "largest_state" if mode is RleSubunitMode.LARGEST else "smallest_state"
+    ]
+    return {
+        "type": "Allele",
+        "location": {
+            "type": "SequenceLocation",
+            "sequenceReference": {
+                "type": "SequenceReference",
+                "refgetAccession": refget_accession,
+            },
+            "start": start,
+            "end": end,
+        },
+        "state": state,
+    }
+
+
+@pytest.mark.parametrize("case", rle_subunit_mode_tests, ids=lambda c: c["id"])
+@pytest.mark.parametrize("mode", list(RleSubunitMode), ids=lambda m: m.value)
+def test_normalize_rle_subunit_mode(dataproxy, case, mode):
+    """Normalization selects the repeat subunit length dictated by `rle_subunit_mode`"""
+    allele = models.Allele(**_build_allele(*case["input"]))
+    normalized = normalize(allele, dataproxy, rle_seq_limit=None, rle_subunit_mode=mode)
+    assert normalized == models.Allele(**_expected_allele(case, mode))
+
+
+@pytest.mark.parametrize("case", rle_subunit_mode_tests, ids=lambda c: c["id"])
+def test_normalize_rle_subunit_mode_default_is_largest(dataproxy, case):
+    """Omitting `rle_subunit_mode` preserves pre-existing (LARGEST) behavior"""
+    allele = models.Allele(**_build_allele(*case["input"]))
+    normalized = normalize(allele, dataproxy, rle_seq_limit=None)
+    assert normalized == models.Allele(**_expected_allele(case, RleSubunitMode.LARGEST))
+
+
+@pytest.mark.parametrize("case", rle_subunit_mode_tests, ids=lambda c: c["id"])
+@pytest.mark.parametrize("mode", list(RleSubunitMode), ids=lambda m: m.value)
+def test_normalize_rle_subunit_mode_round_trip(dataproxy, case, mode):
+    """An RLE state denormalizes back to its literal sequence under either mode.
+
+    `denormalize_reference_length_expression` reconstructs the alternate sequence
+    from the *prefix* of the reference at the normalized location, while step 6.c
+    validates the cycle against the *suffix*. Assert the selected
+    `repeatSubunitLength` round-trips for both modes so that `translate_to` output
+    (e.g. SPDI, HGVS) is unaffected by the mode.
+    """
+    allele = models.Allele(**_build_allele(*case["input"]))
+    normalized = normalize(allele, dataproxy, rle_seq_limit=None, rle_subunit_mode=mode)
+    if not isinstance(normalized.state, models.ReferenceLengthExpression):
+        pytest.skip(f"{case['id']} does not normalize to a ReferenceLengthExpression")
+
+    ref_seq = SequenceProxy(
+        dataproxy, f"ga4gh:{normalized.location.get_refget_accession()}"
+    )[normalized.location.start : normalized.location.end]
+
+    assert (
+        denormalize_reference_length_expression(
+            ref_seq=ref_seq,
+            repeat_subunit_length=normalized.state.repeatSubunitLength,
+            alt_length=normalized.state.length,
+        )
+        == normalized.state.sequence.root
+    )
