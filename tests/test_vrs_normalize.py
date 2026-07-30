@@ -1174,15 +1174,21 @@ def _expected_allele(case: dict, mode: RleSubunitMode) -> dict:
 
 @pytest.mark.parametrize("case", rle_subunit_mode_tests, ids=lambda c: c["id"])
 @pytest.mark.parametrize("mode", list(RleSubunitMode), ids=lambda m: m.value)
-def test_normalize_rle_subunit_mode(dataproxy, case, mode):
+@pytest.mark.vcr
+def test_normalize_rle_subunit_mode(rest_dataproxy, case, mode):
     """Normalization selects the repeat subunit length dictated by `rle_subunit_mode`"""
     allele = models.Allele(**_build_allele(*case["input"]))
-    normalized = normalize(allele, dataproxy, rle_seq_limit=None, rle_subunit_mode=mode)
+    normalized = normalize(
+        allele, rest_dataproxy, rle_seq_limit=None, rle_subunit_mode=mode
+    )
     assert normalized == models.Allele(**_expected_allele(case, mode))
 
 
 def _normalize_recording_factors(
-    dataproxy, case: dict, mode: RleSubunitMode, monkeypatch: pytest.MonkeyPatch
+    rest_dataproxy,
+    case: dict,
+    mode: RleSubunitMode,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> tuple[models.Allele, list[tuple[int, bool]]]:
     """Normalize `case` under `mode`, recording each step 5.c.1 candidate factor.
 
@@ -1202,12 +1208,15 @@ def _normalize_recording_factors(
 
     monkeypatch.setattr(normalize_module, "_is_valid_cycle", recording_is_valid_cycle)
     allele = models.Allele(**_build_allele(*case["input"]))
-    normalized = normalize(allele, dataproxy, rle_seq_limit=None, rle_subunit_mode=mode)
+    normalized = normalize(
+        allele, rest_dataproxy, rle_seq_limit=None, rle_subunit_mode=mode
+    )
     return normalized, tried
 
 
 @pytest.mark.parametrize("case", rle_subunit_mode_tests, ids=lambda c: c["id"])
-def test_normalize_rle_subunit_mode_agreement(dataproxy, case, monkeypatch):
+@pytest.mark.vcr
+def test_normalize_rle_subunit_mode_agreement(rest_dataproxy, case, monkeypatch):
     """The modes agree or differ for the reason the case declares.
 
     Equal expected states are not self-explanatory: the modes coincide either
@@ -1218,7 +1227,7 @@ def test_normalize_rle_subunit_mode_agreement(dataproxy, case, monkeypatch):
     """
     agreement = case["agreement"]
     by_mode = {
-        mode: _normalize_recording_factors(dataproxy, case, mode, monkeypatch)
+        mode: _normalize_recording_factors(rest_dataproxy, case, mode, monkeypatch)
         for mode in RleSubunitMode
     }
     largest, largest_tried = by_mode[RleSubunitMode.LARGEST]
@@ -1260,16 +1269,18 @@ def test_normalize_rle_subunit_mode_agreement(dataproxy, case, monkeypatch):
 
 
 @pytest.mark.parametrize("case", rle_subunit_mode_tests, ids=lambda c: c["id"])
-def test_normalize_rle_subunit_mode_default_is_largest(dataproxy, case):
+@pytest.mark.vcr
+def test_normalize_rle_subunit_mode_default_is_largest(rest_dataproxy, case):
     """Omitting `rle_subunit_mode` preserves pre-existing (LARGEST) behavior"""
     allele = models.Allele(**_build_allele(*case["input"]))
-    normalized = normalize(allele, dataproxy, rle_seq_limit=None)
+    normalized = normalize(allele, rest_dataproxy, rle_seq_limit=None)
     assert normalized == models.Allele(**_expected_allele(case, RleSubunitMode.LARGEST))
 
 
 @pytest.mark.parametrize("case", rle_subunit_mode_tests, ids=lambda c: c["id"])
 @pytest.mark.parametrize("mode", list(RleSubunitMode), ids=lambda m: m.value)
-def test_normalize_rle_subunit_mode_round_trip(dataproxy, case, mode):
+@pytest.mark.vcr
+def test_normalize_rle_subunit_mode_round_trip(rest_dataproxy, case, mode):
     """An RLE state denormalizes back to its literal sequence under either mode.
 
     `denormalize_reference_length_expression` reconstructs the alternate sequence
@@ -1279,12 +1290,14 @@ def test_normalize_rle_subunit_mode_round_trip(dataproxy, case, mode):
     (e.g. SPDI, HGVS) is unaffected by the mode.
     """
     allele = models.Allele(**_build_allele(*case["input"]))
-    normalized = normalize(allele, dataproxy, rle_seq_limit=None, rle_subunit_mode=mode)
+    normalized = normalize(
+        allele, rest_dataproxy, rle_seq_limit=None, rle_subunit_mode=mode
+    )
     if not isinstance(normalized.state, models.ReferenceLengthExpression):
         pytest.skip(f"{case['id']} does not normalize to a ReferenceLengthExpression")
 
     ref_seq = SequenceProxy(
-        dataproxy, f"ga4gh:{normalized.location.get_refget_accession()}"
+        rest_dataproxy, f"ga4gh:{normalized.location.get_refget_accession()}"
     )[normalized.location.start : normalized.location.end]
 
     assert (
@@ -1376,10 +1389,11 @@ rle_denormalize_test_ids = [
 
 
 @pytest.mark.parametrize("case", rle_denormalize_tests, ids=rle_denormalize_test_ids)
-def test_normalize_rle_denormalize_round_trip(dataproxy, case):
+@pytest.mark.vcr
+def test_normalize_rle_denormalize_round_trip(rest_dataproxy, case):
     """Corpus alleles round-trip: input -> RLE -> denormalize -> literal alt sequence"""
     normalized = normalize(
-        models.Allele(**case["input"]), dataproxy, rle_seq_limit=None
+        models.Allele(**case["input"]), rest_dataproxy, rle_seq_limit=None
     )
 
     assert isinstance(normalized.state, models.ReferenceLengthExpression)
@@ -1388,7 +1402,7 @@ def test_normalize_rle_denormalize_round_trip(dataproxy, case):
     assert normalized.state.sequence.root == case["alt"]
 
     ref_seq = SequenceProxy(
-        dataproxy, f"ga4gh:{normalized.location.get_refget_accession()}"
+        rest_dataproxy, f"ga4gh:{normalized.location.get_refget_accession()}"
     )[normalized.location.start : normalized.location.end]
 
     assert (
