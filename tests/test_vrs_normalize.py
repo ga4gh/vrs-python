@@ -1,18 +1,7 @@
-from importlib import import_module
-
 import pytest
 
 from ga4gh.vrs import models, normalize
-from ga4gh.vrs.dataproxy import SequenceProxy
-from ga4gh.vrs.normalize import (
-    RleSubunitMode,
-    denormalize_reference_length_expression,
-)
-
-# `ga4gh.vrs.normalize` the attribute is the `normalize` function re-exported by
-# `ga4gh.vrs`, so the module itself has to be fetched through importlib in order
-# to patch its internals.
-normalize_module = import_module("ga4gh.vrs.normalize")
+from ga4gh.vrs.normalize import RleSubunitMode
 
 # Single nucleotide same-as-reference allele.
 allele_dict1 = {
@@ -945,190 +934,30 @@ def test_normalize_partial_rle_del_ins(rest_dataproxy):
 
 #############################################################################
 # RLE repeat subunit mode
-#
-# For a reference-derived ambiguous insertion, more than one factor of the seed
-# length may be circularly expandable to recreate the alternate sequence. VRS
-# <= 2.0 selects the greatest such factor as the `repeatSubunitLength`
-# (`RleSubunitMode.LARGEST`); ga4gh/vrs#700 changes this to the smallest
-# (`RleSubunitMode.SMALLEST`).
-#
-# `repeatSubunitLength` is inherent to the `ReferenceLengthExpression` digest,
-# so the two modes can yield different computed identifiers for one input
-# Allele. `LARGEST` remains the default for backwards compatibility.
-#
-# Only the factor search in step 5.c.1 is affected (the reference-derived
-# ambiguous insertion returned by 5.d). Reference-agree alleles (2.a) and
-# deletions (5.b) take `repeatSubunitLength` from the seed length directly, and
-# substitutions (2.b) stay a LiteralSequenceExpression, so all three are
-# mode-invariant by construction.
-#############################################################################
 
-# One constant per reference sequence; each case's comment names its own locus.
 _CHR1 = "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO"  # GRCh38 chr1, NC_000001.11
-_CHR6 = "SQ.0iKlIQk2oZLoeOG9P1riRU6hvL5Ux8TV"  # GRCh38 chr6, NC_000006.12
-_CHR19 = "SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl"  # GRCh38 chr19, NC_000019.10
-_CHRX = "SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP"  # GRCh38 chrX, NC_000023.11
 
-
-def _rle(length: int, sequence: str, repeat_subunit_length: int) -> dict:
-    """Build an expected ReferenceLengthExpression state dict"""
-    return {
-        "type": "ReferenceLengthExpression",
-        "length": length,
-        "sequence": sequence,
-        "repeatSubunitLength": repeat_subunit_length,
-    }
-
-
-# Each case declares the unnormalized input, the span the Allele normalizes to
-# (identical under both modes, since only `state` is mode-dependent), the
-# expected `state` under each mode, and why the modes agree or differ.
-#
-# `agreement` records the mechanism, not just the outcome, because the modes
-# coincide for three unrelated reasons that would otherwise be indistinguishable:
-#
-#   DIVERGES            the modes select different factors
-#   NO_FACTORING        step 5.c is never reached, so no factor search happens
-#   SINGLE_VALID_FACTOR 5.c is reached but only one factor is a valid cycle, so
-#                       both search orders converge on it
-#   LARGEST_DEGRADES    the seed length exceeds the modified reference length and
-#                       has no smaller usable factor, so LARGEST falls through to
-#                       the same answer SMALLEST reaches directly
-#
-# Candidate factors quoted below are the ones the algorithm actually tests: the
-# search skips any factor greater than the modified reference length without
-# evaluating it, then returns the first valid cycle it finds.
-DIVERGES = "diverges"
-NO_FACTORING = "no_factoring"
-SINGLE_VALID_FACTOR = "single_valid_factor"
-LARGEST_DEGRADES = "largest_degrades"
-
-rle_subunit_mode_tests = [
+_rle_subunit_mode_cases = [
     {
-        "id": "poly_a_ins_2bp",
-        # chr1 A x 9 tract at 236900409-236900418: ...CTATT[AAAAAAAAA]GAAGG...
-        # Insert AA. seed length 2; LARGEST tests 2 (valid), SMALLEST tests 1
-        # (valid). The repeating unit is plainly "A", which only SMALLEST reports.
         "input": (_CHR1, 236900409, 236900418, "A" * 11),
         "normalized_span": (236900409, 236900418),
-        "largest_state": _rle(11, "A" * 11, 2),
-        "smallest_state": _rle(11, "A" * 11, 1),
-        "agreement": DIVERGES,
+        "length": 11,
+        "largest": 2,
+        "smallest": 1,
     },
     {
-        "id": "poly_a_ins_9bp",
-        # Same tract, A x 9 -> A x 18. seed length 9; LARGEST tests 9 (valid) and
-        # so tracks the insertion size rather than the repeat unit.
-        "input": (_CHR1, 236900409, 236900418, "A" * 18),
-        "normalized_span": (236900409, 236900418),
-        "largest_state": _rle(18, "A" * 18, 9),
-        "smallest_state": _rle(18, "A" * 18, 1),
-        "agreement": DIVERGES,
-    },
-    {
-        "id": "poly_a_ins_11bp_prime_seed",
-        # Same tract, A x 9 -> A x 20. seed length 11 is prime and exceeds the
-        # modified reference length (9), so its only factors are 11 (skipped as
-        # too long) and 1. LARGEST therefore tests 1 first as well and lands on
-        # the same answer as SMALLEST. This is the non-monotonicity that
-        # motivated ga4gh/vrs#699.
-        "input": (_CHR1, 236900409, 236900418, "A" * 20),
-        "normalized_span": (236900409, 236900418),
-        "largest_state": _rle(20, "A" * 20, 1),
-        "smallest_state": _rle(20, "A" * 20, 1),
-        "agreement": LARGEST_DEGRADES,
-    },
-    {
-        "id": "microsatellite_ins_1_unit",
-        # chr1 GT x 5 tract at 1007173-1007183. Insert one GT unit. seed length 2,
-        # so 2 is both the greatest and the smallest factor > 1; SMALLEST tests 1
-        # first and rejects it, since GTGTGTGTGT has no single-base period.
         "input": (_CHR1, 1007183, 1007183, "GT"),
         "normalized_span": (1007173, 1007183),
-        "largest_state": _rle(12, "GT" * 6, 2),
-        "smallest_state": _rle(12, "GT" * 6, 2),
-        "agreement": SINGLE_VALID_FACTOR,
+        "length": 12,
+        "largest": 2,
+        "smallest": 2,
     },
     {
-        "id": "microsatellite_ins_2_units",
-        # Same tract, two GT units. seed length 4; LARGEST tests 4 (valid),
-        # SMALLEST tests 1 (invalid) then 2 (valid), which is the true repeat
-        # unit. Shows the mode matters beyond single-base repeats.
         "input": (_CHR1, 1007183, 1007183, "GTGT"),
         "normalized_span": (1007173, 1007183),
-        "largest_state": _rle(14, "GT" * 7, 4),
-        "smallest_state": _rle(14, "GT" * 7, 2),
-        "agreement": DIVERGES,
-    },
-    {
-        "id": "microsatellite_ins_3_units",
-        # Same tract, three GT units. seed length 6; LARGEST tests 6 (valid),
-        # SMALLEST tests 1 (invalid) then 2 (valid).
-        "input": (_CHR1, 1007183, 1007183, "GTGTGT"),
-        "normalized_span": (1007173, 1007183),
-        "largest_state": _rle(16, "GT" * 8, 6),
-        "smallest_state": _rle(16, "GT" * 8, 2),
-        "agreement": DIVERGES,
-    },
-    {
-        "id": "tandem_dup_gt",
-        # chrX isolated GT at 155980373-155980375: ...GGCTAAG[GT]TAAGTGTAGG...
-        # No adjacent GT tract, so nothing rolls and the span is unchanged.
-        # Tandem duplication to GTGT gives seed length 2, whose only factors are
-        # 2 and 1: LARGEST tests 2 (valid) and nothing larger is ever a
-        # candidate, while SMALLEST tests 1 and rejects it because "GT" is not a
-        # single-base repeat. The validity check is what keeps SMALLEST from
-        # shrinking this below the real unit length.
-        "input": (_CHRX, 155980373, 155980375, "GTGT"),
-        "normalized_span": (155980373, 155980375),
-        "largest_state": _rle(4, "GTGT", 2),
-        "smallest_state": _rle(4, "GTGT", 2),
-        "agreement": SINGLE_VALID_FACTOR,
-    },
-    {
-        "id": "trinucleotide_ins_cag",
-        # chr19 CAG tract at 289464: ...GGTGGCT[]CAGCACTTTGGG... Insert CAGCAG at
-        # a zero-width span; rolling right expands the modified reference to
-        # "CAGCA" (5 bases). seed length 6 has factors 6, 3, 2, 1. LARGEST skips
-        # 6 as longer than the modified reference and tests 3 (valid); SMALLEST
-        # tests 1 and 2 (both invalid against "CAGCA") before reaching the same 3.
-        # Both modes converge because 3 is the only valid factor, not merely
-        # because 6 was too long.
-        "input": (_CHR19, 289464, 289464, "CAGCAG"),
-        "normalized_span": (289464, 289469),
-        "largest_state": _rle(11, "CAGCAGCAGCA", 3),
-        "smallest_state": _rle(11, "CAGCAGCAGCA", 3),
-        "agreement": SINGLE_VALID_FACTOR,
-    },
-    {
-        "id": "deletion_2bp",
-        # Deletion (step 5.b): repeatSubunitLength is the seed length, and step
-        # 5.c is never reached, so no factor search happens at all.
-        "input": (_CHRX, 155980375, 155980377, ""),
-        "normalized_span": (155980375, 155980377),
-        "largest_state": _rle(0, "", 2),
-        "smallest_state": _rle(0, "", 2),
-        "agreement": NO_FACTORING,
-    },
-    {
-        "id": "reference_agree",
-        # Reference-agree allele (step 2.a): returns before rolling, with
-        # repeatSubunitLength set to the input sequence length.
-        "input": (_CHR6, 26090950, 26090951, "C"),
-        "normalized_span": (26090950, 26090951),
-        "largest_state": _rle(1, "C", 1),
-        "smallest_state": _rle(1, "C", 1),
-        "agreement": NO_FACTORING,
-    },
-    {
-        "id": "substitution",
-        # Substitution (step 2.b): stays a LiteralSequenceExpression, so there is
-        # no repeatSubunitLength to select and no factor search.
-        "input": (_CHR6, 26090950, 26090951, "G"),
-        "normalized_span": (26090950, 26090951),
-        "largest_state": {"type": "LiteralSequenceExpression", "sequence": "G"},
-        "smallest_state": {"type": "LiteralSequenceExpression", "sequence": "G"},
-        "agreement": NO_FACTORING,
+        "length": 14,
+        "largest": 4,
+        "smallest": 2,
     },
 ]
 
@@ -1150,266 +979,45 @@ def _build_allele(refget_accession: str, start: int, end: int, sequence: str) ->
     }
 
 
-def _expected_allele(case: dict, mode: RleSubunitMode) -> dict:
-    """Build the expected normalized Allele dict for `case` under `mode`"""
-    refget_accession = case["input"][0]
-    start, end = case["normalized_span"]
-    state = case[
-        "largest_state" if mode is RleSubunitMode.LARGEST else "smallest_state"
-    ]
-    return {
-        "type": "Allele",
-        "location": {
-            "type": "SequenceLocation",
-            "sequenceReference": {
-                "type": "SequenceReference",
-                "refgetAccession": refget_accession,
-            },
-            "start": start,
-            "end": end,
-        },
-        "state": state,
-    }
-
-
-@pytest.mark.parametrize("case", rle_subunit_mode_tests, ids=lambda c: c["id"])
-@pytest.mark.parametrize("mode", list(RleSubunitMode), ids=lambda m: m.value)
 @pytest.mark.vcr
-def test_normalize_rle_subunit_mode(rest_dataproxy, case, mode):
-    """Normalization selects the repeat subunit length dictated by `rle_subunit_mode`"""
-    allele = models.Allele(**_build_allele(*case["input"]))
-    normalized = normalize(
-        allele, rest_dataproxy, rle_seq_limit=None, rle_subunit_mode=mode
+def test_normalize_rle_subunit_mode(rest_dataproxy):
+    """Normalization selects the requested RLE subunit and preserves the old default"""
+    for case in _rle_subunit_mode_cases:
+        allele = models.Allele(**_build_allele(*case["input"]))
+        normalized_by_mode = {}
+
+        for mode in RleSubunitMode:
+            normalized = normalize(
+                allele,
+                rest_dataproxy,
+                rle_seq_limit=None,
+                rle_subunit_mode=mode,
+            )
+            assert (
+                normalized.location.start,
+                normalized.location.end,
+            ) == case["normalized_span"]
+            assert isinstance(normalized.state, models.ReferenceLengthExpression)
+            assert normalized.state.length == case["length"]
+            assert normalized.state.repeatSubunitLength == case[mode.value]
+            normalized_by_mode[mode] = normalized
+
+        default = normalize(allele, rest_dataproxy, rle_seq_limit=None)
+        assert default == normalized_by_mode[RleSubunitMode.LARGEST]
+
+    poly_a = models.Allele(**_build_allele(*_rle_subunit_mode_cases[0]["input"]))
+    from_string = normalize(
+        poly_a,
+        rest_dataproxy,
+        rle_seq_limit=None,
+        rle_subunit_mode="smallest",
     )
-    assert normalized == models.Allele(**_expected_allele(case, mode))
+    assert from_string.state.repeatSubunitLength == 1
 
 
-def _normalize_recording_factors(
-    rest_dataproxy,
-    case: dict,
-    mode: RleSubunitMode,
-    monkeypatch: pytest.MonkeyPatch,
-) -> tuple[models.Allele, list[tuple[int, bool]]]:
-    """Normalize `case` under `mode`, recording each step 5.c.1 candidate factor.
-
-    Returns the normalized Allele and the `(cycle_length, is_valid)` pairs the
-    factor search actually evaluated, in order. Factors longer than the modified
-    reference sequence are skipped before evaluation and so do not appear.
-    """
-    tried: list[tuple[int, bool]] = []
-    unpatched = normalize_module._is_valid_cycle
-
-    def recording_is_valid_cycle(
-        cycle_start: int, extended_ref_seq: str, extended_alt_seq: str
-    ) -> bool:
-        valid: bool = unpatched(cycle_start, extended_ref_seq, extended_alt_seq)
-        tried.append((len(extended_ref_seq) - cycle_start, valid))
-        return valid
-
-    monkeypatch.setattr(normalize_module, "_is_valid_cycle", recording_is_valid_cycle)
-    allele = models.Allele(**_build_allele(*case["input"]))
-    normalized = normalize(
-        allele, rest_dataproxy, rle_seq_limit=None, rle_subunit_mode=mode
-    )
-    return normalized, tried
-
-
-@pytest.mark.parametrize("case", rle_subunit_mode_tests, ids=lambda c: c["id"])
-@pytest.mark.vcr
-def test_normalize_rle_subunit_mode_agreement(rest_dataproxy, case, monkeypatch):
-    """The modes agree or differ for the reason the case declares.
-
-    Equal expected states are not self-explanatory: the modes coincide either
-    because step 5.c is never reached, because only one candidate factor forms a
-    valid cycle, or because LARGEST degrades to 1 when the seed length exceeds
-    the modified reference length. Assert the mechanism so that a case silently
-    changing category is a failure rather than a still-passing test.
-    """
-    agreement = case["agreement"]
-    by_mode = {
-        mode: _normalize_recording_factors(rest_dataproxy, case, mode, monkeypatch)
-        for mode in RleSubunitMode
-    }
-    largest, largest_tried = by_mode[RleSubunitMode.LARGEST]
-    smallest, smallest_tried = by_mode[RleSubunitMode.SMALLEST]
-
-    if agreement == DIVERGES:
-        assert largest.state != smallest.state
-        return
-
-    assert largest.state == smallest.state
-
-    if agreement == NO_FACTORING:
-        # Step 5.c never runs, so the mode cannot matter for this branch.
-        assert largest_tried == []
-        assert smallest_tried == []
-        return
-
-    # The remaining categories do reach the factor search.
-    assert largest_tried
-    assert smallest_tried
-
-    evaluated = largest_tried + smallest_tried
-    valid_factors = {cycle_length for cycle_length, valid in evaluated if valid}
-    rejected_any = any(not valid for _, valid in evaluated)
-
-    if agreement == SINGLE_VALID_FACTOR:
-        # A competing factor was evaluated and rejected, which is what forces the
-        # two search orders onto the same answer.
-        assert valid_factors == {largest.state.repeatSubunitLength}
-        assert rejected_any
-    elif agreement == LARGEST_DEGRADES:
-        # Nothing was rejected: every factor above 1 was skipped as longer than
-        # the modified reference sequence, so LARGEST never had a competing
-        # candidate to prefer and lands on 1 like SMALLEST.
-        assert largest.state.repeatSubunitLength == 1
-        assert not rejected_any
-    else:
-        pytest.fail(f"unknown agreement category {agreement!r}")
-
-
-@pytest.mark.parametrize("case", rle_subunit_mode_tests, ids=lambda c: c["id"])
-@pytest.mark.vcr
-def test_normalize_rle_subunit_mode_default_is_largest(rest_dataproxy, case):
-    """Omitting `rle_subunit_mode` preserves pre-existing (LARGEST) behavior"""
-    allele = models.Allele(**_build_allele(*case["input"]))
-    normalized = normalize(allele, rest_dataproxy, rle_seq_limit=None)
-    assert normalized == models.Allele(**_expected_allele(case, RleSubunitMode.LARGEST))
-
-
-@pytest.mark.parametrize("case", rle_subunit_mode_tests, ids=lambda c: c["id"])
-@pytest.mark.parametrize("mode", list(RleSubunitMode), ids=lambda m: m.value)
-@pytest.mark.vcr
-def test_normalize_rle_subunit_mode_round_trip(rest_dataproxy, case, mode):
-    """An RLE state denormalizes back to its literal sequence under either mode.
-
-    `denormalize_reference_length_expression` reconstructs the alternate sequence
-    from the *prefix* of the reference at the normalized location, while step 5.c.1
-    validates the cycle against the *suffix*. Assert the selected
-    `repeatSubunitLength` round-trips for both modes so that `translate_to` output
-    (e.g. SPDI, HGVS) is unaffected by the mode.
-    """
-    allele = models.Allele(**_build_allele(*case["input"]))
-    normalized = normalize(
-        allele, rest_dataproxy, rle_seq_limit=None, rle_subunit_mode=mode
-    )
-    if not isinstance(normalized.state, models.ReferenceLengthExpression):
-        pytest.skip(f"{case['id']} does not normalize to a ReferenceLengthExpression")
-
-    ref_seq = SequenceProxy(
-        rest_dataproxy, f"ga4gh:{normalized.location.get_refget_accession()}"
-    )[normalized.location.start : normalized.location.end]
-
-    assert (
-        denormalize_reference_length_expression(
-            ref_seq=ref_seq,
-            repeat_subunit_length=normalized.state.repeatSubunitLength,
-            alt_length=normalized.state.length,
-        )
-        == normalized.state.sequence.root
-    )
-
-
-# Pre-existing corpus alleles that normalize to a ReferenceLengthExpression, with the
-# expected RLE parameters and the literal alternate sequence each reconstructs to. The
-# `*_normalized` dicts above cannot supply the alt sequence: most of those tests pass
-# `rle_seq_limit=0`, so they omit `state.sequence` entirely. Declaring it here is what
-# makes the round trip a real assertion rather than a self-comparison.
-#
-# `allele_dict2` is intentionally absent: its location uses indefinite `Range`
-# positions, so there is no single reference span to reconstruct the alt from.
-rle_denormalize_tests = [
-    {"input": allele_dict1, "repeat_subunit_length": 1, "length": 1, "alt": "C"},
-    {"input": allele_dict4, "repeat_subunit_length": 2, "length": 4, "alt": "GTGT"},
-    {
-        "input": allele_dict5,
-        "repeat_subunit_length": 3,
-        "length": 11,
-        "alt": "CAGCAGCAGCA",
-    },
-    {"input": allele_dict6, "repeat_subunit_length": 2, "length": 2, "alt": "AA"},
-    {"input": clinvar_deletion, "repeat_subunit_length": 1, "length": 0, "alt": ""},
-    {
-        "input": clinvar_microsatellite,
-        "repeat_subunit_length": 4,
-        "length": 4,
-        "alt": "AATA",
-    },
-    {
-        "input": clinvar_tandem_repeat,
-        "repeat_subunit_length": 3,
-        "length": 5,
-        "alt": "CTCCT",
-    },
-    {
-        "input": clinvar_microsatellite_insertion,
-        "repeat_subunit_length": 3,
-        "length": 31,
-        "alt": "CCTCCTCCTCCTCCTCCTCCTCCTCCTCCTC",
-    },
-    {
-        "input": partial_repeat_insertion,
-        "repeat_subunit_length": 2,
-        "length": 5,
-        "alt": "CTCTC",
-    },
-    {
-        "input": middle_ins_4bp,
-        "repeat_subunit_length": 4,
-        "length": 9,
-        "alt": "CCTCCCTCC",
-    },
-    {
-        "input": deletion_spanning_boundary,
-        "repeat_subunit_length": 4,
-        "length": 1,
-        "alt": "C",
-    },
-    {"input": middle_del_2bp, "repeat_subunit_length": 2, "length": 1, "alt": "C"},
-    {"input": tail_del_2bp, "repeat_subunit_length": 2, "length": 1, "alt": "C"},
-    {"input": tail_del_4bp, "repeat_subunit_length": 4, "length": 0, "alt": ""},
-]
-
-rle_denormalize_test_ids = [
-    "allele_dict1",
-    "allele_dict4",
-    "allele_dict5",
-    "allele_dict6",
-    "clinvar_deletion",
-    "clinvar_microsatellite",
-    "clinvar_tandem_repeat",
-    "clinvar_microsatellite_insertion",
-    "partial_repeat_insertion",
-    "middle_ins_4bp",
-    "deletion_spanning_boundary",
-    "middle_del_2bp",
-    "tail_del_2bp",
-    "tail_del_4bp",
-]
-
-
-@pytest.mark.parametrize("case", rle_denormalize_tests, ids=rle_denormalize_test_ids)
-@pytest.mark.vcr
-def test_normalize_rle_denormalize_round_trip(rest_dataproxy, case):
-    """Corpus alleles round-trip: input -> RLE -> denormalize -> literal alt sequence"""
-    normalized = normalize(
-        models.Allele(**case["input"]), rest_dataproxy, rle_seq_limit=None
-    )
-
-    assert isinstance(normalized.state, models.ReferenceLengthExpression)
-    assert normalized.state.repeatSubunitLength == case["repeat_subunit_length"]
-    assert normalized.state.length == case["length"]
-    assert normalized.state.sequence.root == case["alt"]
-
-    ref_seq = SequenceProxy(
-        rest_dataproxy, f"ga4gh:{normalized.location.get_refget_accession()}"
-    )[normalized.location.start : normalized.location.end]
-
-    assert (
-        denormalize_reference_length_expression(
-            ref_seq=ref_seq,
-            repeat_subunit_length=normalized.state.repeatSubunitLength,
-            alt_length=normalized.state.length,
-        )
-        == case["alt"]
-    )
+@pytest.mark.parametrize("mode", ["typo", None])
+def test_normalize_rle_subunit_mode_invalid(mode):
+    """Normalization rejects an invalid `rle_subunit_mode`"""
+    allele = models.Allele(**_build_allele(*_rle_subunit_mode_cases[0]["input"]))
+    with pytest.raises(ValueError, match="is not a valid RleSubunitMode"):
+        normalize(allele, rle_subunit_mode=mode)

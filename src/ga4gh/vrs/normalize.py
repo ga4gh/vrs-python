@@ -7,7 +7,7 @@ See https://vrs.ga4gh.org/en/stable/impl-guide/normalization.html
 import itertools
 import logging
 from collections.abc import Iterator
-from enum import IntEnum, StrEnum
+from enum import Enum, IntEnum
 from typing import NamedTuple
 
 from bioutils.normalize import NormalizationMode
@@ -21,7 +21,7 @@ from ga4gh.vrs.dataproxy import SequenceProxy, _DataProxy
 _logger = logging.getLogger(__name__)
 
 
-class RleSubunitMode(StrEnum):
+class RleSubunitMode(str, Enum):
     """Define which repeat subunit length to select for a reference-derived ambiguous
     insertion normalized to a ``ReferenceLengthExpression``.
 
@@ -141,6 +141,8 @@ def _normalize_allele(
         `repeatSubunitLength` for a reference-derived ambiguous insertion. Defaults to
         `RleSubunitMode.LARGEST`, matching VRS <= 2.0. See `RleSubunitMode`.
     """
+    rle_subunit_mode = RleSubunitMode(rle_subunit_mode)
+
     # Algorithm applies to LiteralSequenceExpression alleles only; other states are returned unchanged
     if not isinstance(input_allele.state, models.LiteralSequenceExpression):
         _logger.warning(
