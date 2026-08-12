@@ -236,7 +236,7 @@ class Extension(Element, BaseModelForbidExtra):
         ...,
         description="A name for the Extension. Should be indicative of its meaning and/or the type of information it value represents.",
     )
-    value: float | str | bool | dict[str, Any] | list[Any] | None = Field(
+    value: int | float | str | bool | dict[str, Any] | list[Any] | None = Field(
         ...,
         description="The value of the Extension - can be any primitive or structured object",
     )
