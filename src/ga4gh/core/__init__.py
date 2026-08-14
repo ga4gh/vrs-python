@@ -28,7 +28,7 @@ except PackageNotFoundError:  # pragma: nocover
 finally:
     del version, PackageNotFoundError
 
-CORE_VERSION = "1.1.0"
+CORE_VERSION = "1.0.0"
 
 __all__ = [
     "CORE_VERSION",
