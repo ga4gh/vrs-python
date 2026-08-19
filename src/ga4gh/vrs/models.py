@@ -299,6 +299,8 @@ class Ga4ghIdentifiableObject(_ValueObject, ABC):
     Identifier algorithm.
     """
 
+    _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
+
     type: str
     digest: (
         Annotated[str, StringConstraints(pattern=r"^[0-9A-Za-z_\-]{32}$")] | None

@@ -85,5 +85,6 @@ def test_concrete_model_metadata(model, schema):
 @pytest.mark.parametrize(("model", "definition"), _abstract_model_params())
 def test_abstract_model_metadata(model, definition):
     """Abstract models expose source-defined maturity but no schema identifier."""
+    assert "_maturity" in model.__dict__
     assert model.maturity() == Maturity(definition["maturity"])
     assert not hasattr(model, "schema_id")
