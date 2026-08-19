@@ -194,6 +194,7 @@ class AlleleTranslator(_Translator):
         }
 
         self.to_translators = {
+            "gnomad": self._to_gnomad,
             "hgvs": self._to_hgvs,
             "spdi": self._to_spdi,
         }
@@ -430,6 +431,32 @@ class AlleleTranslator(_Translator):
     ) -> list[str]:
         return self.hgvs_tools.from_allele(vo, namespace)
 
+    def _to_gnomad(
+        self,
+        vo: models.Allele,
+        namespace: str | None = None,
+        **kwargs,  # noqa: ARG002
+    ) -> list[str]:
+        """Generate a *list* of gnomAD-style identifiers for VRS Allele.
+
+        If no alias translations are available, an empty list is returned.
+
+        If `namespace` is not None, returns gnomAD strings for the
+        specified namespace if applicable, or throws ValueError if not.
+
+        If `namespace` is None, returns gnomAD strings based off of the
+        `default_assembly_name`.
+
+        If the VRS object cannot be expressed in gnomAD-style, raises ValueError.
+        """
+        namespace = namespace or self.default_assembly_name
+        if not namespace.startswith("GRCh"):
+            error = f"Invalid gnomAD-style namespace '{namespace}'"
+            raise ValueError(error)
+        return self._to_location_expression(
+            "{alias}-{start}-{ref_seq}-{alt_seq}", vo, namespace,
+        )
+
     def _to_spdi(
         self, vo: models.Allele, namespace: str | None = "refseq", **kwargs
     ) -> list[str]:
@@ -456,12 +483,20 @@ class AlleleTranslator(_Translator):
         SPDI and VRS use identical normalization. The incoming Allele
         is expected to be normalized per VRS spec.
         """
+        ref_seq_limit = kwargs.get("ref_seq_limit", 0)
+        return self._to_location_expression(
+            "{alias}:{start}:{ref_seq}:{alt_seq}", vo, namespace, ref_seq_limit=ref_seq_limit,
+        )
+
+    def _to_location_expression(
+        self, id_template: str, vo: models.Allele, namespace: str | None , ref_seq_limit: int | None = None,
+    ) -> list[str]:
         sequence = f"ga4gh:{vo.location.get_refget_accession()}"
         aliases = self.data_proxy.translate_sequence_identifier(sequence, namespace)
         aliases = [a.split(":")[1] for a in aliases]
         seq_proxies = {a: SequenceProxy(self.data_proxy, a) for a in aliases}
         start, end = vo.location.start, vo.location.end
-        spdi_exprs = []
+        exprs = []
 
         for alias in aliases:
             # Get the reference sequence
@@ -488,14 +523,12 @@ class AlleleTranslator(_Translator):
 
             # Optionally allow using the length of the reference sequence
             # instead of the sequence itself.
-            ref_seq_limit = kwargs.get("ref_seq_limit", 0)
             if ref_seq_limit is not None and len(ref_seq) > int(ref_seq_limit):
                 ref_seq = len(ref_seq)
 
-            spdi_expr = f"{alias}:{start}:{ref_seq}:{alt_seq}"
-            spdi_exprs.append(spdi_expr)
+            exprs.append(id_template.format(alias=alias, start=start, ref_seq=ref_seq, alt_seq=alt_seq))
 
-        return spdi_exprs
+        return exprs
 
     def _post_process_imported_allele(
         self, allele: models.Allele, **kwargs
