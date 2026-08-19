@@ -1,0 +1,93 @@
+# Sequences to ingest into the custom vrs-python refgetstore archive.
+#
+# Two entry kinds:
+#
+#   [[assembly]]  An assembled genome FASTA + matching NCBI assembly_report.txt.
+#                 Produces one collection and derives per-sequence aliases
+#                 (UCSC chr names, GenBank accns, RefSeq accns) from the
+#                 report. The cross-assembly `refseq` and `insdc` namespaces
+#                 are populated regardless of the entry's own `namespace`.
+#
+#   [[seqset]]    A flat FASTA (or sharded set of FASTAs) where the accession
+#                 is the FASTA header's first token. Used for NCBI RefSeq
+#                 transcript/protein shards. Each shard becomes its own
+#                 collection; aliases map header-name -> digest under the
+#                 configured namespace.
+#
+# Assembly fields
+#   namespace    Per-assembly alias namespace (e.g. "GRCh38.p14").
+#   fasta_url    URL of the genomic FASTA (.fna.gz supported directly by gtars).
+#   report_url   URL of the NCBI assembly_report.txt.
+#   load_fasta   If true, ingest the FASTA. If false, reuse digests already
+#                present in the store (cheap patch fanout).
+#   fasta_path   Optional local path override, relative to repo root.
+#
+# Seqset fields
+#   name         Human-readable id for logs + summary.
+#   namespace    Alias namespace for every ingested sequence (e.g. "refseq").
+#   url_template URL with "{shard}" placeholder, or a plain URL if unsharded.
+#   shard_range  [min, max] inclusive integer range substituted into
+#                url_template. Omit for a single-file seqset.
+
+[[assembly]]
+namespace = "GRCh38"
+fasta_url = "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.26_GRCh38/GCF_000001405.26_GRCh38_genomic.fna.gz"
+report_url = "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.26_GRCh38/GCF_000001405.26_GRCh38_assembly_report.txt"
+load_fasta = true
+fasta_path = "GCF_000001405.26_GRCh38_genomic.fna.gz"
+
+[[assembly]]
+namespace = "GRCh38.p14"
+fasta_url = "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.40_GRCh38.p14/GCF_000001405.40_GRCh38.p14_genomic.fna.gz"
+report_url = "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.40_GRCh38.p14/GCF_000001405.40_GRCh38.p14_assembly_report.txt"
+load_fasta = true
+
+[[assembly]]
+namespace = "GRCh37"
+fasta_url = "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.13_GRCh37/GCF_000001405.13_GRCh37_genomic.fna.gz"
+report_url = "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.13_GRCh37/GCF_000001405.13_GRCh37_assembly_report.txt"
+load_fasta = true
+
+[[assembly]]
+namespace = "GRCh37.p13"
+fasta_url = "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.25_GRCh37.p13/GCF_000001405.25_GRCh37.p13_genomic.fna.gz"
+report_url = "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.25_GRCh37.p13/GCF_000001405.25_GRCh37.p13_assembly_report.txt"
+load_fasta = true
+
+[[seqset]]
+name = "refseq_human_rna"
+namespace = "refseq"
+url_template = "https://ftp.ncbi.nlm.nih.gov/refseq/H_sapiens/mRNA_Prot/human.{shard}.rna.fna.gz"
+shard_range = [1, 32]
+
+[[seqset]]
+name = "refseq_human_protein"
+namespace = "refseq"
+url_template = "https://ftp.ncbi.nlm.nih.gov/refseq/H_sapiens/mRNA_Prot/human.{shard}.protein.faa.gz"
+shard_range = [1, 32]
+
+# Ensembl human GRCh38 transcripts + proteins, pinned to release 113
+# (October 2024). Bump the release number in all three URLs to update.
+# Archive index: https://www.ensembl.org/info/website/archives/
+# ENST.N / ENSP.N accessions are content-addressable, so the digests are
+# stable across releases; only the version suffixes change.
+#
+# cdna/ ships protein-coding transcripts; ncrna/ ships non-coding
+# transcripts (disjoint ENST space). cds/ is intentionally NOT loaded —
+# it reuses the same ENST accessions as cdna/ but with UTRs stripped,
+# which would collide in the bulk alias merge.
+
+[[seqset]]
+name = "ensembl_human_cdna"
+namespace = "ensembl"
+url_template = "https://ftp.ensembl.org/pub/release-113/fasta/homo_sapiens/cdna/Homo_sapiens.GRCh38.cdna.all.fa.gz"
+
+[[seqset]]
+name = "ensembl_human_ncrna"
+namespace = "ensembl"
+url_template = "https://ftp.ensembl.org/pub/release-113/fasta/homo_sapiens/ncrna/Homo_sapiens.GRCh38.ncrna.fa.gz"
+
+[[seqset]]
+name = "ensembl_human_pep"
+namespace = "ensembl"
+url_template = "https://ftp.ensembl.org/pub/release-113/fasta/homo_sapiens/pep/Homo_sapiens.GRCh38.pep.all.fa.gz"

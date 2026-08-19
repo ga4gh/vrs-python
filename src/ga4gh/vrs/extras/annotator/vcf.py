@@ -14,7 +14,7 @@ from ga4gh.core.identifiers import (
     use_ga4gh_compute_identifier_when,
 )
 from ga4gh.vrs import VRS_VERSION, VrsType, __version__
-from ga4gh.vrs.dataproxy import _DataProxy
+from ga4gh.vrs.dataproxy import DataProxy
 from ga4gh.vrs.extras.translator import AlleleTranslator
 from ga4gh.vrs.models import Allele, Range
 
@@ -111,7 +111,7 @@ class AbstractVcfAnnotator(abc.ABC):
 
     collect_alleles: bool = False
 
-    def __init__(self, data_proxy: _DataProxy, **kwargs) -> None:  # noqa: ARG002
+    def __init__(self, data_proxy: DataProxy, **kwargs) -> None:  # noqa: ARG002
         """Initialize the VCFAnnotator class.
 
         :param data_proxy: GA4GH sequence dataproxy instance.
