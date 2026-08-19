@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from abc import ABC
 from enum import Enum
-from typing import Annotated, Any, Literal
+from typing import Annotated, Any, ClassVar, Literal
 
 from pydantic import (
     BaseModel,
@@ -17,6 +17,15 @@ from pydantic import (
 from typing_extensions import Self
 
 from ga4gh.core.identifiers import GA4GH_IR_REGEXP
+from ga4gh.core.metadata import GKSMaturityMixin, GKSMetadataMixin, Maturity
+from ga4gh.core.version import CORE_VERSION
+
+
+class GKSCoreMetadataMixin(GKSMetadataMixin):
+    """Provide GKS-Core model metadata."""
+
+    _product_name = "gks-core"
+    _product_version = CORE_VERSION
 
 
 class BaseModelForbidExtra(BaseModel):
@@ -56,12 +65,14 @@ class MembershipOperator(str, Enum):
 #########################################
 
 
-class code(RootModel):  # noqa: N801
+class code(GKSCoreMetadataMixin, RootModel):  # noqa: N801
     """Indicates that the value is taken from a set of controlled strings defined
     elsewhere. Technically, a code is restricted to a string which has at least one
     character and no leading or trailing whitespace, and where there is no whitespace
     other than single spaces in the contents.
     """
+
+    _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
 
     root: Annotated[str, StringConstraints(pattern=r"\S+( \S+)*")] = Field(
         ...,
@@ -72,13 +83,15 @@ class code(RootModel):  # noqa: N801
     )
 
 
-class iriReference(RootModel):  # noqa: N801
+class iriReference(GKSCoreMetadataMixin, RootModel):  # noqa: N801
     """An IRI Reference (either an IRI or a relative-reference), according to `RFC3986
     section 4.1 <https://datatracker.ietf.org/doc/html/rfc3986#section-4.1>`_ and
     `RFC3987 section 2.1 <https://datatracker.ietf.org/doc/html/rfc3987#section-2.1>`_.
     MAY be a JSON Pointer as an IRI fragment, as described by `RFC6901 section 6
     <https://datatracker.ietf.org/doc/html/rfc6901#section-6>`_.
     """
+
+    _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
 
     def __hash__(self) -> int:  # noqa: D105
         return self.root.__hash__()
@@ -102,11 +115,13 @@ class iriReference(RootModel):  # noqa: N801
 #########################################
 
 
-class Entity(BaseModel, ABC):
+class Entity(GKSMaturityMixin, BaseModel, ABC):
     """Anything that exists, has existed, or will exist.
 
     Abstract base class to be extended by other classes. Do NOT instantiate directly.
     """
+
+    _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
 
     id: str | None = Field(
         default=None,
@@ -129,11 +144,13 @@ class Entity(BaseModel, ABC):
     )
 
 
-class Element(BaseModel, ABC):
+class Element(GKSMaturityMixin, BaseModel, ABC):
     """The base definition for all identifiable data objects.
 
     Abstract base class to be extended by other classes. Do NOT instantiate directly.
     """
+
+    _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
 
     id: str | None = Field(
         default=None,
@@ -160,10 +177,12 @@ class Element(BaseModel, ABC):
 #########################################
 
 
-class Coding(Element, BaseModelForbidExtra):
+class Coding(GKSCoreMetadataMixin, Element, BaseModelForbidExtra):
     """A structured representation of a code for a defined concept in a terminology or
     code system.
     """
+
+    _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
 
     name: str | None = Field(
         default=None,
@@ -184,10 +203,12 @@ class Coding(Element, BaseModelForbidExtra):
     )
 
 
-class ConceptMapping(Element, BaseModelForbidExtra):
+class ConceptMapping(GKSCoreMetadataMixin, Element, BaseModelForbidExtra):
     """A mapping to a concept in a terminology or code system."""
 
     model_config = ConfigDict(use_enum_values=True)
+
+    _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
 
     coding: Coding = Field(
         ...,
@@ -199,7 +220,7 @@ class ConceptMapping(Element, BaseModelForbidExtra):
     )
 
 
-class ConceptSet(Element, BaseModelForbidExtra):
+class ConceptSet(GKSCoreMetadataMixin, Element, BaseModelForbidExtra):
     """A set of concepts that may be considered as dependent (occurring together), or
     independent (existing separately) in the context of some knowledge reported about
     them, as indicated by a set membership operator. e.g. a set of independent molecular
@@ -208,6 +229,8 @@ class ConceptSet(Element, BaseModelForbidExtra):
     """
 
     model_config = ConfigDict(use_enum_values=True)
+
+    _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
 
     type: Literal["ConceptSet"] = Field(
         default="ConceptSet",
@@ -224,13 +247,15 @@ class ConceptSet(Element, BaseModelForbidExtra):
     )
 
 
-class Extension(Element, BaseModelForbidExtra):
+class Extension(GKSCoreMetadataMixin, Element, BaseModelForbidExtra):
     """The Extension class provides entities with a means to include additional
     attributes that are outside of the specified standard but needed by a given content
     provider or system implementer. These extensions are not expected to be natively
     understood, but may be used for pre-negotiated exchange of message attributes
     between systems.
     """
+
+    _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
 
     name: str = Field(
         ...,
@@ -246,8 +271,10 @@ class Extension(Element, BaseModelForbidExtra):
     )
 
 
-class MappableConcept(Element, BaseModelForbidExtra):
+class MappableConcept(GKSCoreMetadataMixin, Element, BaseModelForbidExtra):
     """A concept based on a primaryCoding and/or name that may be mapped to one or more other `Codings`."""
+
+    _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
 
     conceptType: str | None = Field(  # noqa: N815
         default=None,
