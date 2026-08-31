@@ -15,7 +15,7 @@ vrs-annotate vcf --help
 
 ### Configuring the sequence data proxy
 
-Like other VRS-Python tools, the VCF annotator requires access to [sequence and identifier data services](https://vrs.ga4gh.org/en/stable/impl-guide/required_data.html#data-services), as implemented in libraries like [SeqRepo](https://github.com/biocommons/biocommons.seqrepo). By default, the CLI will attempt to connect to a [SeqRepo REST instance](https://github.com/biocommons/seqrepo-rest-service) at `http://localhost:5000/seqrepo`, but a URI can be passed with the `--dataproxy-uri` option or set with the `GA4GH_VRS_DATAPROXY_URI` environment variable (the former takes priority over the latter).
+Like other VRS-Python tools, the VCF annotator requires access to [sequence and identifier data services](https://vrs.ga4gh.org/en/stable/impl-guide/required_data.html#data-services), as implemented in libraries like [SeqRepo](https://github.com/biocommons/biocommons.seqrepo). By default, the CLI will attempt to connect to a [SeqRepo REST instance](https://github.com/biocommons/seqrepo-rest-service) at `http://localhost:5000/seqrepo`, but a URI can be passed with the `--dataproxy-uri` option or set with the `GA4GH_VRS_DATAPROXY_URI` environment variable (the former takes priority over the latter). Remote refget stores use `GA4GH_VRS_REFGET_CACHE_DIR` as the local cache root when set.
 
 For example, to use a local set of SeqRepo data, you can use an absolute file path:
 
@@ -33,6 +33,13 @@ Or an alternate REST path:
 
 ```commandline
 vrs-annotate vcf --dataproxy-uri="seqrepo+http://mylabwebsite.org/seqrepo" --vcf-out=out.vcf.gz input.vcf.gz
+```
+
+Or a remote refget store exposed as a static HTTP(S) directory tree:
+
+```commandline
+GA4GH_VRS_REFGET_CACHE_DIR=/tmp/vrs-refget-cache \
+vrs-annotate vcf --dataproxy-uri="refget+https://example-bucket.s3.amazonaws.com/refget-store" --vcf-out=out.vcf.gz input.vcf.gz
 ```
 
 ### Other Options

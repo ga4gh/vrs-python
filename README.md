@@ -231,11 +231,24 @@ Here are some things to try.
     curl 'http://127.0.0.1:[your_port_number]/seqrepo/1/sequence/refseq:NM_000059.4?end=20'
     ```
   - Set the `GA4GH_VRS_DATAPROXY_URI` environment variable to point to
-    this UL:
+    this URL:
     ```shell
-    $ export GA4GH_VRS_DATAPROXY_URI=http://localhost:[your_port_number]/seqrepo
+    $ export GA4GH_VRS_DATAPROXY_URI=seqrepo+http://localhost:[your_port_number]/seqrepo
     $ export SEQREPO_URI=http://localhost:[your_port_number]
     ```
+
+Remote refget stores are also supported when exposed as a static HTTP(S) URL tree,
+such as an S3/R2 bucket endpoint or CDN origin. Set the dataproxy URI to the remote
+store and optionally override the local cache root:
+
+```shell
+export GA4GH_VRS_DATAPROXY_URI=refget+https://example-bucket.s3.amazonaws.com/refget-store
+export GA4GH_VRS_REFGET_CACHE_DIR=/path/to/refget-cache-root
+```
+
+If `GA4GH_VRS_REFGET_CACHE_DIR` is unset, vrs-python falls back to an XDG-style
+cache root under `XDG_CACHE_HOME` or `~/.cache`. Each remote refget store gets
+its own deterministic cache subdirectory under that root.
 
 ## VRS-Python and VRS Version Correspondence
 

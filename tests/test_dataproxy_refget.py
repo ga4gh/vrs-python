@@ -1,14 +1,21 @@
 """Tests for RefgetSequenceDataProxy, CompositeDataProxy, and _extract_digest."""
 
+import sys
+from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import MagicMock
+from urllib.parse import urlparse
 
 import pytest
 
-from ga4gh.vrs.dataproxy import CompositeDataProxy
+from ga4gh.vrs.dataproxy import CompositeDataProxy, create_dataproxy
 from ga4gh.vrs.dataproxy_refget import (
     RefgetSequenceDataProxy,
+    _create_refget_dataproxy,
     _extract_digest,
+    _resolve_refget_cache_base_dir,
+    _resolve_remote_cache_dir,
+    _slug_remote_url,
 )
 
 # --- _extract_digest ---
@@ -61,6 +68,27 @@ def _make_mock_store(
         store.get_sequence.return_value = None
         store.get_substring.return_value = None
     return store
+
+
+def _install_fake_gtars(
+    monkeypatch: pytest.MonkeyPatch,
+    *,
+    local_store: MagicMock | None = None,
+    remote_store: MagicMock | None = None,
+) -> tuple[MagicMock, MagicMock, type]:
+    """Install a fake gtars.refget module for factory tests."""
+    local_store = local_store or MagicMock()
+    remote_store = remote_store or MagicMock()
+
+    class FakeRefgetStore:
+        open_local = MagicMock(return_value=local_store)
+        open_remote = MagicMock(return_value=remote_store)
+
+    fake_gtars = SimpleNamespace()
+    fake_refget = SimpleNamespace(RefgetStore=FakeRefgetStore)
+    monkeypatch.setitem(sys.modules, "gtars", fake_gtars)
+    monkeypatch.setitem(sys.modules, "gtars.refget", fake_refget)
+    return local_store, remote_store, FakeRefgetStore
 
 
 # --- RefgetSequenceDataProxy.get_sequence ---
@@ -233,3 +261,114 @@ class TestCompositeGetAliases:
         aliases = composite.get_aliases("NM_000551.3")
         assert GA4GH_ID in aliases
         alias_proxy.get_aliases.assert_called_once_with("NM_000551.3")
+
+
+class TestRefgetRemoteCacheHelpers:
+    def test_slug_remote_url_is_stable(self) -> None:
+        url = "https://example.org/refget-store"
+        assert _slug_remote_url(url) == _slug_remote_url(url)
+
+    def test_slug_remote_url_distinguishes_urls(self) -> None:
+        assert _slug_remote_url("https://example.org/store-a") != _slug_remote_url(
+            "https://example.org/store-b"
+        )
+
+    def test_resolve_cache_base_uses_env_override(
+        self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+    ) -> None:
+        cache_root = tmp_path / "custom-cache"
+        monkeypatch.setenv("GA4GH_VRS_REFGET_CACHE_DIR", str(cache_root))
+        assert _resolve_refget_cache_base_dir() == cache_root
+
+    def test_resolve_cache_base_uses_xdg(
+        self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+    ) -> None:
+        monkeypatch.delenv("GA4GH_VRS_REFGET_CACHE_DIR", raising=False)
+        monkeypatch.setenv("XDG_CACHE_HOME", str(tmp_path / "xdg"))
+        assert _resolve_refget_cache_base_dir() == tmp_path / "xdg" / "gtars" / "refget"
+
+    def test_resolve_cache_base_falls_back_to_home(
+        self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+    ) -> None:
+        monkeypatch.delenv("GA4GH_VRS_REFGET_CACHE_DIR", raising=False)
+        monkeypatch.delenv("XDG_CACHE_HOME", raising=False)
+        monkeypatch.setenv("HOME", str(tmp_path / "home"))
+        assert (
+            _resolve_refget_cache_base_dir()
+            == tmp_path / "home" / ".cache" / "gtars" / "refget"
+        )
+
+    def test_resolve_remote_cache_dir_uses_base_plus_slug(
+        self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+    ) -> None:
+        cache_root = tmp_path / "cache-root"
+        remote_url = "https://example.org/refget-store"
+        monkeypatch.setenv("GA4GH_VRS_REFGET_CACHE_DIR", str(cache_root))
+        assert _resolve_remote_cache_dir(remote_url) == cache_root / _slug_remote_url(
+            remote_url
+        )
+
+
+class TestCreateRefgetDataProxyFactory:
+    def test_file_uri_uses_open_local(
+        self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+    ) -> None:
+        local_store, _, fake_refget_store = _install_fake_gtars(monkeypatch)
+        parsed_uri = urlparse(f"refget+file://{tmp_path}/store")
+
+        proxy = _create_refget_dataproxy(parsed_uri, "file")
+
+        assert isinstance(proxy, CompositeDataProxy)
+        fake_refget_store.open_local.assert_called_once_with(parsed_uri.path)
+        fake_refget_store.open_remote.assert_not_called()
+        local_store.pull_aliases.assert_called_once_with()
+
+    def test_http_uri_uses_open_remote_with_env_cache_root(
+        self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+    ) -> None:
+        _, remote_store, fake_refget_store = _install_fake_gtars(monkeypatch)
+        cache_root = tmp_path / "cache-root"
+        remote_url = "http://example.org:8080/refget-store"
+        parsed_uri = urlparse(f"refget+{remote_url}")
+        monkeypatch.setenv("GA4GH_VRS_REFGET_CACHE_DIR", str(cache_root))
+
+        proxy = _create_refget_dataproxy(parsed_uri, "http")
+
+        assert isinstance(proxy, CompositeDataProxy)
+        expected_cache_dir = cache_root / _slug_remote_url(remote_url)
+        fake_refget_store.open_local.assert_not_called()
+        fake_refget_store.open_remote.assert_called_once_with(
+            str(expected_cache_dir), remote_url
+        )
+        assert expected_cache_dir.is_dir()
+        remote_store.pull_aliases.assert_called_once_with()
+
+    def test_https_uri_dispatches_via_create_dataproxy(
+        self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+    ) -> None:
+        _, remote_store, fake_refget_store = _install_fake_gtars(monkeypatch)
+        cache_root = tmp_path / "cache-root"
+        remote_url = "https://example.org/refget-store"
+        monkeypatch.setenv("GA4GH_VRS_REFGET_CACHE_DIR", str(cache_root))
+
+        proxy = create_dataproxy(f"refget+{remote_url}")
+
+        assert isinstance(proxy, CompositeDataProxy)
+        fake_refget_store.open_remote.assert_called_once_with(
+            str(cache_root / _slug_remote_url(remote_url)),
+            remote_url,
+        )
+        remote_store.pull_aliases.assert_called_once_with()
+
+    def test_local_refget_uri_ignores_cache_env_var(
+        self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+    ) -> None:
+        local_store, _, fake_refget_store = _install_fake_gtars(monkeypatch)
+        monkeypatch.setenv("GA4GH_VRS_REFGET_CACHE_DIR", str(tmp_path / "cache-root"))
+
+        proxy = create_dataproxy(f"refget+file://{tmp_path}/store")
+
+        assert isinstance(proxy, CompositeDataProxy)
+        fake_refget_store.open_local.assert_called_once()
+        fake_refget_store.open_remote.assert_not_called()
+        local_store.pull_aliases.assert_called_once_with()

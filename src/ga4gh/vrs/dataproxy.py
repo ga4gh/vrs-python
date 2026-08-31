@@ -348,6 +348,12 @@ def create_dataproxy(
         * seqrepo+http://localhost:5000/seqrepo
         * seqrepo+https://somewhere:5000/seqrepo
         * refget+file:///path/to/refgetstore/root
+        * refget+http://host[:port]/refgetstore/root
+        * refget+https://host/refgetstore/root
+
+        Remote refget stores cache their local working set under
+        ``GA4GH_VRS_REFGET_CACHE_DIR`` when set. If unset, the cache defaults
+        to ``$XDG_CACHE_HOME/gtars/refget`` or ``~/.cache/gtars/refget``.
     :param disable_healthcheck: Whether healthcheck should be disabled in REST dataproxy
     :raise ValueError: if URI doesn't match recognized schemes, e.g. is missing provider
         prefix (``"seqrepo+"``)

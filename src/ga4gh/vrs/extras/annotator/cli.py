@@ -188,7 +188,8 @@ def _annotate_vcf_cli(
     option or the environment variable `GA4GH_VRS_DATAPROXY_URI` to define its location
     (the former will take priority over the latter when both are set). This option
     falls back upon the VRS-Python library default `seqrepo+http://localhost:5000/seqrepo`
-    value if it is not otherwise declared.
+    value if it is not otherwise declared. Remote refget stores use
+    `GA4GH_VRS_REFGET_CACHE_DIR` as the local cache root when set.
 
     Currently accepted URI schemes:
 
@@ -197,6 +198,9 @@ def _annotate_vcf_cli(
      * seqrepo+https://somewhere:5000/seqrepo
      * seqrepo+file:///path/to/seqrepo/root
      * seqrepo+:../relative/path/to/seqrepo/root
+     * refget+file:///path/to/refgetstore/root
+     * refget+http://host[:port]/refgetstore/root
+     * refget+https://host/refgetstore/root
     """  # noqa: D301
     data_proxy = create_dataproxy(dataproxy_uri)
     annotator = VcfAnnotator(data_proxy)

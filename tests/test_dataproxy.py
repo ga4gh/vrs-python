@@ -1,5 +1,7 @@
-import os
 import re
+import sys
+from types import SimpleNamespace
+from unittest.mock import MagicMock
 
 import pytest
 
@@ -32,7 +34,7 @@ def test_data_proxies(dp, request):
     assert seq == "CCTCGCCTCCGTTACAACGGCCTACGGTGCTGGAGGATCCTTCTGCGCAC"
 
 
-def test_data_proxy_configs():
+def test_data_proxy_configs(monkeypatch):
     with pytest.raises(
         ValueError,
         match=re.escape(
@@ -52,6 +54,7 @@ def test_data_proxy_configs():
     ):
         create_dataproxy("fake-dataprovider+http://localhost:5000")
 
+    monkeypatch.delenv("GA4GH_VRS_DATAPROXY_URI", raising=False)
     with pytest.raises(
         ValueError,
         match="No data proxy URI provided or found in GA4GH_VRS_DATAPROXY_URI",
@@ -59,7 +62,7 @@ def test_data_proxy_configs():
         create_dataproxy(None)
 
     # check that fallback on env var works
-    os.environ["GA4GH_VRS_DATAPROXY_URI"] = "seqrepo+:tests/data/seqrepo/latest"
+    monkeypatch.setenv("GA4GH_VRS_DATAPROXY_URI", "seqrepo+:tests/data/seqrepo/latest")
     create_dataproxy(None)
 
     # check that method arg takes precedence by passing an invalid arg
@@ -70,3 +73,30 @@ def test_data_proxy_configs():
         ),
     ):
         create_dataproxy("file:///path/to/seqrepo/root")
+
+
+def test_refget_remote_uri_configs(monkeypatch, tmp_path):
+    remote_store = MagicMock()
+
+    class FakeRefgetStore:
+        open_local = MagicMock()
+        open_remote = MagicMock(return_value=remote_store)
+
+    monkeypatch.setitem(sys.modules, "gtars", SimpleNamespace())
+    monkeypatch.setitem(
+        sys.modules,
+        "gtars.refget",
+        SimpleNamespace(RefgetStore=FakeRefgetStore),
+    )
+    monkeypatch.setenv("GA4GH_VRS_REFGET_CACHE_DIR", str(tmp_path / "cache-root"))
+
+    create_dataproxy("refget+http://example.org/refget-store")
+    create_dataproxy("refget+https://example.org/refget-store")
+
+    assert FakeRefgetStore.open_remote.call_count == 2
+
+    with pytest.raises(
+        ValueError,
+        match=re.escape("Refget URI protocol 'fake-scheme' not supported"),
+    ):
+        create_dataproxy("refget+fake-scheme://example.org/refget-store")

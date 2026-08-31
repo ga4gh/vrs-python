@@ -4,7 +4,10 @@ Provides a ``SequenceDataProxy`` backed by a gtars ``RefgetStore`` for
 high-performance sequence retrieval by GA4GH digest, and a matching
 ``AliasDataProxy`` that uses the store's sequence alias index to resolve
 cross-namespace identifiers. The module factory composes both into a full
-``DataProxy`` from a single URI.
+``DataProxy`` from a single URI. Stores may be opened from a local directory
+or from a remote static HTTP(S) tree. Remote stores use a local cache rooted
+at ``GA4GH_VRS_REFGET_CACHE_DIR`` when set, otherwise under an XDG-style
+default cache directory.
 
 Requires the ``refget`` optional dependency group: ``pip install ga4gh.vrs[refget]``
 """
@@ -12,9 +15,12 @@ Requires the ``refget`` optional dependency group: ``pip install ga4gh.vrs[refge
 from __future__ import annotations
 
 import functools
+import hashlib
 import logging
+import os
+from pathlib import Path
 from typing import TYPE_CHECKING
-from urllib.parse import ParseResult
+from urllib.parse import ParseResult, urlunparse
 
 from ga4gh.vrs.dataproxy import (
     AliasDataProxy,
@@ -31,6 +37,7 @@ _logger = logging.getLogger(__name__)
 _GA4GH_SQ_PREFIX = "ga4gh:SQ."
 _SQ_PREFIX = "SQ."
 _SHA512T24U_PREFIX = "sha512t24u:"
+_REFGET_CACHE_ENV_VAR = "GA4GH_VRS_REFGET_CACHE_DIR"
 
 
 def _extract_digest(identifier: str) -> str | None:
@@ -49,6 +56,41 @@ def _extract_digest(identifier: str) -> str | None:
     if identifier.startswith(_SHA512T24U_PREFIX):
         return identifier[len(_SHA512T24U_PREFIX) :]
     return None
+
+
+def _slug_remote_url(remote_url: str) -> str:
+    """Return a short deterministic cache slug for a remote refget URL."""
+    return hashlib.sha256(remote_url.encode("utf-8")).hexdigest()[:16]
+
+
+def _resolve_refget_cache_base_dir() -> Path:
+    """Return the base directory for remote refget caches.
+
+    This applies only to remote ``refget+http://...`` and
+    ``refget+https://...`` URIs. Resolution order is:
+
+    1. ``GA4GH_VRS_REFGET_CACHE_DIR``, if set
+    2. ``$XDG_CACHE_HOME/gtars/refget``, if ``XDG_CACHE_HOME`` is set
+    3. ``~/.cache/gtars/refget``
+
+    The returned path is a cache *root*. The actual cache directory passed to
+    ``RefgetStore.open_remote()`` is a deterministic per-remote subdirectory
+    under this root; see :func:`_resolve_remote_cache_dir`.
+    """
+    cache_root = os.environ.get(_REFGET_CACHE_ENV_VAR)
+    if cache_root:
+        return Path(cache_root).expanduser()
+
+    xdg_cache_home = os.environ.get("XDG_CACHE_HOME")
+    if xdg_cache_home:
+        return Path(xdg_cache_home).expanduser() / "gtars" / "refget"
+
+    return Path.home() / ".cache" / "gtars" / "refget"
+
+
+def _resolve_remote_cache_dir(remote_url: str) -> Path:
+    """Return the per-remote cache directory for a remote refget URL."""
+    return _resolve_refget_cache_base_dir() / _slug_remote_url(remote_url)
 
 
 class RefgetSequenceDataProxy(SequenceDataProxy):
@@ -164,13 +206,13 @@ class RefgetAliasDataProxy(AliasDataProxy):
         """Initialize RefgetAliasDataProxy.
 
         :param store: A gtars RefgetStore instance. The store's alias
-            sidecars are loaded eagerly so subsequent lookups do not need
-            network / disk I/O for the alias index.
+            sidecars are pulled eagerly for remote stores so subsequent
+            lookups do not need extra network / disk I/O for the alias index.
         """
         super().__init__()
         self.store = store
-        # pull_aliases is a no-op for local stores but ensures remote stores
-        # have the alias sidecars fetched before lookups start.
+        # pull_aliases is a no-op for local stores but is required for remote
+        # stores so namespace alias lookups work from the local cache.
         try:
             store.pull_aliases()  # type: ignore[attr-defined]
         except Exception as exc:
@@ -262,10 +304,13 @@ def _create_refget_dataproxy(
     Composes a ``RefgetSequenceDataProxy`` and ``RefgetAliasDataProxy`` over
     a single shared ``RefgetStore`` instance, wrapped in a
     ``CompositeDataProxy`` so the result satisfies the full ``DataProxy``
-    interface.
+    interface. ``refget+file://`` URIs open a local store directly.
+    ``refget+http://`` and ``refget+https://`` URIs open a remote store and
+    cache its index, aliases, and fetched sequence payloads locally under
+    ``GA4GH_VRS_REFGET_CACHE_DIR`` or the default XDG-style cache root.
 
     :param parsed_uri: Parsed URI components
-    :param proto: Protocol portion of the scheme (e.g. "file", "")
+    :param proto: Protocol portion of the scheme (e.g. "file", "http", "")
     :param disable_healthcheck: Unused, accepted for interface consistency
     :return: A ``CompositeDataProxy`` wrapping the sequence + alias proxies
     :raises ValueError: if the protocol is not supported
@@ -274,8 +319,17 @@ def _create_refget_dataproxy(
         from gtars.refget import RefgetStore
 
         store = RefgetStore.open_local(parsed_uri.path)
-        sequence_proxy = RefgetSequenceDataProxy(store)
-        alias_proxy = RefgetAliasDataProxy(store)
-        return CompositeDataProxy(sequence_proxy, alias_proxy)
-    msg = f"Refget URI protocol {proto!r} not supported"
-    raise ValueError(msg)
+    elif proto in ("http", "https"):
+        from gtars.refget import RefgetStore
+
+        remote_url = urlunparse(parsed_uri._replace(scheme=proto))
+        cache_dir = _resolve_remote_cache_dir(remote_url)
+        cache_dir.mkdir(parents=True, exist_ok=True)
+        store = RefgetStore.open_remote(str(cache_dir), remote_url)
+    else:
+        msg = f"Refget URI protocol {proto!r} not supported"
+        raise ValueError(msg)
+
+    sequence_proxy = RefgetSequenceDataProxy(store)
+    alias_proxy = RefgetAliasDataProxy(store)
+    return CompositeDataProxy(sequence_proxy, alias_proxy)
