@@ -1,3 +1,3 @@
-"""Define GKS-Core version"""
+"""Define GKM-Core version"""
 
-CORE_VERSION = "1.1.0"
+CORE_VERSION = "1.2.0"

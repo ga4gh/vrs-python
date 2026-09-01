@@ -16,11 +16,11 @@ SCHEMAS = (
         core_models,
         SUBMODULES_DIR
         / "submodules"
-        / "gks-core"
+        / "gkm-core"
         / "schema"
-        / "gks-core"
-        / "gks-core-source.yaml",
-        SUBMODULES_DIR / "submodules" / "gks-core" / "schema" / "gks-core" / "json",
+        / "gkm-core"
+        / "gkm-core-source.yaml",
+        SUBMODULES_DIR / "submodules" / "gkm-core" / "schema" / "gkm-core" / "json",
     ),
     (
         vrs_models,
