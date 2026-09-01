@@ -61,7 +61,7 @@ for f in (SUBMODULES_DIR / "schema" / "vrs" / "json").glob("*"):
 # Get core classes
 core_mapping = GKS_SCHEMA_MAPPING[GKSSchema.CORE]
 for f in (
-    SUBMODULES_DIR / "submodules" / "gks-core" / "schema" / "gks-core" / "json"
+    SUBMODULES_DIR / "submodules" / "gkm-core" / "schema" / "gkm-core" / "json"
 ).glob("*"):
     _update_gks_schema_mapping(f, core_mapping)
 

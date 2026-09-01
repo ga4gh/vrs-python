@@ -22,9 +22,9 @@ from ga4gh.core.version import CORE_VERSION
 
 
 class GKSCoreMetadataMixin(GKSMetadataMixin):
-    """Provide GKS-Core model metadata."""
+    """Provide gkm-core model metadata."""
 
-    _product_name = "gks-core"
+    _product_name = "gkm-core"
     _product_version = CORE_VERSION
 
 
@@ -220,7 +220,7 @@ class ConceptMapping(GKSCoreMetadataMixin, Element, BaseModelForbidExtra):
     )
 
 
-class ConceptSet(GKSCoreMetadataMixin, Element, BaseModelForbidExtra):
+class ConceptSet(GKSCoreMetadataMixin, Entity, BaseModelForbidExtra):
     """A set of concepts that may be considered as dependent (occurring together), or
     independent (existing separately) in the context of some knowledge reported about
     them, as indicated by a set membership operator. e.g. a set of independent molecular
@@ -271,11 +271,15 @@ class Extension(GKSCoreMetadataMixin, Element, BaseModelForbidExtra):
     )
 
 
-class MappableConcept(GKSCoreMetadataMixin, Element, BaseModelForbidExtra):
+class MappableConcept(GKSCoreMetadataMixin, Entity, BaseModelForbidExtra):
     """A concept based on a primaryCoding and/or name that may be mapped to one or more other `Codings`."""
 
     _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
 
+    type: Literal["MappableConcept"] = Field(
+        default="MappableConcept",
+        description='MUST be "MappableConcept".',
+    )
     conceptType: str | None = Field(  # noqa: N815
         default=None,
         description="A term indicating the type of concept being represented by the MappableConcept.",
