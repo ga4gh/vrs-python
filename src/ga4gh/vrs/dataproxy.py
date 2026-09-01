@@ -17,6 +17,44 @@ from urllib.parse import urlparse
 _logger = logging.getLogger(__name__)
 
 
+def resolve_cache_size(env_var: str, default: str) -> int | None:
+    """Resolve an :func:`functools.lru_cache` ``maxsize`` from the environment.
+
+    Accepts an integer, or ``-1``/``"none"`` for an unbounded cache. ``0``
+    disables caching, per ``functools`` semantics. Read at import time, since
+    the decorators are applied when the class bodies are evaluated.
+
+    :raises ValueError: if the value is neither an integer nor ``"none"``
+    """
+    value = os.environ.get(env_var) or default
+    if value.strip().lower() == "none":
+        return None
+    try:
+        size = int(value)
+    except ValueError as e:
+        msg = f"{env_var} must be an integer or 'none', got {value!r}"
+        raise ValueError(msg) from e
+    return None if size < 0 else size
+
+
+# maxsize for caches of small fixed-size values: lengths, digests, aliases.
+DATAPROXY_CACHE_SIZE = resolve_cache_size("GA4GH_VRS_DATAPROXY_CACHE_SIZE", "8192")
+
+# maxsize for the REST backend's sequence payload cache. Much smaller by default
+# because entries are bounded only by the caller's span: the normalization path
+# stores 1-2 base strings, but an unbounded fetch stores a whole contig per
+# entry. This is the only get_sequence cache; the local SeqRepo and refget
+# backends do not cache sequence payloads.
+#
+# Note this memoizes fetched *regions*, keyed on the exact (identifier, start,
+# end) triple — not sequences. An overlapping span is a miss, and a cached
+# full-sequence entry never serves a sub-range request, so raising this only
+# helps when identical regions are re-fetched.
+REST_SEQUENCE_CACHE_SIZE = resolve_cache_size(
+    "GA4GH_VRS_REST_DATAPROXY_SEQUENCE_CACHE_SIZE", "128"
+)
+
+
 class DataProxyValidationError(Exception):
     """Class for validation errors during data proxy methods"""
 
@@ -136,6 +174,7 @@ class AliasDataProxy(ABC):
 
         :param ac: public accession in simple or curie form from which to derive the refget accession
         :return: Refget Accession if found
+        :raises ValueError: if the backend reports more than one ``ga4gh:`` alias
         """
         if ac is None:
             return None
@@ -150,8 +189,21 @@ class AliasDataProxy(ABC):
         try:
             aliases = self.translate_sequence_identifier(ac, namespace="ga4gh")
         except KeyError:
-            _logger.exception("KeyError when getting refget accession: %s", ac)
+            # A missing accession is a normal backend coverage outcome. Avoid
+            # formatting and emitting a traceback for every lookup miss.
+            _logger.debug("Unable to derive refget accession for %s", ac)
         else:
+            # A sequence can only have 1 refget accession because it is based on
+            # content digest, so taking [0] is sufficient. Assert that rather than
+            # assuming it: translate_sequence_identifier filters on the ``ga4gh:``
+            # namespace, not on ``SQ.``, and returns a set-derived list whose order
+            # is arbitrary, so silently taking [0] of a longer list would pick
+            # unpredictably between genuinely different accessions.
+            if len(aliases) > 1:
+                msg = (
+                    f"Expected at most one ga4gh alias for {ac}, got {sorted(aliases)}"
+                )
+                raise ValueError(msg)
             if aliases:
                 refget_accession = aliases[0].split("ga4gh:")[-1]
 
@@ -241,7 +293,7 @@ class CompositeDataProxy(DataProxy):
         self._sequence_proxy = sequence_proxy
         self._alias_proxy = alias_proxy
 
-    @functools.lru_cache(maxsize=512)
+    @functools.lru_cache(maxsize=DATAPROXY_CACHE_SIZE)
     def _resolve_ga4gh_identifier(self, identifier: str) -> str:
         """Translate identifier to a GA4GH SQ digest via the alias backend.
 
@@ -249,13 +301,10 @@ class CompositeDataProxy(DataProxy):
         :return: GA4GH identifier (``ga4gh:SQ.…``)
         :raises KeyError: if no GA4GH alias is found
         """
-        aliases = self._alias_proxy.translate_sequence_identifier(
-            identifier, namespace="ga4gh"
-        )
-        sq_aliases = [a for a in aliases if a.startswith("ga4gh:SQ.")]
-        if not sq_aliases:
+        refget_accession = self._alias_proxy.derive_refget_accession(identifier)
+        if refget_accession is None:
             raise KeyError(identifier)
-        return sq_aliases[0]
+        return f"ga4gh:{refget_accession}"
 
     def get_sequence(
         self, identifier: str, start: int | None = None, end: int | None = None
@@ -288,6 +337,10 @@ class CompositeDataProxy(DataProxy):
     def get_aliases(self, identifier: str) -> list[str]:
         """Return all aliases for the specified sequence, delegating to the alias backend."""
         return self._alias_proxy.get_aliases(identifier)
+
+    def derive_refget_accession(self, ac: str) -> str | None:
+        """Derive a refget accession through the alias backend's optimized path."""
+        return self._alias_proxy.derive_refget_accession(ac)
 
 
 class SequenceProxy(Sequence):

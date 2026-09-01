@@ -14,7 +14,11 @@ from urllib.parse import ParseResult
 import requests
 from bioutils.accessions import coerce_namespace
 
-from ga4gh.vrs.dataproxy import DataProxy
+from ga4gh.vrs.dataproxy import (
+    DATAPROXY_CACHE_SIZE,
+    REST_SEQUENCE_CACHE_SIZE,
+    DataProxy,
+)
 
 _logger = logging.getLogger(__name__)
 
@@ -36,7 +40,7 @@ class SeqRepoDataProxy(DataProxy):
         """Return the specified sequence or subsequence from local SeqRepo."""
         return self.sr.fetch_uri(coerce_namespace(identifier), start, end)
 
-    @functools.lru_cache(maxsize=512)  # noqa: B019
+    @functools.lru_cache(maxsize=DATAPROXY_CACHE_SIZE)  # noqa: B019
     def get_sequence_length(self, identifier: str) -> int:
         """Return the length of the specified sequence from local SeqRepo."""
         ns, a = coerce_namespace(identifier).split(":", 2)
@@ -47,7 +51,7 @@ class SeqRepoDataProxy(DataProxy):
         seqinfo = self.sr.sequences.fetch_seqinfo(seq_id)
         return seqinfo["len"]
 
-    @functools.lru_cache(maxsize=512)  # noqa: B019
+    @functools.lru_cache(maxsize=DATAPROXY_CACHE_SIZE)  # noqa: B019
     def get_aliases(self, identifier: str) -> list[str]:
         """Return all aliases for the specified sequence from local SeqRepo."""
         ns, a = coerce_namespace(identifier).split(":", 2)
@@ -77,7 +81,7 @@ class SeqRepoRESTDataProxy(DataProxy):
             ping_resp = requests.get(ping_url)  # noqa: S113
             ping_resp.raise_for_status()
 
-    @functools.lru_cache  # noqa: B019
+    @functools.lru_cache(maxsize=REST_SEQUENCE_CACHE_SIZE)  # noqa: B019
     def get_sequence(
         self, identifier: str, start: int | None = None, end: int | None = None
     ) -> str:
@@ -91,7 +95,7 @@ class SeqRepoRESTDataProxy(DataProxy):
         resp.raise_for_status()
         return resp.text
 
-    @functools.lru_cache  # noqa: B019
+    @functools.lru_cache(maxsize=DATAPROXY_CACHE_SIZE)  # noqa: B019
     def _get_metadata(self, identifier: str) -> dict:
         """Fetch metadata from the REST service.
 

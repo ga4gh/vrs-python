@@ -24,6 +24,7 @@
 - Translating from and to other variant formats
 - [Annotate VCFs with VRS](https://github.com/ga4gh/vrs-python/blob/main/docs/extras/vcf_annotator.md)
 - Convert GA4GH objects between inlined and referenced forms
+- [Pluggable sequence/alias data backends (SeqRepo, refget)](https://github.com/ga4gh/vrs-python/blob/main/docs/dataproxy_backends.md)
 
 ## Known Issues
 
@@ -249,6 +250,12 @@ export GA4GH_VRS_REFGET_CACHE_DIR=/path/to/refget-cache-root
 If `GA4GH_VRS_REFGET_CACHE_DIR` is unset, vrs-python falls back to an XDG-style
 cache root under `XDG_CACHE_HOME` or `~/.cache`. Each remote refget store gets
 its own deterministic cache subdirectory under that root.
+
+In-process lookup caches can be sized with `GA4GH_VRS_DATAPROXY_CACHE_SIZE`
+(lengths, digests, and aliases; default 8192) and
+`GA4GH_VRS_REST_DATAPROXY_SEQUENCE_CACHE_SIZE` (REST sequence payloads; default
+128). See [DataProxy backends](docs/dataproxy_backends.md) for the full list of
+backends, URI schemes, and caching behavior.
 
 ## VRS-Python and VRS Version Correspondence
 

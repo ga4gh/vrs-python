@@ -10,6 +10,7 @@ import pytest
 
 from ga4gh.vrs.dataproxy import CompositeDataProxy, create_dataproxy
 from ga4gh.vrs.dataproxy_refget import (
+    RefgetAliasDataProxy,
     RefgetSequenceDataProxy,
     _create_refget_dataproxy,
     _extract_digest,
@@ -63,9 +64,13 @@ def _make_mock_store(
         record.metadata = metadata
         record.decode.return_value = decode_returns
         store.get_sequence.return_value = record
+        store.get_sequence_metadata.return_value = metadata
+        store.get_sequence_metadata_by_alias.return_value = metadata
         store.get_substring.return_value = SEQ
     else:
         store.get_sequence.return_value = None
+        store.get_sequence_metadata.return_value = None
+        store.get_sequence_metadata_by_alias.return_value = None
         store.get_substring.return_value = None
     return store
 
@@ -179,6 +184,8 @@ class TestRefgetGetSequenceLength:
         store = _make_mock_store()
         dp = RefgetSequenceDataProxy(store)
         assert dp.get_sequence_length(GA4GH_ID) == SEQ_LENGTH
+        store.get_sequence_metadata.assert_called_once_with(DIGEST)
+        store.get_sequence.assert_not_called()
 
     def test_not_found(self) -> None:
         store = _make_mock_store(has_sequence=False)
@@ -191,6 +198,28 @@ class TestRefgetGetSequenceLength:
         dp = RefgetSequenceDataProxy(store)
         with pytest.raises(KeyError, match="NM_000551.3"):
             dp.get_sequence_length("NM_000551.3")
+
+
+# --- RefgetAliasDataProxy ---
+
+
+class TestRefgetAliasDataProxy:
+    def test_resolve_alias_uses_metadata_only(self) -> None:
+        store = _make_mock_store()
+        dp = RefgetAliasDataProxy(store)
+
+        assert dp._resolve_to_digest("refseq:NM_000551.3") == DIGEST
+        store.get_sequence_metadata_by_alias.assert_called_once_with(
+            "refseq", "NM_000551.3"
+        )
+        store.get_sequence_by_alias.assert_not_called()
+
+    def test_derive_refget_accession_skips_reverse_alias_scan(self) -> None:
+        store = _make_mock_store()
+        dp = RefgetAliasDataProxy(store)
+
+        assert dp.derive_refget_accession("refseq:NM_000551.3") == SQ_ID
+        store.get_aliases_for_sequence.assert_not_called()
 
 
 # --- CompositeDataProxy ---
@@ -211,6 +240,7 @@ def _make_composite(
         "MD5:abc123",
     ]
     alias_proxy.translate_sequence_identifier.return_value = [GA4GH_ID]
+    alias_proxy.derive_refget_accession.return_value = SQ_ID
 
     composite = CompositeDataProxy(seq_proxy, alias_proxy)
     return composite, seq_store, alias_proxy
@@ -229,14 +259,12 @@ class TestCompositeGetSequence:
         composite, seq_store, alias_proxy = _make_composite()
         result = composite.get_sequence("NM_000551.3", 0, 10)
         assert result == SEQ
-        alias_proxy.translate_sequence_identifier.assert_called_once_with(
-            "NM_000551.3", namespace="ga4gh"
-        )
+        alias_proxy.derive_refget_accession.assert_called_once_with("NM_000551.3")
 
     def test_alias_not_found(self) -> None:
         """Non-GA4GH identifier with no alias raises KeyError."""
         composite, _, alias_proxy = _make_composite()
-        alias_proxy.translate_sequence_identifier.return_value = []
+        alias_proxy.derive_refget_accession.return_value = None
         with pytest.raises(KeyError, match="NM_999999.1"):
             composite.get_sequence("NM_999999.1", 0, 10)
 
@@ -250,9 +278,7 @@ class TestCompositeGetSequenceLength:
     def test_alias_fallback(self) -> None:
         composite, _, alias_proxy = _make_composite()
         assert composite.get_sequence_length("NM_000551.3") == SEQ_LENGTH
-        alias_proxy.translate_sequence_identifier.assert_called_once_with(
-            "NM_000551.3", namespace="ga4gh"
-        )
+        alias_proxy.derive_refget_accession.assert_called_once_with("NM_000551.3")
 
 
 class TestCompositeGetAliases:
@@ -261,6 +287,13 @@ class TestCompositeGetAliases:
         aliases = composite.get_aliases("NM_000551.3")
         assert GA4GH_ID in aliases
         alias_proxy.get_aliases.assert_called_once_with("NM_000551.3")
+
+    def test_derive_refget_accession_delegates_to_alias_proxy(self) -> None:
+        composite, _, alias_proxy = _make_composite()
+
+        assert composite.derive_refget_accession("NM_000551.3") == SQ_ID
+        alias_proxy.derive_refget_accession.assert_called_once_with("NM_000551.3")
+        alias_proxy.get_aliases.assert_not_called()
 
 
 class TestRefgetRemoteCacheHelpers:
@@ -321,6 +354,7 @@ class TestCreateRefgetDataProxyFactory:
         assert isinstance(proxy, CompositeDataProxy)
         fake_refget_store.open_local.assert_called_once_with(parsed_uri.path)
         fake_refget_store.open_remote.assert_not_called()
+        local_store.set_quiet.assert_called_once_with(True)
         local_store.pull_aliases.assert_called_once_with()
 
     def test_http_uri_uses_open_remote_with_env_cache_root(

@@ -10,6 +10,18 @@ at ``GA4GH_VRS_REFGET_CACHE_DIR`` when set, otherwise under an XDG-style
 default cache directory.
 
 Requires the ``refget`` optional dependency group: ``pip install ga4gh.vrs[refget]``
+
+Known divergence from SeqRepo
+-----------------------------
+For protein sequences containing embedded stop-codon ``*`` characters, a
+RefgetStore can yield a different ``ga4gh:SQ.`` digest than SeqRepo for the
+*same underlying bytes*. SeqRepo runs the FASTA through
+``bioutils.sequences.normalize_sequence()``, which strips ``*`` before
+computing the digest; gtars hashes the raw bytes. The RefgetStore digest is
+the spec-correct one (VRS does not prescribe ``*`` stripping). In practice
+this only affects a small fraction (~0.1%) of Ensembl protein accessions;
+NCBI RefSeq protein FASTAs contain no ``*`` and DNA/RNA sequences are never
+affected. See ``docs/dataproxy_backends.md`` for details.
 """
 
 from __future__ import annotations
@@ -23,6 +35,7 @@ from typing import TYPE_CHECKING
 from urllib.parse import ParseResult, urlunparse
 
 from ga4gh.vrs.dataproxy import (
+    DATAPROXY_CACHE_SIZE,
     AliasDataProxy,
     CompositeDataProxy,
     DataProxy,
@@ -158,10 +171,10 @@ class RefgetSequenceDataProxy(SequenceDataProxy):
         # This matches Python slice semantics where negative/out-of-range indices
         # are silently clamped.
         if start is None or end is None or start < 0:
-            record = self.store.get_sequence(digest)
-            if record is None:
+            metadata = self.store.get_sequence_metadata(digest)
+            if metadata is None:
                 raise KeyError(identifier)
-            length: int = record.metadata.length
+            length: int = metadata.length
             s = max(start or 0, 0)
             e = min(end, length) if end is not None else length
         else:
@@ -176,7 +189,7 @@ class RefgetSequenceDataProxy(SequenceDataProxy):
             raise KeyError(identifier)
         return result
 
-    @functools.lru_cache(maxsize=512)  # noqa: B019
+    @functools.lru_cache(maxsize=DATAPROXY_CACHE_SIZE)  # noqa: B019
     def get_sequence_length(self, identifier: str) -> int:
         """Return the length of the specified sequence from the refget store.
 
@@ -187,10 +200,10 @@ class RefgetSequenceDataProxy(SequenceDataProxy):
         digest = _extract_digest(identifier)
         if digest is None:
             raise KeyError(identifier)
-        record = self.store.get_sequence(digest)
-        if record is None:
+        metadata = self.store.get_sequence_metadata(digest)
+        if metadata is None:
             raise KeyError(identifier)
-        return record.metadata.length
+        return metadata.length
 
 
 class RefgetAliasDataProxy(AliasDataProxy):
@@ -218,6 +231,7 @@ class RefgetAliasDataProxy(AliasDataProxy):
         except Exception as exc:
             _logger.debug("pull_aliases failed (ignored): %s", exc)
 
+    @functools.lru_cache(maxsize=DATAPROXY_CACHE_SIZE)  # noqa: B019
     def _resolve_to_digest(self, identifier: str) -> str | None:
         """Resolve an identifier in any supported form to a sha512t24u digest.
 
@@ -249,12 +263,19 @@ class RefgetAliasDataProxy(AliasDataProxy):
         ns, _, alias = normalized.partition(":")
         if not alias:
             return None
-        rec = self.store.get_sequence_by_alias(ns, alias)
-        if rec is None:
+        metadata = self.store.get_sequence_metadata_by_alias(ns, alias)
+        if metadata is None:
             return None
-        return rec.metadata.sha512t24u
+        return metadata.sha512t24u
 
-    @functools.lru_cache(maxsize=512)  # noqa: B019
+    def derive_refget_accession(self, ac: str) -> str | None:
+        """Resolve an accession directly without scanning its reverse aliases."""
+        if ac is None:
+            return None
+        digest = self._resolve_to_digest(ac)
+        return f"SQ.{digest}" if digest is not None else None
+
+    @functools.lru_cache(maxsize=DATAPROXY_CACHE_SIZE)  # noqa: B019
     def get_aliases(self, identifier: str) -> list[str]:
         """Return all known aliases for the specified sequence.
 
@@ -330,6 +351,7 @@ def _create_refget_dataproxy(
         msg = f"Refget URI protocol {proto!r} not supported"
         raise ValueError(msg)
 
+    store.set_quiet(True)
     sequence_proxy = RefgetSequenceDataProxy(store)
     alias_proxy = RefgetAliasDataProxy(store)
     return CompositeDataProxy(sequence_proxy, alias_proxy)

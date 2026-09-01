@@ -200,7 +200,7 @@ def test_get_vrs_object_invalid_input(vcf_annotator: VcfAnnotator, caplog):
 
     # No CHROM
     vcf_annotator._get_vrs_object(".-140753336-A-T", [], {}, "GRCh38")
-    assert "KeyError when getting refget accession: GRCh38:." in caplog.text
+    assert "Unable to derive refget accession for GRCh38:." in caplog.text
 
     # No POS
     vcf_annotator._get_vrs_object("7-.-A-T", [], {}, "GRCh38")

@@ -5,7 +5,11 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from ga4gh.vrs.dataproxy import create_dataproxy
+from ga4gh.vrs.dataproxy import (
+    AliasDataProxy,
+    create_dataproxy,
+    resolve_cache_size,
+)
 
 
 @pytest.mark.parametrize("dp", ["rest_dataproxy", "dataproxy"])
@@ -100,3 +104,75 @@ def test_refget_remote_uri_configs(monkeypatch, tmp_path):
         match=re.escape("Refget URI protocol 'fake-scheme' not supported"),
     ):
         create_dataproxy("refget+fake-scheme://example.org/refget-store")
+
+
+class TestResolveCacheSize:
+    """Cache sizes are resolved from the environment at import time."""
+
+    ENV_VAR = "GA4GH_VRS_TEST_CACHE_SIZE"
+
+    @pytest.mark.parametrize(
+        ("env_value", "expected"),
+        [
+            (None, 8192),  # unset falls back to the default
+            ("", 8192),  # empty is treated as unset
+            ("512", 512),
+            ("0", 0),  # functools semantics: caching disabled
+            ("-1", None),  # unbounded
+            ("-99", None),
+            ("none", None),
+            ("NONE", None),
+            ("  none  ", None),
+            ("  512  ", 512),
+        ],
+    )
+    def test_valid_values(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+        env_value: str | None,
+        expected: int | None,
+    ) -> None:
+        if env_value is None:
+            monkeypatch.delenv(self.ENV_VAR, raising=False)
+        else:
+            monkeypatch.setenv(self.ENV_VAR, env_value)
+        assert resolve_cache_size(self.ENV_VAR, "8192") == expected
+
+    @pytest.mark.parametrize("env_value", ["abc", "1.5", "8k"])
+    def test_invalid_values_raise(
+        self, monkeypatch: pytest.MonkeyPatch, env_value: str
+    ) -> None:
+        monkeypatch.setenv(self.ENV_VAR, env_value)
+        with pytest.raises(ValueError, match="must be an integer or 'none'"):
+            resolve_cache_size(self.ENV_VAR, "8192")
+
+
+class TestDeriveRefgetAccession:
+    """A sequence has exactly one refget accession, so >1 ga4gh alias is a bug."""
+
+    SQ_A = "ga4gh:SQ.v_QTc1p-MUYdgrRv4LMT6ByXIOsdw3C_"
+    SQ_B = "ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO"
+
+    @staticmethod
+    def _proxy(aliases: list[str]) -> AliasDataProxy:
+        class _Proxy(AliasDataProxy):
+            def get_aliases(self, identifier: str) -> list[str]:  # noqa: ARG002
+                return aliases
+
+        return _Proxy()
+
+    @pytest.mark.parametrize(
+        ("aliases", "expected"),
+        [
+            ([SQ_A, "refseq:NM_000551.3"], "SQ.v_QTc1p-MUYdgrRv4LMT6ByXIOsdw3C_"),
+            (["refseq:NM_000551.3"], None),  # no ga4gh alias is a normal miss
+        ],
+    )
+    def test_resolves(self, aliases: list[str], expected: str | None) -> None:
+        proxy = self._proxy(aliases)
+        assert proxy.derive_refget_accession("refseq:NM_000551.3") == expected
+
+    def test_multiple_ga4gh_aliases_raises(self) -> None:
+        proxy = self._proxy([self.SQ_A, self.SQ_B, "refseq:NM_000551.3"])
+        with pytest.raises(ValueError, match="Expected at most one ga4gh alias"):
+            proxy.derive_refget_accession("refseq:NM_000551.3")
