@@ -8,6 +8,7 @@ import hgvs.dataproviders.uta
 import hgvs.normalizer
 import hgvs.parser
 import hgvs.variantmapper
+from bioutils.sequences import aa1_to_aa3_lut
 from hgvs.sequencevariant import SequenceVariant as HgvsSequenceVariant
 
 from ga4gh.vrs import models
@@ -266,10 +267,7 @@ class HgvsTools:
         """Create a SequenceVariant object from an Allele object."""
         # build interval and edit depending on sequence type
         if sequence_type == "p":
-            msg = "Only nucleic acid variation is currently supported"
-            raise ValueError(msg)
-            # ival = hgvs.location.Interval(start=start, end=end)
-            # edit = hgvs.edit.AARefAlt(ref=None, alt=vo.state.sequence)
+            return self._to_protein_sequence_variant(vo, sequence, accession)
         start, end = vo.location.start, vo.location.end
         # ib: 0 1 2 3 4 5
         #  h:  1 2 3 4 5
@@ -304,6 +302,65 @@ class HgvsTools:
             # if sequence_type is coding, convert from "n." to "c." before continuing
             if sequence_type == "c":
                 var = self.n_to_c(var)
+
+        except hgvs.exceptions.HGVSDataNotAvailableError:
+            _logger.warning("No data found for accession %s", accession)
+
+        return var
+
+    def _to_protein_sequence_variant(
+        self, vo: models.Allele, sequence: str, accession: str
+    ) -> HgvsSequenceVariant:
+        """Create a protein SequenceVariant object from an Allele object.
+
+        Only single-residue changes with a LiteralSequenceExpression state are
+        currently supported: missense/nonsense substitutions (e.g.
+        ``NP_060204.1:p.Val261Ala``) and single-residue deletions (e.g.
+        ``NP_060204.1:p.Val261del``).
+
+        :param vo: VRS Allele object on a protein sequence
+        :param sequence: ga4gh sequence identifier for the reference sequence
+        :param accession: sequence accession for the HGVS expression
+        :return: HGVS SequenceVariant object
+        :raises ValueError: if the allele is not a single-residue change with a
+            LiteralSequenceExpression state, or the state cannot be expressed
+            as an HGVS protein variant
+        """
+        start, end = vo.location.start, vo.location.end
+        if end - start != 1:
+            msg = "Only single-residue protein changes are currently supported"
+            raise ValueError(msg)
+        if vo.state.type != models.VrsType.LIT_SEQ_EXPR.value:
+            msg = "Only LiteralSequenceExpression states are currently supported for protein variants"
+            raise ValueError(msg)
+
+        ref = self.data_proxy.get_sequence(sequence, start, end)
+        alt = str(vo.state.sequence.root) or None
+        if alt == ref:
+            msg = "Reference alleles cannot be expressed as HGVS protein variants"
+            raise ValueError(msg)
+        if alt is not None and (
+            len(alt) != 1 or (alt not in aa1_to_aa3_lut and alt != "?")
+        ):
+            msg = f"Unsupported protein alternate residue: {alt!r}"
+            raise ValueError(msg)
+
+        # protein coordinates are 1-based; the reference residue is carried
+        # by the position, per HGVS protein notation (e.g. p.Val261Ala)
+        pos = hgvs.location.AAPosition(base=start + 1, aa=ref)
+        ival = hgvs.location.Interval(start=pos, end=pos)
+        if alt is None:
+            edit = hgvs.edit.AARefAlt(ref="", alt=None)
+        else:
+            edit = hgvs.edit.AASub(ref=ref, alt=alt)
+
+        posedit = hgvs.posedit.PosEdit(pos=ival, edit=edit)
+        var = HgvsSequenceVariant(ac=accession, type="p", posedit=posedit)
+
+        try:
+            # if the namespace is GRC, can't normalize, since hgvs can't deal with it
+            parsed = self.parse(str(var))
+            var = self.normalize(parsed)
 
         except hgvs.exceptions.HGVSDataNotAvailableError:
             _logger.warning("No data found for accession %s", accession)
