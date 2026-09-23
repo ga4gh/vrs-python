@@ -15,7 +15,7 @@ from pydantic.main import BaseModel
 
 from ga4gh.core import ga4gh_digest, is_pydantic_instance, pydantic_copy
 from ga4gh.vrs import models
-from ga4gh.vrs.dataproxy import SequenceProxy, _DataProxy
+from ga4gh.vrs.dataproxy import SequenceProxy, _check_location_bounds, _DataProxy
 
 _logger = logging.getLogger(__name__)
 
@@ -111,6 +111,8 @@ def _normalize_allele(
         of the `sequence`.
         To exclude `sequence` from the response, set to 0.
         For no limit, set to `None`.
+    :raises DataProxyValidationError: If the allele location is out of bounds on its
+        sequence
     """
     # Algorithm applies to LiteralSequenceExpression alleles only; other states are returned unchanged
     if not isinstance(input_allele.state, models.LiteralSequenceExpression):
@@ -130,6 +132,14 @@ def _normalize_allele(
 
     # 0: Get reference sequence and interval
     ref_seq = SequenceProxy(data_proxy, alias)
+
+    # Reject locations that do not exist on the sequence before anything is fetched,
+    # since out-of-range fetches may be silently truncated by the sequence backend.
+    # Done before the early returns below, which skip definite ranges.
+    _check_location_bounds(
+        alias, len(ref_seq), input_allele.location.start, input_allele.location.end
+    )
+
     start = _get_allele_location_pos(input_allele, use_start=True)
     if start is None:
         return input_allele
