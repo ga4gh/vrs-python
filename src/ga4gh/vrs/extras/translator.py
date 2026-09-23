@@ -170,7 +170,37 @@ class _Translator(ABC):  # noqa: B024
             model = getattr(models, models.VrsType(var["type"]).value)
         except ValueError:
             return None
-        return model(**var)
+        vo = model(**var)
+
+        # Nothing downstream of this path fetches or normalizes, so this is the only
+        # opportunity to reject a location that does not exist on its sequence
+        location = getattr(vo, "location", None)
+        if isinstance(location, models.SequenceLocation) and isinstance(
+            location.sequenceReference, models.SequenceReference
+        ):
+            self._validate_location_bounds(
+                f"ga4gh:{location.sequenceReference.refgetAccession}",
+                location.start,
+                location.end,
+            )
+        return vo
+
+    def _validate_location_bounds(
+        self,
+        sequence_id: str,
+        start: int | models.Range | None,
+        end: int | models.Range | None,
+    ) -> None:
+        """Raise if ``start``/``end`` are not representable on ``sequence_id``
+
+        :param sequence_id: Sequence identifier as given in the input expression.
+            Use the same identifier that was passed to ``derive_refget_accession`` so
+            that the length lookup is served from the dataproxy's metadata cache.
+        :param start: Start (inter-residue) of the location
+        :param end: End (inter-residue) of the location
+        :raises DataProxyValidationError: If ``start`` or ``end`` is out of bounds
+        """
+        self.data_proxy.validate_location_bounds(sequence_id, start, end)
 
 
 class AlleleTranslator(_Translator):
@@ -203,6 +233,8 @@ class AlleleTranslator(_Translator):
 
         Args:
             values (dict): The values to use for creating the allele object.
+                'sequence_id' (str): The sequence identifier from the input
+                    expression, used to validate `start` and `end`.
                 'refget_accession' (str): The accession ID of the reference genome.
                 'start' (int): The start position of the allele.
                 'end' (int): The end position of the allele.
@@ -212,7 +244,13 @@ class AlleleTranslator(_Translator):
         Returns:
             models.Allele: The created allele object.
 
+        Raises:
+            DataProxyValidationError: If `start` or `end` is out of bounds.
+
         """
+        self._validate_location_bounds(
+            values["sequence_id"], values["start"], values["end"]
+        )
         seq_ref = models.SequenceReference(refgetAccession=values["refget_accession"])
         location = models.SequenceLocation(
             sequenceReference=seq_ref, start=values["start"], end=values["end"]
@@ -276,6 +314,7 @@ class AlleleTranslator(_Translator):
         ins_seq = alt
 
         values = {
+            "sequence_id": sequence,
             "refget_accession": refget_accession,
             "start": start,
             "end": end,
@@ -340,6 +379,9 @@ class AlleleTranslator(_Translator):
         ins_seq = alt
 
         # validation checks
+        # Bounds must be checked before the ref check: an out-of-bounds fetch may be
+        # silently truncated, which would be misreported as a reference mismatch
+        self._validate_location_bounds(sequence, start, end)
         self.data_proxy.validate_ref_seq(
             sequence,
             start,
@@ -349,6 +391,7 @@ class AlleleTranslator(_Translator):
         )
 
         values = {
+            "sequence_id": sequence,
             "refget_accession": refget_accession,
             "start": start,
             "end": end,
@@ -414,6 +457,7 @@ class AlleleTranslator(_Translator):
         ins_seq = g["ins_seq"]
 
         values = {
+            "sequence_id": g["ac"],
             "refget_accession": refget_accession,
             "start": start,
             "end": end,
@@ -551,6 +595,8 @@ class CnvTranslator(_Translator):
                 CopyNumberCount
             copy_change: Copy change. If not provided, default is EFO:0030067 for
                 deletions and EFO:0030070 for duplications
+
+        :raises DataProxyValidationError: If the location is out of bounds
         """
         # sv = self._get_parsed_hgvs(hgvs_dup_del_expr)
         sv = self.hgvs_tools.parse(hgvs_dup_del_expr)
@@ -570,12 +616,16 @@ class CnvTranslator(_Translator):
         if not refget_accession:
             return None
 
+        start = sv.posedit.pos.start.base - 1
+        end = sv.posedit.pos.end.base
+        self._validate_location_bounds(sv.ac, start, end)
+
         location = models.SequenceLocation(
             sequenceReference=models.SequenceReference(
                 refgetAccession=refget_accession
             ),
-            start=sv.posedit.pos.start.base - 1,
-            end=sv.posedit.pos.end.base,
+            start=start,
+            end=end,
         )
 
         copies = kwargs.get("copies")
