@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from abc import ABC
 from enum import Enum
 from typing import Annotated, Any, ClassVar, Literal
 
@@ -34,23 +33,20 @@ class BaseModelForbidExtra(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
 
-class AbstractGKSModel(BaseModel, ABC):
-    """Base class for abstract GKS models."""
+class AbstractGKSModel(BaseModel):
+    """Shared base class for abstract GKS models."""
 
     _abstract: ClassVar[bool] = True
 
-    @model_validator(mode="after")
-    def require_concrete_model(self) -> Self:
-        """Reject direct construction of an abstract model.
+    def __init__(self, /, **data: object) -> None:
+        """Initialize a concrete model.
 
-        :raises ValueError: If an abstract model is instantiated directly.
-        :returns: The validated concrete model.
+        :raises TypeError: If an abstract model is instantiated directly.
         """
         if type(self).__dict__.get("_abstract", False):
             msg = f"{type(self).__name__} is abstract and cannot be instantiated directly."
-            raise ValueError(msg)
-
-        return self
+            raise TypeError(msg)
+        super().__init__(**data)
 
 
 class Relation(str, Enum):

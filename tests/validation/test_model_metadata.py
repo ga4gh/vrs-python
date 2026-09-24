@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-from ga4gh.core import core_models
+from ga4gh.core import AbstractGKSModel, core_models
 from ga4gh.core.metadata import Maturity
 from ga4gh.vrs import models as vrs_models
 
@@ -53,6 +53,21 @@ def _concrete_model_params():
         assert schema_params, f"No concrete models discovered in {json_dir}"
         params.extend(schema_params)
     return params
+
+
+def test_abstract_gks_model_is_a_public_base():
+    """Verify the shared GKS base is exported without core metadata."""
+
+    class OtherGKSModel(AbstractGKSModel):
+        value: str
+
+    assert AbstractGKSModel is core_models.AbstractGKSModel
+
+    with pytest.raises(TypeError, match="abstract and cannot be instantiated"):
+        AbstractGKSModel()
+
+    assert OtherGKSModel(value="test").value == "test"
+    assert "$id" not in OtherGKSModel.model_json_schema()
 
 
 def _abstract_model_params():
@@ -141,5 +156,5 @@ def test_abstract_models_cannot_be_instantiated(model):
     :param model: Abstract Pydantic model.
     """
     kwargs = {} if model is core_models.Element else {"type": "test"}
-    with pytest.raises(ValueError, match="abstract and cannot be instantiated"):
+    with pytest.raises(TypeError, match="abstract and cannot be instantiated"):
         model(**kwargs)
