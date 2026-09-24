@@ -1,4 +1,4 @@
-"""GKS Core Class Definitions"""
+"""GKM Core Class Definitions"""
 
 from __future__ import annotations
 
@@ -34,8 +34,10 @@ class BaseModelForbidExtra(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
 
-class _AbstractGKSModel(GKSCoreMetadataMixin, BaseModel, ABC):
-    """Provide common runtime behavior for abstract GKS models."""
+class AbstractGKSModel(BaseModel, ABC):
+    """Base class for abstract GKS models."""
+
+    _abstract: ClassVar[bool] = True
 
     @model_validator(mode="after")
     def require_concrete_model(self) -> Self:
@@ -132,7 +134,7 @@ class iriReference(GKSCoreMetadataMixin, RootModel):  # noqa: N801
 #########################################
 
 
-class Entity(_AbstractGKSModel):
+class Entity(GKSCoreMetadataMixin, AbstractGKSModel):
     """Anything that exists, has existed, or will exist.
 
     Abstract base class to be extended by other classes. Do NOT instantiate directly.
@@ -162,7 +164,7 @@ class Entity(_AbstractGKSModel):
     )
 
 
-class Element(_AbstractGKSModel):
+class Element(GKSCoreMetadataMixin, AbstractGKSModel):
     """The base definition for all identifiable data objects.
 
     Abstract base class to be extended by other classes. Do NOT instantiate directly.
