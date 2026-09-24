@@ -41,7 +41,7 @@ def _update_gks_schema_mapping(
     spec_class = cls_def["title"]
     gks_schema_mapping.schema_name[spec_class] = cls_def
 
-    if "properties" in cls_def:
+    if "properties" in cls_def and not cls_def.get("abstract"):
         gks_schema_mapping.concrete_classes.add(spec_class)
     elif cls_def.get("type") in {"array", "integer", "string"}:
         gks_schema_mapping.primitives.add(spec_class)
