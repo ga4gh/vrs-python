@@ -11,6 +11,7 @@ Instead, users should use one of the following:
     module name, e.g., `ga4gh.vrs.models.Allele`
 """
 
+import copy
 import inspect
 import sys
 from abc import ABC
@@ -327,7 +328,10 @@ class Ga4ghIdentifiableObject(_ValueObject, ABC):
         - 'always': this will update the vro.id field any time the
             identifier is computed
         - 'never': the vro.id field will not be edited in-place,
-            even when empty
+            even when empty. The vro object is not mutated in any way:
+            digest computation is performed on a deep copy, so neither
+            the vro.digest field nor digest fields on nested objects
+            are set.
 
         Digests will be recalculated even if present if recompute is True.
 
@@ -344,7 +348,10 @@ class Ga4ghIdentifiableObject(_ValueObject, ABC):
         elif in_place == "always":
             self.id = self.compute_ga4gh_identifier(recompute)
         elif in_place == "never":
-            return self.compute_ga4gh_identifier(recompute)
+            # Digest computation stores digests on the object and its nested
+            # identifiable objects, so compute on a deep copy to leave the
+            # caller's object (including its digest fields) untouched.
+            return copy.deepcopy(self).compute_ga4gh_identifier(recompute)
         else:
             msg = "Expected 'in_place' to be one of 'default', 'always', or 'never'"
             raise ValueError(msg)
