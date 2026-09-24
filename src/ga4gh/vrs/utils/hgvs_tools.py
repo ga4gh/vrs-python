@@ -131,8 +131,17 @@ class HgvsTools:
 
         return start, end, state
 
-    def extract_allele_values(self, hgvs_expr: str) -> dict | None:
+    def extract_allele_values(
+        self, hgvs_expr: str, require_validation: bool = True
+    ) -> dict | None:
         """Parse hgvs into a VRS Allele Object
+
+        :param hgvs_expr: HGVS expression to parse
+        :param require_validation: If `True`, the reference allele stated in the
+            HGVS expression (when present, e.g. the `C` in `c.900C>A`) must match
+            the actual reference sequence, otherwise a
+            `DataProxyValidationError` is raised. If `False`, a mismatch is only
+            logged and the allele is still returned. Defaults to `True`.
 
         kwargs:
             rle_seq_limit Optional(int): If RLE is set as the new state after
@@ -180,6 +189,22 @@ class HgvsTools:
             sv = self.c_to_n(sv)
 
         (start, end, state) = self.get_position_and_state(sv)
+
+        # The HGVS expression may state the expected reference allele (e.g. the
+        # `C` in `c.900C>A`, or the deleted bases in `g.44908822delC`). A
+        # mismatch means the input itself is invalid: silently emitting a VRS
+        # Allele would produce a plausible-but-wrong variant object
+        # (ga4gh/vrs-python#364), so validate it against the reference
+        # sequence just like the gnomAD translator does.
+        ref_allele = getattr(sv.posedit.edit, "ref", None)
+        if ref_allele:
+            self.data_proxy.validate_ref_seq(
+                sv.ac,
+                start,
+                end,
+                ref_allele.upper(),
+                require_validation=require_validation,
+            )
 
         return {
             "refget_accession": refget_accession,
