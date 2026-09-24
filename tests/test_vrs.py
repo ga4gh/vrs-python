@@ -194,6 +194,38 @@ def test_cpb():
     assert ga4gh_identify(cpb_431012) == "ga4gh:CPB.x8GH5G73cPMs37jy1-9mJjWynu324rxI"
 
 
+def test_identify_in_place_never_does_not_mutate():
+    """ga4gh_identify(..., in_place="never") must not mutate the input object.
+
+    Regression test for https://github.com/ga4gh/vrs-python/issues/440:
+    digest computation used to set `digest` fields on the object and its
+    nested identifiable objects even when in_place="never".
+    """
+    allele = models.Allele(**allele_dict)
+    before = allele.model_dump_json(exclude_none=True)
+    assert allele.digest is None
+    assert allele.location.digest is None
+
+    obj_id = ga4gh_identify(allele, in_place="never")
+
+    assert obj_id == "ga4gh:VA.Hy2XU_-rp4IMh6I_1NXNecBo8Qx8n0oE"
+    assert allele.id is None
+    assert allele.digest is None
+    assert allele.location.digest is None
+    assert allele.model_dump_json(exclude_none=True) == before
+
+
+def test_identify_in_place_modes_still_mutate():
+    """Sanity check: in_place="default"/"always" keep their mutating behavior."""
+    allele = models.Allele(**allele_dict)
+    assert ga4gh_identify(allele, in_place="default") == "ga4gh:VA.Hy2XU_-rp4IMh6I_1NXNecBo8Qx8n0oE"
+    assert allele.id == "ga4gh:VA.Hy2XU_-rp4IMh6I_1NXNecBo8Qx8n0oE"
+
+    allele = models.Allele(**allele_dict)
+    assert ga4gh_identify(allele, in_place="always") == "ga4gh:VA.Hy2XU_-rp4IMh6I_1NXNecBo8Qx8n0oE"
+    assert allele.id == "ga4gh:VA.Hy2XU_-rp4IMh6I_1NXNecBo8Qx8n0oE"
+
+
 def test_ga4gh_iri():
     iri = models.iriReference.model_construct(
         "ga4gh:VA.Hy2XU_-rp4IMh6I_1NXNecBo8Qx8n0oE"
