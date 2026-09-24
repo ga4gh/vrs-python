@@ -25,40 +25,6 @@ class DataProxyValidationError(Exception):
     """Class for validation errors during data proxy methods"""
 
 
-def _coerce_accession_namespace(ac: str) -> str:
-    """Return ``ac`` as a namespaced CURIE, inferring the namespace if none is given
-
-    e.g. ``NM_000551.3`` -> ``refseq:NM_000551.3``. Identifiers that already carry a
-    namespace (``GRCh38:1``, ``ga4gh:SQ.…``) are returned unchanged.
-
-    Metadata lookups are cached per identifier, so callers that must hit the same
-    cache entry (e.g. deriving a refget accession and then validating bounds on the
-    same input) should both go through this function.
-
-    :param ac: accession in simple or CURIE form
-    :return: accession in CURIE form
-    """
-    if ":" not in ac[1:]:
-        ac = coerce_namespace(ac)
-    return ac
-
-
-def _defined_values(pos: int | Range | None) -> list[int]:
-    """Return the defined values of a location coordinate
-
-    An int yields itself, a ``Range`` yields its non-``None`` members, and ``None``
-    (an undefined endpoint) yields nothing.
-
-    :param pos: ``start`` or ``end`` of a ``SequenceLocation``
-    :return: defined coordinate values
-    """
-    if pos is None:
-        return []
-    if isinstance(pos, Range):
-        return [v for v in pos.root if v is not None]
-    return [pos]
-
-
 def _check_location_bounds(
     sequence_id: str,
     seq_len: int,
@@ -79,11 +45,11 @@ def _check_location_bounds(
     :param end_pos: ``end`` of the location
     :raises DataProxyValidationError: if a defined coordinate is out of bounds
     """
-    bad = [
-        (name, pos)
-        for name, pos in (("start", start_pos), ("end", end_pos))
-        if any(v < 0 or v > seq_len for v in _defined_values(pos))
-    ]
+    bad = []
+    for name, pos in (("start", start_pos), ("end", end_pos)):
+        values = pos.root if isinstance(pos, Range) else [pos]
+        if any(v is not None and not 0 <= v <= seq_len for v in values):
+            bad.append((name, pos))
     if bad:
         # Range is shown as its list form, e.g. end=[4500, 4600]
         detail = ", ".join(
@@ -206,8 +172,9 @@ class _DataProxy(ABC):
         if ac is None:
             return None
 
-        # always coerce the namespace if none provided
-        ac = _coerce_accession_namespace(ac)
+        if ":" not in ac[1:]:
+            # always coerce the namespace if none provided
+            ac = coerce_namespace(ac)
 
         refget_accession = None
         try:
@@ -277,9 +244,8 @@ class _DataProxy(ABC):
         :raises DataProxyValidationError: If a defined coordinate is out of bounds
         :raises KeyError: If ``sequence_id`` is not found
         """
-        # Coerce the same way derive_refget_accession does, so that the metadata
-        # lookup hits the same cache entry
-        sequence_id = _coerce_accession_namespace(sequence_id)
+        # same cache key as derive_refget_accession
+        sequence_id = coerce_namespace(sequence_id)
         seq_len = self.get_metadata(sequence_id)["length"]
         _check_location_bounds(sequence_id, seq_len, start_pos, end_pos)
 
