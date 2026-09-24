@@ -357,7 +357,24 @@ class AlleleTranslator(_Translator):
         return self._create_allele(values, **kwargs)
 
     def _from_hgvs(self, hgvs_expr: str, **kwargs) -> models.Allele | None:
-        allele_values = self.hgvs_tools.extract_allele_values(hgvs_expr)
+        """Parse HGVS expression into VRS Allele
+
+        kwargs:
+            require_validation (bool): If `True` then validation checks must pass in
+                order to return a VRS object. A `DataProxyValidationError` will be
+                raised if validation checks fail. If `False` then VRS object will be
+                returned even if validation checks fail. Defaults to `True`.
+            rle_seq_limit Optional(int): If RLE is set as the new state after
+                normalization, this sets the limit for the length of the `sequence`.
+                To exclude `sequence` from the response, set to 0.
+                For no limit, set to `None`.
+                Defaults value set in instance variable, `rle_seq_limit`.
+            do_normalize (bool): `True` if fully justified normalization should be
+                performed. `False` otherwise. Defaults to `True`
+        """
+        allele_values = self.hgvs_tools.extract_allele_values(
+            hgvs_expr, require_validation=kwargs.get("require_validation", True)
+        )
         if allele_values:
             return self._create_allele(allele_values, **kwargs)
         return None
