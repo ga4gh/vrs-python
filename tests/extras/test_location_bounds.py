@@ -17,7 +17,10 @@ import pytest
 from ga4gh.vrs.dataproxy import DataProxyValidationError, SeqRepoRESTDataProxy
 from ga4gh.vrs.extras.translator import AlleleTranslator, CnvTranslator
 
+NC_000001_11 = "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO"
+NC_000019_10 = "SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl"
 NM_000551_3 = "SQ.v_QTc1p-MUYdgrRv4LMT6ByXIOsdw3C_"
+NP_001346993_1 = "SQ.IPAWzkahAXVA3fBdoFluaU4NA3xTYUer"
 NC_012920_1 = "SQ.k3grVkjY-hoWcCUojHw6VU6GE3MZ8Sct"
 
 
@@ -81,7 +84,7 @@ OUT_OF_BOUNDS = [
         "hgvs",
         "NC_000019.10:g.58617617C>T",
         {},
-        _bounds_msg("refseq:NC_000019.10", "end=58617617", 58617616),
+        _bounds_msg(f"ga4gh:{NC_000019_10}", "end=58617617", 58617616),
         id="hgvs-g-past-end",
     ),
     pytest.param(
@@ -89,7 +92,7 @@ OUT_OF_BOUNDS = [
         "hgvs",
         "NM_000551.3:n.4561_4562insA",
         {},
-        _bounds_msg("refseq:NM_000551.3", "start=4561, end=4561", 4560),
+        _bounds_msg(f"ga4gh:{NM_000551_3}", "start=4561, end=4561", 4560),
         id="hgvs-n-insertion-past-end",
     ),
     # ClinVar references the stop codon, which is not part of the protein sequence
@@ -98,7 +101,7 @@ OUT_OF_BOUNDS = [
         "hgvs",
         "NP_001346993.1:p.Ter194del",
         {},
-        _bounds_msg("refseq:NP_001346993.1", "end=194", 193),
+        _bounds_msg(f"ga4gh:{NP_001346993_1}", "end=194", 193),
         id="hgvs-p-ter-at-length-plus-one",
     ),
     # Zero-width: an out-of-range fetch returns "" and would compare equal to the
@@ -108,7 +111,7 @@ OUT_OF_BOUNDS = [
         "spdi",
         "NM_000551.3:5000:0:AAA",
         {},
-        _bounds_msg("refseq:NM_000551.3", "start=5000, end=5000", 4560),
+        _bounds_msg(f"ga4gh:{NM_000551_3}", "start=5000, end=5000", 4560),
         id="spdi-insertion-past-end",
     ),
     # Must report the bounds error, not "Reference mismatch ... correct ref is ''"
@@ -141,7 +144,7 @@ OUT_OF_BOUNDS = [
         "beacon",
         "1 : 248956423 A > T",
         {},
-        _bounds_msg("GRCh38:1", "end=248956423", 248956422),
+        _bounds_msg(f"ga4gh:{NC_000001_11}", "end=248956423", 248956422),
         id="beacon-past-end",
     ),
     pytest.param(

@@ -182,7 +182,6 @@ class HgvsTools:
         (start, end, state) = self.get_position_and_state(sv)
 
         return {
-            "sequence_id": sv.ac,
             "refget_accession": refget_accession,
             "start": start,
             "end": end,
