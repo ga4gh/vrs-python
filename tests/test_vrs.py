@@ -218,11 +218,17 @@ def test_identify_in_place_never_does_not_mutate():
 def test_identify_in_place_modes_still_mutate():
     """Sanity check: in_place="default"/"always" keep their mutating behavior."""
     allele = models.Allele(**allele_dict)
-    assert ga4gh_identify(allele, in_place="default") == "ga4gh:VA.Hy2XU_-rp4IMh6I_1NXNecBo8Qx8n0oE"
+    assert (
+        ga4gh_identify(allele, in_place="default")
+        == "ga4gh:VA.Hy2XU_-rp4IMh6I_1NXNecBo8Qx8n0oE"
+    )
     assert allele.id == "ga4gh:VA.Hy2XU_-rp4IMh6I_1NXNecBo8Qx8n0oE"
 
     allele = models.Allele(**allele_dict)
-    assert ga4gh_identify(allele, in_place="always") == "ga4gh:VA.Hy2XU_-rp4IMh6I_1NXNecBo8Qx8n0oE"
+    assert (
+        ga4gh_identify(allele, in_place="always")
+        == "ga4gh:VA.Hy2XU_-rp4IMh6I_1NXNecBo8Qx8n0oE"
+    )
     assert allele.id == "ga4gh:VA.Hy2XU_-rp4IMh6I_1NXNecBo8Qx8n0oE"
 
 
