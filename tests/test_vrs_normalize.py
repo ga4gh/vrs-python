@@ -3,7 +3,7 @@ import re
 import pytest
 
 from ga4gh.vrs import models, normalize
-from ga4gh.vrs.dataproxy import DataProxyValidationError
+from ga4gh.vrs.dataproxy import DataProxyValidationError, SeqRepoDataProxy
 
 # Single nucleotide same-as-reference allele.
 allele_dict1 = {
@@ -971,7 +971,7 @@ def _bounds_allele(
     ],
 )
 def test_normalize_location_in_bounds(
-    dataproxy,
+    dataproxy: SeqRepoDataProxy,
     start: int | list[int | None],
     end: int | list[int | None],
     sequence: str,
@@ -994,7 +994,7 @@ def test_normalize_location_in_bounds(
     ],
 )
 def test_normalize_location_out_of_bounds(
-    dataproxy,
+    dataproxy: SeqRepoDataProxy,
     start: int | list[int | None],
     end: int | list[int | None],
     detail: str,

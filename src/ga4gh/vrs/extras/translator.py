@@ -170,20 +170,7 @@ class _Translator(ABC):  # noqa: B024
             model = getattr(models, models.VrsType(var["type"]).value)
         except ValueError:
             return None
-        vo = model(**var)
-
-        # Nothing downstream of this path fetches or normalizes, so this is the only
-        # opportunity to reject a location that does not exist on its sequence
-        location = getattr(vo, "location", None)
-        if isinstance(location, models.SequenceLocation) and isinstance(
-            location.sequenceReference, models.SequenceReference
-        ):
-            self.data_proxy.validate_location_bounds(
-                f"ga4gh:{location.sequenceReference.refgetAccession}",
-                location.start,
-                location.end,
-            )
-        return vo
+        return model(**var)
 
 
 class AlleleTranslator(_Translator):
@@ -591,7 +578,9 @@ class CnvTranslator(_Translator):
 
         start = sv.posedit.pos.start.base - 1
         end = sv.posedit.pos.end.base
-        self.data_proxy.validate_location_bounds(sv.ac, start, end)
+        self.data_proxy.validate_location_bounds(
+            f"ga4gh:{refget_accession}", start, end
+        )
 
         location = models.SequenceLocation(
             sequenceReference=models.SequenceReference(

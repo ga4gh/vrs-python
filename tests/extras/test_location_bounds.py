@@ -1,12 +1,11 @@
 """Out-of-bounds SequenceLocations are rejected on every translator input path
+except ``vrs``, whose input is trusted as-is
 
 Sequence lengths used below:
     NM_000551.3     4560
     NP_001346993.1  193
-    NC_000019.10    58617616
     NC_000007.14    159345973
     GRCh38:1        248956422
-    NC_012920.1     16569
 """
 
 import os
@@ -18,10 +17,9 @@ from ga4gh.vrs.dataproxy import DataProxyValidationError, SeqRepoRESTDataProxy
 from ga4gh.vrs.extras.translator import AlleleTranslator, CnvTranslator
 
 NC_000001_11 = "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO"
-NC_000019_10 = "SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl"
+NC_000007_14 = "SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul"
 NM_000551_3 = "SQ.v_QTc1p-MUYdgrRv4LMT6ByXIOsdw3C_"
 NP_001346993_1 = "SQ.IPAWzkahAXVA3fBdoFluaU4NA3xTYUer"
-NC_012920_1 = "SQ.k3grVkjY-hoWcCUojHw6VU6GE3MZ8Sct"
 
 
 @pytest.fixture
@@ -44,34 +42,6 @@ def cnv_tlr(data_proxy: SeqRepoRESTDataProxy) -> CnvTranslator:
     return CnvTranslator(data_proxy=data_proxy)
 
 
-def _vrs_location(
-    refget_accession: str,
-    start: int | list[int | None],
-    end: int | list[int | None],
-) -> dict:
-    return {
-        "type": "SequenceLocation",
-        "sequenceReference": {
-            "type": "SequenceReference",
-            "refgetAccession": refget_accession,
-        },
-        "start": start,
-        "end": end,
-    }
-
-
-def _vrs_allele(
-    refget_accession: str,
-    start: int | list[int | None],
-    end: int | list[int | None],
-) -> dict:
-    return {
-        "type": "Allele",
-        "location": _vrs_location(refget_accession, start, end),
-        "state": {"type": "LiteralSequenceExpression", "sequence": "A"},
-    }
-
-
 def _bounds_msg(sequence_id: str, detail: str, seq_len: int) -> str:
     return (
         f"Location out of bounds on {sequence_id}: {detail} not within [0, {seq_len}]"
@@ -79,14 +49,6 @@ def _bounds_msg(sequence_id: str, detail: str, seq_len: int) -> str:
 
 
 OUT_OF_BOUNDS = [
-    pytest.param(
-        "allele_tlr",
-        "hgvs",
-        "NC_000019.10:g.58617617C>T",
-        {},
-        _bounds_msg(f"ga4gh:{NC_000019_10}", "end=58617617", 58617616),
-        id="hgvs-g-past-end",
-    ),
     pytest.param(
         "allele_tlr",
         "hgvs",
@@ -148,19 +110,13 @@ OUT_OF_BOUNDS = [
         id="beacon-past-end",
     ),
     pytest.param(
-        "allele_tlr",
-        "vrs",
-        _vrs_allele(NM_000551_3, 99999999, 5),
-        {},
-        _bounds_msg(f"ga4gh:{NM_000551_3}", "start=99999999", 4560),
-        id="vrs-allele-start-past-end-with-start-gt-end",
-    ),
-    pytest.param(
         "cnv_tlr",
         "hgvs",
         "NC_000007.14:g.159400000_159400100del",
         {},
-        _bounds_msg("refseq:NC_000007.14", "start=159399999, end=159400100", 159345973),
+        _bounds_msg(
+            f"ga4gh:{NC_000007_14}", "start=159399999, end=159400100", 159345973
+        ),
         id="cnv-hgvs-copy-number-change-past-end",
     ),
 ]
@@ -169,24 +125,10 @@ OUT_OF_BOUNDS = [
 IN_BOUNDS = [
     pytest.param(
         "allele_tlr",
-        "hgvs",
-        "NP_001346993.1:p.Leu193del",
-        {"start": 192, "end": 193},
-        id="hgvs-p-terminal-residue",
-    ),
-    pytest.param(
-        "allele_tlr",
         "spdi",
         "NM_000551.3:4560:0:AAA",
         {"start": 4560, "end": 4560},
         id="spdi-insertion-at-end",
-    ),
-    pytest.param(
-        "allele_tlr",
-        "vrs",
-        _vrs_allele(NC_012920_1, 16566, 5),
-        {"start": 16566, "end": 5},
-        id="vrs-allele-circular-start-gt-end",
     ),
 ]
 

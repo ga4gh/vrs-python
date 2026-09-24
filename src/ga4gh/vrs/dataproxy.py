@@ -25,43 +25,6 @@ class DataProxyValidationError(Exception):
     """Class for validation errors during data proxy methods"""
 
 
-def _check_location_bounds(
-    sequence_id: str,
-    seq_len: int,
-    start_pos: int | Range | None,
-    end_pos: int | Range | None,
-) -> None:
-    """Raise if any defined value of ``start``/``end`` lies outside ``[0, seq_len]``
-
-    Each coordinate is checked independently; the relationship between ``start`` and
-    ``end`` is never inspected, since ``start > end`` is valid on circular sequences.
-    ``pos == seq_len`` is valid (an insertion point after the final residue).
-    Undefined endpoints, and the undefined side of an indefinite ``Range``, are
-    skipped rather than treated as 0.
-
-    :param sequence_id: identifier of the sequence, used in the error message
-    :param seq_len: length of the sequence
-    :param start_pos: ``start`` of the location
-    :param end_pos: ``end`` of the location
-    :raises DataProxyValidationError: if a defined coordinate is out of bounds
-    """
-    bad = []
-    for name, pos in (("start", start_pos), ("end", end_pos)):
-        values = pos.root if isinstance(pos, Range) else [pos]
-        if any(v is not None and not 0 <= v <= seq_len for v in values):
-            bad.append((name, pos))
-    if bad:
-        # Range is shown as its list form, e.g. end=[4500, 4600]
-        detail = ", ".join(
-            f"{name}={pos.root if isinstance(pos, Range) else pos}" for name, pos in bad
-        )
-        err_msg = (
-            f"Location out of bounds on {sequence_id}: {detail} "
-            f"not within [0, {seq_len}]"
-        )
-        raise DataProxyValidationError(err_msg)
-
-
 class _DataProxy(ABC):
     """abstract class / interface for VRS data needs
 
@@ -247,7 +210,22 @@ class _DataProxy(ABC):
         # same cache key as derive_refget_accession
         sequence_id = coerce_namespace(sequence_id)
         seq_len = self.get_metadata(sequence_id)["length"]
-        _check_location_bounds(sequence_id, seq_len, start_pos, end_pos)
+        bad = []
+        for name, pos in (("start", start_pos), ("end", end_pos)):
+            values = pos.root if isinstance(pos, Range) else [pos]
+            if any(v is not None and not 0 <= v <= seq_len for v in values):
+                bad.append((name, pos))
+        if bad:
+            # Range is shown as its list form, e.g. end=[4500, 4600]
+            detail = ", ".join(
+                f"{name}={pos.root if isinstance(pos, Range) else pos}"
+                for name, pos in bad
+            )
+            err_msg = (
+                f"Location out of bounds on {sequence_id}: {detail} "
+                f"not within [0, {seq_len}]"
+            )
+            raise DataProxyValidationError(err_msg)
 
 
 class _SeqRepoDataProxyBase(_DataProxy):
