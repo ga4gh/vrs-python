@@ -11,14 +11,12 @@ import logging
 import os
 from abc import ABC, abstractmethod
 from collections.abc import Sequence
-from typing import TYPE_CHECKING
 from urllib.parse import urlparse
 
 import requests
 from bioutils.accessions import coerce_namespace
 
-if TYPE_CHECKING:
-    from ga4gh.vrs.models import Range
+from ga4gh.vrs.models import Range
 
 _logger = logging.getLogger(__name__)
 
@@ -27,7 +25,7 @@ class DataProxyValidationError(Exception):
     """Class for validation errors during data proxy methods"""
 
 
-def coerce_accession_namespace(ac: str) -> str:
+def _coerce_accession_namespace(ac: str) -> str:
     """Return ``ac`` as a namespaced CURIE, inferring the namespace if none is given
 
     e.g. ``NM_000551.3`` -> ``refseq:NM_000551.3``. Identifiers that already carry a
@@ -45,7 +43,7 @@ def coerce_accession_namespace(ac: str) -> str:
     return ac
 
 
-def _defined_values(pos: "int | Range | None") -> list[int]:
+def _defined_values(pos: int | Range | None) -> list[int]:
     """Return the defined values of a location coordinate
 
     An int yields itself, a ``Range`` yields its non-``None`` members, and ``None``
@@ -56,16 +54,16 @@ def _defined_values(pos: "int | Range | None") -> list[int]:
     """
     if pos is None:
         return []
-    if isinstance(pos, int):
-        return [pos]
-    return [v for v in pos.root if v is not None]
+    if isinstance(pos, Range):
+        return [v for v in pos.root if v is not None]
+    return [pos]
 
 
 def _check_location_bounds(
     sequence_id: str,
     seq_len: int,
-    start_pos: "int | Range | None",
-    end_pos: "int | Range | None",
+    start_pos: int | Range | None,
+    end_pos: int | Range | None,
 ) -> None:
     """Raise if any defined value of ``start``/``end`` lies outside ``[0, seq_len]``
 
@@ -88,12 +86,13 @@ def _check_location_bounds(
     ]
     if bad:
         # Range is shown as its list form, e.g. end=[4500, 4600]
-        detail = ", ".join(f"{name}={getattr(pos, 'root', pos)}" for name, pos in bad)
+        detail = ", ".join(
+            f"{name}={pos.root if isinstance(pos, Range) else pos}" for name, pos in bad
+        )
         err_msg = (
             f"Location out of bounds on {sequence_id}: {detail} "
             f"not within [0, {seq_len}]"
         )
-        _logger.warning(err_msg)
         raise DataProxyValidationError(err_msg)
 
 
@@ -208,7 +207,7 @@ class _DataProxy(ABC):
             return None
 
         # always coerce the namespace if none provided
-        ac = coerce_accession_namespace(ac)
+        ac = _coerce_accession_namespace(ac)
 
         refget_accession = None
         try:
@@ -257,15 +256,15 @@ class _DataProxy(ABC):
     def validate_location_bounds(
         self,
         sequence_id: str,
-        start_pos: "int | Range | None",
-        end_pos: "int | Range | None",
+        start_pos: int | Range | None,
+        end_pos: int | Range | None,
     ) -> None:
         """Ensure that ``start_pos`` and ``end_pos`` are representable on ``sequence_id``.
 
         Each defined coordinate must be within ``[0, len(sequence)]`` (inter-residue).
-        Undefined (``None``) endpoints are skipped, and for a ``Range`` the largest
-        defined member is checked. ``start_pos`` and ``end_pos`` are checked
-        independently, so ``start_pos > end_pos`` (circular sequences) is permitted.
+        Undefined (``None``) endpoints are skipped, and for a ``Range`` every defined
+        member is checked. ``start_pos`` and ``end_pos`` are checked independently, so
+        ``start_pos > end_pos`` (circular sequences) is permitted.
 
         Unlike ``validate_ref_seq``, there is no ``require_validation`` option: an
         out-of-bounds location has no meaning, so the error is always raised. Sequence
@@ -280,7 +279,7 @@ class _DataProxy(ABC):
         """
         # Coerce the same way derive_refget_accession does, so that the metadata
         # lookup hits the same cache entry
-        sequence_id = coerce_accession_namespace(sequence_id)
+        sequence_id = _coerce_accession_namespace(sequence_id)
         seq_len = self.get_metadata(sequence_id)["length"]
         _check_location_bounds(sequence_id, seq_len, start_pos, end_pos)
 

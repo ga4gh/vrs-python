@@ -178,29 +178,12 @@ class _Translator(ABC):  # noqa: B024
         if isinstance(location, models.SequenceLocation) and isinstance(
             location.sequenceReference, models.SequenceReference
         ):
-            self._validate_location_bounds(
+            self.data_proxy.validate_location_bounds(
                 f"ga4gh:{location.sequenceReference.refgetAccession}",
                 location.start,
                 location.end,
             )
         return vo
-
-    def _validate_location_bounds(
-        self,
-        sequence_id: str,
-        start: int | models.Range | None,
-        end: int | models.Range | None,
-    ) -> None:
-        """Raise if ``start``/``end`` are not representable on ``sequence_id``
-
-        :param sequence_id: Sequence identifier as given in the input expression.
-            Use the same identifier that was passed to ``derive_refget_accession`` so
-            that the length lookup is served from the dataproxy's metadata cache.
-        :param start: Start (inter-residue) of the location
-        :param end: End (inter-residue) of the location
-        :raises DataProxyValidationError: If ``start`` or ``end`` is out of bounds
-        """
-        self.data_proxy.validate_location_bounds(sequence_id, start, end)
 
 
 class AlleleTranslator(_Translator):
@@ -244,11 +227,8 @@ class AlleleTranslator(_Translator):
         Returns:
             models.Allele: The created allele object.
 
-        Raises:
-            DataProxyValidationError: If `start` or `end` is out of bounds.
-
         """
-        self._validate_location_bounds(
+        self.data_proxy.validate_location_bounds(
             values["sequence_id"], values["start"], values["end"]
         )
         seq_ref = models.SequenceReference(refgetAccession=values["refget_accession"])
@@ -381,7 +361,7 @@ class AlleleTranslator(_Translator):
         # validation checks
         # Bounds must be checked before the ref check: an out-of-bounds fetch may be
         # silently truncated, which would be misreported as a reference mismatch
-        self._validate_location_bounds(sequence, start, end)
+        self.data_proxy.validate_location_bounds(sequence, start, end)
         self.data_proxy.validate_ref_seq(
             sequence,
             start,
@@ -595,8 +575,6 @@ class CnvTranslator(_Translator):
                 CopyNumberCount
             copy_change: Copy change. If not provided, default is EFO:0030067 for
                 deletions and EFO:0030070 for duplications
-
-        :raises DataProxyValidationError: If the location is out of bounds
         """
         # sv = self._get_parsed_hgvs(hgvs_dup_del_expr)
         sv = self.hgvs_tools.parse(hgvs_dup_del_expr)
@@ -618,7 +596,7 @@ class CnvTranslator(_Translator):
 
         start = sv.posedit.pos.start.base - 1
         end = sv.posedit.pos.end.base
-        self._validate_location_bounds(sv.ac, start, end)
+        self.data_proxy.validate_location_bounds(sv.ac, start, end)
 
         location = models.SequenceLocation(
             sequenceReference=models.SequenceReference(

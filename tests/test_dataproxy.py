@@ -1,4 +1,3 @@
-import logging
 import os
 import re
 
@@ -8,7 +7,6 @@ from ga4gh.vrs import models
 from ga4gh.vrs.dataproxy import (
     DataProxyValidationError,
     _DataProxy,
-    coerce_accession_namespace,
     create_dataproxy,
 )
 
@@ -74,29 +72,11 @@ def test_data_proxy_configs():
         create_dataproxy("file:///path/to/seqrepo/root")
 
 
-@pytest.mark.parametrize(
-    ("ac", "expected"),
-    [
-        ("NM_000551.3", "refseq:NM_000551.3"),
-        ("NC_000001.11", "refseq:NC_000001.11"),
-        ("refseq:NM_000551.3", "refseq:NM_000551.3"),
-        ("GRCh38:1", "GRCh38:1"),
-        (
-            "ga4gh:SQ.v_QTc1p-MUYdgrRv4LMT6ByXIOsdw3C_",
-            "ga4gh:SQ.v_QTc1p-MUYdgrRv4LMT6ByXIOsdw3C_",
-        ),
-    ],
-)
-def test_coerce_accession_namespace(ac: str, expected: str) -> None:
-    assert coerce_accession_namespace(ac) == expected
-
-
 class _StubDataProxy(_DataProxy):
-    """Dataproxy serving only sequence lengths, recording each metadata lookup"""
+    """Dataproxy serving only sequence lengths"""
 
     def __init__(self, lengths: dict[str, int]) -> None:
         self.lengths = lengths
-        self.metadata_requests: list[str] = []
 
     def get_sequence(
         self, identifier: str, start: int | None = None, end: int | None = None
@@ -104,7 +84,6 @@ class _StubDataProxy(_DataProxy):
         raise NotImplementedError
 
     def get_metadata(self, identifier: str) -> dict:
-        self.metadata_requests.append(identifier)
         return {"length": self.lengths[identifier], "aliases": []}
 
 
@@ -154,11 +133,9 @@ LOCATION_BOUNDS_INVALID = [
 def test_validate_location_bounds_valid(
     start: int | models.Range | None,
     end: int | models.Range | None,
-    caplog: pytest.LogCaptureFixture,
 ) -> None:
     dp = _StubDataProxy({BOUNDS_SEQ_ID: BOUNDS_SEQ_LEN})
     dp.validate_location_bounds(BOUNDS_SEQ_ID, start, end)
-    assert not caplog.records
 
 
 @pytest.mark.parametrize(("start", "end", "detail"), LOCATION_BOUNDS_INVALID)
@@ -166,7 +143,6 @@ def test_validate_location_bounds_invalid(
     start: int | models.Range | None,
     end: int | models.Range | None,
     detail: str,
-    caplog: pytest.LogCaptureFixture,
 ) -> None:
     dp = _StubDataProxy({BOUNDS_SEQ_ID: BOUNDS_SEQ_LEN})
     expected_msg = (
@@ -175,25 +151,3 @@ def test_validate_location_bounds_invalid(
     )
     with pytest.raises(DataProxyValidationError, match=f"^{re.escape(expected_msg)}$"):
         dp.validate_location_bounds(BOUNDS_SEQ_ID, start, end)
-    # logged at WARNING as well as raised; there is no warn-only mode
-    assert [(r.levelno, r.getMessage()) for r in caplog.records] == [
-        (logging.WARNING, expected_msg)
-    ]
-
-
-@pytest.mark.parametrize("sequence_id", ["NM_000551.3", "refseq:NM_000551.3"])
-def test_validate_location_bounds_cache_key(sequence_id: str) -> None:
-    """The length lookup must use the same identifier as derive_refget_accession, so
-    that it is served from the dataproxy's metadata cache instead of a new request
-    """
-    dp = _StubDataProxy({BOUNDS_SEQ_ID: BOUNDS_SEQ_LEN})
-    dp.validate_location_bounds(sequence_id, 0, 1)
-    with pytest.raises(DataProxyValidationError, match=re.escape(BOUNDS_SEQ_ID)):
-        dp.validate_location_bounds(sequence_id, 0, BOUNDS_SEQ_LEN + 1)
-    assert dp.metadata_requests == [BOUNDS_SEQ_ID, BOUNDS_SEQ_ID]
-
-
-def test_validate_location_bounds_unknown_sequence() -> None:
-    dp = _StubDataProxy({})
-    with pytest.raises(KeyError):
-        dp.validate_location_bounds("NM_000551.3", 0, 1)

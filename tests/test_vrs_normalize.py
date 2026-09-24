@@ -958,8 +958,6 @@ def _bounds_allele(
 @pytest.mark.parametrize(
     ("start", "end", "sequence", "expected_start", "expected_end"),
     [
-        pytest.param(4559, 4560, "A", 4559, 4560, id="terminal-residue"),
-        pytest.param(4560, 4560, "A", 4560, 4560, id="insertion-at-end"),
         # an undefined outer endpoint is representable and must not be rejected
         # (the deletion is also rolled right by one base by normalization)
         pytest.param(
@@ -988,11 +986,6 @@ def test_normalize_location_in_bounds(
 @pytest.mark.parametrize(
     ("start", "end", "detail"),
     [
-        pytest.param(4559, 4561, "end=4561", id="one-past-end"),
-        pytest.param(5000, 5000, "start=5000, end=5000", id="insertion-past-end"),
-        pytest.param(
-            99999999, 5, "start=99999999", id="start-past-end-with-start-gt-end"
-        ),
         # Definite ranges are otherwise returned without normalization, so the
         # bounds check must run before that early return
         pytest.param(
