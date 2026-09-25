@@ -188,8 +188,8 @@ def test_abstract_model_metadata(model, definition):
         ),
     ],
 )
-def test_abstract_vrs_models_preserve_legacy_union_api(model, member, payload):
-    """Abstract VRS schemas retain the public sealed-union adapters."""
+def test_abstract_vrs_models_dispatch_typed_payloads(model, member, payload):
+    """Abstract VRS models dispatch typed payloads to their concrete members."""
     result = model.model_validate(payload)
     assert isinstance(result.root, member)
     assert isinstance(model(root=payload).root, member)
