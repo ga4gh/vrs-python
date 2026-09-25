@@ -44,7 +44,7 @@ from ga4gh.core.models import (
     Entity,
     iriReference,
 )
-from ga4gh.core.metadata import GKSMetadataMixin, Maturity
+from ga4gh.core.metadata import GKMMetadataMixin, Maturity
 from ga4gh.core.pydantic import get_pydantic_root, getattr_in
 from ga4gh.vrs.version import VRS_VERSION
 
@@ -263,7 +263,7 @@ def _recurse_ga4gh_serialize(obj):
     return obj
 
 
-class VRSMetadataMixin(GKSMetadataMixin):
+class VRSMetadataMixin(GKMMetadataMixin):
     """Provide metadata for a concrete VRS model."""
 
     _product_name = "vrs"
@@ -293,13 +293,14 @@ class _ValueObject(Entity, ABC):
         return False
 
 
-class Ga4ghIdentifiableObject(_ValueObject, ABC):
+class Ga4ghIdentifiableObject(VRSMetadataMixin, _ValueObject, ABC):
     """A contextual value object for which a GA4GH computed identifier can be created.
     All GA4GH Identifiable Objects may have computed digests from the VRS Computed
     Identifier algorithm.
     """
 
     _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
+    _abstract: ClassVar[bool] = True
 
     type: str
     digest: (
@@ -611,7 +612,7 @@ class SequenceReference(VRSMetadataMixin, _ValueObject, BaseModelForbidExtra):
         inherent = ["refgetAccession", "type"]
 
 
-class SequenceLocation(VRSMetadataMixin, Ga4ghIdentifiableObject, BaseModelForbidExtra):
+class SequenceLocation(Ga4ghIdentifiableObject, BaseModelForbidExtra):
     """A `Location` defined by an interval on a `Sequence`."""
 
     _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
@@ -748,9 +749,7 @@ class SequenceOffsetLocation(VRSMetadataMixin, _ValueObject, BaseModelForbidExtr
         ]
 
 
-class RelativeSequenceLocation(
-    VRSMetadataMixin, Ga4ghIdentifiableObject, BaseModelForbidExtra
-):
+class RelativeSequenceLocation(Ga4ghIdentifiableObject, BaseModelForbidExtra):
     """A location on a base sequence and its position relative to a boundary offset on a
     mapped sequence gap. Typically used to describe intronic locations that exist with
     respect to a mapped RNA transcript sequence.
@@ -776,22 +775,17 @@ class RelativeSequenceLocation(
 
 
 #########################################
-# base variation
-#########################################
-
-
-class _VariationBase(Ga4ghIdentifiableObject, ABC):
-    """Base class for variation"""
-
-    expressions: list[Expression] | None = None
-
-
-#########################################
 # vrs molecular variation
 #########################################
 
 
-class Allele(VRSMetadataMixin, _VariationBase, BaseModelForbidExtra):
+class _VariationBase(Ga4ghIdentifiableObject, ABC):
+    """Base class for variation."""
+
+    expressions: list[Expression] | None = None
+
+
+class Allele(_VariationBase, BaseModelForbidExtra):
     """The state of a molecule at a `Location`."""
 
     _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
@@ -837,7 +831,7 @@ class Allele(VRSMetadataMixin, _VariationBase, BaseModelForbidExtra):
         inherent = ["location", "state", "type"]
 
 
-class RelativeAllele(VRSMetadataMixin, _VariationBase, BaseModelForbidExtra):
+class RelativeAllele(_VariationBase, BaseModelForbidExtra):
     """An Allele defined on a mapped location relative to a base location. Often used to describe intronic variants."""
 
     _maturity: ClassVar[Maturity] = Maturity.DRAFT
@@ -868,7 +862,7 @@ class RelativeAllele(VRSMetadataMixin, _VariationBase, BaseModelForbidExtra):
         inherent = ["mappedState", "baseState", "relativeLocation", "type"]
 
 
-class CisPhasedBlock(VRSMetadataMixin, _VariationBase, BaseModelForbidExtra):
+class CisPhasedBlock(_VariationBase, BaseModelForbidExtra):
     """An ordered set of co-occurring `Variation` on the same molecule."""
 
     _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
@@ -902,7 +896,7 @@ class CisPhasedBlock(VRSMetadataMixin, _VariationBase, BaseModelForbidExtra):
 #########################################
 
 
-class Adjacency(VRSMetadataMixin, _VariationBase, BaseModelForbidExtra):
+class Adjacency(_VariationBase, BaseModelForbidExtra):
     """The `Adjacency` class represents the adjoining of the end of a sequence with the
     beginning of an adjacent sequence, potentially with an intervening linker sequence.
     """
@@ -948,7 +942,7 @@ class Adjacency(VRSMetadataMixin, _VariationBase, BaseModelForbidExtra):
         inherent = ["adjoinedSequences", "linker", "type"]
 
 
-class Terminus(VRSMetadataMixin, _VariationBase, BaseModelForbidExtra):
+class Terminus(_VariationBase, BaseModelForbidExtra):
     """The `Terminus` data class provides a structure for describing the end
     (terminus) of a sequence. Structurally similar to Adjacency but the linker sequence
     is not allowed and it removes the unnecessary array structure.
@@ -995,7 +989,7 @@ class TraversalBlock(VRSMetadataMixin, _ValueObject, BaseModelForbidExtra):
         inherent = ["component", "orientation", "type"]
 
 
-class DerivativeMolecule(VRSMetadataMixin, _VariationBase, BaseModelForbidExtra):
+class DerivativeMolecule(_VariationBase, BaseModelForbidExtra):
     """The "Derivative Molecule" data class is a structure for describing a derivate
     molecule composed from multiple sequence components.
     """
@@ -1028,7 +1022,7 @@ class DerivativeMolecule(VRSMetadataMixin, _VariationBase, BaseModelForbidExtra)
 #########################################
 
 
-class CopyNumberCount(VRSMetadataMixin, _VariationBase, BaseModelForbidExtra):
+class CopyNumberCount(_VariationBase, BaseModelForbidExtra):
     """The absolute count of discrete copies of a `Location`, within a system
     (e.g. genome, cell, etc.).
     """
@@ -1052,7 +1046,7 @@ class CopyNumberCount(VRSMetadataMixin, _VariationBase, BaseModelForbidExtra):
         inherent = ["copies", "location", "type"]
 
 
-class CopyNumberChange(VRSMetadataMixin, _VariationBase, BaseModelForbidExtra):
+class CopyNumberChange(_VariationBase, BaseModelForbidExtra):
     """An assessment of the copy number of a `Location` within a system
     (e.g. genome, cell, etc.) relative to a baseline ploidy.
     """
@@ -1080,14 +1074,15 @@ class CopyNumberChange(VRSMetadataMixin, _VariationBase, BaseModelForbidExtra):
 
 
 #########################################
-# vrs kinds of variation, expression, and location
+# Sealed-union adapters
 #########################################
 
 
 class MolecularVariation(VRSMetadataMixin, RootModel):
-    """A `variation` on a contiguous molecule."""
+    """A `Variation` on a contiguous molecule."""
 
     _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
+    _abstract: ClassVar[bool] = True
 
     root: (
         Allele
@@ -1107,6 +1102,7 @@ class SequenceExpression(VRSMetadataMixin, RootModel):
     """An expression describing a `Sequence`."""
 
     _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
+    _abstract: ClassVar[bool] = True
 
     root: LiteralSequenceExpression | ReferenceLengthExpression | LengthExpression = (
         Field(
@@ -1121,6 +1117,7 @@ class Location(VRSMetadataMixin, RootModel):
     """A contiguous segment of a biological sequence."""
 
     _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
+    _abstract: ClassVar[bool] = True
 
     root: SequenceLocation | RelativeSequenceLocation = Field(
         ...,
@@ -1135,9 +1132,11 @@ class Variation(VRSMetadataMixin, RootModel):
     """A representation of the state of one or more biomolecules."""
 
     _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
+    _abstract: ClassVar[bool] = True
 
     root: (
         Allele
+        | RelativeAllele
         | CisPhasedBlock
         | Adjacency
         | Terminus
@@ -1159,6 +1158,7 @@ class SystemicVariation(VRSMetadataMixin, RootModel):
     """
 
     _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
+    _abstract: ClassVar[bool] = True
 
     root: CopyNumberChange | CopyNumberCount = Field(
         ...,
