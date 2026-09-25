@@ -44,7 +44,7 @@ from ga4gh.core.models import (
     Entity,
     iriReference,
 )
-from ga4gh.core.metadata import GKSMetadataMixin, Maturity
+from ga4gh.core.metadata import GKMMetadataMixin, Maturity
 from ga4gh.core.pydantic import get_pydantic_root, getattr_in
 from ga4gh.vrs.version import VRS_VERSION
 
@@ -263,7 +263,7 @@ def _recurse_ga4gh_serialize(obj):
     return obj
 
 
-class VRSMetadataMixin(GKSMetadataMixin):
+class VRSMetadataMixin(GKMMetadataMixin):
     """Provide metadata for a concrete VRS model."""
 
     _product_name = "vrs"
@@ -435,36 +435,6 @@ class Expression(VRSMetadataMixin, Element, BaseModelForbidExtra):
 
 
 #########################################
-# abstract VRS classes
-#########################################
-
-
-class Variation(Ga4ghIdentifiableObject, ABC):
-    """A representation of the state of one or more biomolecules."""
-
-    _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
-    _abstract: ClassVar[bool] = True
-
-    expressions: list[Expression] | None = None
-
-
-class MolecularVariation(Variation, ABC):
-    """A `Variation` on a contiguous molecule."""
-
-    _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
-    _abstract: ClassVar[bool] = True
-
-
-class SystemicVariation(Variation, ABC):
-    """A Variation of multiple molecules in the context of a system, e.g. a genome,
-    sample, or homologous chromosomes.
-    """
-
-    _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
-    _abstract: ClassVar[bool] = True
-
-
-#########################################
 # vrs numerics, comparators, and ranges
 #########################################
 
@@ -544,19 +514,7 @@ class sequenceString(VRSMetadataMixin, RootModel):
 #########################################
 
 
-#########################################
-# sequence expressions
-#########################################
-
-
-class SequenceExpression(VRSMetadataMixin, _ValueObject, ABC):
-    """An expression describing a sequence."""
-
-    _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
-    _abstract: ClassVar[bool] = True
-
-
-class LengthExpression(SequenceExpression, BaseModelForbidExtra):
+class LengthExpression(VRSMetadataMixin, _ValueObject, BaseModelForbidExtra):
     """A sequence expressed only by its length."""
 
     _maturity: ClassVar[Maturity] = Maturity.DRAFT
@@ -573,7 +531,7 @@ class LengthExpression(SequenceExpression, BaseModelForbidExtra):
         inherent = ["length", "type"]
 
 
-class ReferenceLengthExpression(SequenceExpression, BaseModelForbidExtra):
+class ReferenceLengthExpression(VRSMetadataMixin, _ValueObject, BaseModelForbidExtra):
     """An expression of a length of a sequence from a repeating reference."""
 
     _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
@@ -597,7 +555,7 @@ class ReferenceLengthExpression(SequenceExpression, BaseModelForbidExtra):
         inherent = ["length", "repeatSubunitLength", "type"]
 
 
-class LiteralSequenceExpression(SequenceExpression, BaseModelForbidExtra):
+class LiteralSequenceExpression(VRSMetadataMixin, _ValueObject, BaseModelForbidExtra):
     """An explicit expression of a Sequence."""
 
     _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
@@ -654,19 +612,7 @@ class SequenceReference(VRSMetadataMixin, _ValueObject, BaseModelForbidExtra):
         inherent = ["refgetAccession", "type"]
 
 
-#########################################
-# locations
-#########################################
-
-
-class Location(Ga4ghIdentifiableObject, ABC):
-    """A contiguous segment of a biological sequence."""
-
-    _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
-    _abstract: ClassVar[bool] = True
-
-
-class SequenceLocation(Location, BaseModelForbidExtra):
+class SequenceLocation(Ga4ghIdentifiableObject, BaseModelForbidExtra):
     """A `Location` defined by an interval on a `Sequence`."""
 
     _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
@@ -803,7 +749,7 @@ class SequenceOffsetLocation(VRSMetadataMixin, _ValueObject, BaseModelForbidExtr
         ]
 
 
-class RelativeSequenceLocation(Location, BaseModelForbidExtra):
+class RelativeSequenceLocation(Ga4ghIdentifiableObject, BaseModelForbidExtra):
     """A location on a base sequence and its position relative to a boundary offset on a
     mapped sequence gap. Typically used to describe intronic locations that exist with
     respect to a mapped RNA transcript sequence.
@@ -833,7 +779,13 @@ class RelativeSequenceLocation(Location, BaseModelForbidExtra):
 #########################################
 
 
-class Allele(MolecularVariation, BaseModelForbidExtra):
+class _VariationBase(Ga4ghIdentifiableObject, ABC):
+    """Base class for variation."""
+
+    expressions: list[Expression] | None = None
+
+
+class Allele(_VariationBase, BaseModelForbidExtra):
     """The state of a molecule at a `Location`."""
 
     _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
@@ -879,7 +831,7 @@ class Allele(MolecularVariation, BaseModelForbidExtra):
         inherent = ["location", "state", "type"]
 
 
-class RelativeAllele(MolecularVariation, BaseModelForbidExtra):
+class RelativeAllele(_VariationBase, BaseModelForbidExtra):
     """An Allele defined on a mapped location relative to a base location. Often used to describe intronic variants."""
 
     _maturity: ClassVar[Maturity] = Maturity.DRAFT
@@ -910,7 +862,7 @@ class RelativeAllele(MolecularVariation, BaseModelForbidExtra):
         inherent = ["mappedState", "baseState", "relativeLocation", "type"]
 
 
-class CisPhasedBlock(MolecularVariation, BaseModelForbidExtra):
+class CisPhasedBlock(_VariationBase, BaseModelForbidExtra):
     """An ordered set of co-occurring `Variation` on the same molecule."""
 
     _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
@@ -944,7 +896,7 @@ class CisPhasedBlock(MolecularVariation, BaseModelForbidExtra):
 #########################################
 
 
-class Adjacency(MolecularVariation, BaseModelForbidExtra):
+class Adjacency(_VariationBase, BaseModelForbidExtra):
     """The `Adjacency` class represents the adjoining of the end of a sequence with the
     beginning of an adjacent sequence, potentially with an intervening linker sequence.
     """
@@ -990,7 +942,7 @@ class Adjacency(MolecularVariation, BaseModelForbidExtra):
         inherent = ["adjoinedSequences", "linker", "type"]
 
 
-class Terminus(MolecularVariation, BaseModelForbidExtra):
+class Terminus(_VariationBase, BaseModelForbidExtra):
     """The `Terminus` data class provides a structure for describing the end
     (terminus) of a sequence. Structurally similar to Adjacency but the linker sequence
     is not allowed and it removes the unnecessary array structure.
@@ -1037,7 +989,7 @@ class TraversalBlock(VRSMetadataMixin, _ValueObject, BaseModelForbidExtra):
         inherent = ["component", "orientation", "type"]
 
 
-class DerivativeMolecule(MolecularVariation, BaseModelForbidExtra):
+class DerivativeMolecule(_VariationBase, BaseModelForbidExtra):
     """The "Derivative Molecule" data class is a structure for describing a derivate
     molecule composed from multiple sequence components.
     """
@@ -1070,7 +1022,7 @@ class DerivativeMolecule(MolecularVariation, BaseModelForbidExtra):
 #########################################
 
 
-class CopyNumberCount(SystemicVariation, BaseModelForbidExtra):
+class CopyNumberCount(_VariationBase, BaseModelForbidExtra):
     """The absolute count of discrete copies of a `Location`, within a system
     (e.g. genome, cell, etc.).
     """
@@ -1094,7 +1046,7 @@ class CopyNumberCount(SystemicVariation, BaseModelForbidExtra):
         inherent = ["copies", "location", "type"]
 
 
-class CopyNumberChange(SystemicVariation, BaseModelForbidExtra):
+class CopyNumberChange(_VariationBase, BaseModelForbidExtra):
     """An assessment of the copy number of a `Location` within a system
     (e.g. genome, cell, etc.) relative to a baseline ploidy.
     """
@@ -1119,6 +1071,102 @@ class CopyNumberChange(SystemicVariation, BaseModelForbidExtra):
     class ga4gh(Ga4ghIdentifiableObject.ga4gh):
         prefix = "CX"
         inherent = ["copyChange", "location", "type"]
+
+
+#########################################
+# Sealed-union adapters
+#########################################
+
+
+class MolecularVariation(VRSMetadataMixin, RootModel):
+    """A `Variation` on a contiguous molecule."""
+
+    _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
+    _abstract: ClassVar[bool] = True
+
+    root: (
+        Allele
+        | RelativeAllele
+        | CisPhasedBlock
+        | Adjacency
+        | Terminus
+        | DerivativeMolecule
+    ) = Field(
+        ...,
+        json_schema_extra={"description": "A `variation` on a contiguous molecule."},
+        discriminator="type",
+    )
+
+
+class SequenceExpression(VRSMetadataMixin, RootModel):
+    """An expression describing a `Sequence`."""
+
+    _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
+    _abstract: ClassVar[bool] = True
+
+    root: LiteralSequenceExpression | ReferenceLengthExpression | LengthExpression = (
+        Field(
+            ...,
+            json_schema_extra={"description": "An expression describing a `Sequence`."},
+            discriminator="type",
+        )
+    )
+
+
+class Location(VRSMetadataMixin, RootModel):
+    """A contiguous segment of a biological sequence."""
+
+    _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
+    _abstract: ClassVar[bool] = True
+
+    root: SequenceLocation | RelativeSequenceLocation = Field(
+        ...,
+        json_schema_extra={
+            "description": "A contiguous segment of a biological sequence."
+        },
+        discriminator="type",
+    )
+
+
+class Variation(VRSMetadataMixin, RootModel):
+    """A representation of the state of one or more biomolecules."""
+
+    _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
+    _abstract: ClassVar[bool] = True
+
+    root: (
+        Allele
+        | RelativeAllele
+        | CisPhasedBlock
+        | Adjacency
+        | Terminus
+        | DerivativeMolecule
+        | CopyNumberChange
+        | CopyNumberCount
+    ) = Field(
+        ...,
+        json_schema_extra={
+            "description": "A representation of the state of one or more biomolecules."
+        },
+        discriminator="type",
+    )
+
+
+class SystemicVariation(VRSMetadataMixin, RootModel):
+    """A Variation of multiple molecules in the context of a system, e.g. a genome,
+    sample, or homologous chromosomes.
+    """
+
+    _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
+    _abstract: ClassVar[bool] = True
+
+    root: CopyNumberChange | CopyNumberCount = Field(
+        ...,
+        json_schema_extra={
+            "description": "A Variation of multiple molecules in the context of a system, e.g. a genome, sample, or homologous chromosomes."
+        },
+        discriminator="type",
+    )
 
 
 # At end so classes exist

@@ -21,12 +21,15 @@ from ga4gh.core.identifiers import (
     use_ga4gh_compute_identifier_when,
 )
 from ga4gh.core.metadata import (
+    GKMMaturityMixin,
+    GKMMetadataMixin,
+    GKMSchemaMixin,
     GKSMaturityMixin,
     GKSMetadataMixin,
     GKSSchemaMixin,
     Maturity,
 )
-from ga4gh.core.models import AbstractGKSModel, GKSCoreMetadataMixin
+from ga4gh.core.models import GKMCoreMetadataMixin, GKSCoreMetadataMixin
 from ga4gh.core.pydantic import is_curie_type, is_pydantic_instance, pydantic_copy
 from ga4gh.core.version import CORE_VERSION
 
@@ -45,7 +48,10 @@ __all__ = [
     "GA4GH_DIGEST_REGEXP",
     "GA4GH_IR_REGEXP",
     "GA4GH_PREFIX_SEP",
-    "AbstractGKSModel",
+    "GKMCoreMetadataMixin",
+    "GKMMaturityMixin",
+    "GKMMetadataMixin",
+    "GKMSchemaMixin",
     "GKSCoreMetadataMixin",
     "GKSMaturityMixin",
     "GKSMetadataMixin",

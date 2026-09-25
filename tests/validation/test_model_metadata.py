@@ -1,42 +1,61 @@
-"""Test model metadata against the GKS source and JSON schemas."""
+"""Test model metadata against the GKM JSON schemas."""
 
 import json
 from pathlib import Path
 
 import pytest
-import yaml
+from jsonschema import Draft202012Validator
+from pydantic import RootModel
+from referencing import Registry, Resource
 
-from ga4gh.core import AbstractGKSModel, core_models
-from ga4gh.core.metadata import Maturity
+from ga4gh.core import core_models
+from ga4gh.core.metadata import (
+    GKMMaturityMixin,
+    GKMMetadataMixin,
+    GKMSchemaMixin,
+    GKSMaturityMixin,
+    GKSMetadataMixin,
+    GKSSchemaMixin,
+    Maturity,
+)
 from ga4gh.vrs import models as vrs_models
 
 SUBMODULES_DIR = Path(__file__).parents[2] / "submodules" / "vrs"
 SCHEMAS = (
     (
         core_models,
-        SUBMODULES_DIR
-        / "submodules"
-        / "gkm-core"
-        / "schema"
-        / "gkm-core"
-        / "gkm-core-source.yaml",
         SUBMODULES_DIR / "submodules" / "gkm-core" / "schema" / "gkm-core" / "json",
     ),
     (
         vrs_models,
-        SUBMODULES_DIR / "schema" / "vrs" / "vrs-source.yaml",
         SUBMODULES_DIR / "schema" / "vrs" / "json",
     ),
 )
 
 
+@pytest.mark.parametrize(
+    ("deprecated_model", "canonical_model"),
+    [
+        (GKSMaturityMixin, GKMMaturityMixin),
+        (GKSSchemaMixin, GKMSchemaMixin),
+        (GKSMetadataMixin, GKMMetadataMixin),
+        (core_models.GKSCoreMetadataMixin, core_models.GKMCoreMetadataMixin),
+    ],
+)
+def test_gks_models_are_deprecated(deprecated_model, canonical_model):
+    """GKS model names remain available as deprecated aliases."""
+    with pytest.deprecated_call():
+        deprecated_model()
+    assert issubclass(deprecated_model, canonical_model)
+
+
 def _concrete_model_params():
     """Return concrete model metadata discovered from JSON Schema files.
 
-    :returns: Pytest parameters for concrete GKS models.
+    :returns: Pytest parameters for concrete GKM models.
     """
     params = []
-    for model_module, _, json_dir in SCHEMAS:
+    for model_module, json_dir in SCHEMAS:
         schema_params = []
         for schema_path in sorted(json_dir.iterdir()):
             model = getattr(model_module, schema_path.name, None)
@@ -55,56 +74,29 @@ def _concrete_model_params():
     return params
 
 
-def test_abstract_gks_model_is_a_public_base():
-    """Verify the shared GKS base is exported without core metadata."""
-
-    class OtherGKSModel(AbstractGKSModel):
-        value: str
-
-    assert AbstractGKSModel is core_models.AbstractGKSModel
-
-    with pytest.raises(TypeError, match="abstract and cannot be instantiated"):
-        AbstractGKSModel()
-
-    assert OtherGKSModel(value="test").value == "test"
-    assert "$id" not in OtherGKSModel.model_json_schema()
-
-
 def _abstract_model_params():
-    """Return abstract model metadata found only in source schemas.
+    """Return abstract model metadata from JSON Schema files.
 
-    :returns: Pytest parameters for abstract GKS models and source definitions.
+    :returns: Pytest parameters for abstract GKM models and JSON definitions.
     """
     params = []
-    for model_module, source_path, _ in SCHEMAS:
+    for model_module, json_dir in SCHEMAS:
         schema_params = []
-        with source_path.open() as source_file:
-            definitions = yaml.safe_load(source_file)["$defs"]
-
-        for name, definition in definitions.items():
+        for schema_path in sorted(json_dir.iterdir()):
+            with schema_path.open() as schema_file:
+                definition = json.load(schema_file)
             if definition.get("abstract") is True:
                 schema_params.append(
-                    pytest.param(getattr(model_module, name), definition, id=name)
+                    pytest.param(
+                        getattr(model_module, schema_path.name),
+                        definition,
+                        id=schema_path.name,
+                    )
                 )
 
-        assert schema_params, f"No abstract models discovered in {source_path}"
+        assert schema_params, f"No abstract models discovered in {json_dir}"
 
         params.extend(schema_params)
-    return params
-
-
-def _abstract_schema_model_params():
-    """Return abstract model metadata discovered from source schemas.
-
-    :returns: Pytest parameters for abstract GKS models.
-    """
-    params = []
-    for model_module, source_path, _ in SCHEMAS:
-        with source_path.open() as source_file:
-            definitions = yaml.safe_load(source_file)["$defs"]
-        for name, definition in definitions.items():
-            if definition.get("abstract") is True:
-                params.append(pytest.param(getattr(model_module, name), id=name))
     return params
 
 
@@ -131,30 +123,99 @@ def test_concrete_model_metadata(model, schema):
 
 @pytest.mark.parametrize(("model", "definition"), _abstract_model_params())
 def test_abstract_model_metadata(model, definition):
-    """Verify abstract models expose their source-defined maturity.
+    """Verify abstract models expose JSON Schema metadata.
 
     :param model: Abstract Pydantic model.
-    :param definition: Corresponding source schema definition.
+    :param definition: Corresponding JSON Schema definition.
     """
     assert "_maturity" in model.__dict__
     assert model.maturity() == Maturity(definition["maturity"])
+    generated_schema = model.model_json_schema()
+    assert generated_schema["$id"] == definition["$id"]
+    assert generated_schema["maturity"] == definition["maturity"]
+    assert generated_schema["abstract"] is True
+    if issubclass(model, RootModel):
+        # These are public compatibility adapters for the former sealed unions.
+        # Pydantic adds a discriminator mapping and local $defs references, whereas
+        # the published abstract schemas use portable references.
+        assert generated_schema["discriminator"]["propertyName"] == "type"
+        assert len(generated_schema["oneOf"]) == len(definition["oneOf"])
+    else:
+        assert generated_schema.get("discriminator") == definition.get("discriminator")
+        assert generated_schema.get("oneOf") == definition.get("oneOf")
 
 
-@pytest.mark.parametrize("model", _abstract_schema_model_params())
-def test_abstract_model_schema_metadata(model):
-    """Verify abstract models emit the abstract schema keyword.
+@pytest.mark.parametrize(
+    ("model", "member", "payload"),
+    [
+        (
+            vrs_models.Variation,
+            vrs_models.CopyNumberChange,
+            {
+                "type": "CopyNumberChange",
+                "location": "ga4gh:VSL.test",
+                "copyChange": "loss",
+            },
+        ),
+        (
+            vrs_models.MolecularVariation,
+            vrs_models.Allele,
+            {
+                "type": "Allele",
+                "location": "ga4gh:VSL.test",
+                "state": {"type": "LiteralSequenceExpression", "sequence": "A"},
+            },
+        ),
+        (
+            vrs_models.SystemicVariation,
+            vrs_models.CopyNumberCount,
+            {"type": "CopyNumberCount", "location": "ga4gh:VSL.test", "copies": 2},
+        ),
+        (
+            vrs_models.SequenceExpression,
+            vrs_models.LiteralSequenceExpression,
+            {"type": "LiteralSequenceExpression", "sequence": "A"},
+        ),
+        (
+            vrs_models.Location,
+            vrs_models.SequenceLocation,
+            {
+                "type": "SequenceLocation",
+                "sequenceReference": "SQ.test",
+                "start": 1,
+                "end": 2,
+            },
+        ),
+    ],
+)
+def test_abstract_vrs_models_preserve_legacy_union_api(model, member, payload):
+    """Abstract VRS schemas retain the public sealed-union adapters."""
+    result = model.model_validate(payload)
+    assert isinstance(result.root, member)
+    assert isinstance(model(root=payload).root, member)
 
-    :param model: Abstract Pydantic model.
-    """
-    assert model.model_json_schema()["abstract"] is True
 
+def test_variation_adapter_validates_against_published_schema():
+    """Validate the backward-compatible adapter output against the VRS schema."""
+    schema_paths = [
+        *SUBMODULES_DIR.glob("schema/vrs/json/*"),
+        *SUBMODULES_DIR.glob("submodules/gkm-core/schema/gkm-core/json/*"),
+    ]
+    schemas = [json.loads(path.read_text()) for path in schema_paths]
+    registry = Registry().with_resources(
+        (schema["$id"], Resource.from_contents(schema)) for schema in schemas
+    )
+    variation_schema = next(
+        schema for schema in schemas if schema["title"] == "Variation"
+    )
+    payload = {
+        "type": "RelativeAllele",
+        "relativeLocation": "ga4gh:VSL.test",
+        "baseState": {"type": "LiteralSequenceExpression", "sequence": "A"},
+        "mappedState": {"type": "LiteralSequenceExpression", "sequence": "T"},
+    }
+    variation = vrs_models.Variation.model_validate(payload)
 
-@pytest.mark.parametrize("model", _abstract_schema_model_params())
-def test_abstract_models_cannot_be_instantiated(model):
-    """Verify abstract models reject direct construction.
-
-    :param model: Abstract Pydantic model.
-    """
-    kwargs = {} if model is core_models.Element else {"type": "test"}
-    with pytest.raises(TypeError, match="abstract and cannot be instantiated"):
-        model(**kwargs)
+    Draft202012Validator(variation_schema, registry=registry).validate(
+        variation.model_dump(mode="json", exclude_none=True)
+    )

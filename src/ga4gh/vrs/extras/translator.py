@@ -30,13 +30,8 @@ class VariationToStrProtocol(Protocol):
     into variation strings, with optional keyword arguments for customization.
     """
 
-    def __call__(self, vo: models.Variation, **kwargs) -> list[str]:
-        """Translate a VRS variation to string expressions.
-
-        :param vo: VRS variation to translate.
-        :param kwargs: Translator-specific options.
-        :returns: Translated string expressions.
-        """
+    def __call__(self, vo: models._VariationBase, **kwargs) -> list[str]:
+        """Translate vrs object `vo` to variation string expressions"""
 
 
 class VariationFromStrProtocol(Protocol):
@@ -46,13 +41,8 @@ class VariationFromStrProtocol(Protocol):
     string into a VRS object, with optional keyword arguments for customization.
     """
 
-    def __call__(self, expr: str, **kwargs) -> models.Variation | None:
-        """Translate a string expression to a VRS variation.
-
-        :param expr: Variation string to translate.
-        :param kwargs: Translator-specific options.
-        :returns: Translated variation, or None when the expression is unsupported.
-        """
+    def __call__(self, expr: str, **kwargs) -> models._VariationBase | None:
+        """Translate variation string `expr` to a VRS object"""
 
 
 class _Translator(ABC):  # noqa: B024
@@ -95,7 +85,7 @@ class _Translator(ABC):  # noqa: B024
 
     def translate_from(
         self, var: str, fmt: str | None = None, **kwargs
-    ) -> models.Variation:
+    ) -> models._VariationBase:
         """Translate variation `var` to VRS object
 
         If `fmt` is None, guess the appropriate format and return the variant.
@@ -123,13 +113,6 @@ class _Translator(ABC):  # noqa: B024
                     Defaults value set in instance variable, `rle_seq_limit`.
                 do_normalize (bool): `True` if fully justified normalization should be
                     performed. `False` otherwise. Defaults to `True`
-
-        :param var: Variation string to translate.
-        :param fmt: Optional source format.
-        :param kwargs: Translator-specific options.
-        :returns: Translated VRS variation.
-        :raises NotImplementedError: If ``fmt`` is unsupported.
-        :raises ValueError: If no translator can parse the variation.
         """
         if fmt:
             try:
@@ -153,17 +136,13 @@ class _Translator(ABC):  # noqa: B024
         msg = f"Unable to parse data as {', '.join(formats)}"
         raise ValueError(msg)
 
-    def translate_to(self, vo: models.Variation, fmt: str, **kwargs) -> list[str]:
+    def translate_to(self, vo: models._VariationBase, fmt: str, **kwargs) -> list[str]:
         """Translate vrs object `vo` to named format `fmt`
 
         kwargs:
             ref_seq_limit Optional(int):
                 If vo.state is a ReferenceLengthExpression, and `ref_seq_limit` is specified, and `fmt` is `spdi`, the reference sequence is included in the SPDI expression if it is below the limit Otherwise only the length of the reference sequence is included. If the limit is None, the reference sequence is always included. In all cases, the alt sequence is included. Default is 0 (never include reference sequence).
-        :param vo: VRS variation to translate.
-        :param fmt: Target format.
-        :param kwargs: Translator-specific options.
-        :returns: Translated string expressions.
-        :raises NotImplementedError: If ``fmt`` is unsupported.
+        :raise NotImplementedError: If `fmt` is not supported
         """
         try:
             t = self.to_translators[fmt]
@@ -178,19 +157,11 @@ class _Translator(ABC):  # noqa: B024
 
     @lazy_property
     def hgvs_tools(self) -> HgvsTools:
-        """Instantiate an HGVS translation helper.
-
-        :returns: Helper configured with this translator's data proxy.
-        """
+        """Instantiate and return an HgvsTools instance"""
         return HgvsTools(self.data_proxy)
 
-    def _from_vrs(self, var: dict, **kwargs) -> models.Variation | None:  # noqa: ARG002
-        """Convert a VRS JSON mapping to a VRS variation.
-
-        :param var: VRS JSON mapping.
-        :param kwargs: Reserved translator-specific options.
-        :returns: Matching VRS variation, or None for unsupported input.
-        """
+    def _from_vrs(self, var: dict, **kwargs) -> models._VariationBase | None:  # noqa: ARG002
+        """Convert from dict representation of VRS JSON to VRS object"""
         if not isinstance(var, Mapping):
             return None
         if "type" not in var:

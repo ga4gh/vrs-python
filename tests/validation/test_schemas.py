@@ -1,4 +1,4 @@
-"""Test that VRS-Python Pydantic models match VRS and GKS-Common schemas"""
+"""Test that VRS-Python Pydantic models match VRS and GKM-Core schemas"""
 
 import json
 from enum import Enum
@@ -11,15 +11,15 @@ from ga4gh.core import core_models
 from ga4gh.vrs import models as vrs_models
 
 
-class GKSSchema(str, Enum):
-    """Enum for GKS schema"""
+class GKMSchema(str, Enum):
+    """Enum for GKM schema"""
 
     VRS = "vrs"
     CORE = "core"
 
 
-class GKSSchemaMapping(BaseModel):
-    """Model for representing GKS Schema concrete classes, primitives, and schema"""
+class GKMSchemaMapping(BaseModel):
+    """Model for representing GKM Schema concrete classes, primitives, and schema"""
 
     base_classes: set = set()
     concrete_classes: set = set()
@@ -27,55 +27,55 @@ class GKSSchemaMapping(BaseModel):
     schema_name: dict = {}
 
 
-def _update_gks_schema_mapping(
-    f_path: Path, gks_schema_mapping: GKSSchemaMapping
+def _update_gkm_schema_mapping(
+    f_path: Path, gkm_schema_mapping: GKMSchemaMapping
 ) -> None:
-    """Update ``gks_schema_mapping`` properties
+    """Update ``gkm_schema_mapping`` properties
 
     :param f_path: Path to JSON Schema file
-    :param gks_schema_mapping: GKS schema mapping to update
+    :param gkm_schema_mapping: GKM schema mapping to update
     """
     with f_path.open() as rf:
         cls_def = json.load(rf)
 
     spec_class = cls_def["title"]
-    gks_schema_mapping.schema_name[spec_class] = cls_def
+    gkm_schema_mapping.schema_name[spec_class] = cls_def
 
     if "properties" in cls_def and not cls_def.get("abstract"):
-        gks_schema_mapping.concrete_classes.add(spec_class)
+        gkm_schema_mapping.concrete_classes.add(spec_class)
     elif cls_def.get("type") in {"array", "integer", "string"}:
-        gks_schema_mapping.primitives.add(spec_class)
+        gkm_schema_mapping.primitives.add(spec_class)
     else:
-        gks_schema_mapping.base_classes.add(spec_class)
+        gkm_schema_mapping.base_classes.add(spec_class)
 
 
-GKS_SCHEMA_MAPPING = {gks: GKSSchemaMapping() for gks in GKSSchema}
+GKM_SCHEMA_MAPPING = {gkm: GKMSchemaMapping() for gkm in GKMSchema}
 SUBMODULES_DIR = Path(__file__).parents[2] / "submodules" / "vrs"
 
 
 # Get vrs classes
-vrs_mapping = GKS_SCHEMA_MAPPING[GKSSchema.VRS]
+vrs_mapping = GKM_SCHEMA_MAPPING[GKMSchema.VRS]
 for f in (SUBMODULES_DIR / "schema" / "vrs" / "json").glob("*"):
-    _update_gks_schema_mapping(f, vrs_mapping)
+    _update_gkm_schema_mapping(f, vrs_mapping)
 
 # Get core classes
-core_mapping = GKS_SCHEMA_MAPPING[GKSSchema.CORE]
+core_mapping = GKM_SCHEMA_MAPPING[GKMSchema.CORE]
 for f in (
     SUBMODULES_DIR / "submodules" / "gkm-core" / "schema" / "gkm-core" / "json"
 ).glob("*"):
-    _update_gks_schema_mapping(f, core_mapping)
+    _update_gkm_schema_mapping(f, core_mapping)
 
 
 @pytest.mark.parametrize(
-    ("gks_schema", "pydantic_models"),
+    ("gkm_schema", "pydantic_models"),
     [
-        (GKSSchema.VRS, vrs_models),
-        (GKSSchema.CORE, core_models),
+        (GKMSchema.VRS, vrs_models),
+        (GKMSchema.CORE, core_models),
     ],
 )
-def test_schema_models_in_pydantic(gks_schema, pydantic_models):
+def test_schema_models_in_pydantic(gkm_schema, pydantic_models):
     """Ensure that each schema model has corresponding Pydantic model"""
-    mapping = GKS_SCHEMA_MAPPING[gks_schema]
+    mapping = GKM_SCHEMA_MAPPING[gkm_schema]
     for schema_model in (
         mapping.base_classes | mapping.concrete_classes | mapping.primitives
     ):
@@ -87,17 +87,17 @@ def test_schema_models_in_pydantic(gks_schema, pydantic_models):
 
 
 @pytest.mark.parametrize(
-    ("gks_schema", "pydantic_models"),
+    ("gkm_schema", "pydantic_models"),
     [
-        (GKSSchema.VRS, vrs_models),
-        (GKSSchema.CORE, core_models),
+        (GKMSchema.VRS, vrs_models),
+        (GKMSchema.CORE, core_models),
     ],
 )
-def test_schema_class_fields(gks_schema, pydantic_models):
+def test_schema_class_fields(gkm_schema, pydantic_models):
     """Check that each schema model properties exist and are required in corresponding
     Pydantic model, and validate required properties
     """
-    mapping = GKS_SCHEMA_MAPPING[gks_schema]
+    mapping = GKM_SCHEMA_MAPPING[gkm_schema]
     for schema_model in mapping.concrete_classes:
         schema_properties = mapping.schema_name[schema_model]["properties"]
         pydantic_model = getattr(pydantic_models, schema_model)
@@ -134,15 +134,15 @@ def test_schema_class_fields(gks_schema, pydantic_models):
 
 
 @pytest.mark.parametrize(
-    ("gks_schema", "pydantic_models"),
+    ("gkm_schema", "pydantic_models"),
     [
-        (GKSSchema.VRS, vrs_models),
-        (GKSSchema.CORE, core_models),
+        (GKMSchema.VRS, vrs_models),
+        (GKMSchema.CORE, core_models),
     ],
 )
-def test_ga4gh_keys(gks_schema, pydantic_models):
+def test_ga4gh_keys(gkm_schema, pydantic_models):
     """Ensure ga4gh inherent defined in schema model exist in corresponding Pydantic model"""
-    mapping = GKS_SCHEMA_MAPPING[gks_schema]
+    mapping = GKM_SCHEMA_MAPPING[gkm_schema]
     for schema_model in mapping.concrete_classes:
         if (
             mapping.schema_name[schema_model].get("ga4gh", {}).get("inherent", None)
