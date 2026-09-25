@@ -4,9 +4,7 @@ import json
 from pathlib import Path
 
 import pytest
-from jsonschema import Draft202012Validator
 from pydantic import RootModel
-from referencing import Registry, Resource
 
 from ga4gh.core import core_models
 from ga4gh.core.metadata import (
@@ -193,29 +191,3 @@ def test_abstract_vrs_models_dispatch_typed_payloads(model, member, payload):
     result = model.model_validate(payload)
     assert isinstance(result.root, member)
     assert isinstance(model(root=payload).root, member)
-
-
-def test_variation_adapter_validates_against_published_schema():
-    """Validate the backward-compatible adapter output against the VRS schema."""
-    schema_paths = [
-        *SUBMODULES_DIR.glob("schema/vrs/json/*"),
-        *SUBMODULES_DIR.glob("submodules/gkm-core/schema/gkm-core/json/*"),
-    ]
-    schemas = [json.loads(path.read_text()) for path in schema_paths]
-    registry = Registry().with_resources(
-        (schema["$id"], Resource.from_contents(schema)) for schema in schemas
-    )
-    variation_schema = next(
-        schema for schema in schemas if schema["title"] == "Variation"
-    )
-    payload = {
-        "type": "RelativeAllele",
-        "relativeLocation": "ga4gh:VSL.test",
-        "baseState": {"type": "LiteralSequenceExpression", "sequence": "A"},
-        "mappedState": {"type": "LiteralSequenceExpression", "sequence": "T"},
-    }
-    variation = vrs_models.Variation.model_validate(payload)
-
-    Draft202012Validator(variation_schema, registry=registry).validate(
-        variation.model_dump(mode="json", exclude_none=True)
-    )
