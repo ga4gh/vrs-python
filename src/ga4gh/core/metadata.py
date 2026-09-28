@@ -9,7 +9,9 @@ from typing_extensions import deprecated
 
 # union_format was introduced in pydantic 2.12
 # (https://pydantic.dev/docs/validation/latest/get-started/changelog/#v2120-2025-10-07)
-PYDANTIC_HAS_UNION_FORMAT = tuple(int(p) for p in pydantic.__version__.split(".")[:2]) >= (2, 12)
+PYDANTIC_HAS_UNION_FORMAT = tuple(
+    int(p) for p in pydantic.__version__.split(".")[:2]
+) >= (2, 12)
 
 
 class Maturity(str, Enum):
