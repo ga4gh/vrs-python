@@ -120,6 +120,60 @@ class iriReference(GKMCoreMetadataMixin, RootModel):  # noqa: N801
 #########################################
 
 
+class Element(GKMCoreMetadataMixin, BaseModel, ABC):
+    """The base definition for all identifiable data objects.
+
+    Abstract base class to be extended by other classes. Do NOT instantiate directly.
+    """
+
+    _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
+    _abstract: ClassVar[bool] = True
+
+    id: str | None = Field(
+        default=None,
+        description="The 'logical' identifier of the data element in the system of record, e.g. a UUID.  This 'id' is unique within a given system, but may or may not be globally unique outside the system. It is used within a system to reference an object from another.",
+    )
+    extensions: list[Extension] | None = Field(
+        default=None,
+        description="A list of extensions to the Entity, that allow for capture of information not directly supported by elements defined in the model.",
+    )
+
+    def get_extensions_by_name(self, name: str) -> list[Extension]:
+        """Fetch all contained extension exactly matching the provided name
+
+        :param name: name of extension to fetch
+        :return: a list of all matching extensions, empty if no matches found (or if instance contains no extensions)
+        """
+        if not self.extensions:
+            return []
+        return [e for e in self.extensions if e.name == name]
+
+
+# Not an ABC, but needs to go here so there's no circular imports
+class Extension(Element, BaseModelForbidExtra):
+    """The Extension class provides entities with a means to include additional
+    attributes that are outside of the specified standard but needed by a given content
+    provider or system implementer. These extensions are not expected to be natively
+    understood, but may be used for pre-negotiated exchange of message attributes
+    between systems.
+    """
+
+    _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
+
+    name: str = Field(
+        ...,
+        description="A name for the Extension. Should be indicative of its meaning and/or the type of information it value represents.",
+    )
+    value: int | float | str | bool | dict[str, Any] | list[Any] | None = Field(
+        ...,
+        description="The value of the Extension - can be any primitive or structured object",
+    )
+    description: str | None = Field(
+        default=None,
+        description="A description of the meaning or utility of the Extension, to explain the type of information it is meant to hold.",
+    )
+
+
 class Entity(GKMCoreMetadataMixin, BaseModel, ABC):
     """Anything that exists, has existed, or will exist.
 
@@ -148,35 +202,6 @@ class Entity(GKMCoreMetadataMixin, BaseModel, ABC):
         default=None,
         description="A list of extensions to the Entity, that allow for capture of information not directly supported by elements defined in the model.",
     )
-
-
-class Element(GKMCoreMetadataMixin, BaseModel, ABC):
-    """The base definition for all identifiable data objects.
-
-    Abstract base class to be extended by other classes. Do NOT instantiate directly.
-    """
-
-    _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
-    _abstract: ClassVar[bool] = True
-
-    id: str | None = Field(
-        default=None,
-        description="The 'logical' identifier of the data element in the system of record, e.g. a UUID.  This 'id' is unique within a given system, but may or may not be globally unique outside the system. It is used within a system to reference an object from another.",
-    )
-    extensions: list[Extension] | None = Field(
-        default=None,
-        description="A list of extensions to the Entity, that allow for capture of information not directly supported by elements defined in the model.",
-    )
-
-    def get_extensions_by_name(self, name: str) -> list[Extension]:
-        """Fetch all contained extension exactly matching the provided name
-
-        :param name: name of extension to fetch
-        :return: a list of all matching extensions, empty if no matches found (or if instance contains no extensions)
-        """
-        if not self.extensions:
-            return []
-        return [e for e in self.extensions if e.name == name]
 
 
 #########################################
@@ -255,30 +280,6 @@ class ConceptSet(Entity, BaseModelForbidExtra):
     membershipOperator: MembershipOperator = Field(  # noqa: N815
         ...,
         description="The logical relationship between concepts in the set, in the context of some knowledge reported about them. The value 'AND' indicates that the concepts are dependent and occur together in this context - i.e. the reported assertion is not necessarily true for each concept on its own - only in combination with the other(s). The value 'OR' indicates that each concept applies independently in this context - i.e. the reported assertion is necessarily true for each concept on its own, independent of the presence of the other(s).",
-    )
-
-
-class Extension(Element, BaseModelForbidExtra):
-    """The Extension class provides entities with a means to include additional
-    attributes that are outside of the specified standard but needed by a given content
-    provider or system implementer. These extensions are not expected to be natively
-    understood, but may be used for pre-negotiated exchange of message attributes
-    between systems.
-    """
-
-    _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
-
-    name: str = Field(
-        ...,
-        description="A name for the Extension. Should be indicative of its meaning and/or the type of information it value represents.",
-    )
-    value: int | float | str | bool | dict[str, Any] | list[Any] | None = Field(
-        ...,
-        description="The value of the Extension - can be any primitive or structured object",
-    )
-    description: str | None = Field(
-        default=None,
-        description="A description of the meaning or utility of the Extension, to explain the type of information it is meant to hold.",
     )
 
 
