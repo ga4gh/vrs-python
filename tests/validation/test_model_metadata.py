@@ -137,7 +137,13 @@ def test_abstract_model_metadata(model, definition):
         # Pydantic adds a discriminator mapping and local $defs references, whereas
         # the published abstract schemas use portable references.
         assert generated_schema["discriminator"]["propertyName"] == "type"
-        assert len(generated_schema["oneOf"]) == len(definition["oneOf"])
+        # Compare union membership, not just cardinality, so a wrong or missing
+        # member (e.g. RelativeAllele) is caught. Both schemas use $ref entries
+        # whose trailing path segment is the member class name.
+        def _member_names(schema_obj):
+            return {entry["$ref"].rsplit("/", 1)[-1] for entry in schema_obj["oneOf"]}
+
+        assert _member_names(generated_schema) == _member_names(definition)
     else:
         assert generated_schema.get("discriminator") == definition.get("discriminator")
         assert generated_schema.get("oneOf") == definition.get("oneOf")
