@@ -91,11 +91,11 @@ class GKMMetadataMixin(GKMMaturityMixin, GKMSchemaMixin):
         schema_generator: type[GenerateJsonSchema] = GenerateJsonSchema,
         mode: JsonSchemaMode = "validation",
         *,
-        union_format: Literal[
-            "any_of", "primitive_type_array"
-        ] = "any_of",  # "any_of" matches the union schema format used by Pydantic before this option was added.
+        union_format: Literal["any_of", "primitive_type_array"] = "any_of",
     ) -> dict[str, Any]:
         """Generate JSON Schema with GKM metadata.
+
+        Default values follow Pydantic defaults.
 
         :param by_alias: Whether to use field aliases.
         :param ref_template: Template for schema references.
