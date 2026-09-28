@@ -4,12 +4,12 @@ from enum import Enum
 from typing import Any, ClassVar
 
 import pydantic
-from packaging.version import Version
 from pydantic.json_schema import GenerateJsonSchema, JsonSchemaMode
 from typing_extensions import deprecated
 
-# Need to support the union_format parameter that was introduced in https://pydantic.dev/docs/validation/latest/get-started/changelog/#v2120-2025-10-07
-PYDANTIC_HAS_UNION_FORMAT = Version(pydantic.__version__) >= Version("2.12.0")
+# union_format was introduced in pydantic 2.12
+# (https://pydantic.dev/docs/validation/latest/get-started/changelog/#v2120-2025-10-07)
+PYDANTIC_HAS_UNION_FORMAT = tuple(int(p) for p in pydantic.__version__.split(".")[:2]) >= (2, 12)
 
 
 class Maturity(str, Enum):
