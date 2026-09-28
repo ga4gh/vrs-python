@@ -84,9 +84,13 @@ def _abstract_model_params():
             with schema_path.open() as schema_file:
                 definition = json.load(schema_file)
             if definition.get("abstract") is True:
+                model = getattr(model_module, schema_path.name, None)
+                if model is None:
+                    continue  # abstract schema with no corresponding Pydantic model
+
                 schema_params.append(
                     pytest.param(
-                        getattr(model_module, schema_path.name),
+                        model,
                         definition,
                         id=schema_path.name,
                     )
@@ -137,6 +141,7 @@ def test_abstract_model_metadata(model, definition):
         # Pydantic adds a discriminator mapping and local $defs references, whereas
         # the published abstract schemas use portable references.
         assert generated_schema["discriminator"]["propertyName"] == "type"
+
         # Compare union membership, not just cardinality, so a wrong or missing
         # member (e.g. RelativeAllele) is caught. Both schemas use $ref entries
         # whose trailing path segment is the member class name.

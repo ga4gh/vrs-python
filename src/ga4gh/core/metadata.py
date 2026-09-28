@@ -1,7 +1,7 @@
 """Provide shared metadata types for GA4GH GKM models."""
 
 from enum import Enum
-from typing import Any, ClassVar
+from typing import Any, ClassVar, Literal
 
 import pydantic
 from pydantic.json_schema import GenerateJsonSchema, JsonSchemaMode
@@ -52,24 +52,21 @@ class GKMMetadataMixin(GKMMaturityMixin, GKMSchemaMixin):
 
     _abstract: ClassVar[bool] = False
 
-    @staticmethod
-    def apply_schema_metadata(
-        model_class: type, schema: dict[str, Any]
-    ) -> dict[str, Any]:
+    @classmethod
+    def apply_schema_metadata(cls, schema: dict[str, Any]) -> dict[str, Any]:
         """Add GKM metadata to a generated JSON Schema.
 
-        :param model_class: Pydantic model class that produced the schema.
         :param schema: Generated JSON Schema to annotate.
         :returns: The annotated JSON Schema.
         """
-        schema["$id"] = model_class.schema_id()
-        schema["maturity"] = model_class.maturity().value
+        schema["$id"] = cls.schema_id()
+        schema["maturity"] = cls.maturity().value
 
-        if model_class.__dict__.get("_abstract", False):
+        if cls.__dict__.get("_abstract", False):
             schema["abstract"] = True
 
         # GA4GH identifier metadata is optional and applies only when declared.
-        ga4gh_class = getattr(model_class, "ga4gh", None)
+        ga4gh_class = getattr(cls, "ga4gh", None)
         if not ga4gh_class:
             return schema
 
@@ -94,7 +91,9 @@ class GKMMetadataMixin(GKMMaturityMixin, GKMSchemaMixin):
         schema_generator: type[GenerateJsonSchema] = GenerateJsonSchema,
         mode: JsonSchemaMode = "validation",
         *,
-        union_format: str = "smart",
+        union_format: Literal[
+            "any_of", "primitive_type_array"
+        ] = "any_of",  # "any_of" matches the union schema format used by Pydantic before this option was added.
     ) -> dict[str, Any]:
         """Generate JSON Schema with GKM metadata.
 
@@ -117,7 +116,7 @@ class GKMMetadataMixin(GKMMaturityMixin, GKMSchemaMixin):
 
         schema = super().model_json_schema(**schema_kwargs)  # pyright: ignore[reportAttributeAccessIssue]
 
-        return cls.apply_schema_metadata(cls, schema)
+        return cls.apply_schema_metadata(schema)
 
 
 @deprecated("GKSMaturityMixin is deprecated; use GKMMaturityMixin instead.")
