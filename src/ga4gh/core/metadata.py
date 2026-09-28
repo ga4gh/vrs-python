@@ -3,8 +3,13 @@
 from enum import Enum
 from typing import Any, ClassVar
 
+import pydantic
+from packaging.version import Version
 from pydantic.json_schema import GenerateJsonSchema, JsonSchemaMode
 from typing_extensions import deprecated
+
+# Need to support the union_format parameter that was introduced in https://pydantic.dev/docs/validation/latest/get-started/changelog/#v2120-2025-10-07
+PYDANTIC_HAS_UNION_FORMAT = Version(pydantic.__version__) >= Version("2.12.0")
 
 
 class Maturity(str, Enum):
@@ -86,6 +91,8 @@ class GKMMetadataMixin(GKMMaturityMixin, GKMSchemaMixin):
         ref_template: str = "#/$defs/{model}",
         schema_generator: type[GenerateJsonSchema] = GenerateJsonSchema,
         mode: JsonSchemaMode = "validation",
+        *,
+        union_format: str = "smart",
     ) -> dict[str, Any]:
         """Generate JSON Schema with GKM metadata.
 
@@ -93,14 +100,20 @@ class GKMMetadataMixin(GKMMaturityMixin, GKMSchemaMixin):
         :param ref_template: Template for schema references.
         :param schema_generator: Pydantic schema generator class.
         :param mode: Pydantic schema generation mode.
+        :param union_format: How to represent unions in the generated schema.
         :returns: JSON Schema annotated with GKM metadata.
         """
-        schema = super().model_json_schema(
-            by_alias=by_alias,
-            ref_template=ref_template,
-            schema_generator=schema_generator,
-            mode=mode,
-        )
+        schema_kwargs: dict[str, Any] = {
+            "by_alias": by_alias,
+            "ref_template": ref_template,
+            "schema_generator": schema_generator,
+            "mode": mode,
+        }
+
+        if PYDANTIC_HAS_UNION_FORMAT:
+            schema_kwargs["union_format"] = union_format
+
+        schema = super().model_json_schema(**schema_kwargs)  # pyright: ignore[reportAttributeAccessIssue]
 
         return cls.apply_schema_metadata(cls, schema)
 
