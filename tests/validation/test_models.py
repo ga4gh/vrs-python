@@ -134,9 +134,9 @@ def test_valid_types():
     for enum_val in VrsType.__members__.values():
         enum_val = enum_val.value
         if hasattr(models, enum_val):
-            gks_class = getattr(models, enum_val)
+            gkm_class = getattr(models, enum_val)
             try:
-                assert gks_class(type=enum_val)
+                assert gkm_class(type=enum_val)
             except ValidationError as e:
                 found_type_mismatch = False
                 for error in e.errors():

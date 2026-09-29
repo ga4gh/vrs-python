@@ -18,7 +18,7 @@
 
 ## Features
 
-- Pydantic implementation of GKS core models and VRS models
+- Pydantic implementation of GKM-Core models and VRS models
 - Algorithm for generating consistent, globally unique identifiers for variation without a central authority
 - Algorithm for performing fully justified allele normalization
 - Translating from and to other variant formats

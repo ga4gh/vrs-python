@@ -1,9 +1,17 @@
-"""Provide shared metadata types for GA4GH GKS models."""
+"""Provide shared metadata types for GA4GH GKM models."""
 
 from enum import Enum
-from typing import Any, ClassVar
+from typing import Any, ClassVar, Literal
 
+import pydantic
 from pydantic.json_schema import GenerateJsonSchema, JsonSchemaMode
+from typing_extensions import deprecated
+
+# union_format was introduced in pydantic 2.12
+# (https://pydantic.dev/docs/validation/latest/get-started/changelog/#v2120-2025-10-07)
+PYDANTIC_HAS_UNION_FORMAT = tuple(
+    int(p) for p in pydantic.__version__.split(".")[:2]
+) >= (2, 12)
 
 
 class Maturity(str, Enum):
@@ -15,19 +23,19 @@ class Maturity(str, Enum):
     DEPRECATED = "deprecated"
 
 
-class GKSMaturityMixin:
-    """Provide maturity metadata for a GA4GH GKS model."""
+class GKMMaturityMixin:
+    """Provide maturity metadata for a GA4GH GKM model."""
 
     _maturity: ClassVar[Maturity]
 
     @classmethod
     def maturity(cls) -> Maturity:
-        """Return the GKS maturity level for the model."""
+        """Return the GKM maturity level for the model."""
         return cls._maturity
 
 
-class GKSSchemaMixin:
-    """Provide a canonical JSON Schema identifier for a GA4GH GKS model."""
+class GKMSchemaMixin:
+    """Provide a canonical JSON Schema identifier for a GA4GH GKM model."""
 
     _schema_base_uri: ClassVar[str] = "https://w3id.org/ga4gh/schema"
     _product_name: ClassVar[str]
@@ -39,28 +47,25 @@ class GKSSchemaMixin:
         return f"{cls._schema_base_uri}/{cls._product_name}/{cls._product_version}/json/{cls.__name__}"
 
 
-class GKSMetadataMixin(GKSMaturityMixin, GKSSchemaMixin):
-    """Provide maturity and schema metadata for a concrete GKS model."""
+class GKMMetadataMixin(GKMMaturityMixin, GKMSchemaMixin):
+    """Provide maturity and schema metadata for a GKM model."""
+
+    _abstract: ClassVar[bool] = False
 
     @classmethod
-    def model_json_schema(
-        cls,
-        by_alias: bool = True,
-        ref_template: str = "#/$defs/{model}",
-        schema_generator: type[GenerateJsonSchema] = GenerateJsonSchema,
-        mode: JsonSchemaMode = "validation",
-    ) -> dict[str, Any]:
-        """Generate JSON Schema with GKS metadata."""
-        schema = super().model_json_schema(
-            by_alias=by_alias,
-            ref_template=ref_template,
-            schema_generator=schema_generator,
-            mode=mode,
-        )
+    def apply_schema_metadata(cls, schema: dict[str, Any]) -> dict[str, Any]:
+        """Add GKM metadata to a generated JSON Schema.
 
+        :param schema: Generated JSON Schema to annotate.
+        :returns: The annotated JSON Schema.
+        """
         schema["$id"] = cls.schema_id()
         schema["maturity"] = cls.maturity().value
 
+        if cls.__dict__.get("_abstract", False):
+            schema["abstract"] = True
+
+        # GA4GH identifier metadata is optional and applies only when declared.
         ga4gh_class = getattr(cls, "ga4gh", None)
         if not ga4gh_class:
             return schema
@@ -77,3 +82,53 @@ class GKSMetadataMixin(GKSMaturityMixin, GKSSchemaMixin):
             schema["ga4gh"] = ga4gh_metadata
 
         return schema
+
+    @classmethod
+    def model_json_schema(
+        cls,
+        by_alias: bool = True,
+        ref_template: str = "#/$defs/{model}",
+        schema_generator: type[GenerateJsonSchema] = GenerateJsonSchema,
+        mode: JsonSchemaMode = "validation",
+        *,
+        union_format: Literal["any_of", "primitive_type_array"] = "any_of",
+    ) -> dict[str, Any]:
+        """Generate JSON Schema with GKM metadata.
+
+        Default values follow Pydantic defaults.
+
+        :param by_alias: Whether to use field aliases.
+        :param ref_template: Template for schema references.
+        :param schema_generator: Pydantic schema generator class.
+        :param mode: Pydantic schema generation mode.
+        :param union_format: How to represent unions in the generated schema.
+        :returns: JSON Schema annotated with GKM metadata.
+        """
+        schema_kwargs: dict[str, Any] = {
+            "by_alias": by_alias,
+            "ref_template": ref_template,
+            "schema_generator": schema_generator,
+            "mode": mode,
+        }
+
+        if PYDANTIC_HAS_UNION_FORMAT:
+            schema_kwargs["union_format"] = union_format
+
+        schema = super().model_json_schema(**schema_kwargs)  # pyright: ignore[reportAttributeAccessIssue]
+
+        return cls.apply_schema_metadata(schema)
+
+
+@deprecated("GKSMaturityMixin is deprecated; use GKMMaturityMixin instead.")
+class GKSMaturityMixin(GKMMaturityMixin):
+    """Deprecated alias for :class:`GKMMaturityMixin`."""
+
+
+@deprecated("GKSSchemaMixin is deprecated; use GKMSchemaMixin instead.")
+class GKSSchemaMixin(GKMSchemaMixin):
+    """Deprecated alias for :class:`GKMSchemaMixin`."""
+
+
+@deprecated("GKSMetadataMixin is deprecated; use GKMMetadataMixin instead.")
+class GKSMetadataMixin(GKMMetadataMixin):
+    """Deprecated alias for :class:`GKMMetadataMixin`."""

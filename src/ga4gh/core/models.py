@@ -1,4 +1,4 @@
-"""GKS Core Class Definitions"""
+"""GKM Core Class Definitions"""
 
 from __future__ import annotations
 
@@ -14,18 +14,23 @@ from pydantic import (
     StringConstraints,
     model_validator,
 )
-from typing_extensions import Self
+from typing_extensions import Self, deprecated
 
 from ga4gh.core.identifiers import GA4GH_IR_REGEXP
-from ga4gh.core.metadata import GKSMaturityMixin, GKSMetadataMixin, Maturity
+from ga4gh.core.metadata import GKMMetadataMixin, Maturity
 from ga4gh.core.version import CORE_VERSION
 
 
-class GKSCoreMetadataMixin(GKSMetadataMixin):
+class GKMCoreMetadataMixin(GKMMetadataMixin):
     """Provide gkm-core model metadata."""
 
     _product_name = "gkm-core"
     _product_version = CORE_VERSION
+
+
+@deprecated("GKSCoreMetadataMixin is deprecated; use GKMCoreMetadataMixin instead.")
+class GKSCoreMetadataMixin(GKMCoreMetadataMixin):
+    """Deprecated alias for :class:`GKMCoreMetadataMixin`."""
 
 
 class BaseModelForbidExtra(BaseModel):
@@ -65,7 +70,7 @@ class MembershipOperator(str, Enum):
 #########################################
 
 
-class code(GKSCoreMetadataMixin, RootModel):  # noqa: N801
+class code(GKMCoreMetadataMixin, RootModel):  # noqa: N801
     """Indicates that the value is taken from a set of controlled strings defined
     elsewhere. Technically, a code is restricted to a string which has at least one
     character and no leading or trailing whitespace, and where there is no whitespace
@@ -83,7 +88,7 @@ class code(GKSCoreMetadataMixin, RootModel):  # noqa: N801
     )
 
 
-class iriReference(GKSCoreMetadataMixin, RootModel):  # noqa: N801
+class iriReference(GKMCoreMetadataMixin, RootModel):  # noqa: N801
     """An IRI Reference (either an IRI or a relative-reference), according to `RFC3986
     section 4.1 <https://datatracker.ietf.org/doc/html/rfc3986#section-4.1>`_ and
     `RFC3987 section 2.1 <https://datatracker.ietf.org/doc/html/rfc3987#section-2.1>`_.
@@ -115,13 +120,68 @@ class iriReference(GKSCoreMetadataMixin, RootModel):  # noqa: N801
 #########################################
 
 
-class Entity(GKSMaturityMixin, BaseModel, ABC):
+class Element(GKMCoreMetadataMixin, BaseModel, ABC):
+    """The base definition for all identifiable data objects.
+
+    Abstract base class to be extended by other classes. Do NOT instantiate directly.
+    """
+
+    _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
+    _abstract: ClassVar[bool] = True
+
+    id: str | None = Field(
+        default=None,
+        description="The 'logical' identifier of the data element in the system of record, e.g. a UUID.  This 'id' is unique within a given system, but may or may not be globally unique outside the system. It is used within a system to reference an object from another.",
+    )
+    extensions: list[Extension] | None = Field(
+        default=None,
+        description="A list of extensions to the Entity, that allow for capture of information not directly supported by elements defined in the model.",
+    )
+
+    def get_extensions_by_name(self, name: str) -> list[Extension]:
+        """Fetch all contained extension exactly matching the provided name
+
+        :param name: name of extension to fetch
+        :return: a list of all matching extensions, empty if no matches found (or if instance contains no extensions)
+        """
+        if not self.extensions:
+            return []
+        return [e for e in self.extensions if e.name == name]
+
+
+# Not an ABC, but needs to go here so there's no circular imports
+class Extension(Element, BaseModelForbidExtra):
+    """The Extension class provides entities with a means to include additional
+    attributes that are outside of the specified standard but needed by a given content
+    provider or system implementer. These extensions are not expected to be natively
+    understood, but may be used for pre-negotiated exchange of message attributes
+    between systems.
+    """
+
+    _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
+
+    name: str = Field(
+        ...,
+        description="A name for the Extension. Should be indicative of its meaning and/or the type of information it value represents.",
+    )
+    value: int | float | str | bool | dict[str, Any] | list[Any] | None = Field(
+        ...,
+        description="The value of the Extension - can be any primitive or structured object",
+    )
+    description: str | None = Field(
+        default=None,
+        description="A description of the meaning or utility of the Extension, to explain the type of information it is meant to hold.",
+    )
+
+
+class Entity(GKMCoreMetadataMixin, BaseModel, ABC):
     """Anything that exists, has existed, or will exist.
 
     Abstract base class to be extended by other classes. Do NOT instantiate directly.
     """
 
     _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
+    _abstract: ClassVar[bool] = True
 
     id: str | None = Field(
         default=None,
@@ -144,40 +204,12 @@ class Entity(GKSMaturityMixin, BaseModel, ABC):
     )
 
 
-class Element(GKSMaturityMixin, BaseModel, ABC):
-    """The base definition for all identifiable data objects.
-
-    Abstract base class to be extended by other classes. Do NOT instantiate directly.
-    """
-
-    _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
-
-    id: str | None = Field(
-        default=None,
-        description="The 'logical' identifier of the data element in the system of record, e.g. a UUID.  This 'id' is unique within a given system, but may or may not be globally unique outside the system. It is used within a system to reference an object from another.",
-    )
-    extensions: list[Extension] | None = Field(
-        default=None,
-        description="A list of extensions to the Entity, that allow for capture of information not directly supported by elements defined in the model.",
-    )
-
-    def get_extensions_by_name(self, name: str) -> list[Extension]:
-        """Fetch all contained extension exactly matching the provided name
-
-        :param name: name of extension to fetch
-        :return: a list of all matching extensions, empty if no matches found (or if instance contains no extensions)
-        """
-        if not self.extensions:
-            return []
-        return [e for e in self.extensions if e.name == name]
-
-
 #########################################
 # General-purpose data classes
 #########################################
 
 
-class Coding(GKSCoreMetadataMixin, Element, BaseModelForbidExtra):
+class Coding(Element, BaseModelForbidExtra):
     """A structured representation of a code for a defined concept in a terminology or
     code system.
     """
@@ -203,7 +235,7 @@ class Coding(GKSCoreMetadataMixin, Element, BaseModelForbidExtra):
     )
 
 
-class ConceptMapping(GKSCoreMetadataMixin, Element, BaseModelForbidExtra):
+class ConceptMapping(Element, BaseModelForbidExtra):
     """A mapping to a concept in a terminology or code system."""
 
     model_config = ConfigDict(use_enum_values=True)
@@ -220,7 +252,7 @@ class ConceptMapping(GKSCoreMetadataMixin, Element, BaseModelForbidExtra):
     )
 
 
-class ConceptSet(GKSCoreMetadataMixin, Entity, BaseModelForbidExtra):
+class ConceptSet(Entity, BaseModelForbidExtra):
     """A set of concepts that may be considered as dependent (occurring together), or
     independent (existing separately) in the context of some knowledge reported about
     them, as indicated by a set membership operator. e.g. a set of independent molecular
@@ -236,6 +268,10 @@ class ConceptSet(GKSCoreMetadataMixin, Entity, BaseModelForbidExtra):
         default="ConceptSet",
         description='MUST be "ConceptSet".',
     )
+    conceptSetType: str | None = Field(  # noqa: N815
+        default=None,
+        description="A term indicating the type of concept being represented by the ConceptSet.",
+    )
     concepts: list[MappableConcept] | list[ConceptSet] = Field(
         ...,
         description="A list of concepts that are dependent (occurring together), or independent (existing separately), depending on the membership operator.",
@@ -247,31 +283,7 @@ class ConceptSet(GKSCoreMetadataMixin, Entity, BaseModelForbidExtra):
     )
 
 
-class Extension(GKSCoreMetadataMixin, Element, BaseModelForbidExtra):
-    """The Extension class provides entities with a means to include additional
-    attributes that are outside of the specified standard but needed by a given content
-    provider or system implementer. These extensions are not expected to be natively
-    understood, but may be used for pre-negotiated exchange of message attributes
-    between systems.
-    """
-
-    _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
-
-    name: str = Field(
-        ...,
-        description="A name for the Extension. Should be indicative of its meaning and/or the type of information it value represents.",
-    )
-    value: int | float | str | bool | dict[str, Any] | list[Any] | None = Field(
-        ...,
-        description="The value of the Extension - can be any primitive or structured object",
-    )
-    description: str | None = Field(
-        default=None,
-        description="A description of the meaning or utility of the Extension, to explain the type of information it is meant to hold.",
-    )
-
-
-class MappableConcept(GKSCoreMetadataMixin, Entity, BaseModelForbidExtra):
+class MappableConcept(Entity, BaseModelForbidExtra):
     """A concept based on a primaryCoding and/or name that may be mapped to one or more other `Codings`."""
 
     _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
