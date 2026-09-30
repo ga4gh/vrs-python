@@ -293,7 +293,7 @@ class _ValueObject(Entity, ABC):
         return False
 
 
-class Ga4ghIdentifiableObject(VRSMetadataMixin, _ValueObject, ABC):
+class Ga4ghIdentifiableObject(VRSMetadataMixin, _ValueObject):
     """A contextual value object for which a GA4GH computed identifier can be created.
     All GA4GH Identifiable Objects may have computed digests from the VRS Computed
     Identifier algorithm.

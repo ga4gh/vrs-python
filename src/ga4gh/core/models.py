@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from abc import ABC
 from enum import Enum
 from typing import Annotated, Any, ClassVar, Literal
 
@@ -120,11 +119,8 @@ class iriReference(GKMCoreMetadataMixin, RootModel):  # noqa: N801
 #########################################
 
 
-class Element(GKMCoreMetadataMixin, BaseModel, ABC):
-    """The base definition for all identifiable data objects.
-
-    Abstract base class to be extended by other classes. Do NOT instantiate directly.
-    """
+class Element(GKMCoreMetadataMixin, BaseModel):
+    """The base definition for all identifiable data objects."""
 
     _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
     _abstract: ClassVar[bool] = True
@@ -174,11 +170,8 @@ class Extension(Element, BaseModelForbidExtra):
     )
 
 
-class Entity(GKMCoreMetadataMixin, BaseModel, ABC):
-    """Anything that exists, has existed, or will exist.
-
-    Abstract base class to be extended by other classes. Do NOT instantiate directly.
-    """
+class Entity(GKMCoreMetadataMixin, BaseModel):
+    """Anything that exists, has existed, or will exist."""
 
     _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
     _abstract: ClassVar[bool] = True
