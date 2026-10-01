@@ -265,7 +265,7 @@ class ConceptSet(Entity, BaseModelForbidExtra):
         default=None,
         description="A term indicating the type of concept being represented by the ConceptSet.",
     )
-    concepts: list[MappableConcept] | list[ConceptSet] = Field(
+    concepts: list[MappableConcept | ConceptSet | iriReference] = Field(
         ...,
         description="A list of concepts that are dependent (occurring together), or independent (existing separately), depending on the membership operator.",
         min_length=2,
