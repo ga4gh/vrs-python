@@ -209,7 +209,8 @@ class _DataProxy(ABC):
         """
         # same cache key as derive_refget_accession
         sequence_id = coerce_namespace(sequence_id)
-        seq_len = self.get_metadata(sequence_id)["length"]
+        md = self.get_metadata(sequence_id)
+        seq_len = md["length"]
         bad = []
         for name, pos in (("start", start_pos), ("end", end_pos)):
             values = pos.root if isinstance(pos, Range) else [pos]
@@ -221,8 +222,13 @@ class _DataProxy(ABC):
                 f"{name}={pos.root if isinstance(pos, Range) else pos}"
                 for name, pos in bad
             )
+            # Name the sequence as given, plus the refget accession it resolved to
+            refget_ac = next((a for a in md["aliases"] if a.startswith("ga4gh:")), None)
+            seq_name = sequence_id
+            if refget_ac and refget_ac != sequence_id:
+                seq_name += f" ({refget_ac})"
             err_msg = (
-                f"Location out of bounds on {sequence_id}: {detail} "
+                f"Location out of bounds on {seq_name}: {detail} "
                 f"not within [0, {seq_len}]"
             )
             raise DataProxyValidationError(err_msg)

@@ -73,10 +73,10 @@ def test_data_proxy_configs():
 
 
 class _StubDataProxy(_DataProxy):
-    """Dataproxy serving only sequence lengths"""
+    """Dataproxy serving only metadata, keyed by identifier"""
 
-    def __init__(self, lengths: dict[str, int]) -> None:
-        self.lengths = lengths
+    def __init__(self, metadata: dict[str, dict]) -> None:
+        self.metadata = metadata
 
     def get_sequence(
         self, identifier: str, start: int | None = None, end: int | None = None
@@ -84,11 +84,19 @@ class _StubDataProxy(_DataProxy):
         raise NotImplementedError
 
     def get_metadata(self, identifier: str) -> dict:
-        return {"length": self.lengths[identifier], "aliases": []}
+        return self.metadata[identifier]
 
 
 BOUNDS_SEQ_ID = "refseq:NM_000551.3"
+BOUNDS_REFGET_ID = "ga4gh:SQ.v_QTc1p-MUYdgrRv4LMT6ByXIOsdw3C_"
 BOUNDS_SEQ_LEN = 4560
+
+
+def _bounds_dp(aliases: list[str]) -> _StubDataProxy:
+    """Stub serving one sequence's metadata under each of its aliases"""
+    md = {"length": BOUNDS_SEQ_LEN, "aliases": aliases}
+    return _StubDataProxy(dict.fromkeys(aliases, md))
+
 
 # (start, end) that are representable on a sequence of length BOUNDS_SEQ_LEN
 LOCATION_BOUNDS_VALID = [
@@ -134,7 +142,7 @@ def test_validate_location_bounds_valid(
     start: int | models.Range | None,
     end: int | models.Range | None,
 ) -> None:
-    dp = _StubDataProxy({BOUNDS_SEQ_ID: BOUNDS_SEQ_LEN})
+    dp = _bounds_dp([BOUNDS_SEQ_ID, BOUNDS_REFGET_ID])
     dp.validate_location_bounds(BOUNDS_SEQ_ID, start, end)
 
 
@@ -144,10 +152,48 @@ def test_validate_location_bounds_invalid(
     end: int | models.Range | None,
     detail: str,
 ) -> None:
-    dp = _StubDataProxy({BOUNDS_SEQ_ID: BOUNDS_SEQ_LEN})
+    dp = _bounds_dp([BOUNDS_SEQ_ID, BOUNDS_REFGET_ID])
     expected_msg = (
-        f"Location out of bounds on {BOUNDS_SEQ_ID}: {detail} "
+        f"Location out of bounds on {BOUNDS_SEQ_ID} ({BOUNDS_REFGET_ID}): {detail} "
         f"not within [0, {BOUNDS_SEQ_LEN}]"
     )
     with pytest.raises(DataProxyValidationError, match=f"^{re.escape(expected_msg)}$"):
         dp.validate_location_bounds(BOUNDS_SEQ_ID, start, end)
+
+
+# (sequence_id as given, aliases of the sequence, name used in the error message)
+LOCATION_BOUNDS_SEQUENCE_NAMES = [
+    pytest.param(
+        BOUNDS_SEQ_ID,
+        [BOUNDS_SEQ_ID, BOUNDS_REFGET_ID],
+        f"{BOUNDS_SEQ_ID} ({BOUNDS_REFGET_ID})",
+        id="input-and-refget",
+    ),
+    pytest.param(
+        "NM_000551.3",
+        [BOUNDS_SEQ_ID, BOUNDS_REFGET_ID],
+        f"{BOUNDS_SEQ_ID} ({BOUNDS_REFGET_ID})",
+        id="bare-accession-coerced",
+    ),
+    pytest.param(
+        BOUNDS_REFGET_ID,
+        [BOUNDS_SEQ_ID, BOUNDS_REFGET_ID],
+        BOUNDS_REFGET_ID,
+        id="refget-input-named-once",
+    ),
+    pytest.param(BOUNDS_SEQ_ID, [BOUNDS_SEQ_ID], BOUNDS_SEQ_ID, id="no-refget-alias"),
+]
+
+
+@pytest.mark.parametrize(
+    ("sequence_id", "aliases", "seq_name"), LOCATION_BOUNDS_SEQUENCE_NAMES
+)
+def test_validate_location_bounds_sequence_name(
+    sequence_id: str, aliases: list[str], seq_name: str
+) -> None:
+    dp = _bounds_dp(aliases)
+    expected_prefix = f"Location out of bounds on {seq_name}: "
+    with pytest.raises(
+        DataProxyValidationError, match=f"^{re.escape(expected_prefix)}"
+    ):
+        dp.validate_location_bounds(sequence_id, 0, BOUNDS_SEQ_LEN + 1)

@@ -16,10 +16,13 @@ import pytest
 from ga4gh.vrs.dataproxy import DataProxyValidationError, SeqRepoRESTDataProxy
 from ga4gh.vrs.extras.translator import AlleleTranslator, CnvTranslator
 
-NC_000001_11 = "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO"
-NC_000007_14 = "SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul"
-NM_000551_3 = "SQ.v_QTc1p-MUYdgrRv4LMT6ByXIOsdw3C_"
-NP_001346993_1 = "SQ.IPAWzkahAXVA3fBdoFluaU4NA3xTYUer"
+# Refget accession each input sequence resolves to, named alongside it in errors
+REFGET_ACCESSIONS = {
+    "GRCh38:1": "ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
+    "refseq:NC_000007.14": "ga4gh:SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul",
+    "refseq:NM_000551.3": "ga4gh:SQ.v_QTc1p-MUYdgrRv4LMT6ByXIOsdw3C_",
+    "refseq:NP_001346993.1": "ga4gh:SQ.IPAWzkahAXVA3fBdoFluaU4NA3xTYUer",
+}
 
 
 @pytest.fixture
@@ -44,7 +47,8 @@ def cnv_tlr(data_proxy: SeqRepoRESTDataProxy) -> CnvTranslator:
 
 def _bounds_msg(sequence_id: str, detail: str, seq_len: int) -> str:
     return (
-        f"Location out of bounds on {sequence_id}: {detail} not within [0, {seq_len}]"
+        f"Location out of bounds on {sequence_id} ({REFGET_ACCESSIONS[sequence_id]}): "
+        f"{detail} not within [0, {seq_len}]"
     )
 
 
@@ -54,7 +58,7 @@ OUT_OF_BOUNDS = [
         "hgvs",
         "NM_000551.3:n.4561_4562insA",
         {},
-        _bounds_msg(f"ga4gh:{NM_000551_3}", "start=4561, end=4561", 4560),
+        _bounds_msg("refseq:NM_000551.3", "start=4561, end=4561", 4560),
         id="hgvs-n-insertion-past-end",
     ),
     # ClinVar references the stop codon, which is not part of the protein sequence
@@ -63,7 +67,7 @@ OUT_OF_BOUNDS = [
         "hgvs",
         "NP_001346993.1:p.Ter194del",
         {},
-        _bounds_msg(f"ga4gh:{NP_001346993_1}", "end=194", 193),
+        _bounds_msg("refseq:NP_001346993.1", "end=194", 193),
         id="hgvs-p-ter-at-length-plus-one",
     ),
     # Zero-width: an out-of-range fetch returns "" and would compare equal to the
@@ -73,7 +77,7 @@ OUT_OF_BOUNDS = [
         "spdi",
         "NM_000551.3:5000:0:AAA",
         {},
-        _bounds_msg(f"ga4gh:{NM_000551_3}", "start=5000, end=5000", 4560),
+        _bounds_msg("refseq:NM_000551.3", "start=5000, end=5000", 4560),
         id="spdi-insertion-past-end",
     ),
     # Must report the bounds error, not "Reference mismatch ... correct ref is ''"
@@ -106,7 +110,7 @@ OUT_OF_BOUNDS = [
         "beacon",
         "1 : 248956423 A > T",
         {},
-        _bounds_msg(f"ga4gh:{NC_000001_11}", "end=248956423", 248956422),
+        _bounds_msg("GRCh38:1", "end=248956423", 248956422),
         id="beacon-past-end",
     ),
     pytest.param(
@@ -114,9 +118,7 @@ OUT_OF_BOUNDS = [
         "hgvs",
         "NC_000007.14:g.159400000_159400100del",
         {},
-        _bounds_msg(
-            f"ga4gh:{NC_000007_14}", "start=159399999, end=159400100", 159345973
-        ),
+        _bounds_msg("refseq:NC_000007.14", "start=159399999, end=159400100", 159345973),
         id="cnv-hgvs-copy-number-change-past-end",
     ),
 ]
