@@ -955,53 +955,53 @@ def _bounds_allele(
     )
 
 
+normalize_location_in_bounds_cases = [
+    # an undefined outer endpoint is representable and must not be rejected
+    # (the deletion is also rolled right by one base by normalization)
+    {
+        "id": "indefinite-ranges-open-outward",
+        "start": [None, 4400],
+        "end": [4500, None],
+        "sequence": "",
+        "expected_start": [None, 4400],
+        "expected_end": [4501, None],
+    },
+]
+
+
 @pytest.mark.parametrize(
-    ("start", "end", "sequence", "expected_start", "expected_end"),
-    [
-        # an undefined outer endpoint is representable and must not be rejected
-        # (the deletion is also rolled right by one base by normalization)
-        pytest.param(
-            [None, 4400],
-            [4500, None],
-            "",
-            [None, 4400],
-            [4501, None],
-            id="indefinite-ranges-open-outward",
-        ),
-    ],
+    "case", normalize_location_in_bounds_cases, ids=lambda c: c["id"]
 )
-def test_normalize_location_in_bounds(
-    dataproxy: SeqRepoDataProxy,
-    start: int | list[int | None],
-    end: int | list[int | None],
-    sequence: str,
-    expected_start: int | list[int | None],
-    expected_end: int | list[int | None],
-) -> None:
-    allele = normalize(_bounds_allele(start, end, sequence), dataproxy)
-    location = allele.location.model_dump()
-    assert (location["start"], location["end"]) == (expected_start, expected_end)
+def test_normalize_location_in_bounds(dataproxy: SeqRepoDataProxy, case: dict) -> None:
+    allele = _bounds_allele(case["start"], case["end"], case["sequence"])
+    location = normalize(allele, dataproxy).location.model_dump()
+    assert (location["start"], location["end"]) == (
+        case["expected_start"],
+        case["expected_end"],
+    )
+
+
+normalize_location_out_of_bounds_cases = [
+    # Definite ranges are otherwise returned without normalization, so the
+    # bounds check must run before that early return
+    {
+        "id": "definite-range-end-past-end",
+        "start": 4400,
+        "end": [4500, 4600],
+        "detail": "end=[4500, 4600]",
+    },
+]
 
 
 @pytest.mark.parametrize(
-    ("start", "end", "detail"),
-    [
-        # Definite ranges are otherwise returned without normalization, so the
-        # bounds check must run before that early return
-        pytest.param(
-            4400, [4500, 4600], "end=[4500, 4600]", id="definite-range-end-past-end"
-        ),
-    ],
+    "case", normalize_location_out_of_bounds_cases, ids=lambda c: c["id"]
 )
 def test_normalize_location_out_of_bounds(
-    dataproxy: SeqRepoDataProxy,
-    start: int | list[int | None],
-    end: int | list[int | None],
-    detail: str,
+    dataproxy: SeqRepoDataProxy, case: dict
 ) -> None:
     expected_msg = (
-        f"Location out of bounds on ga4gh:{BOUNDS_REFGET_AC}: {detail} "
+        f"Location out of bounds on ga4gh:{BOUNDS_REFGET_AC}: {case['detail']} "
         f"not within [0, {BOUNDS_SEQ_LEN}]"
     )
     with pytest.raises(DataProxyValidationError, match=f"^{re.escape(expected_msg)}$"):
-        normalize(_bounds_allele(start, end, "A"), dataproxy)
+        normalize(_bounds_allele(case["start"], case["end"], "A"), dataproxy)

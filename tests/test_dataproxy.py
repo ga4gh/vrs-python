@@ -98,102 +98,126 @@ def _bounds_dp(aliases: list[str]) -> _StubDataProxy:
     return _StubDataProxy(dict.fromkeys(aliases, md))
 
 
-# (start, end) that are representable on a sequence of length BOUNDS_SEQ_LEN
-LOCATION_BOUNDS_VALID = [
-    pytest.param(10, 20, id="interior"),
-    pytest.param(0, 0, id="zero-width-at-start"),
-    pytest.param(4559, 4560, id="terminal-residue"),
-    pytest.param(4560, 4560, id="insertion-at-end"),
-    pytest.param(4000, 5, id="circular-start-gt-end"),
-    pytest.param(4400, models.Range([4500, None]), id="indefinite-end-open-upper"),
-    pytest.param(models.Range([None, 10]), 20, id="indefinite-start-open-lower"),
-    pytest.param(
-        models.Range([0, 10]), models.Range([4500, 4560]), id="definite-ranges"
-    ),
-    pytest.param(None, 10, id="start-undefined"),
-    pytest.param(10, None, id="end-undefined"),
-    pytest.param(None, None, id="both-undefined"),
+# Locations representable on a sequence of length BOUNDS_SEQ_LEN
+location_bounds_valid_cases = [
+    {"id": "interior", "start": 10, "end": 20},
+    {"id": "zero-width-at-start", "start": 0, "end": 0},
+    {"id": "terminal-residue", "start": 4559, "end": 4560},
+    {"id": "insertion-at-end", "start": 4560, "end": 4560},
+    {"id": "circular-start-gt-end", "start": 4000, "end": 5},
+    {
+        "id": "indefinite-end-open-upper",
+        "start": 4400,
+        "end": models.Range([4500, None]),
+    },
+    {
+        "id": "indefinite-start-open-lower",
+        "start": models.Range([None, 10]),
+        "end": 20,
+    },
+    {
+        "id": "definite-ranges",
+        "start": models.Range([0, 10]),
+        "end": models.Range([4500, 4560]),
+    },
+    {"id": "start-undefined", "start": None, "end": 10},
+    {"id": "end-undefined", "start": 10, "end": None},
+    {"id": "both-undefined", "start": None, "end": None},
 ]
 
-# (start, end, offending coordinates as reported in the error message)
-LOCATION_BOUNDS_INVALID = [
-    pytest.param(4559, 4561, "end=4561", id="one-past-end"),
-    pytest.param(5000, 5000, "start=5000, end=5000", id="zero-width-past-end"),
-    pytest.param(99999999, 5, "start=99999999", id="start-past-end-with-start-gt-end"),
-    pytest.param(-1, 1, "start=-1", id="negative-start"),
-    pytest.param(0, -1, "end=-1", id="negative-end"),
-    pytest.param(
-        4400, models.Range([4500, 4600]), "end=[4500, 4600]", id="definite-end-past-end"
-    ),
-    pytest.param(
-        4400,
-        models.Range([4561, None]),
-        "end=[4561, None]",
-        id="indefinite-end-lower-bound-past-end",
-    ),
-    pytest.param(
-        models.Range([-5, 10]), 20, "start=[-5, 10]", id="range-with-negative-member"
-    ),
+# Locations not representable on a sequence of length BOUNDS_SEQ_LEN, with the
+# offending coordinates as reported in the error message
+location_bounds_invalid_cases = [
+    {"id": "one-past-end", "start": 4559, "end": 4561, "detail": "end=4561"},
+    {
+        "id": "zero-width-past-end",
+        "start": 5000,
+        "end": 5000,
+        "detail": "start=5000, end=5000",
+    },
+    {
+        "id": "start-past-end-with-start-gt-end",
+        "start": 99999999,
+        "end": 5,
+        "detail": "start=99999999",
+    },
+    {"id": "negative-start", "start": -1, "end": 1, "detail": "start=-1"},
+    {"id": "negative-end", "start": 0, "end": -1, "detail": "end=-1"},
+    {
+        "id": "definite-end-past-end",
+        "start": 4400,
+        "end": models.Range([4500, 4600]),
+        "detail": "end=[4500, 4600]",
+    },
+    {
+        "id": "indefinite-end-lower-bound-past-end",
+        "start": 4400,
+        "end": models.Range([4561, None]),
+        "detail": "end=[4561, None]",
+    },
+    {
+        "id": "range-with-negative-member",
+        "start": models.Range([-5, 10]),
+        "end": 20,
+        "detail": "start=[-5, 10]",
+    },
 ]
 
 
-@pytest.mark.parametrize(("start", "end"), LOCATION_BOUNDS_VALID)
-def test_validate_location_bounds_valid(
-    start: int | models.Range | None,
-    end: int | models.Range | None,
-) -> None:
+@pytest.mark.parametrize("case", location_bounds_valid_cases, ids=lambda c: c["id"])
+def test_validate_location_bounds_valid(case: dict) -> None:
     dp = _bounds_dp([BOUNDS_SEQ_ID, BOUNDS_REFGET_ID])
-    dp.validate_location_bounds(BOUNDS_SEQ_ID, start, end)
+    dp.validate_location_bounds(BOUNDS_SEQ_ID, case["start"], case["end"])
 
 
-@pytest.mark.parametrize(("start", "end", "detail"), LOCATION_BOUNDS_INVALID)
-def test_validate_location_bounds_invalid(
-    start: int | models.Range | None,
-    end: int | models.Range | None,
-    detail: str,
-) -> None:
+@pytest.mark.parametrize("case", location_bounds_invalid_cases, ids=lambda c: c["id"])
+def test_validate_location_bounds_invalid(case: dict) -> None:
     dp = _bounds_dp([BOUNDS_SEQ_ID, BOUNDS_REFGET_ID])
     expected_msg = (
-        f"Location out of bounds on {BOUNDS_SEQ_ID} ({BOUNDS_REFGET_ID}): {detail} "
-        f"not within [0, {BOUNDS_SEQ_LEN}]"
+        f"Location out of bounds on {BOUNDS_SEQ_ID} ({BOUNDS_REFGET_ID}): "
+        f"{case['detail']} not within [0, {BOUNDS_SEQ_LEN}]"
     )
     with pytest.raises(DataProxyValidationError, match=f"^{re.escape(expected_msg)}$"):
-        dp.validate_location_bounds(BOUNDS_SEQ_ID, start, end)
+        dp.validate_location_bounds(BOUNDS_SEQ_ID, case["start"], case["end"])
 
 
-# (sequence_id as given, aliases of the sequence, name used in the error message)
-LOCATION_BOUNDS_SEQUENCE_NAMES = [
-    pytest.param(
-        BOUNDS_SEQ_ID,
-        [BOUNDS_SEQ_ID, BOUNDS_REFGET_ID],
-        f"{BOUNDS_SEQ_ID} ({BOUNDS_REFGET_ID})",
-        id="input-and-refget",
-    ),
-    pytest.param(
-        "NM_000551.3",
-        [BOUNDS_SEQ_ID, BOUNDS_REFGET_ID],
-        f"{BOUNDS_SEQ_ID} ({BOUNDS_REFGET_ID})",
-        id="bare-accession-coerced",
-    ),
-    pytest.param(
-        BOUNDS_REFGET_ID,
-        [BOUNDS_SEQ_ID, BOUNDS_REFGET_ID],
-        BOUNDS_REFGET_ID,
-        id="refget-input-named-once",
-    ),
-    pytest.param(BOUNDS_SEQ_ID, [BOUNDS_SEQ_ID], BOUNDS_SEQ_ID, id="no-refget-alias"),
+# Name used for the sequence in the error message, given the sequence_id passed in
+# and the aliases of the sequence
+location_bounds_sequence_name_cases = [
+    {
+        "id": "input-and-refget",
+        "sequence_id": BOUNDS_SEQ_ID,
+        "aliases": [BOUNDS_SEQ_ID, BOUNDS_REFGET_ID],
+        "seq_name": f"{BOUNDS_SEQ_ID} ({BOUNDS_REFGET_ID})",
+    },
+    {
+        "id": "bare-accession-coerced",
+        "sequence_id": "NM_000551.3",
+        "aliases": [BOUNDS_SEQ_ID, BOUNDS_REFGET_ID],
+        "seq_name": f"{BOUNDS_SEQ_ID} ({BOUNDS_REFGET_ID})",
+    },
+    {
+        "id": "refget-input-named-once",
+        "sequence_id": BOUNDS_REFGET_ID,
+        "aliases": [BOUNDS_SEQ_ID, BOUNDS_REFGET_ID],
+        "seq_name": BOUNDS_REFGET_ID,
+    },
+    {
+        "id": "no-refget-alias",
+        "sequence_id": BOUNDS_SEQ_ID,
+        "aliases": [BOUNDS_SEQ_ID],
+        "seq_name": BOUNDS_SEQ_ID,
+    },
 ]
 
 
 @pytest.mark.parametrize(
-    ("sequence_id", "aliases", "seq_name"), LOCATION_BOUNDS_SEQUENCE_NAMES
+    "case", location_bounds_sequence_name_cases, ids=lambda c: c["id"]
 )
-def test_validate_location_bounds_sequence_name(
-    sequence_id: str, aliases: list[str], seq_name: str
-) -> None:
-    dp = _bounds_dp(aliases)
-    expected_prefix = f"Location out of bounds on {seq_name}: "
+def test_validate_location_bounds_sequence_name(case: dict) -> None:
+    dp = _bounds_dp(case["aliases"])
+    expected_prefix = f"Location out of bounds on {case['seq_name']}: "
     with pytest.raises(
         DataProxyValidationError, match=f"^{re.escape(expected_prefix)}"
     ):
-        dp.validate_location_bounds(sequence_id, 0, BOUNDS_SEQ_LEN + 1)
+        dp.validate_location_bounds(case["sequence_id"], 0, BOUNDS_SEQ_LEN + 1)

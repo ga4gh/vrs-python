@@ -52,114 +52,96 @@ def _bounds_msg(sequence_id: str, detail: str, seq_len: int) -> str:
     )
 
 
-OUT_OF_BOUNDS = [
-    pytest.param(
-        "allele_tlr",
-        "hgvs",
-        "NM_000551.3:n.4561_4562insA",
-        {},
-        _bounds_msg("refseq:NM_000551.3", "start=4561, end=4561", 4560),
-        id="hgvs-n-insertion-past-end",
-    ),
+out_of_bounds_cases = [
+    {
+        "id": "hgvs-n-insertion-past-end",
+        "tlr_fixture": "allele_tlr",
+        "fmt": "hgvs",
+        "var": "NM_000551.3:n.4561_4562insA",
+        "msg": _bounds_msg("refseq:NM_000551.3", "start=4561, end=4561", 4560),
+    },
     # ClinVar references the stop codon, which is not part of the protein sequence
-    pytest.param(
-        "allele_tlr",
-        "hgvs",
-        "NP_001346993.1:p.Ter194del",
-        {},
-        _bounds_msg("refseq:NP_001346993.1", "end=194", 193),
-        id="hgvs-p-ter-at-length-plus-one",
-    ),
+    {
+        "id": "hgvs-p-ter-at-length-plus-one",
+        "tlr_fixture": "allele_tlr",
+        "fmt": "hgvs",
+        "var": "NP_001346993.1:p.Ter194del",
+        "msg": _bounds_msg("refseq:NP_001346993.1", "end=194", 193),
+    },
     # Zero-width: an out-of-range fetch returns "" and would compare equal to the
     # empty reference, so only a coordinate check can catch this
-    pytest.param(
-        "allele_tlr",
-        "spdi",
-        "NM_000551.3:5000:0:AAA",
-        {},
-        _bounds_msg("refseq:NM_000551.3", "start=5000, end=5000", 4560),
-        id="spdi-insertion-past-end",
-    ),
+    {
+        "id": "spdi-insertion-past-end",
+        "tlr_fixture": "allele_tlr",
+        "fmt": "spdi",
+        "var": "NM_000551.3:5000:0:AAA",
+        "msg": _bounds_msg("refseq:NM_000551.3", "start=5000, end=5000", 4560),
+    },
     # Must report the bounds error, not "Reference mismatch ... correct ref is ''"
-    pytest.param(
-        "allele_tlr",
-        "gnomad",
-        "1-248956423-A-T",
-        {},
-        _bounds_msg("GRCh38:1", "end=248956423", 248956422),
-        id="gnomad-past-end",
-    ),
-    pytest.param(
-        "allele_tlr",
-        "gnomad",
-        "1-248956423-A-T",
-        {"require_validation": False},
-        _bounds_msg("GRCh38:1", "end=248956423", 248956422),
-        id="gnomad-past-end-no-require-validation",
-    ),
-    pytest.param(
-        "allele_tlr",
-        "gnomad",
-        "1-0-A-T",
-        {},
-        _bounds_msg("GRCh38:1", "start=-1", 248956422),
-        id="gnomad-negative-start",
-    ),
-    pytest.param(
-        "allele_tlr",
-        "beacon",
-        "1 : 248956423 A > T",
-        {},
-        _bounds_msg("GRCh38:1", "end=248956423", 248956422),
-        id="beacon-past-end",
-    ),
-    pytest.param(
-        "cnv_tlr",
-        "hgvs",
-        "NC_000007.14:g.159400000_159400100del",
-        {},
-        _bounds_msg("refseq:NC_000007.14", "start=159399999, end=159400100", 159345973),
-        id="cnv-hgvs-copy-number-change-past-end",
-    ),
+    {
+        "id": "gnomad-past-end",
+        "tlr_fixture": "allele_tlr",
+        "fmt": "gnomad",
+        "var": "1-248956423-A-T",
+        "msg": _bounds_msg("GRCh38:1", "end=248956423", 248956422),
+    },
+    {
+        "id": "gnomad-past-end-no-require-validation",
+        "tlr_fixture": "allele_tlr",
+        "fmt": "gnomad",
+        "var": "1-248956423-A-T",
+        "kwargs": {"require_validation": False},
+        "msg": _bounds_msg("GRCh38:1", "end=248956423", 248956422),
+    },
+    {
+        "id": "gnomad-negative-start",
+        "tlr_fixture": "allele_tlr",
+        "fmt": "gnomad",
+        "var": "1-0-A-T",
+        "msg": _bounds_msg("GRCh38:1", "start=-1", 248956422),
+    },
+    {
+        "id": "beacon-past-end",
+        "tlr_fixture": "allele_tlr",
+        "fmt": "beacon",
+        "var": "1 : 248956423 A > T",
+        "msg": _bounds_msg("GRCh38:1", "end=248956423", 248956422),
+    },
+    {
+        "id": "cnv-hgvs-copy-number-change-past-end",
+        "tlr_fixture": "cnv_tlr",
+        "fmt": "hgvs",
+        "var": "NC_000007.14:g.159400000_159400100del",
+        "msg": _bounds_msg(
+            "refseq:NC_000007.14", "start=159399999, end=159400100", 159345973
+        ),
+    },
 ]
 
 
-IN_BOUNDS = [
-    pytest.param(
-        "allele_tlr",
-        "spdi",
-        "NM_000551.3:4560:0:AAA",
-        {"start": 4560, "end": 4560},
-        id="spdi-insertion-at-end",
-    ),
+in_bounds_cases = [
+    {
+        "id": "spdi-insertion-at-end",
+        "tlr_fixture": "allele_tlr",
+        "fmt": "spdi",
+        "var": "NM_000551.3:4560:0:AAA",
+        "expected_location": {"start": 4560, "end": 4560},
+    },
 ]
 
 
-@pytest.mark.parametrize(("tlr_fixture", "fmt", "var", "kwargs", "msg"), OUT_OF_BOUNDS)
+@pytest.mark.parametrize("case", out_of_bounds_cases, ids=lambda c: c["id"])
 @pytest.mark.vcr
-def test_out_of_bounds(
-    request: pytest.FixtureRequest,
-    tlr_fixture: str,
-    fmt: str,
-    var: str | dict,
-    kwargs: dict,
-    msg: str,
-) -> None:
-    tlr = request.getfixturevalue(tlr_fixture)
-    with pytest.raises(DataProxyValidationError, match=f"^{re.escape(msg)}$"):
-        tlr.translate_from(var, fmt=fmt, **kwargs)
+def test_out_of_bounds(request: pytest.FixtureRequest, case: dict) -> None:
+    tlr = request.getfixturevalue(case["tlr_fixture"])
+    with pytest.raises(DataProxyValidationError, match=f"^{re.escape(case['msg'])}$"):
+        tlr.translate_from(case["var"], fmt=case["fmt"], **case.get("kwargs", {}))
 
 
-@pytest.mark.parametrize(("tlr_fixture", "fmt", "var", "expected_location"), IN_BOUNDS)
+@pytest.mark.parametrize("case", in_bounds_cases, ids=lambda c: c["id"])
 @pytest.mark.vcr
-def test_in_bounds(
-    request: pytest.FixtureRequest,
-    tlr_fixture: str,
-    fmt: str,
-    var: str | dict,
-    expected_location: dict,
-) -> None:
-    tlr = request.getfixturevalue(tlr_fixture)
-    vo = tlr.translate_from(var, fmt=fmt)
-    location = vo.location.model_dump()
+def test_in_bounds(request: pytest.FixtureRequest, case: dict) -> None:
+    tlr = request.getfixturevalue(case["tlr_fixture"])
+    location = tlr.translate_from(case["var"], fmt=case["fmt"]).location.model_dump()
+    expected_location = case["expected_location"]
     assert {k: location[k] for k in expected_location} == expected_location
