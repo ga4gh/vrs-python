@@ -337,6 +337,37 @@ def test_from_invalid(tlr):
         tlr.translate_from("BRAF amplication", assembly_name="GRCh37")
 
 
+from_vrs_cases = [
+    {"id": "allele", "var": snv_output},
+    # VRS input is trusted as-is: not validated against the sequence or normalized
+    {
+        "id": "allele-out-of-bounds-unvalidated",
+        "var": {
+            **snv_output,
+            "location": {**snv_output["location"], "start": 99999999, "end": 5},
+        },
+    },
+]
+
+
+@pytest.mark.parametrize("case", from_vrs_cases, ids=lambda c: c["id"])
+def test_from_vrs(tlr: AlleleTranslator, case: dict) -> None:
+    vo = tlr.translate_from(case["var"], fmt="vrs")
+    assert vo.model_dump(exclude_none=True) == case["var"]
+
+
+from_vrs_invalid_cases = [
+    {"id": "unknown-type", "var": {"type": "Bogus"}},
+    {"id": "missing-type", "var": {"location": snv_output["location"]}},
+]
+
+
+@pytest.mark.parametrize("case", from_vrs_invalid_cases, ids=lambda c: c["id"])
+def test_from_vrs_invalid(tlr: AlleleTranslator, case: dict) -> None:
+    with pytest.raises(ValueError, match="^Unable to parse data as vrs variation$"):
+        tlr.translate_from(case["var"], fmt="vrs")
+
+
 @pytest.mark.vcr
 def test_from_beacon(tlr):
     do_normalize = False

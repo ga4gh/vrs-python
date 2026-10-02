@@ -111,6 +111,8 @@ def _normalize_allele(
         of the `sequence`.
         To exclude `sequence` from the response, set to 0.
         For no limit, set to `None`.
+    :raises DataProxyValidationError: If the allele location is out of bounds on its
+        sequence
     """
     # Algorithm applies to LiteralSequenceExpression alleles only; other states are returned unchanged
     if not isinstance(input_allele.state, models.LiteralSequenceExpression):
@@ -130,6 +132,14 @@ def _normalize_allele(
 
     # 0: Get reference sequence and interval
     ref_seq = SequenceProxy(data_proxy, alias)
+
+    # Reject locations that do not exist on the sequence before anything is fetched,
+    # since out-of-range fetches may be silently truncated by the sequence backend.
+    # Done before the early returns below, which skip definite ranges.
+    data_proxy.validate_location_bounds(
+        alias, input_allele.location.start, input_allele.location.end
+    )
+
     start = _get_allele_location_pos(input_allele, use_start=True)
     if start is None:
         return input_allele
