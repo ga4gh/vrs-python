@@ -3,6 +3,7 @@ import pytest
 from ga4gh.vrs import models
 from ga4gh.vrs.dataproxy import DataProxyValidationError
 from ga4gh.vrs.extras.translator import AlleleTranslator
+from ga4gh.vrs.normalize import RleSubunitMode
 
 
 @pytest.fixture(scope="module")
@@ -798,6 +799,78 @@ def test_rle_seq_limit(tlr):
 
     output_hgvs_expr = tlr.translate_to(allele_with_seq, "hgvs")
     assert output_hgvs_expr == [input_hgvs_expr]
+
+
+# Insert AA into the chr1 A x 9 tract: repeatSubunitLength 2 under LARGEST, 1 under
+# SMALLEST
+rle_subunit_mode_spdi = "NC_000001.11:236900409:AAAAAAAAA:AAAAAAAAAAA"
+
+rle_subunit_mode_translator_cases = [
+    {
+        "id": "init_smallest",
+        "init_mode": RleSubunitMode.SMALLEST,
+        "call_kwargs": {},
+        "expected": 1,
+    },
+    {
+        "id": "call_overrides_init",
+        "init_mode": RleSubunitMode.SMALLEST,
+        "call_kwargs": {"rle_subunit_mode": RleSubunitMode.LARGEST},
+        "expected": 2,
+    },
+]
+
+
+@pytest.mark.parametrize(
+    "case", rle_subunit_mode_translator_cases, ids=lambda c: c["id"]
+)
+@pytest.mark.vcr
+def test_rle_subunit_mode_translator(rest_dataproxy, case):
+    """The translator applies its constructor `rle_subunit_mode`, which a per-call
+    `rle_subunit_mode` overrides
+    """
+    translator = AlleleTranslator(
+        rest_dataproxy, identify=False, rle_subunit_mode=case["init_mode"]
+    )
+    allele = translator.translate_from(
+        rle_subunit_mode_spdi, "spdi", **case["call_kwargs"]
+    )
+    assert allele.state.repeatSubunitLength == case["expected"]
+
+
+rle_subunit_mode_smallest_to_spdi_cases = [
+    {
+        "id": "poly_a_ins_2bp",
+        "spdi": "NC_000001.11:236900409:AAAAAAAAA:AAAAAAAAAAA",
+        "repeat_subunit_length": 1,
+        "expected": "NC_000001.11:236900409:9:AAAAAAAAAAA",
+    },
+    {
+        "id": "microsatellite_ins_2_units",
+        "spdi": "NC_000001.11:1007183::GTGT",
+        "repeat_subunit_length": 2,
+        "expected": "NC_000001.11:1007173:10:GTGTGTGTGTGTGT",
+    },
+]
+
+
+@pytest.mark.parametrize(
+    "case", rle_subunit_mode_smallest_to_spdi_cases, ids=lambda c: c["id"]
+)
+@pytest.mark.vcr
+def test_rle_subunit_mode_smallest_to_spdi(tlr, case):
+    """A SMALLEST RLE without its sequence translates back to the input variant, since
+    translate_to rebuilds the sequence from the reference and repeatSubunitLength
+    """
+    allele = tlr.translate_from(
+        case["spdi"],
+        "spdi",
+        rle_seq_limit=0,
+        rle_subunit_mode=RleSubunitMode.SMALLEST,
+    )
+    assert allele.state.repeatSubunitLength == case["repeat_subunit_length"]
+    assert allele.state.sequence is None
+    assert tlr.translate_to(allele, "spdi") == [case["expected"]]
 
 
 @pytest.mark.vcr
