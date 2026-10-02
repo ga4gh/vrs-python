@@ -15,6 +15,7 @@ from typing_extensions import deprecated
 
 from ga4gh.core import ga4gh_identify
 from ga4gh.vrs import models, normalize
+from ga4gh.vrs.config import RLE_SEQ_LIMIT
 from ga4gh.vrs.dataproxy import SequenceProxy, _DataProxy
 from ga4gh.vrs.extras.decorators import lazy_property
 from ga4gh.vrs.normalize import denormalize_reference_length_expression
@@ -74,7 +75,7 @@ class _Translator(ABC):  # noqa: B024
         data_proxy: _DataProxy,
         default_assembly_name: str = "GRCh38",
         identify: bool = True,
-        rle_seq_limit: int | None = 50,
+        rle_seq_limit: int | None = RLE_SEQ_LIMIT,
     ) -> None:
         self.default_assembly_name = default_assembly_name
         self.data_proxy = data_proxy
