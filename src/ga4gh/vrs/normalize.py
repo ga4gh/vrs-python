@@ -23,24 +23,22 @@ _logger = logging.getLogger(__name__)
 
 class RleSubunitMode(str, Enum):
     """Define which repeat subunit length to select for a reference-derived ambiguous
-    insertion normalized to a ``ReferenceLengthExpression``.
+    insertion normalized to a ``ReferenceLengthExpression``. More than one factor of
+    the seed length may be circularly expandable to recreate the alternate sequence;
+    this selects which of them becomes the ``repeatSubunitLength``. The options are:
+      LARGEST - Select the greatest valid factor (VRS 2.0.x normalization)
+      SMALLEST - Select the smallest valid factor (VRS 2.1 normalization)
 
-    For a reference-derived ambiguous insertion, more than one factor of the seed length
-    may be circularly expandable to recreate the alternate sequence. This selects which
-    of those candidate factors becomes the ``repeatSubunitLength``.
-
-    ``repeatSubunitLength`` is inherent to the ``ReferenceLengthExpression`` digest, so
-    the two modes may produce different computed identifiers for the same input Allele.
-
-    :cvar LARGEST: Select the greatest valid factor. VRS <= 2.0 behavior, and the
-        current default.
-    :cvar SMALLEST: Select the smallest valid factor. Specified by VRS as of
-        https://github.com/ga4gh/vrs/pull/700, and will become the default when
-        vrs-python targets that spec version.
+    ``repeatSubunitLength`` is part of the ``ReferenceLengthExpression`` digest, so the
+    two modes may produce different identifiers for the same input Allele.
     """
 
     LARGEST = "largest"
     SMALLEST = "smallest"
+
+
+# VRS 2.0.x normalization selects the greatest valid factor
+DEFAULT_RLE_SUBUNIT_MODE = RleSubunitMode.LARGEST
 
 
 class PosType(IntEnum):
@@ -111,7 +109,7 @@ def _normalize_allele(
     input_allele: models.Allele,
     data_proxy: _DataProxy,
     rle_seq_limit: int = 50,
-    rle_subunit_mode: RleSubunitMode = RleSubunitMode.LARGEST,
+    rle_subunit_mode: RleSubunitMode = DEFAULT_RLE_SUBUNIT_MODE,
 ):
     """Normalize Allele using "fully-justified" normalization adapted from NCBI's
     VOCA. Fully-justified normalization expands such ambiguous representation over the
@@ -139,7 +137,7 @@ def _normalize_allele(
         For no limit, set to `None`.
     :param rle_subunit_mode: Which valid factor of the seed length to select as the
         `repeatSubunitLength` for a reference-derived ambiguous insertion. Defaults to
-        `RleSubunitMode.LARGEST`, matching VRS <= 2.0. See `RleSubunitMode`.
+        `DEFAULT_RLE_SUBUNIT_MODE`. See `RleSubunitMode`.
     """
     rle_subunit_mode = RleSubunitMode(rle_subunit_mode)
 
@@ -339,7 +337,9 @@ def denormalize_reference_length_expression(
     return alt
 
 
-def _factor_gen(n: int, mode: RleSubunitMode = RleSubunitMode.LARGEST) -> Iterator[int]:
+def _factor_gen(
+    n: int, mode: RleSubunitMode = DEFAULT_RLE_SUBUNIT_MODE
+) -> Iterator[int]:
     """Yield all factors of an integer `n`
 
     :param n: The integer to factor
@@ -418,7 +418,7 @@ def normalize(vo, data_proxy: _DataProxy | None = None, **kwargs):
         of the `sequence`. To exclude `state.sequence`, set to 0.
     :keyword rle_subunit_mode: Which valid factor of the seed length to select as the
         `repeatSubunitLength` for a reference-derived ambiguous insertion. Defaults to
-        `RleSubunitMode.LARGEST`. See `RleSubunitMode`.
+        `DEFAULT_RLE_SUBUNIT_MODE`. See `RleSubunitMode`.
     :return: normalized object, or unmodified input object if the normalization algorithm
         does not provide normalization steps for the given type.
     :raise TypeError: if given object isn't a pydantic.BaseModel

@@ -18,6 +18,7 @@ from ga4gh.vrs import models, normalize
 from ga4gh.vrs.dataproxy import SequenceProxy, _DataProxy
 from ga4gh.vrs.extras.decorators import lazy_property
 from ga4gh.vrs.normalize import (
+    DEFAULT_RLE_SUBUNIT_MODE,
     RleSubunitMode,
     denormalize_reference_length_expression,
 )
@@ -78,7 +79,7 @@ class _Translator(ABC):  # noqa: B024
         default_assembly_name: str = "GRCh38",
         identify: bool = True,
         rle_seq_limit: int | None = 50,
-        rle_subunit_mode: RleSubunitMode = RleSubunitMode.LARGEST,
+        rle_subunit_mode: RleSubunitMode = DEFAULT_RLE_SUBUNIT_MODE,
     ) -> None:
         self.default_assembly_name = default_assembly_name
         self.data_proxy = data_proxy
@@ -190,15 +191,9 @@ class AlleleTranslator(_Translator):
         data_proxy: _DataProxy,
         default_assembly_name: str = "GRCh38",
         identify: bool = True,
-        rle_subunit_mode: RleSubunitMode = RleSubunitMode.LARGEST,
+        rle_subunit_mode: RleSubunitMode = DEFAULT_RLE_SUBUNIT_MODE,
     ) -> None:
-        """Initialize AlleleTranslator class
-
-        :param rle_subunit_mode: Default mode for selecting the `repeatSubunitLength` of
-            a reference-derived ambiguous insertion normalized to a
-            `ReferenceLengthExpression`. Overridable per call via the
-            `rle_subunit_mode` kwarg. See `RleSubunitMode`.
-        """
+        """Initialize AlleleTranslator class"""
         super().__init__(
             data_proxy,
             default_assembly_name,
