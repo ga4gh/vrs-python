@@ -348,22 +348,21 @@ def _factor_gen(
         factor found by the caller is the one selected, so the order determines whether
         the largest or smallest valid factor wins.
     """
-    upper_factors = []
-    lower_factors = []
+    paired_factors = []
     i = 1
     while i * i <= n:
         if n % i == 0:
-            upper_factors.append(n // i)
-            if n // i != i:
-                lower_factors.append(i)
+            # i <= sqrt(n) <= n // i. Yield the factor that is already in the requested
+            # order, and save its pair to yield in reverse once the loop finishes.
+            if mode == RleSubunitMode.SMALLEST:
+                factor, pair = i, n // i
+            else:
+                factor, pair = n // i, i
+            yield factor
+            if pair != factor:
+                paired_factors.append(pair)
         i += 1
-
-    if mode == RleSubunitMode.SMALLEST:
-        yield from lower_factors
-        yield from reversed(upper_factors)
-    else:
-        yield from upper_factors
-        yield from reversed(lower_factors)
+    yield from reversed(paired_factors)
 
 
 def _define_rle_allele(
