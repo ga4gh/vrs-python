@@ -982,3 +982,26 @@ def test_normalize_microsatellite_counts(tlr, case):
 def test_translate_to_invalid_fmt(tlr):
     with pytest.raises(NotImplementedError, match="gnomad is not supported"):
         tlr.translate_to(models.Allele.model_validate(snv_output), fmt="gnomad")
+
+
+def test_from_vrs_dict():
+    """Regression test for ga4gh/vrs-python#489.
+
+    Translating a VRS dict must resolve the model class from the `models`
+    module via getattr (modules are not subscriptable) instead of crashing
+    with TypeError; unknown types return None gracefully.
+    """
+    tlr = AlleleTranslator(data_proxy=None, identify=False)
+
+    # valid VRS dict translates to a VRS object (previously raised TypeError)
+    allele = tlr.translate_from(snv_output, fmt="vrs")
+    assert isinstance(allele, models.Allele)
+    assert allele.type == "Allele"
+    assert allele.location.start == snv_output["location"]["start"]
+    assert allele.location.end == snv_output["location"]["end"]
+
+    # unknown type returns None rather than raising
+    assert tlr._from_vrs({"type": "NotARealModel"}) is None
+    # non-dict and missing-type inputs still return None
+    assert tlr._from_vrs("NC_000019.10:g.44908822C>T") is None
+    assert tlr._from_vrs({"location": {}}) is None
