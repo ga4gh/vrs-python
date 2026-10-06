@@ -1,15 +1,54 @@
 import os
+import pickle
 from collections.abc import Iterator
 from pathlib import Path
+from typing import Any
 
 import hgvs.dataproviders.uta
 import pytest
 from biocommons.seqrepo import SeqRepo
+from hgvs.decorators.lru_cache import _make_key
 
 from ga4gh.vrs.dataproxy import SeqRepoDataProxy, SeqRepoRESTDataProxy
 
 HGVS_CACHE_MODES = ("learn", "run", "verify")
 HGVS_CACHE_FILE = Path(__file__).parent / "data" / "hgvs_cache.pkl"
+# The only classes a recorded hgvs cache file is made of: its keys (_HashedSeq), UTA
+# rows (DictRow, with an OrderedDict column index), and what pickle rebuilds them with
+HGVS_CACHE_ALLOWED_CLASSES = {
+    ("builtins", "list"),
+    ("collections", "OrderedDict"),
+    ("copyreg", "_reconstructor"),
+    ("hgvs.decorators.lru_cache", "_HashedSeq"),
+    ("psycopg2.extras", "DictRow"),
+}
+
+
+class HgvsCacheUnpickler(pickle.Unpickler):
+    """Unpickler that refuses any class not in `HGVS_CACHE_ALLOWED_CLASSES`"""
+
+    def find_class(self, module: str, name: str) -> Any:  # noqa: ANN401
+        if (module, name) not in HGVS_CACHE_ALLOWED_CLASSES:
+            msg = f"hgvs cache file references a disallowed class: {module}.{name}"
+            raise pickle.UnpicklingError(msg)
+        return super().find_class(module, name)
+
+
+def check_hgvs_cache_file(cache_file: str) -> None:
+    """Check an hgvs cache file before hgvs loads it with an unrestricted `pickle.load`
+
+    The file may only reference the classes in `HGVS_CACHE_ALLOWED_CLASSES`, and its
+    keys must be in the format this hgvs version builds. Every data provider looks up
+    `schema_version` when it's created, so a recorded cache always has that key.
+    """
+    with Path(cache_file).open("rb") as f:
+        cache: dict = HgvsCacheUnpickler(f).load()  # cache keys -> recorded results
+    if _make_key("schema_version", (), {}, False, ()) not in cache:
+        msg = (
+            f"{cache_file} has no schema_version entry in this hgvs version's cache key "
+            "format; re-record it with `make record-hgvs-cache`"
+        )
+        raise pytest.UsageError(msg)
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -33,6 +72,8 @@ def hgvs_cached_data_provider() -> Iterator[hgvs.dataproviders.uta.UTABase | Non
         msg = f"VRS_HGVS_CACHE_MODE must be one of {HGVS_CACHE_MODES} or empty, got {mode!r}"
         raise pytest.UsageError(msg)
     cache_file = os.environ.get("VRS_HGVS_CACHE_FILE") or str(HGVS_CACHE_FILE)
+    if Path(cache_file).exists():
+        check_hgvs_cache_file(cache_file)
 
     provider = hgvs.dataproviders.uta.connect(mode=mode, cache=cache_file)
     with pytest.MonkeyPatch.context() as mp:
