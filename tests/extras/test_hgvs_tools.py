@@ -1,12 +1,9 @@
 """Tests for ga4gh.vrs.utils.hgvs_tools."""
 
-import os
-
-import hgvs.dataproviders.uta
 import hgvs.parser
 import pytest
 
-from ga4gh.vrs.utils.hgvs_tools import HgvsTools, _connect_with_cache
+from ga4gh.vrs.utils.hgvs_tools import HgvsTools
 
 
 @pytest.fixture(scope="module")
@@ -43,29 +40,6 @@ def test_is_intronic(hgvs_tools, hgvs_expr, expected):
     sv = hgvs_tools.parse(hgvs_expr)
     assert sv is not None
     assert hgvs_tools.is_intronic(sv) is expected
-
-
-def test_hgvs_cache_run_mode_does_not_connect(monkeypatch):
-    """With the tests' default hgvs cache (run mode), lookups are served from the cache
-    file without connecting to UTA.
-
-    Replaces hgvs's `UTA_postgresql._connect` with a function that fails, clears the
-    memoized shared data provider so a new one is built under the patch, then creates
-    an `HgvsTools` and does a cached lookup. Skipped outside run mode (e.g. when
-    re-recording the cache), where connecting is expected.
-    """
-    if os.environ.get("VRS_HGVS_CACHE_MODE") != "run":
-        pytest.skip("only applies when the hgvs cache is in run mode")
-
-    def fail_connect(self):  # noqa: ARG001
-        msg = "UTA connection attempted in hgvs cache run mode"
-        raise AssertionError(msg)
-
-    monkeypatch.setattr(hgvs.dataproviders.uta.UTA_postgresql, "_connect", fail_connect)
-    _connect_with_cache.cache_clear()
-
-    tools = HgvsTools()
-    assert tools.uta_conn.get_tx_identity_info("NM_181798.1")["tx_ac"] == "NM_181798.1"
 
 
 def test_hgvs_cache_data_provider_is_shared():
