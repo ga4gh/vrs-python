@@ -167,8 +167,8 @@ class _Translator(ABC):  # noqa: B024
         if "type" not in var:
             return None
         try:
-            model = getattr(models, models.VrsType(var["type"]).value)
-        except ValueError:
+            model = models[var["type"]]
+        except KeyError:
             return None
         return model(**var)
 
