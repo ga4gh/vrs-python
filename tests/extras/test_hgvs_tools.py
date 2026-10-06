@@ -47,7 +47,12 @@ def test_is_intronic(hgvs_tools, hgvs_expr, expected):
 
 def test_hgvs_cache_run_mode_does_not_connect(monkeypatch):
     """With the tests' default hgvs cache (run mode), lookups are served from the cache
-    file without connecting to UTA
+    file without connecting to UTA.
+
+    Replaces hgvs's `UTA_postgresql._connect` with a function that fails, clears the
+    memoized shared data provider so a new one is built under the patch, then creates
+    an `HgvsTools` and does a cached lookup. Skipped outside run mode (e.g. when
+    re-recording the cache), where connecting is expected.
     """
     if os.environ.get("VRS_HGVS_CACHE_MODE") != "run":
         pytest.skip("only applies when the hgvs cache is in run mode")
@@ -86,7 +91,9 @@ hgvs_cache_env_invalid_cases = [
 
 @pytest.mark.parametrize("case", hgvs_cache_env_invalid_cases, ids=lambda c: c["id"])
 def test_hgvs_cache_env_invalid(monkeypatch, case):
-    """Invalid hgvs cache settings raise rather than silently connecting to UTA"""
+    """Invalid hgvs cache settings raise rather than silently connecting to UTA: an
+    unknown `VRS_HGVS_CACHE_MODE`, or a mode set without `VRS_HGVS_CACHE_FILE`
+    """
     for name, value in case["env"].items():
         monkeypatch.setenv(name, value)
     with pytest.raises(ValueError, match=case["match"]):
