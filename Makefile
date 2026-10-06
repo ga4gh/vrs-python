@@ -131,8 +131,9 @@ clean-cassettes:
 #=> record-hgvs-cache: re-record tests/data/hgvs_cache.pkl (needs UTA_DB_URL and a running seqrepo-rest-service at SEQREPO_REST_URL; VCR cassettes are not touched)
 .PHONY: record-hgvs-cache
 record-hgvs-cache:
-	rm -f tests/data/hgvs_cache.pkl
-	HGVS_SEQREPO_URL="$${SEQREPO_REST_URL:-http://localhost:5000/seqrepo}" VRS_HGVS_CACHE_MODE=learn pytest --disable-vcr
+	rm -f tests/data/hgvs_cache.pkl.new
+	HGVS_SEQREPO_URL="$${SEQREPO_REST_URL:-http://localhost:5000/seqrepo}" VRS_HGVS_CACHE_MODE=learn VRS_HGVS_CACHE_FILE=$(CURDIR)/tests/data/hgvs_cache.pkl.new pytest --disable-vcr
+	mv tests/data/hgvs_cache.pkl.new tests/data/hgvs_cache.pkl
 
 
 ## <LICENSE>
