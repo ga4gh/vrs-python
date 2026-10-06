@@ -16,6 +16,8 @@ from urllib.parse import urlparse
 import requests
 from bioutils.accessions import coerce_namespace
 
+from ga4gh.vrs.models import Range
+
 _logger = logging.getLogger(__name__)
 
 
@@ -180,6 +182,56 @@ class _DataProxy(ABC):
 
             if require_validation:
                 raise DataProxyValidationError(err_msg)
+
+    def validate_location_bounds(
+        self,
+        sequence_id: str,
+        start_pos: int | Range | None,
+        end_pos: int | Range | None,
+    ) -> None:
+        """Ensure that ``start_pos`` and ``end_pos`` are representable on ``sequence_id``.
+
+        Each defined coordinate must be within ``[0, len(sequence)]`` (inter-residue).
+        Undefined (``None``) endpoints are skipped, and for a ``Range`` every defined
+        member is checked. ``start_pos`` and ``end_pos`` are checked independently, so
+        ``start_pos > end_pos`` (circular sequences) is permitted.
+
+        Unlike ``validate_ref_seq``, there is no ``require_validation`` option: an
+        out-of-bounds location has no meaning, so the error is always raised. Sequence
+        backends may silently truncate out-of-range fetches, so this check must be made
+        before relying on fetched sequence.
+
+        :param sequence_id: Sequence ID to use
+        :param start_pos: Start pos (inter-residue) on the sequence_id
+        :param end_pos: End pos (inter-residue) on the sequence_id
+        :raises DataProxyValidationError: If a defined coordinate is out of bounds
+        :raises KeyError: If ``sequence_id`` is not found
+        """
+        # same cache key as derive_refget_accession
+        sequence_id = coerce_namespace(sequence_id)
+        md = self.get_metadata(sequence_id)
+        seq_len = md["length"]
+        bad = []
+        for name, pos in (("start", start_pos), ("end", end_pos)):
+            values = pos.root if isinstance(pos, Range) else [pos]
+            if any(v is not None and not 0 <= v <= seq_len for v in values):
+                bad.append((name, pos))
+        if bad:
+            # Range is shown as its list form, e.g. end=[4500, 4600]
+            detail = ", ".join(
+                f"{name}={pos.root if isinstance(pos, Range) else pos}"
+                for name, pos in bad
+            )
+            # Name the sequence as given, plus the refget accession it resolved to
+            refget_ac = next((a for a in md["aliases"] if a.startswith("ga4gh:")), None)
+            seq_name = sequence_id
+            if refget_ac and refget_ac != sequence_id:
+                seq_name += f" ({refget_ac})"
+            err_msg = (
+                f"Location out of bounds on {seq_name}: {detail} "
+                f"not within [0, {seq_len}]"
+            )
+            raise DataProxyValidationError(err_msg)
 
 
 class _SeqRepoDataProxyBase(_DataProxy):

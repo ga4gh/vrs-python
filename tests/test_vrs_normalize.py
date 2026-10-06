@@ -1,6 +1,9 @@
+import re
+
 import pytest
 
 from ga4gh.vrs import models, normalize
+from ga4gh.vrs.dataproxy import DataProxyValidationError, SeqRepoDataProxy
 
 # Single nucleotide same-as-reference allele.
 allele_dict1 = {
@@ -929,3 +932,76 @@ def test_normalize_partial_rle_del_ins(rest_dataproxy):
     tail_del_4 = models.Allele(**tail_del_4bp)
     tail_del_4_norm = normalize(tail_del_4, rest_dataproxy, rle_seq_limit=0)
     assert tail_del_4_norm == models.Allele(**tail_del_4bp_normalized)
+
+
+# NM_000551.3, length 4560. Present in the test SeqRepo, so these use the local
+# dataproxy fixture and need no cassettes.
+BOUNDS_REFGET_AC = "SQ.v_QTc1p-MUYdgrRv4LMT6ByXIOsdw3C_"
+BOUNDS_SEQ_LEN = 4560
+
+
+def _bounds_allele(
+    start: int | list[int | None], end: int | list[int | None], sequence: str
+) -> models.Allele:
+    return models.Allele(
+        location=models.SequenceLocation(
+            sequenceReference=models.SequenceReference(
+                refgetAccession=BOUNDS_REFGET_AC
+            ),
+            start=start,
+            end=end,
+        ),
+        state=models.LiteralSequenceExpression(sequence=sequence),
+    )
+
+
+normalize_location_in_bounds_cases = [
+    # an undefined outer endpoint is representable and must not be rejected
+    # (the deletion is also rolled right by one base by normalization)
+    {
+        "id": "indefinite-ranges-open-outward",
+        "start": [None, 4400],
+        "end": [4500, None],
+        "sequence": "",
+        "expected_start": [None, 4400],
+        "expected_end": [4501, None],
+    },
+]
+
+
+@pytest.mark.parametrize(
+    "case", normalize_location_in_bounds_cases, ids=lambda c: c["id"]
+)
+def test_normalize_location_in_bounds(dataproxy: SeqRepoDataProxy, case: dict) -> None:
+    allele = _bounds_allele(case["start"], case["end"], case["sequence"])
+    location = normalize(allele, dataproxy).location.model_dump()
+    assert (location["start"], location["end"]) == (
+        case["expected_start"],
+        case["expected_end"],
+    )
+
+
+normalize_location_out_of_bounds_cases = [
+    # Definite ranges are otherwise returned without normalization, so the
+    # bounds check must run before that early return
+    {
+        "id": "definite-range-end-past-end",
+        "start": 4400,
+        "end": [4500, 4600],
+        "detail": "end=[4500, 4600]",
+    },
+]
+
+
+@pytest.mark.parametrize(
+    "case", normalize_location_out_of_bounds_cases, ids=lambda c: c["id"]
+)
+def test_normalize_location_out_of_bounds(
+    dataproxy: SeqRepoDataProxy, case: dict
+) -> None:
+    expected_msg = (
+        f"Location out of bounds on ga4gh:{BOUNDS_REFGET_AC}: {case['detail']} "
+        f"not within [0, {BOUNDS_SEQ_LEN}]"
+    )
+    with pytest.raises(DataProxyValidationError, match=f"^{re.escape(expected_msg)}$"):
+        normalize(_bounds_allele(case["start"], case["end"], "A"), dataproxy)

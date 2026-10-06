@@ -202,6 +202,8 @@ class AlleleTranslator(_Translator):
 
         Args:
             values (dict): The values to use for creating the allele object.
+                'sequence_id' (str): The sequence identifier from the input
+                    expression, used to validate `start` and `end`.
                 'refget_accession' (str): The accession ID of the reference genome.
                 'start' (int): The start position of the allele.
                 'end' (int): The end position of the allele.
@@ -212,6 +214,9 @@ class AlleleTranslator(_Translator):
             models.Allele: The created allele object.
 
         """
+        self.data_proxy.validate_location_bounds(
+            values["sequence_id"], values["start"], values["end"]
+        )
         seq_ref = models.SequenceReference(refgetAccession=values["refget_accession"])
         location = models.SequenceLocation(
             sequenceReference=seq_ref, start=values["start"], end=values["end"]
@@ -275,6 +280,7 @@ class AlleleTranslator(_Translator):
         ins_seq = alt
 
         values = {
+            "sequence_id": sequence,
             "refget_accession": refget_accession,
             "start": start,
             "end": end,
@@ -339,6 +345,9 @@ class AlleleTranslator(_Translator):
         ins_seq = alt
 
         # validation checks
+        # Bounds must be checked before the ref check: an out-of-bounds fetch may be
+        # silently truncated, which would be misreported as a reference mismatch
+        self.data_proxy.validate_location_bounds(sequence, start, end)
         self.data_proxy.validate_ref_seq(
             sequence,
             start,
@@ -348,6 +357,7 @@ class AlleleTranslator(_Translator):
         )
 
         values = {
+            "sequence_id": sequence,
             "refget_accession": refget_accession,
             "start": start,
             "end": end,
@@ -413,6 +423,7 @@ class AlleleTranslator(_Translator):
         ins_seq = g["ins_seq"]
 
         values = {
+            "sequence_id": g["ac"],
             "refget_accession": refget_accession,
             "start": start,
             "end": end,
@@ -569,12 +580,16 @@ class CnvTranslator(_Translator):
         if not refget_accession:
             return None
 
+        start = sv.posedit.pos.start.base - 1
+        end = sv.posedit.pos.end.base
+        self.data_proxy.validate_location_bounds(sv.ac, start, end)
+
         location = models.SequenceLocation(
             sequenceReference=models.SequenceReference(
                 refgetAccession=refget_accession
             ),
-            start=sv.posedit.pos.start.base - 1,
-            end=sv.posedit.pos.end.base,
+            start=start,
+            end=end,
         )
 
         copies = kwargs.get("copies")
