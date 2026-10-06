@@ -1,9 +1,67 @@
 import os
+from collections.abc import Iterator
+from pathlib import Path
 
+import hgvs.dataproviders.uta
 import pytest
 from biocommons.seqrepo import SeqRepo
+from hgvs_cache_json import json_to_pickle
 
 from ga4gh.vrs.dataproxy import SeqRepoDataProxy, SeqRepoRESTDataProxy
+
+HGVS_CACHE_MODES = ("learn", "run", "verify")
+HGVS_CACHE_JSON = Path(__file__).parent / "data" / "hgvs_cache.json"
+
+
+@pytest.fixture(scope="session", autouse=True)
+def hgvs_cached_data_provider(
+    tmp_path_factory: pytest.TempPathFactory,
+) -> Iterator[hgvs.dataproviders.uta.UTABase | None]:
+    """Serve hgvs data provider lookups (UTA queries and hgvs sequence fetches) from a
+    recorded cache, so tests don't need a UTA database or network access.
+
+    Every `HgvsTools` gets this one data provider, so in learn mode they cannot
+    overwrite each other's cache entries. `VRS_HGVS_CACHE_MODE` is `run` (default),
+    `learn`, or `verify`, or empty to query UTA directly without the cache. In run
+    mode, a lookup missing from the cache raises `HGVSDataNotAvailableError`.
+
+    hgvs keeps its cache as a pickle, so in run and verify modes the committed
+    `tests/data/hgvs_cache.json` is converted to a temporary pickle for hgvs to load
+    (see `hgvs_cache_json.py`). Learn mode records a new cache, starting empty, into
+    the pickle file named by `VRS_HGVS_CACHE_FILE`. To re-record, run
+    `make record-hgvs-cache` with UTA_DB_URL pointing at a UTA instance and a
+    seqrepo-rest-service running at SEQREPO_REST_URL; it converts the recorded pickle
+    to `tests/data/hgvs_cache.json`.
+
+    Learn and verify modes, and an empty mode, query UTA and fetch sequences live. The
+    VCR cassettes don't contain those hgvs sequence requests (to HGVS_SEQREPO_URL), so
+    run these modes with `pytest --disable-vcr`.
+    """
+    mode = os.environ.get("VRS_HGVS_CACHE_MODE", "run")
+    if not mode:
+        yield None
+        return
+    if mode not in HGVS_CACHE_MODES:
+        msg = f"VRS_HGVS_CACHE_MODE must be one of {HGVS_CACHE_MODES} or empty, got {mode!r}"
+        raise pytest.UsageError(msg)
+    if mode == "learn":
+        cache_file = os.environ.get("VRS_HGVS_CACHE_FILE")
+        if not cache_file:
+            msg = "VRS_HGVS_CACHE_FILE must name the pickle file to record into in learn mode"
+            raise pytest.UsageError(msg)
+    else:
+        cache_file = str(tmp_path_factory.mktemp("hgvs_cache") / "hgvs_cache.pkl")
+        json_to_pickle(HGVS_CACHE_JSON, Path(cache_file))
+
+    provider = hgvs.dataproviders.uta.connect(mode=mode, cache=cache_file)
+    with pytest.MonkeyPatch.context() as mp:
+        mp.setattr(
+            hgvs.dataproviders.uta, "connect", lambda *_args, **_kwargs: provider
+        )
+        # HgvsTools.close() closes its data provider, but this one is shared
+        mp.setattr(provider, "close", lambda: None)
+        yield provider
+    provider.close()
 
 
 def remove_request_headers(request):

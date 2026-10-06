@@ -1,4 +1,9 @@
+from typing import NoReturn
+
+import hgvs.dataproviders.seqfetcher
+import hgvs.dataproviders.uta
 import pytest
+from hgvs.decorators.lru_cache import RUN
 
 from ga4gh.vrs import models
 from ga4gh.vrs.dataproxy import DataProxyValidationError
@@ -749,6 +754,34 @@ def test_hgvs(tlr, hgvsexpr, expected):
     assert (hgvsexpr in to_hgvs) or (
         hgvs_tests_to_hgvs_map.get(hgvsexpr, hgvsexpr) in to_hgvs
     )
+
+
+@pytest.mark.vcr
+def test_hgvs_cache_run_mode_is_offline(
+    monkeypatch: pytest.MonkeyPatch,
+    tlr: AlleleTranslator,
+    hgvs_cached_data_provider: hgvs.dataproviders.uta.UTABase | None,
+) -> None:
+    """With the tests' default hgvs cache (run mode), translating to and from hgvs
+    makes no UTA queries or hgvs sequence fetches.
+
+    Replaces the two places hgvs reaches outside the process, `UTA_postgresql._get_cursor`
+    (every UTA query) and `SeqFetcher.fetch_seq` (every sequence fetch), with a function
+    that fails, then translates a transcript variant both ways. Skipped outside run mode
+    (e.g. when re-recording the cache), where both are expected.
+    """
+    if hgvs_cached_data_provider is None or hgvs_cached_data_provider.mode != RUN:
+        pytest.skip("only applies when the hgvs cache is in run mode")
+
+    def fail(*args: object, **kwargs: object) -> NoReturn:  # noqa: ARG001
+        msg = "hgvs queried UTA or fetched a sequence in hgvs cache run mode"
+        raise AssertionError(msg)
+
+    monkeypatch.setattr(hgvs.dataproviders.uta.UTA_postgresql, "_get_cursor", fail)
+    monkeypatch.setattr(hgvs.dataproviders.seqfetcher.SeqFetcher, "fetch_seq", fail)
+
+    allele = tlr.translate_from("NM_181798.1:c.1007G>T", "hgvs")
+    assert "NM_181798.1:c.1007G>T" in tlr.translate_to(allele, "hgvs")
 
 
 @pytest.mark.vcr
