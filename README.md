@@ -315,6 +315,40 @@ To run tests:
 make test
 ```
 
+#### Recorded test data
+
+Tests run offline by replaying recorded data, so they don't need a SeqRepo REST
+service, a UTA database, or network access. Set `SEQREPO_ROOT_DIR=tests/data/seqrepo/latest`
+(as CI does) when running or recording tests.
+
+- **VCR cassettes** (`tests/**/cassettes/*.yaml`) replay vrs-python's HTTP requests to
+  the [SeqRepo REST service](https://github.com/biocommons/seqrepo-rest-service). CI
+  runs `pytest --vcr-record=none`, so a test making an unrecorded request fails.
+- **The hgvs cache** (`tests/data/hgvs_cache.pkl`) replays the hgvs library's UTA
+  queries and sequence fetches. `tests/conftest.py` enables it by default
+  (`VRS_HGVS_CACHE_MODE=run`), and a lookup missing from the cache raises
+  `HGVSDataNotAvailableError`.
+
+To re-record, start the external services (`docker compose up` starts
+seqrepo-rest-service on port 5000 and UTA on port 5432). With an existing local SeqRepo
+snapshot, you can instead run just the REST service with it mounted:
+`docker run -p 5000:5000 -v /path/to/seqrepo:/usr/local/share/seqrepo:ro biocommons/seqrepo-rest-service:0.2.2 seqrepo-rest-service /usr/local/share/seqrepo/2024-12-20`.
+When a change needs new data in both, re-record the hgvs cache first, since cassette
+recording reads hgvs data from it:
+
+```shell
+# hgvs cache: needs UTA and seqrepo-rest-service; does not touch cassettes
+export UTA_DB_URL=postgresql://anonymous@localhost:5432/uta/uta_20241220
+make record-hgvs-cache
+
+# VCR cassettes: needs seqrepo-rest-service
+make clean-cassettes
+pytest --vcr-record=once
+```
+
+`SEQREPO_REST_URL` (default `http://localhost:5000/seqrepo`) sets the REST service used
+by both.
+
 ## Running the Notebooks
 
 The notebooks **do not** require you to setup SeqRepo or UTA from
