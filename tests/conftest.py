@@ -1,68 +1,37 @@
 import os
-import pickle
 from collections.abc import Iterator
 from pathlib import Path
-from typing import Any
 
 import hgvs.dataproviders.uta
 import pytest
 from biocommons.seqrepo import SeqRepo
-from hgvs.decorators.lru_cache import _make_key
+from hgvs_cache_json import json_to_pickle
 
 from ga4gh.vrs.dataproxy import SeqRepoDataProxy, SeqRepoRESTDataProxy
 
 HGVS_CACHE_MODES = ("learn", "run", "verify")
-HGVS_CACHE_FILE = Path(__file__).parent / "data" / "hgvs_cache.pkl"
-# The only classes a recorded hgvs cache file is made of: its keys (_HashedSeq), UTA
-# rows (DictRow, with an OrderedDict column index), and what pickle rebuilds them with
-HGVS_CACHE_ALLOWED_CLASSES = {
-    ("builtins", "list"),
-    ("collections", "OrderedDict"),
-    ("copyreg", "_reconstructor"),
-    ("hgvs.decorators.lru_cache", "_HashedSeq"),
-    ("psycopg2.extras", "DictRow"),
-}
-
-
-class HgvsCacheUnpickler(pickle.Unpickler):
-    """Unpickler that refuses any class not in `HGVS_CACHE_ALLOWED_CLASSES`"""
-
-    def find_class(self, module: str, name: str) -> Any:  # noqa: ANN401
-        if (module, name) not in HGVS_CACHE_ALLOWED_CLASSES:
-            msg = f"hgvs cache file references a disallowed class: {module}.{name}"
-            raise pickle.UnpicklingError(msg)
-        return super().find_class(module, name)
-
-
-def check_hgvs_cache_file(cache_file: str) -> None:
-    """Check an hgvs cache file before hgvs loads it with an unrestricted `pickle.load`
-
-    The file may only reference the classes in `HGVS_CACHE_ALLOWED_CLASSES`, and its
-    keys must be in the format this hgvs version builds. Every data provider looks up
-    `schema_version` when it's created, so a recorded cache always has that key.
-    """
-    with Path(cache_file).open("rb") as f:
-        cache: dict = HgvsCacheUnpickler(f).load()  # cache keys -> recorded results
-    if _make_key("schema_version", (), {}, False, ()) not in cache:
-        msg = (
-            f"{cache_file} has no schema_version entry in this hgvs version's cache key "
-            "format; re-record it with `make record-hgvs-cache`"
-        )
-        raise pytest.UsageError(msg)
+HGVS_CACHE_JSON = Path(__file__).parent / "data" / "hgvs_cache.json"
 
 
 @pytest.fixture(scope="session", autouse=True)
-def hgvs_cached_data_provider() -> Iterator[hgvs.dataproviders.uta.UTABase | None]:
+def hgvs_cached_data_provider(
+    tmp_path_factory: pytest.TempPathFactory,
+) -> Iterator[hgvs.dataproviders.uta.UTABase | None]:
     """Serve hgvs data provider lookups (UTA queries and hgvs sequence fetches) from a
     recorded cache, so tests don't need a UTA database or network access.
 
     Every `HgvsTools` gets this one data provider, so in learn mode they cannot
     overwrite each other's cache entries. `VRS_HGVS_CACHE_MODE` is `run` (default),
-    `learn`, or `verify`, or empty to query UTA directly without the cache, and
-    `VRS_HGVS_CACHE_FILE` overrides the cache file. In run mode, a lookup missing from
-    the cache raises `HGVSDataNotAvailableError`. To re-record, run
+    `learn`, or `verify`, or empty to query UTA directly without the cache. In run
+    mode, a lookup missing from the cache raises `HGVSDataNotAvailableError`.
+
+    hgvs keeps its cache as a pickle, so in run and verify modes the committed
+    `tests/data/hgvs_cache.json` is converted to a temporary pickle for hgvs to load
+    (see `hgvs_cache_json.py`). Learn mode records a new cache, starting empty, into
+    the pickle file named by `VRS_HGVS_CACHE_FILE`. To re-record, run
     `make record-hgvs-cache` with UTA_DB_URL pointing at a UTA instance and a
-    seqrepo-rest-service running at SEQREPO_REST_URL.
+    seqrepo-rest-service running at SEQREPO_REST_URL; it converts the recorded pickle
+    to `tests/data/hgvs_cache.json`.
 
     Learn and verify modes, and an empty mode, query UTA and fetch sequences live. The
     VCR cassettes don't contain those hgvs sequence requests (to HGVS_SEQREPO_URL), so
@@ -75,9 +44,14 @@ def hgvs_cached_data_provider() -> Iterator[hgvs.dataproviders.uta.UTABase | Non
     if mode not in HGVS_CACHE_MODES:
         msg = f"VRS_HGVS_CACHE_MODE must be one of {HGVS_CACHE_MODES} or empty, got {mode!r}"
         raise pytest.UsageError(msg)
-    cache_file = os.environ.get("VRS_HGVS_CACHE_FILE") or str(HGVS_CACHE_FILE)
-    if Path(cache_file).exists():
-        check_hgvs_cache_file(cache_file)
+    if mode == "learn":
+        cache_file = os.environ.get("VRS_HGVS_CACHE_FILE")
+        if not cache_file:
+            msg = "VRS_HGVS_CACHE_FILE must name the pickle file to record into in learn mode"
+            raise pytest.UsageError(msg)
+    else:
+        cache_file = str(tmp_path_factory.mktemp("hgvs_cache") / "hgvs_cache.pkl")
+        json_to_pickle(HGVS_CACHE_JSON, Path(cache_file))
 
     provider = hgvs.dataproviders.uta.connect(mode=mode, cache=cache_file)
     with pytest.MonkeyPatch.context() as mp:
