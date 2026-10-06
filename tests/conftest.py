@@ -1,19 +1,48 @@
 import os
+from collections.abc import Iterator
 from pathlib import Path
 
+import hgvs.dataproviders.uta
 import pytest
 from biocommons.seqrepo import SeqRepo
 
 from ga4gh.vrs.dataproxy import SeqRepoDataProxy, SeqRepoRESTDataProxy
 
-# Serve hgvs data provider lookups (UTA queries and hgvs sequence fetches) from a
-# recorded cache by default, so tests don't need a UTA database or network access. To
-# re-record, run `make record-hgvs-cache` with UTA_DB_URL pointing at a UTA instance and
-# a seqrepo-rest-service running at SEQREPO_REST_URL.
-os.environ.setdefault("VRS_HGVS_CACHE_MODE", "run")
-os.environ.setdefault(
-    "VRS_HGVS_CACHE_FILE", str(Path(__file__).parent / "data" / "hgvs_cache.pkl")
-)
+HGVS_CACHE_MODES = ("learn", "run", "verify")
+HGVS_CACHE_FILE = Path(__file__).parent / "data" / "hgvs_cache.pkl"
+
+
+@pytest.fixture(scope="session", autouse=True)
+def hgvs_cached_data_provider() -> Iterator[hgvs.dataproviders.uta.UTABase | None]:
+    """Serve hgvs data provider lookups (UTA queries and hgvs sequence fetches) from a
+    recorded cache, so tests don't need a UTA database or network access.
+
+    Every `HgvsTools` gets this one data provider, so in learn mode they cannot
+    overwrite each other's cache entries. `VRS_HGVS_CACHE_MODE` is `run` (default),
+    `learn`, or `verify`, or empty to query UTA directly without the cache, and
+    `VRS_HGVS_CACHE_FILE` overrides the cache file. In run mode, a lookup missing from
+    the cache raises `HGVSDataNotAvailableError`. To re-record, run
+    `make record-hgvs-cache` with UTA_DB_URL pointing at a UTA instance and a
+    seqrepo-rest-service running at SEQREPO_REST_URL.
+    """
+    mode = os.environ.get("VRS_HGVS_CACHE_MODE", "run")
+    if not mode:
+        yield None
+        return
+    if mode not in HGVS_CACHE_MODES:
+        msg = f"VRS_HGVS_CACHE_MODE must be one of {HGVS_CACHE_MODES} or empty, got {mode!r}"
+        raise pytest.UsageError(msg)
+    cache_file = os.environ.get("VRS_HGVS_CACHE_FILE") or str(HGVS_CACHE_FILE)
+
+    provider = hgvs.dataproviders.uta.connect(mode=mode, cache=cache_file)
+    with pytest.MonkeyPatch.context() as mp:
+        mp.setattr(
+            hgvs.dataproviders.uta, "connect", lambda *_args, **_kwargs: provider
+        )
+        # HgvsTools.close() closes its data provider, but this one is shared
+        mp.setattr(provider, "close", lambda: None)
+        yield provider
+    provider.close()
 
 
 def remove_request_headers(request):

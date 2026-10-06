@@ -1,5 +1,6 @@
 """Tests for ga4gh.vrs.utils.hgvs_tools."""
 
+import hgvs.dataproviders.uta
 import hgvs.parser
 import pytest
 
@@ -42,33 +43,13 @@ def test_is_intronic(hgvs_tools, hgvs_expr, expected):
     assert hgvs_tools.is_intronic(sv) is expected
 
 
-def test_hgvs_cache_data_provider_is_shared():
-    """HgvsTools instances using the same cache share one data provider, so in learn
+def test_hgvs_cache_data_provider_is_shared(
+    hgvs_cached_data_provider: hgvs.dataproviders.uta.UTABase | None,
+) -> None:
+    """Every HgvsTools gets the tests' shared hgvs cache data provider, so in learn
     mode they cannot overwrite each other's cache entries
     """
-    assert HgvsTools().uta_conn is HgvsTools().uta_conn
-
-
-hgvs_cache_env_invalid_cases = [
-    {
-        "id": "unknown-mode",
-        "env": {"VRS_HGVS_CACHE_MODE": "lean"},
-        "match": "must be one of",
-    },
-    {
-        "id": "mode-without-file",
-        "env": {"VRS_HGVS_CACHE_FILE": ""},
-        "match": "VRS_HGVS_CACHE_FILE must be set",
-    },
-]
-
-
-@pytest.mark.parametrize("case", hgvs_cache_env_invalid_cases, ids=lambda c: c["id"])
-def test_hgvs_cache_env_invalid(monkeypatch, case):
-    """Invalid hgvs cache settings raise rather than silently connecting to UTA: an
-    unknown `VRS_HGVS_CACHE_MODE`, or a mode set without `VRS_HGVS_CACHE_FILE`
-    """
-    for name, value in case["env"].items():
-        monkeypatch.setenv(name, value)
-    with pytest.raises(ValueError, match=case["match"]):
-        HgvsTools()
+    if hgvs_cached_data_provider is None:
+        pytest.skip("the hgvs cache is disabled")
+    assert HgvsTools().uta_conn is hgvs_cached_data_provider
+    assert HgvsTools().uta_conn is hgvs_cached_data_provider

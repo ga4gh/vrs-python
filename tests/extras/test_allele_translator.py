@@ -1,9 +1,9 @@
-import os
 from typing import NoReturn
 
 import hgvs.dataproviders.seqfetcher
 import hgvs.dataproviders.uta
 import pytest
+from hgvs.decorators.lru_cache import RUN
 
 from ga4gh.vrs import models
 from ga4gh.vrs.dataproxy import DataProxyValidationError
@@ -758,7 +758,9 @@ def test_hgvs(tlr, hgvsexpr, expected):
 
 @pytest.mark.vcr
 def test_hgvs_cache_run_mode_is_offline(
-    monkeypatch: pytest.MonkeyPatch, tlr: AlleleTranslator
+    monkeypatch: pytest.MonkeyPatch,
+    tlr: AlleleTranslator,
+    hgvs_cached_data_provider: hgvs.dataproviders.uta.UTABase | None,
 ) -> None:
     """With the tests' default hgvs cache (run mode), translating to and from hgvs
     makes no UTA queries or hgvs sequence fetches.
@@ -768,7 +770,7 @@ def test_hgvs_cache_run_mode_is_offline(
     that fails, then translates a transcript variant both ways. Skipped outside run mode
     (e.g. when re-recording the cache), where both are expected.
     """
-    if os.environ.get("VRS_HGVS_CACHE_MODE") != "run":
+    if hgvs_cached_data_provider is None or hgvs_cached_data_provider.mode != RUN:
         pytest.skip("only applies when the hgvs cache is in run mode")
 
     def fail(*args: object, **kwargs: object) -> NoReturn:  # noqa: ARG001
