@@ -1,6 +1,8 @@
 """Provide extra tools for working with hgvs expressions."""
 
+import functools
 import logging
+import os
 import re
 
 import hgvs
@@ -15,6 +17,21 @@ from ga4gh.vrs import models
 from ga4gh.vrs.dataproxy import _DataProxy
 
 _logger = logging.getLogger(__name__)
+
+HGVS_CACHE_MODES = ("learn", "run", "verify")
+
+
+@functools.cache
+def _connect_with_cache(
+    mode: str, cache_file: str
+) -> hgvs.dataproviders.uta.UTA_postgresql:
+    """Return the data provider shared by every `HgvsTools` using this cache.
+
+    Each data provider keeps its own in-memory copy of the cache file and, in learn
+    mode, rewrites the whole file after every miss, so separate providers writing the
+    same file would drop each other's entries.
+    """
+    return hgvs.dataproviders.uta.connect(mode=mode, cache=cache_file)
 
 
 class HgvsTools:
@@ -34,10 +51,28 @@ class HgvsTools:
     def __init__(self, data_proxy: _DataProxy | None = None) -> None:
         """Initialize object.
 
+        The hgvs data provider (UTA) cache can be enabled with environment variables:
+        ``VRS_HGVS_CACHE_MODE`` (``learn``, ``run``, or ``verify``) and
+        ``VRS_HGVS_CACHE_FILE`` (path to the cache file). In ``run`` mode, lookups are
+        served only from the cache file and no UTA connection is made.
+
         :param data_proxy: GA4GH data proxy instance
         """
         self.parser = hgvs.parser.Parser()
-        self.uta_conn = hgvs.dataproviders.uta.connect()
+        cache_mode = os.environ.get("VRS_HGVS_CACHE_MODE") or None
+        cache_file = os.environ.get("VRS_HGVS_CACHE_FILE") or None
+        if cache_mode:
+            if cache_mode not in HGVS_CACHE_MODES:
+                msg = f"VRS_HGVS_CACHE_MODE must be one of {HGVS_CACHE_MODES}, got {cache_mode!r}"
+                raise ValueError(msg)
+            if not cache_file:
+                msg = "VRS_HGVS_CACHE_FILE must be set when VRS_HGVS_CACHE_MODE is set"
+                raise ValueError(msg)
+            self.uta_conn = _connect_with_cache(cache_mode, cache_file)
+            self._owns_uta_conn = False
+        else:
+            self.uta_conn = hgvs.dataproviders.uta.connect()
+            self._owns_uta_conn = True
         self.normalizer = hgvs.normalizer.Normalizer(self.uta_conn, validate=True)
         self.variant_mapper = hgvs.variantmapper.VariantMapper(self.uta_conn)
         self.data_proxy = data_proxy
@@ -50,7 +85,8 @@ class HgvsTools:
         self.normalizer = None
         self.variant_mapper = None
         self.data_proxy = None
-        if self.uta_conn is not None:
+        # A cache-backed data provider is shared with other instances; leave it open
+        if self.uta_conn is not None and self._owns_uta_conn:
             self.uta_conn.close()
 
     # convenience methods for hgvs parsing, normalization, and some mappings

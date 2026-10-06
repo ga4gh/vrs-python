@@ -1,9 +1,19 @@
 import os
+from pathlib import Path
 
 import pytest
 from biocommons.seqrepo import SeqRepo
 
 from ga4gh.vrs.dataproxy import SeqRepoDataProxy, SeqRepoRESTDataProxy
+
+# Serve hgvs data provider lookups (UTA queries and hgvs sequence fetches) from a
+# recorded cache by default, so tests don't need a UTA database or network access. To
+# re-record, run `make record-hgvs-cache` with UTA_DB_URL pointing at a UTA instance and
+# a seqrepo-rest-service running at SEQREPO_REST_URL.
+os.environ.setdefault("VRS_HGVS_CACHE_MODE", "run")
+os.environ.setdefault(
+    "VRS_HGVS_CACHE_FILE", str(Path(__file__).parent / "data" / "hgvs_cache.pkl")
+)
 
 
 def remove_request_headers(request):
