@@ -63,6 +63,10 @@ def hgvs_cached_data_provider() -> Iterator[hgvs.dataproviders.uta.UTABase | Non
     the cache raises `HGVSDataNotAvailableError`. To re-record, run
     `make record-hgvs-cache` with UTA_DB_URL pointing at a UTA instance and a
     seqrepo-rest-service running at SEQREPO_REST_URL.
+
+    Learn and verify modes, and an empty mode, query UTA and fetch sequences live. The
+    VCR cassettes don't contain those hgvs sequence requests (to HGVS_SEQREPO_URL), so
+    run these modes with `pytest --disable-vcr`.
     """
     mode = os.environ.get("VRS_HGVS_CACHE_MODE", "run")
     if not mode:
