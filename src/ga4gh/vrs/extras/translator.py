@@ -161,15 +161,15 @@ class _Translator(ABC):  # noqa: B024
         return HgvsTools(self.data_proxy)
 
     def _from_vrs(self, var: dict, **kwargs) -> models._VariationBase | None:  # noqa: ARG002
-        """Convert from dict representation of VRS JSON to VRS object"""
+        """Convert from dict representation of VRS JSON to VRS object
+
+        :raise pydantic.ValidationError: If `var` is not a valid VRS variation
+        """
         if not isinstance(var, Mapping):
             return None
         if "type" not in var:
             return None
-        model = getattr(models, var["type"], None)
-        if model is None:
-            return None
-        return model(**var)
+        return models.Variation.model_validate(var).root
 
 
 class AlleleTranslator(_Translator):

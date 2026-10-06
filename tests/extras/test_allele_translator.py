@@ -1,4 +1,5 @@
 import pytest
+from pydantic import ValidationError
 
 from ga4gh.vrs import models
 from ga4gh.vrs.dataproxy import DataProxyValidationError
@@ -987,9 +988,8 @@ def test_translate_to_invalid_fmt(tlr):
 def test_from_vrs_dict():
     """Regression test for ga4gh/vrs-python#489.
 
-    Translating a VRS dict must resolve the model class from the `models`
-    module via getattr (modules are not subscriptable) instead of crashing
-    with TypeError; unknown types return None gracefully.
+    Translating a VRS dict must resolve the model class from its `type`
+    instead of crashing with TypeError (the `models` module was subscripted).
     """
     tlr = AlleleTranslator(data_proxy=None, identify=False)
 
@@ -1000,8 +1000,28 @@ def test_from_vrs_dict():
     assert allele.location.start == snv_output["location"]["start"]
     assert allele.location.end == snv_output["location"]["end"]
 
-    # unknown type returns None rather than raising
-    assert tlr._from_vrs({"type": "NotARealModel"}) is None
     # non-dict and missing-type inputs still return None
     assert tlr._from_vrs("NC_000019.10:g.44908822C>T") is None
     assert tlr._from_vrs({"location": {}}) is None
+
+
+from_vrs_non_variation_type_cases = [
+    {"id": "unknown-name", "type": "NotARealModel"},
+    {"id": "non-variation-vrs-class", "type": "SequenceLocation"},
+    {"id": "non-model-module-attribute", "type": "Field"},
+    {"id": "variation-base-class", "type": "_VariationBase"},
+    {"id": "non-string", "type": 5},
+]
+
+
+@pytest.mark.parametrize(
+    "case", from_vrs_non_variation_type_cases, ids=lambda c: c["id"]
+)
+def test_from_vrs_non_variation_type(case):
+    """A VRS dict whose `type` is not a VRS variation class is rejected, rather than
+    resolved to whatever `ga4gh.vrs.models` attribute has that name
+    """
+    tlr = AlleleTranslator(data_proxy=None, identify=False)
+    with pytest.raises(ValidationError) as e:
+        tlr.translate_from({"type": case["type"]}, fmt="vrs")
+    assert e.value.errors()[0]["type"] == "union_tag_invalid"
