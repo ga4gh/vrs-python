@@ -11,7 +11,7 @@ import hgvs.variantmapper
 from hgvs.sequencevariant import SequenceVariant as HgvsSequenceVariant
 
 from ga4gh.vrs import models
-from ga4gh.vrs.dataproxy import DataProxy
+from ga4gh.vrs.dataproxy import DataProxy, require_refget_accession
 
 _logger = logging.getLogger(__name__)
 
@@ -171,9 +171,7 @@ class HgvsTools:
             msg = "Intronic HGVS variants are not supported"
             raise ValueError(msg)
 
-        refget_accession = self.data_proxy.derive_refget_accession(sv.ac)
-        if not refget_accession:
-            return None
+        refget_accession = require_refget_accession(self.data_proxy, sv.ac)
 
         # translate coding coordinates to positional coordinates, if necessary
         if sv.type == "c":

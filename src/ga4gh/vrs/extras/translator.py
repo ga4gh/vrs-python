@@ -15,7 +15,7 @@ from typing_extensions import deprecated
 
 from ga4gh.core import ga4gh_identify
 from ga4gh.vrs import models, normalize
-from ga4gh.vrs.dataproxy import DataProxy, SequenceProxy
+from ga4gh.vrs.dataproxy import DataProxy, SequenceProxy, require_refget_accession
 from ga4gh.vrs.extras.decorators import lazy_property
 from ga4gh.vrs.normalize import denormalize_reference_length_expression
 from ga4gh.vrs.utils.hgvs_tools import HgvsTools
@@ -259,9 +259,7 @@ class AlleleTranslator(_Translator):
         g = m.groupdict()
         assembly_name = kwargs.get("assembly_name", self.default_assembly_name)
         sequence = assembly_name + ":" + g["chr"]
-        refget_accession = self.data_proxy.derive_refget_accession(sequence)
-        if not refget_accession:
-            return None
+        refget_accession = require_refget_accession(self.data_proxy, sequence)
 
         start = int(g["pos"]) - 1
         ref = g["ref"]
@@ -323,9 +321,7 @@ class AlleleTranslator(_Translator):
         g = m.groupdict()
         assembly_name = kwargs.get("assembly_name", self.default_assembly_name)
         sequence = assembly_name + ":" + g["chr"]
-        refget_accession = self.data_proxy.derive_refget_accession(sequence)
-        if not refget_accession:
-            return None
+        refget_accession = require_refget_accession(self.data_proxy, sequence)
 
         start = int(g["pos"]) - 1
         ref = g["ref"].upper()
@@ -395,9 +391,7 @@ class AlleleTranslator(_Translator):
             return None
 
         g = m.groupdict()
-        refget_accession = self.data_proxy.derive_refget_accession(g["ac"])
-        if not refget_accession:
-            return None
+        refget_accession = require_refget_accession(self.data_proxy, g["ac"])
 
         start = int(g["pos"])
         try:
@@ -560,9 +554,7 @@ class CnvTranslator(_Translator):
             msg = "Intronic HGVS variants are not supported"
             raise ValueError(msg)
 
-        refget_accession = self.data_proxy.derive_refget_accession(sv.ac)
-        if not refget_accession:
-            return None
+        refget_accession = require_refget_accession(self.data_proxy, sv.ac)
 
         location = models.SequenceLocation(
             sequenceReference=models.SequenceReference(

@@ -7,7 +7,9 @@ import pytest
 
 from ga4gh.vrs.dataproxy import (
     AliasDataProxy,
+    UnresolvableAccessionError,
     create_dataproxy,
+    require_refget_accession,
     resolve_cache_size,
 )
 
@@ -176,3 +178,20 @@ class TestDeriveRefgetAccession:
         proxy = self._proxy([self.SQ_A, self.SQ_B, "refseq:NM_000551.3"])
         with pytest.raises(ValueError, match="Expected at most one ga4gh alias"):
             proxy.derive_refget_accession("refseq:NM_000551.3")
+
+    def test_uninferrable_namespace_is_a_miss(self) -> None:
+        proxy = self._proxy([self.SQ_A])
+        assert proxy.derive_refget_accession("NOT_AN_ACCESSION") is None
+
+    def test_require_refget_accession(self) -> None:
+        assert (
+            require_refget_accession(self._proxy([self.SQ_A]), "refseq:NM_000551.3")
+            == "SQ.v_QTc1p-MUYdgrRv4LMT6ByXIOsdw3C_"
+        )
+        with pytest.raises(UnresolvableAccessionError) as excinfo:
+            require_refget_accession(self._proxy([]), "refseq:NM_000551.3")
+        assert isinstance(excinfo.value, KeyError)
+        assert excinfo.value.accession == "refseq:NM_000551.3"
+        assert str(excinfo.value) == (
+            "Unable to resolve refseq:NM_000551.3 to a refget accession"
+        )

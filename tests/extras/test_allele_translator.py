@@ -1,8 +1,12 @@
+from unittest.mock import MagicMock
+
+import hgvs.parser
 import pytest
 
 from ga4gh.vrs import models
-from ga4gh.vrs.dataproxy import DataProxyValidationError
-from ga4gh.vrs.extras.translator import AlleleTranslator
+from ga4gh.vrs.dataproxy import DataProxyValidationError, UnresolvableAccessionError
+from ga4gh.vrs.extras.translator import AlleleTranslator, CnvTranslator
+from ga4gh.vrs.utils.hgvs_tools import HgvsTools
 
 
 @pytest.fixture(scope="module")
@@ -330,6 +334,41 @@ def test_from_invalid(tlr):
         ValueError, match="Unable to parse data as beacon, gnomad, hgvs, spdi, vrs"
     ):
         tlr.translate_from("BRAF amplication")
+
+
+def _unresolving_translator(cls: type) -> AlleleTranslator | CnvTranslator:
+    """Build a translator whose data proxy resolves no accession, without UTA."""
+    data_proxy = MagicMock()
+    data_proxy.derive_refget_accession.return_value = None
+    tlr = cls(data_proxy=data_proxy, identify=False)
+    hgvs_tools = HgvsTools.__new__(HgvsTools)  # skip __init__'s UTA connection
+    hgvs_tools.parser = hgvs.parser.Parser()
+    hgvs_tools.data_proxy = data_proxy
+    tlr._lazy_hgvs_tools = hgvs_tools
+    return tlr
+
+
+@pytest.mark.parametrize(
+    ("cls", "fmt", "expr", "accession"),
+    [
+        (AlleleTranslator, "hgvs", "NC_000099.1:g.100A>T", "NC_000099.1"),
+        (AlleleTranslator, "spdi", "NC_000099.1:100:A:T", "NC_000099.1"),
+        (AlleleTranslator, "gnomad", "Z-100-A-T", "GRCh38:Z"),
+        (AlleleTranslator, "beacon", "Z : 100 A > T", "GRCh38:Z"),
+        (CnvTranslator, "hgvs", "NC_000099.1:g.100_200del", "NC_000099.1"),
+    ],
+)
+@pytest.mark.parametrize("given_fmt", [True, False], ids=["given", "guessed"])
+@pytest.mark.filterwarnings("ignore::DeprecationWarning")
+def test_from_unresolvable_accession(cls, fmt, expr, accession, given_fmt):
+    """Report an unknown accession as a lookup failure, not a parse failure.
+
+    Applies whether the expression's format is given or guessed.
+    """
+    tlr = _unresolving_translator(cls)
+    with pytest.raises(UnresolvableAccessionError) as excinfo:
+        tlr.translate_from(expr, fmt=fmt if given_fmt else None)
+    assert excinfo.value.accession == accession
 
 
 @pytest.mark.vcr

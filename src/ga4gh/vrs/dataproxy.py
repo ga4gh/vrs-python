@@ -59,6 +59,24 @@ class DataProxyValidationError(Exception):
     """Class for validation errors during data proxy methods"""
 
 
+class UnresolvableAccessionError(KeyError):
+    """An accession that the data proxy cannot resolve to a refget accession.
+
+    A ``KeyError``, like any other lookup miss, but distinguishable from one
+    raised deeper in translation, so callers can skip an input on a sequence
+    the backend lacks without masking other failures.
+    """
+
+    def __init__(self, accession: str) -> None:
+        """Initialize with the accession that failed to resolve."""
+        super().__init__(accession)
+        self.accession = accession
+
+    def __str__(self) -> str:
+        """Describe the failure (``KeyError`` would show only the quoted key)."""
+        return f"Unable to resolve {self.accession} to a refget accession"
+
+
 class SequenceDataProxy(ABC):
     """Abstract interface for sequence data access.
 
@@ -173,7 +191,8 @@ class AliasDataProxy(ABC):
         """Derive the refget accession from a public accession identifier.
 
         :param ac: public accession in simple or curie form from which to derive the refget accession
-        :return: Refget Accession if found
+        :return: Refget Accession if found, else ``None`` (including for a bare
+            accession whose namespace cannot be inferred)
         :raises ValueError: if the backend reports more than one ``ga4gh:`` alias
         """
         if ac is None:
@@ -183,7 +202,11 @@ class AliasDataProxy(ABC):
             # always coerce the namespace if none provided
             from bioutils.accessions import coerce_namespace
 
-            ac = coerce_namespace(ac)
+            try:
+                ac = coerce_namespace(ac)
+            except ValueError:
+                _logger.debug("Unable to infer a namespace for %s", ac)
+                return None
 
         refget_accession = None
         try:
@@ -271,6 +294,22 @@ class DataProxy(SequenceDataProxy, AliasDataProxy):
             "length": self.get_sequence_length(identifier),
             "aliases": self.get_aliases(identifier),
         }
+
+
+def require_refget_accession(data_proxy: AliasDataProxy, ac: str) -> str:
+    """Derive the refget accession for ``ac``, raising if the backend has none.
+
+    For translators that have already recognized their input format: an
+    accession the backend cannot resolve is a failure of that input, not a
+    sign that the input is in some other format.
+
+    :raises UnresolvableAccessionError: if ``ac`` does not resolve to a refget
+        accession
+    """
+    refget_accession = data_proxy.derive_refget_accession(ac)
+    if not refget_accession:
+        raise UnresolvableAccessionError(ac)
+    return refget_accession
 
 
 class CompositeDataProxy(DataProxy):
