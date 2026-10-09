@@ -221,6 +221,26 @@ class TestRefgetAliasDataProxy:
         assert dp.derive_refget_accession("refseq:NM_000551.3") == SQ_ID
         store.get_aliases_for_sequence.assert_not_called()
 
+    @pytest.mark.parametrize(
+        ("bare", "namespace"),
+        [("NM_000551.3", "refseq"), ("LRG_1", "lrg"), ("LRG_1t1", "lrg")],
+    )
+    def test_bare_accession_namespace_is_inferred(
+        self, bare: str, namespace: str
+    ) -> None:
+        store = _make_mock_store()
+        dp = RefgetAliasDataProxy(store)
+
+        assert dp.derive_refget_accession(bare) == SQ_ID
+        store.get_sequence_metadata_by_alias.assert_called_once_with(namespace, bare)
+
+    def test_bare_accession_with_no_inferable_namespace_is_a_miss(self) -> None:
+        store = _make_mock_store()
+        dp = RefgetAliasDataProxy(store)
+
+        assert dp.derive_refget_accession("NOT_AN_ACCESSION") is None
+        store.get_sequence_metadata_by_alias.assert_not_called()
+
 
 # --- CompositeDataProxy ---
 

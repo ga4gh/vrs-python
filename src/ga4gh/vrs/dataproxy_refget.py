@@ -40,6 +40,7 @@ from ga4gh.vrs.dataproxy import (
     CompositeDataProxy,
     DataProxy,
     SequenceDataProxy,
+    coerce_accession_namespace,
 )
 
 if TYPE_CHECKING:
@@ -239,8 +240,8 @@ class RefgetAliasDataProxy(AliasDataProxy):
         - ``ga4gh:SQ.<digest>``, ``SQ.<digest>``, ``sha512t24u:<digest>``
           (handled via :func:`_extract_digest`)
         - ``namespace:alias`` (looked up via ``get_sequence_by_alias``)
-        - Bare accession like ``NC_000001.11`` (coerced to ``refseq:`` /
-          ``insdc:`` via ``bioutils.accessions.coerce_namespace``)
+        - Bare accession like ``NC_000001.11`` or ``LRG_1t1`` (coerced to
+          ``refseq:`` / ``lrg:`` / ... via :func:`coerce_accession_namespace`)
 
         Returns None if the identifier cannot be resolved.
         """
@@ -253,10 +254,8 @@ class RefgetAliasDataProxy(AliasDataProxy):
         # Namespaced or bare accession: coerce and look up.
         normalized = identifier
         if ":" not in normalized[1:]:
-            from bioutils.accessions import coerce_namespace
-
             try:
-                normalized = coerce_namespace(normalized)
+                normalized = coerce_accession_namespace(normalized)
             except ValueError:
                 return None
 

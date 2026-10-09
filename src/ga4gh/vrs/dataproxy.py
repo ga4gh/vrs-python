@@ -10,6 +10,7 @@ from __future__ import annotations
 import functools
 import logging
 import os
+import re
 from abc import ABC, abstractmethod
 from collections.abc import Callable, Sequence
 from urllib.parse import urlparse
@@ -53,6 +54,32 @@ DATAPROXY_CACHE_SIZE = resolve_cache_size("GA4GH_VRS_DATAPROXY_CACHE_SIZE", "819
 REST_SEQUENCE_CACHE_SIZE = resolve_cache_size(
     "GA4GH_VRS_REST_DATAPROXY_SEQUENCE_CACHE_SIZE", "128"
 )
+
+
+# LRG genomic (LRG_1, LRG_1g), transcript (LRG_1t1) and protein (LRG_1p1)
+# accessions. bioutils.accessions does not recognize LRG.
+_LRG_ACCESSION_RE = re.compile(r"^LRG_\d+(?:g|[tp]\d+)?$")
+
+
+def coerce_accession_namespace(ac: str) -> str:
+    """Prefix a bare accession with its inferred namespace.
+
+    As :func:`bioutils.accessions.coerce_namespace`, but also infers ``lrg``
+    for Locus Reference Genomic accessions. An accession that already has a
+    namespace is returned unchanged.
+
+    >>> coerce_accession_namespace("LRG_1t1")
+    'lrg:LRG_1t1'
+    >>> coerce_accession_namespace("NM_000551.3")
+    'refseq:NM_000551.3'
+
+    :raises ValueError: if no namespace can be inferred
+    """
+    if ":" not in ac and _LRG_ACCESSION_RE.match(ac):
+        return f"lrg:{ac}"
+    from bioutils.accessions import coerce_namespace
+
+    return coerce_namespace(ac)
 
 
 class DataProxyValidationError(Exception):
@@ -200,10 +227,8 @@ class AliasDataProxy(ABC):
 
         if ":" not in ac[1:]:
             # always coerce the namespace if none provided
-            from bioutils.accessions import coerce_namespace
-
             try:
-                ac = coerce_namespace(ac)
+                ac = coerce_accession_namespace(ac)
             except ValueError:
                 _logger.debug("Unable to infer a namespace for %s", ac)
                 return None

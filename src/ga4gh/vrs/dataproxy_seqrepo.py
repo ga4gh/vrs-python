@@ -12,12 +12,12 @@ import logging
 from urllib.parse import ParseResult
 
 import requests
-from bioutils.accessions import coerce_namespace
 
 from ga4gh.vrs.dataproxy import (
     DATAPROXY_CACHE_SIZE,
     REST_SEQUENCE_CACHE_SIZE,
     DataProxy,
+    coerce_accession_namespace,
 )
 
 _logger = logging.getLogger(__name__)
@@ -38,12 +38,12 @@ class SeqRepoDataProxy(DataProxy):
         self, identifier: str, start: int | None = None, end: int | None = None
     ) -> str:
         """Return the specified sequence or subsequence from local SeqRepo."""
-        return self.sr.fetch_uri(coerce_namespace(identifier), start, end)
+        return self.sr.fetch_uri(coerce_accession_namespace(identifier), start, end)
 
     @functools.lru_cache(maxsize=DATAPROXY_CACHE_SIZE)  # noqa: B019
     def get_sequence_length(self, identifier: str) -> int:
         """Return the length of the specified sequence from local SeqRepo."""
-        ns, a = coerce_namespace(identifier).split(":", 2)
+        ns, a = coerce_accession_namespace(identifier).split(":", 2)
         r = list(self.sr.aliases.find_aliases(namespace=ns, alias=a))
         if len(r) == 0:
             raise KeyError(identifier)
@@ -54,7 +54,7 @@ class SeqRepoDataProxy(DataProxy):
     @functools.lru_cache(maxsize=DATAPROXY_CACHE_SIZE)  # noqa: B019
     def get_aliases(self, identifier: str) -> list[str]:
         """Return all aliases for the specified sequence from local SeqRepo."""
-        ns, a = coerce_namespace(identifier).split(":", 2)
+        ns, a = coerce_accession_namespace(identifier).split(":", 2)
         r = list(self.sr.aliases.find_aliases(namespace=ns, alias=a))
         if len(r) == 0:
             raise KeyError(identifier)

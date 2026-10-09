@@ -8,10 +8,35 @@ import pytest
 from ga4gh.vrs.dataproxy import (
     AliasDataProxy,
     UnresolvableAccessionError,
+    coerce_accession_namespace,
     create_dataproxy,
     require_refget_accession,
     resolve_cache_size,
 )
+
+
+@pytest.mark.parametrize(
+    ("ac", "expected"),
+    [
+        ("LRG_1", "lrg:LRG_1"),
+        ("LRG_1g", "lrg:LRG_1g"),
+        ("LRG_199t1", "lrg:LRG_199t1"),
+        ("LRG_199p1", "lrg:LRG_199p1"),
+        ("NM_000551.3", "refseq:NM_000551.3"),
+        ("ENST00000530893.6", "ensembl:ENST00000530893.6"),
+        ("lrg:LRG_1t1", "lrg:LRG_1t1"),
+    ],
+)
+def test_coerce_accession_namespace(ac: str, expected: str) -> None:
+    assert coerce_accession_namespace(ac) == expected
+
+
+@pytest.mark.parametrize(
+    "ac", ["LRG_", "LRG_1x1", "LRG_1t", "LRG1", "NOT_AN_ACCESSION"]
+)
+def test_coerce_accession_namespace_rejects(ac: str) -> None:
+    with pytest.raises(ValueError, match="Could not infer namespace"):
+        coerce_accession_namespace(ac)
 
 
 @pytest.mark.parametrize("dp", ["rest_dataproxy", "dataproxy"])
