@@ -15,7 +15,12 @@ from typing_extensions import deprecated
 
 from ga4gh.core import ga4gh_identify
 from ga4gh.vrs import models, normalize
-from ga4gh.vrs.dataproxy import DataProxy, SequenceProxy, require_refget_accession
+from ga4gh.vrs.dataproxy import (
+    DataProxy,
+    DataProxyValidationError,
+    SequenceProxy,
+    require_refget_accession,
+)
 from ga4gh.vrs.extras.decorators import lazy_property
 from ga4gh.vrs.normalize import denormalize_reference_length_expression
 from ga4gh.vrs.utils.hgvs_tools import HgvsTools
@@ -127,14 +132,32 @@ class _Translator(ABC):  # noqa: B024
                     raise ValueError(msg)
                 return o
 
-        for t in self.from_translators.values():
-            o = t(var, **kwargs)
-            if o:
+        # A format that recognizes `var` but fails to translate it does not end
+        # the guess: an earlier pattern can match spuriously, and a later format
+        # may still succeed. Its error is kept and reported if none does.
+        errors: list[tuple[str, Exception]] = []
+        for name, t in self.from_translators.items():
+            try:
+                o = t(var, **kwargs)
+            except (KeyError, ValueError, DataProxyValidationError) as e:
+                errors.append((name, e))
+                continue
+            if o is not None:
                 return o
 
-        formats = list(self.from_translators.keys())
-        msg = f"Unable to parse data as {', '.join(formats)}"
-        raise ValueError(msg)
+        if not errors:
+            formats = list(self.from_translators.keys())
+            msg = f"Unable to parse data as {', '.join(formats)}"
+            raise ValueError(msg)
+
+        # Recognized but untranslatable: report why, rather than "cannot parse".
+        _, first = errors[0]
+        if len(errors) > 1 and hasattr(first, "add_note"):  # Python 3.11+
+            first.add_note(
+                "Also recognized as: "
+                + "; ".join(f"{n} ({type(e).__name__}: {e})" for n, e in errors[1:])
+            )
+        raise first
 
     def translate_to(self, vo: models._VariationBase, fmt: str, **kwargs) -> list[str]:
         """Translate vrs object `vo` to named format `fmt`

@@ -371,6 +371,51 @@ def test_from_unresolvable_accession(cls, fmt, expr, accession, given_fmt):
     assert excinfo.value.accession == accession
 
 
+def _raises(exc: Exception):
+    def translate(*_args, **_kwargs):
+        raise exc
+
+    return translate
+
+
+def test_guess_continues_past_a_format_that_fails():
+    """A format that recognizes the input but fails does not end the guess."""
+    tlr = _unresolving_translator(AlleleTranslator)
+    allele = object()
+    tlr.from_translators = {
+        "unmatched": lambda *_a, **_k: None,
+        "spurious": _raises(UnresolvableAccessionError("X")),
+        "real": lambda *_a, **_k: allele,
+    }
+    assert tlr.translate_from("anything") is allele
+
+
+def test_guess_reports_the_first_recognized_failure():
+    tlr = _unresolving_translator(AlleleTranslator)
+    first = UnresolvableAccessionError("X")
+    tlr.from_translators = {
+        "unmatched": lambda *_a, **_k: None,
+        "a": _raises(first),
+        "b": _raises(DataProxyValidationError("bad ref")),
+    }
+    with pytest.raises(UnresolvableAccessionError) as excinfo:
+        tlr.translate_from("anything")
+    assert excinfo.value is first
+    if hasattr(first, "add_note"):
+        assert "b (DataProxyValidationError: bad ref)" in excinfo.value.__notes__[0]
+
+
+def test_guess_does_not_absorb_unexpected_errors():
+    """Errors outside the diagnostic set are programming errors and abort."""
+    tlr = _unresolving_translator(AlleleTranslator)
+    tlr.from_translators = {
+        "broken": _raises(TypeError("bug")),
+        "real": lambda *_a, **_k: object(),
+    }
+    with pytest.raises(TypeError, match="bug"):
+        tlr.translate_from("anything")
+
+
 @pytest.mark.vcr
 def test_from_beacon(tlr):
     do_normalize = False
