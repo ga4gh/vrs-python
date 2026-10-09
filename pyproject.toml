@@ -72,8 +72,17 @@ notebooks = [
     "pyyaml"
 ]
 refget = [
-    "gtars>=0.1.0",
+    "gtars>=0.11.0",
 ]
+
+[tool.uv.sources]
+# No gtars release yet includes databio/gtars#273, which fixes residues that
+# RefgetStore's encoded mode returned differently than imported, and stores
+# written with it are misread by gtars <= 0.10 without error. This pins the
+# PR head plus the fix that makes its Python bindings compile. Replace with the
+# version floor alone once a release includes #273. Building it needs a Rust
+# toolchain.
+gtars = { git = "https://github.com/theferrit32/gtars", rev = "7831e09f596042e3983c7a123c3f6c019ca6c05f", subdirectory = "gtars-python" }
 
 [project.urls]
 Homepage = "https://github.com/ga4gh/vrs-python"
