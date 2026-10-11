@@ -154,6 +154,8 @@ pytest.ini
 # Misc
 *.bak
 misc/clinvar
+misc/refgetstore/store/
+misc/refgetstore/downloads/
 notebooks/scratch/
 notes
 lint

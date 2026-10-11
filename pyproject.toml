@@ -71,6 +71,9 @@ notebooks = [
     "jupyter",
     "pyyaml"
 ]
+refget = [
+    "gtars>=0.1.0",
+]
 
 [project.urls]
 Homepage = "https://github.com/ga4gh/vrs-python"
@@ -170,7 +173,8 @@ ignore = [
 # ANN001 - missing-type-function-argument
 # ANN2 - missing-return-type
 # D100 - undocumented-public-module
-# D102 - undocumented-public-class
+# D101 - undocumented-public-class
+# D102 - undocumented-public-method
 # D103 - undocumented-public-function
 # S101 - assert
 # B011 - assert-false
@@ -180,6 +184,7 @@ ignore = [
     "ANN001",
     "ANN2",
     "D100",
+    "D101",
     "D102",
     "D103",
     "S101",

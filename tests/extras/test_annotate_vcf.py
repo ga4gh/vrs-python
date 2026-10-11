@@ -9,7 +9,8 @@ from pathlib import Path
 import pysam
 import pytest
 
-from ga4gh.vrs.dataproxy import DataProxyValidationError, SeqRepoRESTDataProxy
+from ga4gh.vrs.dataproxy import DataProxyValidationError
+from ga4gh.vrs.dataproxy_seqrepo import SeqRepoRESTDataProxy
 from ga4gh.vrs.extras.annotator.vcf import VcfAnnotator, VcfAnnotatorError
 
 TEST_DATA_DIR = Path("tests/extras/data")
