@@ -246,7 +246,11 @@ def test_get_vrs_object_invalid_input(vcf_annotator: VcfAnnotator, caplog):
     indirect=["configured_modules"],
 )
 def test_annotate_vcf_rle(
-    configured_modules, expected_sequence, rest_dataproxy_fn_scope, vcr_cassette, tmp_path
+    configured_modules,
+    expected_sequence,
+    rest_dataproxy_fn_scope,
+    vcr_cassette,
+    tmp_path,
 ):
     """Test VCF annotation with ReferenceLengthExpression states.
 
