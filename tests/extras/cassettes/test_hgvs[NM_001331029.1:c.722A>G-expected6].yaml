@@ -20,24 +20,6 @@ interactions:
     body: null
     headers: {}
     method: GET
-    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nucleotide&id=NM_001331029.1&rettype=fasta&seq_start=872&seq_stop=872&tool=bioutils&email=biocommons-dev@googlegroups.com
-  response:
-    body:
-      string: '>NM_001331029.1:872-872 Homo sapiens protein phosphatase 1 regulatory
-        subunit 12B (PPP1R12B), transcript variant 8, mRNA
-
-        A
-
-
-        '
-    headers: {}
-    status:
-      code: 200
-      message: OK
-- request:
-    body: null
-    headers: {}
-    method: GET
     uri: http://localhost:5000/seqrepo/1/metadata/ga4gh:SQ.MBIgVnoHFw34aFqNUVGM0zgjC3d-v8dK
   response:
     body:
@@ -59,24 +41,6 @@ interactions:
   response:
     body:
       string: A
-    headers: {}
-    status:
-      code: 200
-      message: OK
-- request:
-    body: null
-    headers: {}
-    method: GET
-    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nucleotide&id=NM_001331029.1&rettype=fasta&seq_start=872&seq_stop=892&tool=bioutils&email=biocommons-dev@googlegroups.com
-  response:
-    body:
-      string: '>NM_001331029.1:872-892 Homo sapiens protein phosphatase 1 regulatory
-        subunit 12B (PPP1R12B), transcript variant 8, mRNA
-
-        ATGAACTCAATGTTCAGGATT
-
-
-        '
     headers: {}
     status:
       code: 200

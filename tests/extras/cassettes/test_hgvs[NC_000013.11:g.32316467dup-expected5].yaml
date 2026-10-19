@@ -59,40 +59,4 @@ interactions:
     status:
       code: 200
       message: OK
-- request:
-    body: null
-    headers: {}
-    method: GET
-    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nucleotide&id=NC_000013.11&rettype=fasta&seq_start=32316467&seq_stop=32316467&tool=bioutils&email=biocommons-dev@googlegroups.com
-  response:
-    body:
-      string: '>NC_000013.11:32316467-32316467 Homo sapiens chromosome 13, GRCh38.p14
-        Primary Assembly
-
-        A
-
-
-        '
-    headers: {}
-    status:
-      code: 200
-      message: OK
-- request:
-    body: null
-    headers: {}
-    method: GET
-    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nucleotide&id=NC_000013.11&rettype=fasta&seq_start=32316467&seq_stop=32316487&tool=bioutils&email=biocommons-dev@googlegroups.com
-  response:
-    body:
-      string: '>NC_000013.11:32316467-32316487 Homo sapiens chromosome 13, GRCh38.p14
-        Primary Assembly
-
-        ATTGGATCCAAAGAGAGGCCA
-
-
-        '
-    headers: {}
-    status:
-      code: 200
-      message: OK
 version: 1

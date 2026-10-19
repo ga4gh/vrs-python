@@ -34,40 +34,4 @@ interactions:
     status:
       code: 200
       message: OK
-- request:
-    body: null
-    headers: {}
-    method: GET
-    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nucleotide&id=NC_000007.14&rettype=fasta&seq_start=55181320&seq_stop=55181320&tool=bioutils&email=biocommons-dev@googlegroups.com
-  response:
-    body:
-      string: '>NC_000007.14:55181320-55181320 Homo sapiens chromosome 7, GRCh38.p14
-        Primary Assembly
-
-        A
-
-
-        '
-    headers: {}
-    status:
-      code: 200
-      message: OK
-- request:
-    body: null
-    headers: {}
-    method: GET
-    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nucleotide&id=NC_000007.14&rettype=fasta&seq_start=55181320&seq_stop=55181340&tool=bioutils&email=biocommons-dev@googlegroups.com
-  response:
-    body:
-      string: '>NC_000007.14:55181320-55181340 Homo sapiens chromosome 7, GRCh38.p14
-        Primary Assembly
-
-        AACCCCCACGTGTGCCGCCTG
-
-
-        '
-    headers: {}
-    status:
-      code: 200
-      message: OK
 version: 1

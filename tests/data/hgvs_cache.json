@@ -1,0 +1,1457 @@
+[
+  {
+    "func": "get_seq",
+    "args": [
+      "NC_000007.14",
+      55181219,
+      55181220
+    ],
+    "value": "T"
+  },
+  {
+    "func": "get_seq",
+    "args": [
+      "NC_000007.14",
+      55181219,
+      55181240
+    ],
+    "value": "TGGAAGGGGTCCATGTGCCCC"
+  },
+  {
+    "func": "get_seq",
+    "args": [
+      "NC_000007.14",
+      55181226,
+      55181230
+    ],
+    "value": "GGTC"
+  },
+  {
+    "func": "get_seq",
+    "args": [
+      "NC_000007.14",
+      55181229,
+      55181250
+    ],
+    "value": "CCATGTGCCCCTCCTTCTGGC"
+  },
+  {
+    "func": "get_seq",
+    "args": [
+      "NC_000007.14",
+      55181230,
+      55181231
+    ],
+    "value": "C"
+  },
+  {
+    "func": "get_seq",
+    "args": [
+      "NC_000007.14",
+      55181319,
+      55181320
+    ],
+    "value": "A"
+  },
+  {
+    "func": "get_seq",
+    "args": [
+      "NC_000007.14",
+      55181319,
+      55181340
+    ],
+    "value": "AACCCCCACGTGTGCCGCCTG"
+  },
+  {
+    "func": "get_seq",
+    "args": [
+      "NC_000013.11",
+      32316466,
+      32316467
+    ],
+    "value": "A"
+  },
+  {
+    "func": "get_seq",
+    "args": [
+      "NC_000013.11",
+      32316466,
+      32316487
+    ],
+    "value": "ATTGGATCCAAAGAGAGGCCA"
+  },
+  {
+    "func": "get_seq",
+    "args": [
+      "NC_000013.11",
+      32331042,
+      32331094
+    ],
+    "value": "TTTAGTTGAACTACAGGTTTTTTTGTTGTTGTTGTTTTGATTTTTTTTTTTT"
+  },
+  {
+    "func": "get_seq",
+    "args": [
+      "NC_000013.11",
+      32331042,
+      32331114
+    ],
+    "value": "TTTAGTTGAACTACAGGTTTTTTTGTTGTTGTTGTTTTGATTTTTTTTTTTTGAGGTGGAGTCTTGCTCTGT"
+  },
+  {
+    "func": "get_seq",
+    "args": [
+      "NC_000013.11",
+      32331082,
+      32331094
+    ],
+    "value": "TTTTTTTTTTTT"
+  },
+  {
+    "func": "get_seq",
+    "args": [
+      "NC_000013.11",
+      32331082,
+      32331114
+    ],
+    "value": "TTTTTTTTTTTTGAGGTGGAGTCTTGCTCTGT"
+  },
+  {
+    "func": "get_seq",
+    "args": [
+      "NC_000013.11",
+      32331092,
+      32331094
+    ],
+    "value": "TT"
+  },
+  {
+    "func": "get_seq",
+    "args": [
+      "NC_000013.11",
+      32331093,
+      32331094
+    ],
+    "value": "T"
+  },
+  {
+    "func": "get_seq",
+    "args": [
+      "NC_000013.11",
+      32936731,
+      32936732
+    ],
+    "value": "C"
+  },
+  {
+    "func": "get_seq",
+    "args": [
+      "NC_000019.10",
+      289462,
+      289466
+    ],
+    "value": "CTCA"
+  },
+  {
+    "func": "get_seq",
+    "args": [
+      "NC_000019.10",
+      289464,
+      289466
+    ],
+    "value": "CA"
+  },
+  {
+    "func": "get_seq",
+    "args": [
+      "NC_000019.10",
+      289464,
+      289486
+    ],
+    "value": "CAGCACTTTGGGAGGCCGAGGC"
+  },
+  {
+    "func": "get_seq",
+    "args": [
+      "NC_000019.10",
+      289465,
+      289466
+    ],
+    "value": "A"
+  },
+  {
+    "func": "get_seq",
+    "args": [
+      "NC_000019.10",
+      289480,
+      289501
+    ],
+    "value": "CGAGGCGGGCAGATCACGAGG"
+  },
+  {
+    "func": "get_seq",
+    "args": [
+      "NC_000019.10",
+      289480,
+      289521
+    ],
+    "value": "CGAGGCGGGCAGATCACGAGGTCAGGAGATCGAGACCATCC"
+  },
+  {
+    "func": "get_seq",
+    "args": [
+      "NC_000019.10",
+      289500,
+      289501
+    ],
+    "value": "G"
+  },
+  {
+    "func": "get_seq",
+    "args": [
+      "NM_001331029.1",
+      871,
+      872
+    ],
+    "value": "A"
+  },
+  {
+    "func": "get_seq",
+    "args": [
+      "NM_001331029.1",
+      871,
+      892
+    ],
+    "value": "ATGAACTCAATGTTCAGGATT"
+  },
+  {
+    "func": "get_seq",
+    "args": [
+      "NM_181798.1",
+      1262,
+      1263
+    ],
+    "value": "G"
+  },
+  {
+    "func": "get_seq",
+    "args": [
+      "NM_181798.1",
+      1262,
+      1268
+    ],
+    "value": "GTTCTG"
+  },
+  {
+    "func": "get_seq",
+    "args": [
+      "NR_040711.1",
+      1262,
+      1263
+    ],
+    "value": "G"
+  },
+  {
+    "func": "get_seq",
+    "args": [
+      "XM_017001344.1",
+      871,
+      872
+    ],
+    "value": "A"
+  },
+  {
+    "func": "get_tx_exons",
+    "args": [
+      "NM_001331029.1",
+      "NC_000001.10",
+      "splign"
+    ],
+    "value": [
+      {
+        "psycopg2_dictrow": {
+          "symbol": "PPP1R12B",
+          "hgnc": "PPP1R12B",
+          "gene_id": "4660",
+          "tx_ac": "NM_001331029.1",
+          "alt_ac": "NC_000001.10",
+          "alt_aln_method": "splign",
+          "alt_strand": 1,
+          "ord": 0,
+          "tx_start_i": 0,
+          "tx_end_i": 441,
+          "alt_start_i": 202317829,
+          "alt_end_i": 202318270,
+          "cigar": "441=",
+          "tx_aseq": null,
+          "alt_aseq": null,
+          "tx_exon_set_id": 808849,
+          "alt_exon_set_id": 810341,
+          "tx_exon_id": 6895004,
+          "alt_exon_id": 6911773,
+          "exon_aln_id": 4375364
+        }
+      },
+      {
+        "psycopg2_dictrow": {
+          "symbol": "PPP1R12B",
+          "hgnc": "PPP1R12B",
+          "gene_id": "4660",
+          "tx_ac": "NM_001331029.1",
+          "alt_ac": "NC_000001.10",
+          "alt_aln_method": "splign",
+          "alt_strand": 1,
+          "ord": 1,
+          "tx_start_i": 441,
+          "tx_end_i": 572,
+          "alt_start_i": 202385914,
+          "alt_end_i": 202386045,
+          "cigar": "131=",
+          "tx_aseq": null,
+          "alt_aseq": null,
+          "tx_exon_set_id": 808849,
+          "alt_exon_set_id": 810341,
+          "tx_exon_id": 6895005,
+          "alt_exon_id": 6911774,
+          "exon_aln_id": 4375329
+        }
+      },
+      {
+        "psycopg2_dictrow": {
+          "symbol": "PPP1R12B",
+          "hgnc": "PPP1R12B",
+          "gene_id": "4660",
+          "tx_ac": "NM_001331029.1",
+          "alt_ac": "NC_000001.10",
+          "alt_aln_method": "splign",
+          "alt_strand": 1,
+          "ord": 2,
+          "tx_start_i": 572,
+          "tx_end_i": 691,
+          "alt_start_i": 202391747,
+          "alt_end_i": 202391866,
+          "cigar": "119=",
+          "tx_aseq": null,
+          "alt_aseq": null,
+          "tx_exon_set_id": 808849,
+          "alt_exon_set_id": 810341,
+          "tx_exon_id": 6895006,
+          "alt_exon_id": 6911775,
+          "exon_aln_id": 4375326
+        }
+      },
+      {
+        "psycopg2_dictrow": {
+          "symbol": "PPP1R12B",
+          "hgnc": "PPP1R12B",
+          "gene_id": "4660",
+          "tx_ac": "NM_001331029.1",
+          "alt_ac": "NC_000001.10",
+          "alt_aln_method": "splign",
+          "alt_strand": 1,
+          "ord": 3,
+          "tx_start_i": 691,
+          "tx_end_i": 851,
+          "alt_start_i": 202394693,
+          "alt_end_i": 202394853,
+          "cigar": "160=",
+          "tx_aseq": null,
+          "alt_aseq": null,
+          "tx_exon_set_id": 808849,
+          "alt_exon_set_id": 810341,
+          "tx_exon_id": 6895007,
+          "alt_exon_id": 6911776,
+          "exon_aln_id": 4375339
+        }
+      },
+      {
+        "psycopg2_dictrow": {
+          "symbol": "PPP1R12B",
+          "hgnc": "PPP1R12B",
+          "gene_id": "4660",
+          "tx_ac": "NM_001331029.1",
+          "alt_ac": "NC_000001.10",
+          "alt_aln_method": "splign",
+          "alt_strand": 1,
+          "ord": 4,
+          "tx_start_i": 851,
+          "tx_end_i": 996,
+          "alt_start_i": 202396167,
+          "alt_end_i": 202396312,
+          "cigar": "145=",
+          "tx_aseq": null,
+          "alt_aseq": null,
+          "tx_exon_set_id": 808849,
+          "alt_exon_set_id": 810341,
+          "tx_exon_id": 6895008,
+          "alt_exon_id": 6911777,
+          "exon_aln_id": 4375320
+        }
+      },
+      {
+        "psycopg2_dictrow": {
+          "symbol": "PPP1R12B",
+          "hgnc": "PPP1R12B",
+          "gene_id": "4660",
+          "tx_ac": "NM_001331029.1",
+          "alt_ac": "NC_000001.10",
+          "alt_aln_method": "splign",
+          "alt_strand": 1,
+          "ord": 5,
+          "tx_start_i": 996,
+          "tx_end_i": 1071,
+          "alt_start_i": 202397982,
+          "alt_end_i": 202398057,
+          "cigar": "75=",
+          "tx_aseq": null,
+          "alt_aseq": null,
+          "tx_exon_set_id": 808849,
+          "alt_exon_set_id": 810341,
+          "tx_exon_id": 6895009,
+          "alt_exon_id": 6911778,
+          "exon_aln_id": 4375342
+        }
+      },
+      {
+        "psycopg2_dictrow": {
+          "symbol": "PPP1R12B",
+          "hgnc": "PPP1R12B",
+          "gene_id": "4660",
+          "tx_ac": "NM_001331029.1",
+          "alt_ac": "NC_000001.10",
+          "alt_aln_method": "splign",
+          "alt_strand": 1,
+          "ord": 6,
+          "tx_start_i": 1071,
+          "tx_end_i": 1151,
+          "alt_start_i": 202399858,
+          "alt_end_i": 202399938,
+          "cigar": "80=",
+          "tx_aseq": null,
+          "alt_aseq": null,
+          "tx_exon_set_id": 808849,
+          "alt_exon_set_id": 810341,
+          "tx_exon_id": 6895010,
+          "alt_exon_id": 6911779,
+          "exon_aln_id": 4375348
+        }
+      },
+      {
+        "psycopg2_dictrow": {
+          "symbol": "PPP1R12B",
+          "hgnc": "PPP1R12B",
+          "gene_id": "4660",
+          "tx_ac": "NM_001331029.1",
+          "alt_ac": "NC_000001.10",
+          "alt_aln_method": "splign",
+          "alt_strand": 1,
+          "ord": 7,
+          "tx_start_i": 1151,
+          "tx_end_i": 1291,
+          "alt_start_i": 202400607,
+          "alt_end_i": 202400747,
+          "cigar": "140=",
+          "tx_aseq": null,
+          "alt_aseq": null,
+          "tx_exon_set_id": 808849,
+          "alt_exon_set_id": 810341,
+          "tx_exon_id": 6895011,
+          "alt_exon_id": 6911780,
+          "exon_aln_id": 4375321
+        }
+      },
+      {
+        "psycopg2_dictrow": {
+          "symbol": "PPP1R12B",
+          "hgnc": "PPP1R12B",
+          "gene_id": "4660",
+          "tx_ac": "NM_001331029.1",
+          "alt_ac": "NC_000001.10",
+          "alt_aln_method": "splign",
+          "alt_strand": 1,
+          "ord": 8,
+          "tx_start_i": 1291,
+          "tx_end_i": 1404,
+          "alt_start_i": 202403783,
+          "alt_end_i": 202403896,
+          "cigar": "113=",
+          "tx_aseq": null,
+          "alt_aseq": null,
+          "tx_exon_set_id": 808849,
+          "alt_exon_set_id": 810341,
+          "tx_exon_id": 6895012,
+          "alt_exon_id": 6911781,
+          "exon_aln_id": 4375354
+        }
+      },
+      {
+        "psycopg2_dictrow": {
+          "symbol": "PPP1R12B",
+          "hgnc": "PPP1R12B",
+          "gene_id": "4660",
+          "tx_ac": "NM_001331029.1",
+          "alt_ac": "NC_000001.10",
+          "alt_aln_method": "splign",
+          "alt_strand": 1,
+          "ord": 9,
+          "tx_start_i": 1404,
+          "tx_end_i": 1608,
+          "alt_start_i": 202406948,
+          "alt_end_i": 202407152,
+          "cigar": "204=",
+          "tx_aseq": null,
+          "alt_aseq": null,
+          "tx_exon_set_id": 808849,
+          "alt_exon_set_id": 810341,
+          "tx_exon_id": 6895013,
+          "alt_exon_id": 6911782,
+          "exon_aln_id": 4375356
+        }
+      },
+      {
+        "psycopg2_dictrow": {
+          "symbol": "PPP1R12B",
+          "hgnc": "PPP1R12B",
+          "gene_id": "4660",
+          "tx_ac": "NM_001331029.1",
+          "alt_ac": "NC_000001.10",
+          "alt_aln_method": "splign",
+          "alt_strand": 1,
+          "ord": 10,
+          "tx_start_i": 1608,
+          "tx_end_i": 1691,
+          "alt_start_i": 202409833,
+          "alt_end_i": 202409916,
+          "cigar": "83=",
+          "tx_aseq": null,
+          "alt_aseq": null,
+          "tx_exon_set_id": 808849,
+          "alt_exon_set_id": 810341,
+          "tx_exon_id": 6895014,
+          "alt_exon_id": 6911783,
+          "exon_aln_id": 4375355
+        }
+      },
+      {
+        "psycopg2_dictrow": {
+          "symbol": "PPP1R12B",
+          "hgnc": "PPP1R12B",
+          "gene_id": "4660",
+          "tx_ac": "NM_001331029.1",
+          "alt_ac": "NC_000001.10",
+          "alt_aln_method": "splign",
+          "alt_strand": 1,
+          "ord": 11,
+          "tx_start_i": 1691,
+          "tx_end_i": 1817,
+          "alt_start_i": 202411574,
+          "alt_end_i": 202411700,
+          "cigar": "126=",
+          "tx_aseq": null,
+          "alt_aseq": null,
+          "tx_exon_set_id": 808849,
+          "alt_exon_set_id": 810341,
+          "tx_exon_id": 6895015,
+          "alt_exon_id": 6911784,
+          "exon_aln_id": 4375357
+        }
+      },
+      {
+        "psycopg2_dictrow": {
+          "symbol": "PPP1R12B",
+          "hgnc": "PPP1R12B",
+          "gene_id": "4660",
+          "tx_ac": "NM_001331029.1",
+          "alt_ac": "NC_000001.10",
+          "alt_aln_method": "splign",
+          "alt_strand": 1,
+          "ord": 12,
+          "tx_start_i": 1817,
+          "tx_end_i": 2000,
+          "alt_start_i": 202414173,
+          "alt_end_i": 202414356,
+          "cigar": "183=",
+          "tx_aseq": null,
+          "alt_aseq": null,
+          "tx_exon_set_id": 808849,
+          "alt_exon_set_id": 810341,
+          "tx_exon_id": 6895016,
+          "alt_exon_id": 6911785,
+          "exon_aln_id": 4375347
+        }
+      },
+      {
+        "psycopg2_dictrow": {
+          "symbol": "PPP1R12B",
+          "hgnc": "PPP1R12B",
+          "gene_id": "4660",
+          "tx_ac": "NM_001331029.1",
+          "alt_ac": "NC_000001.10",
+          "alt_aln_method": "splign",
+          "alt_strand": 1,
+          "ord": 13,
+          "tx_start_i": 2000,
+          "tx_end_i": 2183,
+          "alt_start_i": 202418116,
+          "alt_end_i": 202418299,
+          "cigar": "183=",
+          "tx_aseq": null,
+          "alt_aseq": null,
+          "tx_exon_set_id": 808849,
+          "alt_exon_set_id": 810341,
+          "tx_exon_id": 6895017,
+          "alt_exon_id": 6911786,
+          "exon_aln_id": 4375333
+        }
+      },
+      {
+        "psycopg2_dictrow": {
+          "symbol": "PPP1R12B",
+          "hgnc": "PPP1R12B",
+          "gene_id": "4660",
+          "tx_ac": "NM_001331029.1",
+          "alt_ac": "NC_000001.10",
+          "alt_aln_method": "splign",
+          "alt_strand": 1,
+          "ord": 14,
+          "tx_start_i": 2183,
+          "tx_end_i": 2274,
+          "alt_start_i": 202457660,
+          "alt_end_i": 202457751,
+          "cigar": "91=",
+          "tx_aseq": null,
+          "alt_aseq": null,
+          "tx_exon_set_id": 808849,
+          "alt_exon_set_id": 810341,
+          "tx_exon_id": 6895018,
+          "alt_exon_id": 6911787,
+          "exon_aln_id": 4375343
+        }
+      },
+      {
+        "psycopg2_dictrow": {
+          "symbol": "PPP1R12B",
+          "hgnc": "PPP1R12B",
+          "gene_id": "4660",
+          "tx_ac": "NM_001331029.1",
+          "alt_ac": "NC_000001.10",
+          "alt_aln_method": "splign",
+          "alt_strand": 1,
+          "ord": 15,
+          "tx_start_i": 2274,
+          "tx_end_i": 2478,
+          "alt_start_i": 202462241,
+          "alt_end_i": 202462445,
+          "cigar": "204=",
+          "tx_aseq": null,
+          "alt_aseq": null,
+          "tx_exon_set_id": 808849,
+          "alt_exon_set_id": 810341,
+          "tx_exon_id": 6895019,
+          "alt_exon_id": 6911788,
+          "exon_aln_id": 4375336
+        }
+      },
+      {
+        "psycopg2_dictrow": {
+          "symbol": "PPP1R12B",
+          "hgnc": "PPP1R12B",
+          "gene_id": "4660",
+          "tx_ac": "NM_001331029.1",
+          "alt_ac": "NC_000001.10",
+          "alt_aln_method": "splign",
+          "alt_strand": 1,
+          "ord": 16,
+          "tx_start_i": 2478,
+          "tx_end_i": 2668,
+          "alt_start_i": 202464420,
+          "alt_end_i": 202464610,
+          "cigar": "190=",
+          "tx_aseq": null,
+          "alt_aseq": null,
+          "tx_exon_set_id": 808849,
+          "alt_exon_set_id": 810341,
+          "tx_exon_id": 6895020,
+          "alt_exon_id": 6911789,
+          "exon_aln_id": 4375334
+        }
+      },
+      {
+        "psycopg2_dictrow": {
+          "symbol": "PPP1R12B",
+          "hgnc": "PPP1R12B",
+          "gene_id": "4660",
+          "tx_ac": "NM_001331029.1",
+          "alt_ac": "NC_000001.10",
+          "alt_aln_method": "splign",
+          "alt_strand": 1,
+          "ord": 17,
+          "tx_start_i": 2668,
+          "tx_end_i": 2781,
+          "alt_start_i": 202464697,
+          "alt_end_i": 202464810,
+          "cigar": "113=",
+          "tx_aseq": null,
+          "alt_aseq": null,
+          "tx_exon_set_id": 808849,
+          "alt_exon_set_id": 810341,
+          "tx_exon_id": 6895021,
+          "alt_exon_id": 6911790,
+          "exon_aln_id": 4375322
+        }
+      },
+      {
+        "psycopg2_dictrow": {
+          "symbol": "PPP1R12B",
+          "hgnc": "PPP1R12B",
+          "gene_id": "4660",
+          "tx_ac": "NM_001331029.1",
+          "alt_ac": "NC_000001.10",
+          "alt_aln_method": "splign",
+          "alt_strand": 1,
+          "ord": 18,
+          "tx_start_i": 2781,
+          "tx_end_i": 2823,
+          "alt_start_i": 202465908,
+          "alt_end_i": 202465950,
+          "cigar": "42=",
+          "tx_aseq": null,
+          "alt_aseq": null,
+          "tx_exon_set_id": 808849,
+          "alt_exon_set_id": 810341,
+          "tx_exon_id": 6895022,
+          "alt_exon_id": 6911791,
+          "exon_aln_id": 4375330
+        }
+      },
+      {
+        "psycopg2_dictrow": {
+          "symbol": "PPP1R12B",
+          "hgnc": "PPP1R12B",
+          "gene_id": "4660",
+          "tx_ac": "NM_001331029.1",
+          "alt_ac": "NC_000001.10",
+          "alt_aln_method": "splign",
+          "alt_strand": 1,
+          "ord": 19,
+          "tx_start_i": 2823,
+          "tx_end_i": 2840,
+          "alt_start_i": 202528004,
+          "alt_end_i": 202528021,
+          "cigar": "17=",
+          "tx_aseq": null,
+          "alt_aseq": null,
+          "tx_exon_set_id": 808849,
+          "alt_exon_set_id": 810341,
+          "tx_exon_id": 6895023,
+          "alt_exon_id": 6911792,
+          "exon_aln_id": 4375360
+        }
+      },
+      {
+        "psycopg2_dictrow": {
+          "symbol": "PPP1R12B",
+          "hgnc": "PPP1R12B",
+          "gene_id": "4660",
+          "tx_ac": "NM_001331029.1",
+          "alt_ac": "NC_000001.10",
+          "alt_aln_method": "splign",
+          "alt_strand": 1,
+          "ord": 20,
+          "tx_start_i": 2840,
+          "tx_end_i": 2985,
+          "alt_start_i": 202531905,
+          "alt_end_i": 202532050,
+          "cigar": "145=",
+          "tx_aseq": null,
+          "alt_aseq": null,
+          "tx_exon_set_id": 808849,
+          "alt_exon_set_id": 810341,
+          "tx_exon_id": 6895024,
+          "alt_exon_id": 6911793,
+          "exon_aln_id": 4375335
+        }
+      },
+      {
+        "psycopg2_dictrow": {
+          "symbol": "PPP1R12B",
+          "hgnc": "PPP1R12B",
+          "gene_id": "4660",
+          "tx_ac": "NM_001331029.1",
+          "alt_ac": "NC_000001.10",
+          "alt_aln_method": "splign",
+          "alt_strand": 1,
+          "ord": 21,
+          "tx_start_i": 2985,
+          "tx_end_i": 3090,
+          "alt_start_i": 202533570,
+          "alt_end_i": 202533675,
+          "cigar": "105=",
+          "tx_aseq": null,
+          "alt_aseq": null,
+          "tx_exon_set_id": 808849,
+          "alt_exon_set_id": 810341,
+          "tx_exon_id": 6895025,
+          "alt_exon_id": 6911794,
+          "exon_aln_id": 4375323
+        }
+      },
+      {
+        "psycopg2_dictrow": {
+          "symbol": "PPP1R12B",
+          "hgnc": "PPP1R12B",
+          "gene_id": "4660",
+          "tx_ac": "NM_001331029.1",
+          "alt_ac": "NC_000001.10",
+          "alt_aln_method": "splign",
+          "alt_strand": 1,
+          "ord": 22,
+          "tx_start_i": 3090,
+          "tx_end_i": 3144,
+          "alt_start_i": 202536905,
+          "alt_end_i": 202536959,
+          "cigar": "54=",
+          "tx_aseq": null,
+          "alt_aseq": null,
+          "tx_exon_set_id": 808849,
+          "alt_exon_set_id": 810341,
+          "tx_exon_id": 6895026,
+          "alt_exon_id": 6911795,
+          "exon_aln_id": 4375325
+        }
+      },
+      {
+        "psycopg2_dictrow": {
+          "symbol": "PPP1R12B",
+          "hgnc": "PPP1R12B",
+          "gene_id": "4660",
+          "tx_ac": "NM_001331029.1",
+          "alt_ac": "NC_000001.10",
+          "alt_aln_method": "splign",
+          "alt_strand": 1,
+          "ord": 23,
+          "tx_start_i": 3144,
+          "tx_end_i": 3195,
+          "alt_start_i": 202538274,
+          "alt_end_i": 202538325,
+          "cigar": "51=",
+          "tx_aseq": null,
+          "alt_aseq": null,
+          "tx_exon_set_id": 808849,
+          "alt_exon_set_id": 810341,
+          "tx_exon_id": 6895027,
+          "alt_exon_id": 6911796,
+          "exon_aln_id": 4375346
+        }
+      },
+      {
+        "psycopg2_dictrow": {
+          "symbol": "PPP1R12B",
+          "hgnc": "PPP1R12B",
+          "gene_id": "4660",
+          "tx_ac": "NM_001331029.1",
+          "alt_ac": "NC_000001.10",
+          "alt_aln_method": "splign",
+          "alt_strand": 1,
+          "ord": 24,
+          "tx_start_i": 3195,
+          "tx_end_i": 11291,
+          "alt_start_i": 202549601,
+          "alt_end_i": 202557697,
+          "cigar": "8096=",
+          "tx_aseq": null,
+          "alt_aseq": null,
+          "tx_exon_set_id": 808849,
+          "alt_exon_set_id": 810341,
+          "tx_exon_id": 6895028,
+          "alt_exon_id": 6911797,
+          "exon_aln_id": 4375324
+        }
+      }
+    ]
+  },
+  {
+    "func": "get_tx_exons",
+    "args": [
+      "NM_181798.1",
+      "NC_000011.10",
+      "splign"
+    ],
+    "value": [
+      {
+        "psycopg2_dictrow": {
+          "symbol": "KCNQ1",
+          "hgnc": "KCNQ1",
+          "gene_id": "3784",
+          "tx_ac": "NM_181798.1",
+          "alt_ac": "NC_000011.10",
+          "alt_aln_method": "splign",
+          "alt_strand": 1,
+          "ord": 0,
+          "tx_start_i": 0,
+          "tx_end_i": 261,
+          "alt_start_i": 2461453,
+          "alt_end_i": 2461714,
+          "cigar": "261=",
+          "tx_aseq": null,
+          "alt_aseq": null,
+          "tx_exon_set_id": 83331,
+          "alt_exon_set_id": 792010,
+          "tx_exon_id": 773599,
+          "alt_exon_id": 6791722,
+          "exon_aln_id": 3977791
+        }
+      },
+      {
+        "psycopg2_dictrow": {
+          "symbol": "KCNQ1",
+          "hgnc": "KCNQ1",
+          "gene_id": "3784",
+          "tx_ac": "NM_181798.1",
+          "alt_ac": "NC_000011.10",
+          "alt_aln_method": "splign",
+          "alt_strand": 1,
+          "ord": 1,
+          "tx_start_i": 261,
+          "tx_end_i": 352,
+          "alt_start_i": 2527927,
+          "alt_end_i": 2528018,
+          "cigar": "91=",
+          "tx_aseq": null,
+          "alt_aseq": null,
+          "tx_exon_set_id": 83331,
+          "alt_exon_set_id": 792010,
+          "tx_exon_id": 773600,
+          "alt_exon_id": 6791723,
+          "exon_aln_id": 3977803
+        }
+      },
+      {
+        "psycopg2_dictrow": {
+          "symbol": "KCNQ1",
+          "hgnc": "KCNQ1",
+          "gene_id": "3784",
+          "tx_ac": "NM_181798.1",
+          "alt_ac": "NC_000011.10",
+          "alt_aln_method": "splign",
+          "alt_strand": 1,
+          "ord": 2,
+          "tx_start_i": 352,
+          "tx_end_i": 479,
+          "alt_start_i": 2570627,
+          "alt_end_i": 2570754,
+          "cigar": "127=",
+          "tx_aseq": null,
+          "alt_aseq": null,
+          "tx_exon_set_id": 83331,
+          "alt_exon_set_id": 792010,
+          "tx_exon_id": 773601,
+          "alt_exon_id": 6791724,
+          "exon_aln_id": 3977799
+        }
+      },
+      {
+        "psycopg2_dictrow": {
+          "symbol": "KCNQ1",
+          "hgnc": "KCNQ1",
+          "gene_id": "3784",
+          "tx_ac": "NM_181798.1",
+          "alt_ac": "NC_000011.10",
+          "alt_aln_method": "splign",
+          "alt_strand": 1,
+          "ord": 3,
+          "tx_start_i": 479,
+          "tx_end_i": 558,
+          "alt_start_i": 2571324,
+          "alt_end_i": 2571403,
+          "cigar": "79=",
+          "tx_aseq": null,
+          "alt_aseq": null,
+          "tx_exon_set_id": 83331,
+          "alt_exon_set_id": 792010,
+          "tx_exon_id": 773602,
+          "alt_exon_id": 6791725,
+          "exon_aln_id": 3977778
+        }
+      },
+      {
+        "psycopg2_dictrow": {
+          "symbol": "KCNQ1",
+          "hgnc": "KCNQ1",
+          "gene_id": "3784",
+          "tx_ac": "NM_181798.1",
+          "alt_ac": "NC_000011.10",
+          "alt_aln_method": "splign",
+          "alt_strand": 1,
+          "ord": 4,
+          "tx_start_i": 558,
+          "tx_end_i": 655,
+          "alt_start_i": 2572012,
+          "alt_end_i": 2572109,
+          "cigar": "97=",
+          "tx_aseq": null,
+          "alt_aseq": null,
+          "tx_exon_set_id": 83331,
+          "alt_exon_set_id": 792010,
+          "tx_exon_id": 773603,
+          "alt_exon_id": 6791726,
+          "exon_aln_id": 3977805
+        }
+      },
+      {
+        "psycopg2_dictrow": {
+          "symbol": "KCNQ1",
+          "hgnc": "KCNQ1",
+          "gene_id": "3784",
+          "tx_ac": "NM_181798.1",
+          "alt_ac": "NC_000011.10",
+          "alt_aln_method": "splign",
+          "alt_strand": 1,
+          "ord": 5,
+          "tx_start_i": 655,
+          "tx_end_i": 796,
+          "alt_start_i": 2572845,
+          "alt_end_i": 2572986,
+          "cigar": "141=",
+          "tx_aseq": null,
+          "alt_aseq": null,
+          "tx_exon_set_id": 83331,
+          "alt_exon_set_id": 792010,
+          "tx_exon_id": 773604,
+          "alt_exon_id": 6791727,
+          "exon_aln_id": 3977802
+        }
+      },
+      {
+        "psycopg2_dictrow": {
+          "symbol": "KCNQ1",
+          "hgnc": "KCNQ1",
+          "gene_id": "3784",
+          "tx_ac": "NM_181798.1",
+          "alt_ac": "NC_000011.10",
+          "alt_aln_method": "splign",
+          "alt_strand": 1,
+          "ord": 6,
+          "tx_start_i": 796,
+          "tx_end_i": 907,
+          "alt_start_i": 2583434,
+          "alt_end_i": 2583545,
+          "cigar": "111=",
+          "tx_aseq": null,
+          "alt_aseq": null,
+          "tx_exon_set_id": 83331,
+          "alt_exon_set_id": 792010,
+          "tx_exon_id": 773605,
+          "alt_exon_id": 6791728,
+          "exon_aln_id": 3977793
+        }
+      },
+      {
+        "psycopg2_dictrow": {
+          "symbol": "KCNQ1",
+          "hgnc": "KCNQ1",
+          "gene_id": "3784",
+          "tx_ac": "NM_181798.1",
+          "alt_ac": "NC_000011.10",
+          "alt_aln_method": "splign",
+          "alt_strand": 1,
+          "ord": 7,
+          "tx_start_i": 907,
+          "tx_end_i": 1003,
+          "alt_start_i": 2585211,
+          "alt_end_i": 2585307,
+          "cigar": "96=",
+          "tx_aseq": null,
+          "alt_aseq": null,
+          "tx_exon_set_id": 83331,
+          "alt_exon_set_id": 792010,
+          "tx_exon_id": 773606,
+          "alt_exon_id": 6791729,
+          "exon_aln_id": 3977779
+        }
+      },
+      {
+        "psycopg2_dictrow": {
+          "symbol": "KCNQ1",
+          "hgnc": "KCNQ1",
+          "gene_id": "3784",
+          "tx_ac": "NM_181798.1",
+          "alt_ac": "NC_000011.10",
+          "alt_aln_method": "splign",
+          "alt_strand": 1,
+          "ord": 8,
+          "tx_start_i": 1003,
+          "tx_end_i": 1126,
+          "alt_start_i": 2587569,
+          "alt_end_i": 2587692,
+          "cigar": "123=",
+          "tx_aseq": null,
+          "alt_aseq": null,
+          "tx_exon_set_id": 83331,
+          "alt_exon_set_id": 792010,
+          "tx_exon_id": 773607,
+          "alt_exon_id": 6791730,
+          "exon_aln_id": 3977809
+        }
+      },
+      {
+        "psycopg2_dictrow": {
+          "symbol": "KCNQ1",
+          "hgnc": "KCNQ1",
+          "gene_id": "3784",
+          "tx_ac": "NM_181798.1",
+          "alt_ac": "NC_000011.10",
+          "alt_aln_method": "splign",
+          "alt_strand": 1,
+          "ord": 9,
+          "tx_start_i": 1126,
+          "tx_end_i": 1268,
+          "alt_start_i": 2588712,
+          "alt_end_i": 2588854,
+          "cigar": "142=",
+          "tx_aseq": null,
+          "alt_aseq": null,
+          "tx_exon_set_id": 83331,
+          "alt_exon_set_id": 792010,
+          "tx_exon_id": 773608,
+          "alt_exon_id": 6791731,
+          "exon_aln_id": 3977801
+        }
+      },
+      {
+        "psycopg2_dictrow": {
+          "symbol": "KCNQ1",
+          "hgnc": "KCNQ1",
+          "gene_id": "3784",
+          "tx_ac": "NM_181798.1",
+          "alt_ac": "NC_000011.10",
+          "alt_aln_method": "splign",
+          "alt_strand": 1,
+          "ord": 10,
+          "tx_start_i": 1268,
+          "tx_end_i": 1389,
+          "alt_start_i": 2661960,
+          "alt_end_i": 2662081,
+          "cigar": "121=",
+          "tx_aseq": null,
+          "alt_aseq": null,
+          "tx_exon_set_id": 83331,
+          "alt_exon_set_id": 792010,
+          "tx_exon_id": 773609,
+          "alt_exon_id": 6791732,
+          "exon_aln_id": 3977804
+        }
+      },
+      {
+        "psycopg2_dictrow": {
+          "symbol": "KCNQ1",
+          "hgnc": "KCNQ1",
+          "gene_id": "3784",
+          "tx_ac": "NM_181798.1",
+          "alt_ac": "NC_000011.10",
+          "alt_aln_method": "splign",
+          "alt_strand": 1,
+          "ord": 11,
+          "tx_start_i": 1389,
+          "tx_end_i": 1465,
+          "alt_start_i": 2768843,
+          "alt_end_i": 2768919,
+          "cigar": "76=",
+          "tx_aseq": null,
+          "alt_aseq": null,
+          "tx_exon_set_id": 83331,
+          "alt_exon_set_id": 792010,
+          "tx_exon_id": 773610,
+          "alt_exon_id": 6791733,
+          "exon_aln_id": 3977796
+        }
+      },
+      {
+        "psycopg2_dictrow": {
+          "symbol": "KCNQ1",
+          "hgnc": "KCNQ1",
+          "gene_id": "3784",
+          "tx_ac": "NM_181798.1",
+          "alt_ac": "NC_000011.10",
+          "alt_aln_method": "splign",
+          "alt_strand": 1,
+          "ord": 12,
+          "tx_start_i": 1465,
+          "tx_end_i": 1560,
+          "alt_start_i": 2775959,
+          "alt_end_i": 2776054,
+          "cigar": "95=",
+          "tx_aseq": null,
+          "alt_aseq": null,
+          "tx_exon_set_id": 83331,
+          "alt_exon_set_id": 792010,
+          "tx_exon_id": 773611,
+          "alt_exon_id": 6791734,
+          "exon_aln_id": 3977784
+        }
+      },
+      {
+        "psycopg2_dictrow": {
+          "symbol": "KCNQ1",
+          "hgnc": "KCNQ1",
+          "gene_id": "3784",
+          "tx_ac": "NM_181798.1",
+          "alt_ac": "NC_000011.10",
+          "alt_aln_method": "splign",
+          "alt_strand": 1,
+          "ord": 13,
+          "tx_start_i": 1560,
+          "tx_end_i": 1607,
+          "alt_start_i": 2776985,
+          "alt_end_i": 2777032,
+          "cigar": "47=",
+          "tx_aseq": null,
+          "alt_aseq": null,
+          "tx_exon_set_id": 83331,
+          "alt_exon_set_id": 792010,
+          "tx_exon_id": 773612,
+          "alt_exon_id": 6791735,
+          "exon_aln_id": 3977780
+        }
+      },
+      {
+        "psycopg2_dictrow": {
+          "symbol": "KCNQ1",
+          "hgnc": "KCNQ1",
+          "gene_id": "3784",
+          "tx_ac": "NM_181798.1",
+          "alt_ac": "NC_000011.10",
+          "alt_aln_method": "splign",
+          "alt_strand": 1,
+          "ord": 14,
+          "tx_start_i": 1607,
+          "tx_end_i": 1669,
+          "alt_start_i": 2777975,
+          "alt_end_i": 2778037,
+          "cigar": "62=",
+          "tx_aseq": null,
+          "alt_aseq": null,
+          "tx_exon_set_id": 83331,
+          "alt_exon_set_id": 792010,
+          "tx_exon_id": 773613,
+          "alt_exon_id": 6791736,
+          "exon_aln_id": 3977783
+        }
+      },
+      {
+        "psycopg2_dictrow": {
+          "symbol": "KCNQ1",
+          "hgnc": "KCNQ1",
+          "gene_id": "3784",
+          "tx_ac": "NM_181798.1",
+          "alt_ac": "NC_000011.10",
+          "alt_aln_method": "splign",
+          "alt_strand": 1,
+          "ord": 15,
+          "tx_start_i": 1669,
+          "tx_end_i": 3013,
+          "alt_start_i": 2847766,
+          "alt_end_i": 2849110,
+          "cigar": "1344=",
+          "tx_aseq": null,
+          "alt_aseq": null,
+          "tx_exon_set_id": 83331,
+          "alt_exon_set_id": 792010,
+          "tx_exon_id": 773614,
+          "alt_exon_id": 6791737,
+          "exon_aln_id": 3977787
+        }
+      }
+    ]
+  },
+  {
+    "func": "get_tx_identity_info",
+    "args": [
+      "NM_001331029.1"
+    ],
+    "value": {
+      "psycopg2_dictrow": {
+        "tx_ac": "NM_001331029.1",
+        "alt_ac": "NM_001331029.1",
+        "alt_aln_method": "transcript",
+        "cds_start_i": 150,
+        "cds_end_i": 3282,
+        "lengths": [
+          441,
+          131,
+          119,
+          160,
+          145,
+          75,
+          80,
+          140,
+          113,
+          204,
+          83,
+          126,
+          183,
+          183,
+          91,
+          204,
+          190,
+          113,
+          42,
+          17,
+          145,
+          105,
+          54,
+          51,
+          8096
+        ],
+        "hgnc": "PPP1R12B"
+      }
+    }
+  },
+  {
+    "func": "get_tx_identity_info",
+    "args": [
+      "NM_181798.1"
+    ],
+    "value": {
+      "psycopg2_dictrow": {
+        "tx_ac": "NM_181798.1",
+        "alt_ac": "NM_181798.1",
+        "alt_aln_method": "transcript",
+        "cds_start_i": 256,
+        "cds_end_i": 1906,
+        "lengths": [
+          261,
+          91,
+          127,
+          79,
+          97,
+          141,
+          111,
+          96,
+          123,
+          142,
+          121,
+          76,
+          95,
+          47,
+          62,
+          1344
+        ],
+        "hgnc": "KCNQ1"
+      }
+    }
+  },
+  {
+    "func": "get_tx_info",
+    "args": [
+      "NM_001331029.1",
+      "NC_000001.10",
+      "splign"
+    ],
+    "value": {
+      "psycopg2_dictrow": {
+        "hgnc": "PPP1R12B",
+        "cds_start_i": 150,
+        "cds_end_i": 3282,
+        "tx_ac": "NM_001331029.1",
+        "alt_ac": "NC_000001.10",
+        "alt_aln_method": "splign"
+      }
+    }
+  },
+  {
+    "func": "get_tx_info",
+    "args": [
+      "NM_181798.1",
+      "NC_000011.10",
+      "splign"
+    ],
+    "value": {
+      "psycopg2_dictrow": {
+        "hgnc": "KCNQ1",
+        "cds_start_i": 256,
+        "cds_end_i": 1906,
+        "tx_ac": "NM_181798.1",
+        "alt_ac": "NC_000011.10",
+        "alt_aln_method": "splign"
+      }
+    }
+  },
+  {
+    "func": "get_tx_mapping_options",
+    "args": [
+      "NM_001331029.1"
+    ],
+    "value": [
+      {
+        "psycopg2_dictrow": {
+          "tx_ac": "NM_001331029.1",
+          "alt_ac": "NC_000001.10",
+          "alt_aln_method": "splign"
+        }
+      },
+      {
+        "psycopg2_dictrow": {
+          "tx_ac": "NM_001331029.1",
+          "alt_ac": "NC_000001.11",
+          "alt_aln_method": "splign"
+        }
+      }
+    ]
+  },
+  {
+    "func": "get_tx_mapping_options",
+    "args": [
+      "NM_181798.1"
+    ],
+    "value": [
+      {
+        "psycopg2_dictrow": {
+          "tx_ac": "NM_181798.1",
+          "alt_ac": "NC_000011.10",
+          "alt_aln_method": "splign"
+        }
+      },
+      {
+        "psycopg2_dictrow": {
+          "tx_ac": "NM_181798.1",
+          "alt_ac": "NC_000011.9",
+          "alt_aln_method": "blat"
+        }
+      },
+      {
+        "psycopg2_dictrow": {
+          "tx_ac": "NM_181798.1",
+          "alt_ac": "NC_000011.9",
+          "alt_aln_method": "splign"
+        }
+      },
+      {
+        "psycopg2_dictrow": {
+          "tx_ac": "NM_181798.1",
+          "alt_ac": "NG_008935.1",
+          "alt_aln_method": "splign"
+        }
+      }
+    ]
+  },
+  {
+    "func": "get_tx_mapping_options",
+    "args": [
+      "NR_040711.1"
+    ],
+    "value": []
+  },
+  {
+    "func": "get_tx_mapping_options",
+    "args": [
+      "XM_017001344.1"
+    ],
+    "value": []
+  },
+  {
+    "func": "schema_version",
+    "args": [],
+    "value": "1.2"
+  }
+]
