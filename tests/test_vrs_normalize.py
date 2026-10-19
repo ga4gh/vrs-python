@@ -1,6 +1,7 @@
 import pytest
 
 from ga4gh.vrs import models, normalize
+from ga4gh.vrs.normalize import RleSubunitMode, _factor_gen
 
 # Single nucleotide same-as-reference allele.
 allele_dict1 = {
@@ -929,3 +930,93 @@ def test_normalize_partial_rle_del_ins(rest_dataproxy):
     tail_del_4 = models.Allele(**tail_del_4bp)
     tail_del_4_norm = normalize(tail_del_4, rest_dataproxy, rle_seq_limit=0)
     assert tail_del_4_norm == models.Allele(**tail_del_4bp_normalized)
+
+
+#############################################################################
+# RLE repeat subunit mode
+
+_CHR1 = "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO"  # GRCh38 chr1, NC_000001.11
+
+
+def _rle(length: int, sequence: str, repeat_subunit_length: int) -> dict:
+    """Build a ReferenceLengthExpression state dict"""
+    return {
+        "type": "ReferenceLengthExpression",
+        "length": length,
+        "sequence": sequence,
+        "repeatSubunitLength": repeat_subunit_length,
+    }
+
+
+rle_subunit_mode_cases = [
+    {
+        "id": "poly_a_ins_2bp",
+        # chr1 A x 9 tract, insert AA: seed length 2, factors 2 and 1 are both valid
+        "input": (_CHR1, 236900409, 236900418, "A" * 11),
+        "normalized_span": (236900409, 236900418),
+        "largest": _rle(11, "A" * 11, 2),
+        "smallest": _rle(11, "A" * 11, 1),
+    },
+    {
+        "id": "microsatellite_ins_2_units",
+        # chr1 GT x 5 tract, insert GTGT: seed length 4, SMALLEST rejects factor 1
+        "input": (_CHR1, 1007183, 1007183, "GTGT"),
+        "normalized_span": (1007173, 1007183),
+        "largest": _rle(14, "GT" * 7, 4),
+        "smallest": _rle(14, "GT" * 7, 2),
+    },
+]
+
+
+def _build_allele(refget_accession: str, start: int, end: int, sequence: str) -> dict:
+    """Build an unnormalized LiteralSequenceExpression Allele dict"""
+    return {
+        "type": "Allele",
+        "location": {
+            "type": "SequenceLocation",
+            "sequenceReference": {
+                "type": "SequenceReference",
+                "refgetAccession": refget_accession,
+            },
+            "start": start,
+            "end": end,
+        },
+        "state": {"type": "LiteralSequenceExpression", "sequence": sequence},
+    }
+
+
+@pytest.mark.parametrize("case", rle_subunit_mode_cases, ids=lambda c: c["id"])
+@pytest.mark.vcr
+def test_normalize_rle_subunit_mode(rest_dataproxy, case):
+    """Each mode normalizes to its expected state, and the default is LARGEST"""
+    allele = models.Allele(**_build_allele(*case["input"]))
+
+    normalized_by_mode = {}
+    for mode in RleSubunitMode:
+        normalized = normalize(
+            allele, rest_dataproxy, rle_seq_limit=None, rle_subunit_mode=mode
+        )
+        location = (normalized.location.start, normalized.location.end)
+        assert location == case["normalized_span"], mode
+        assert normalized.state.model_dump(exclude_none=True) == case[mode.value], mode
+        normalized_by_mode[mode] = normalized
+
+    default = normalize(allele, rest_dataproxy, rle_seq_limit=None)
+    assert default == normalized_by_mode[RleSubunitMode.LARGEST]
+
+
+@pytest.mark.parametrize("mode", ["typo", None])
+def test_normalize_rle_subunit_mode_invalid(mode):
+    """Normalization rejects an invalid `rle_subunit_mode`"""
+    allele = models.Allele(**_build_allele(*rle_subunit_mode_cases[0]["input"]))
+    with pytest.raises(ValueError, match="is not a valid RleSubunitMode"):
+        normalize(allele, rle_subunit_mode=mode)
+
+
+def test_factor_gen():
+    """Factors are yielded once each, in descending (LARGEST) or ascending (SMALLEST)
+    order
+    """
+    largest = [36, 18, 12, 9, 6, 4, 3, 2, 1]
+    assert list(_factor_gen(36, RleSubunitMode.LARGEST)) == largest
+    assert list(_factor_gen(36, RleSubunitMode.SMALLEST)) == largest[::-1]

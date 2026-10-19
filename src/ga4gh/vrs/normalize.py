@@ -6,7 +6,8 @@ See https://vrs.ga4gh.org/en/stable/impl-guide/normalization.html
 
 import itertools
 import logging
-from enum import IntEnum
+from collections.abc import Iterator
+from enum import Enum, IntEnum
 from typing import NamedTuple
 
 from bioutils.normalize import NormalizationMode
@@ -18,6 +19,26 @@ from ga4gh.vrs import models
 from ga4gh.vrs.dataproxy import SequenceProxy, _DataProxy
 
 _logger = logging.getLogger(__name__)
+
+
+class RleSubunitMode(str, Enum):
+    """Define which repeat subunit length to select for a reference-derived ambiguous
+    insertion normalized to a ``ReferenceLengthExpression``. More than one factor of
+    the seed length may be circularly expandable to recreate the alternate sequence;
+    this selects which of them becomes the ``repeatSubunitLength``. The options are:
+      LARGEST - Select the greatest valid factor (VRS 2.0.x normalization)
+      SMALLEST - Select the smallest valid factor (VRS 2.1 normalization)
+
+    ``repeatSubunitLength`` is part of the ``ReferenceLengthExpression`` digest, so the
+    two modes may produce different identifiers for the same input Allele.
+    """
+
+    LARGEST = "largest"
+    SMALLEST = "smallest"
+
+
+# VRS 2.0.x normalization selects the greatest valid factor
+DEFAULT_RLE_SUBUNIT_MODE = RleSubunitMode.LARGEST
 
 
 class PosType(IntEnum):
@@ -85,7 +106,10 @@ def _get_new_allele_location_pos(
 
 
 def _normalize_allele(
-    input_allele: models.Allele, data_proxy: _DataProxy, rle_seq_limit: int = 50
+    input_allele: models.Allele,
+    data_proxy: _DataProxy,
+    rle_seq_limit: int = 50,
+    rle_subunit_mode: RleSubunitMode = DEFAULT_RLE_SUBUNIT_MODE,
 ):
     """Normalize Allele using "fully-justified" normalization adapted from NCBI's
     VOCA. Fully-justified normalization expands such ambiguous representation over the
@@ -111,7 +135,12 @@ def _normalize_allele(
         of the `sequence`.
         To exclude `sequence` from the response, set to 0.
         For no limit, set to `None`.
+    :param rle_subunit_mode: Which valid factor of the seed length to select as the
+        `repeatSubunitLength` for a reference-derived ambiguous insertion. Defaults to
+        `DEFAULT_RLE_SUBUNIT_MODE`. See `RleSubunitMode`.
     """
+    rle_subunit_mode = RleSubunitMode(rle_subunit_mode)
+
     # Algorithm applies to LiteralSequenceExpression alleles only; other states are returned unchanged
     if not isinstance(input_allele.state, models.LiteralSequenceExpression):
         _logger.warning(
@@ -204,7 +233,7 @@ def _normalize_allele(
 
     # 5.c
     if len_extended_alt > len_extended_ref:
-        factors = _factor_gen(seed_length)
+        factors = _factor_gen(seed_length, rle_subunit_mode)
         for cycle_length in factors:
             if cycle_length > len_extended_ref:
                 continue
@@ -308,17 +337,32 @@ def denormalize_reference_length_expression(
     return alt
 
 
-def _factor_gen(n: int):
-    """Yield all factors of an integer `n`, in descending order"""
-    lower_factors = []
+def _factor_gen(
+    n: int, mode: RleSubunitMode = DEFAULT_RLE_SUBUNIT_MODE
+) -> Iterator[int]:
+    """Yield all factors of an integer `n`
+
+    :param n: The integer to factor
+    :param mode: `RleSubunitMode.LARGEST` to yield factors in descending order,
+        `RleSubunitMode.SMALLEST` to yield them in ascending order. The first valid
+        factor found by the caller is the one selected, so the order determines whether
+        the largest or smallest valid factor wins.
+    """
+    paired_factors = []
     i = 1
     while i * i <= n:
         if n % i == 0:
-            yield n // i
-            if n // i != i:
-                lower_factors.append(i)
+            # i <= sqrt(n) <= n // i. Yield the factor that is already in the requested
+            # order, and save its pair to yield in reverse once the loop finishes.
+            if mode == RleSubunitMode.SMALLEST:
+                factor, pair = i, n // i
+            else:
+                factor, pair = n // i, i
+            yield factor
+            if pair != factor:
+                paired_factors.append(pair)
         i += 1
-    yield from reversed(lower_factors)
+    yield from reversed(paired_factors)
 
 
 def _define_rle_allele(
@@ -371,6 +415,9 @@ def normalize(vo, data_proxy: _DataProxy | None = None, **kwargs):
     :param data_proxy: GA4GH sequence dataproxy instance, if needed
     :keyword rle_seq_limit: If RLE is set as the new state, set the limit for the length
         of the `sequence`. To exclude `state.sequence`, set to 0.
+    :keyword rle_subunit_mode: Which valid factor of the seed length to select as the
+        `repeatSubunitLength` for a reference-derived ambiguous insertion. Defaults to
+        `DEFAULT_RLE_SUBUNIT_MODE`. See `RleSubunitMode`.
     :return: normalized object, or unmodified input object if the normalization algorithm
         does not provide normalization steps for the given type.
     :raise TypeError: if given object isn't a pydantic.BaseModel
