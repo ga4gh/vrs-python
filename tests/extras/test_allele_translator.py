@@ -338,6 +338,22 @@ def test_from_invalid(tlr):
         tlr.translate_from("BRAF amplication", assembly_name="GRCh37")
 
 
+@pytest.mark.parametrize(
+    ("expr", "fmt"),
+    [
+        # multi-allelic gnomAD-style input must not be truncated to its first ALT
+        ("1-55516888-G-GA,GT", "gnomad"),
+        ("19-44908822-C-T;foo", "gnomad"),
+        ("NC_000019.10:44908821:1:T:extra", "spdi"),
+        ("19 : 44908822 C > T,G", "beacon"),
+    ],
+)
+def test_from_trailing_input_rejected(tlr, expr, fmt):
+    """Expressions with trailing content must be rejected, not partially parsed"""
+    with pytest.raises(ValueError, match=f"Unable to parse data as {fmt}"):
+        tlr.translate_from(expr, fmt=fmt)
+
+
 @pytest.mark.vcr
 def test_from_beacon(tlr):
     do_normalize = False
