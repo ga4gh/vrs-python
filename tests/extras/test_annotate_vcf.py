@@ -250,7 +250,7 @@ def test_annotate_vcf_rle(
     expected_sequence,
     rest_dataproxy_fn_scope,
     vcr_cassette,
-    tmp_path,
+    tmp_path: Path,
 ):
     """Test VCF annotation with ReferenceLengthExpression states.
 
