@@ -15,6 +15,7 @@ from pydantic.main import BaseModel
 
 from ga4gh.core import ga4gh_digest, is_pydantic_instance, pydantic_copy
 from ga4gh.vrs import models
+from ga4gh.vrs.config import RLE_SEQ_LIMIT
 from ga4gh.vrs.dataproxy import SequenceProxy, _DataProxy
 
 _logger = logging.getLogger(__name__)
@@ -85,7 +86,9 @@ def _get_new_allele_location_pos(
 
 
 def _normalize_allele(
-    input_allele: models.Allele, data_proxy: _DataProxy, rle_seq_limit: int = 50
+    input_allele: models.Allele,
+    data_proxy: _DataProxy,
+    rle_seq_limit: int | None = RLE_SEQ_LIMIT,
 ):
     """Normalize Allele using "fully-justified" normalization adapted from NCBI's
     VOCA. Fully-justified normalization expands such ambiguous representation over the

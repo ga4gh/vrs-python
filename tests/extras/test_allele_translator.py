@@ -308,8 +308,24 @@ rle_inputs = [
 
 
 @pytest.mark.vcr
-def test_rle_round_trip_gnomad_spdi(tlr):
+@pytest.mark.parametrize(
+    ("configured_modules", "limit", "vcr_cassette_name"),
+    [
+        (None, 50, "test_rle_round_trip_gnomad_spdi"),
+        ("0", 0, "test_rle_round_trip_gnomad_spdi"),
+        ("1", 1, "test_rle_round_trip_gnomad_spdi"),
+        ("2", 2, "test_rle_round_trip_gnomad_spdi"),
+        ("none", None, "test_rle_round_trip_gnomad_spdi"),
+        ("NoNe", None, "test_rle_round_trip_gnomad_spdi"),
+    ],
+    indirect=["configured_modules"],
+)
+def test_rle_round_trip_gnomad_spdi(
+    configured_modules, limit, rest_dataproxy, vcr_cassette
+):
     """Test translating an RLE allele from gnomAD and SPDI, and back to SPDI"""
+    tlr = configured_modules[1].AlleleTranslator(rest_dataproxy, identify=False)
+    vcr_cassette.allow_playback_repeats = True
     for inp in rle_inputs:
         gnomad = inp["gnomad"]
         spdi = inp["spdi"]
@@ -318,6 +334,15 @@ def test_rle_round_trip_gnomad_spdi(tlr):
         assert allele_gnomad.model_dump(exclude_none=True) == expected_dict
         allele_spdi = tlr.translate_from(spdi, fmt="spdi", rle_seq_limit=None)
         assert allele_spdi.model_dump(exclude_none=True) == expected_dict
+
+        # Per-call None above includes the sequence regardless of the environment.
+        # Omitting the argument uses the configured default in both formats.
+        expected_default = {**expected_dict, "state": expected_dict["state"].copy()}
+        if limit is not None and expected_default["state"]["length"] > limit:
+            expected_default["state"].pop("sequence", None)
+        for value, fmt in ((gnomad, "gnomad"), (spdi, "spdi")):
+            default_allele = tlr.translate_from(value, fmt=fmt)
+            assert default_allele.model_dump(exclude_none=True) == expected_default
 
         allele_gnomad_to_spdi = tlr.translate_to(
             allele_gnomad, fmt="spdi", ref_seq_limit=None
