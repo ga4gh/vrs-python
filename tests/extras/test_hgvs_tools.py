@@ -44,12 +44,10 @@ def test_is_intronic(hgvs_tools, hgvs_expr, expected):
 
 
 def test_hgvs_cache_data_provider_is_shared(
-    hgvs_cached_data_provider: hgvs.dataproviders.uta.UTABase | None,
+    hgvs_cached_data_provider: hgvs.dataproviders.uta.UTABase,
 ) -> None:
     """Every HgvsTools gets the tests' shared hgvs cache data provider, so in learn
     mode they cannot overwrite each other's cache entries
     """
-    if hgvs_cached_data_provider is None:
-        pytest.skip("the hgvs cache is disabled")
     assert HgvsTools().uta_conn is hgvs_cached_data_provider
     assert HgvsTools().uta_conn is hgvs_cached_data_provider

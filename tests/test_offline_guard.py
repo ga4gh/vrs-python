@@ -1,57 +1,47 @@
-"""Tests for the session's offline guard (tests/offline_guard.py)."""
+"""Check that forbidden operations fail at the call, including HGVS fallbacks."""
 
-from typing import Any
+import socket
 
-import hgvs.dataproviders.uta
 import psycopg2
 import pytest
 import requests
-from hgvs.exceptions import HGVSDataNotAvailableError
-from offline_guard import OfflineError, OfflineGuard
 
-offline_guard_cases: list[dict[str, Any]] = [
-    {
-        "id": "http-request",
-        "active_when": "blocking_network",
-        "call": lambda _provider: requests.get("http://127.0.0.1:1/", timeout=1),
-        "raises": OfflineError,
-        "violation": "blocked: socket.connect(('127.0.0.1', 1))",
-    },
-    {
-        "id": "postgres-connect",
-        "active_when": "blocking_network",
-        "call": lambda _provider: psycopg2.connect(
-            "postgresql://anonymous@127.0.0.1:1/uta"
-        ),
-        "raises": OfflineError,
-        "violation": "blocked: psycopg2.connect('postgresql://anonymous@127.0.0.1:1/uta')",
-    },
-    {
-        "id": "hgvs-cache-miss",
-        "active_when": "recording_hgvs_cache_misses",
-        "call": lambda provider: provider.get_tx_info(
-            "NM_000000.0", "NC_000001.11", "splign"
-        ),
-        "raises": HGVSDataNotAvailableError,
-        "violation": "hgvs cache miss: get_tx_info('NM_000000.0', 'NC_000001.11', 'splign')",
-    },
-]
+from ga4gh.vrs import models
+from ga4gh.vrs.utils.hgvs_tools import HgvsTools
 
 
-@pytest.mark.parametrize("case", offline_guard_cases, ids=lambda c: c["id"])
-def test_offline_guard(
-    case: dict[str, Any],
-    offline_guard: OfflineGuard,
-    hgvs_cached_data_provider: hgvs.dataproviders.uta.UTABase | None,
-) -> None:
-    """The offline guard blocks network connections and records hgvs cache misses, each
-    as one violation
-    """
-    if not getattr(offline_guard, case["active_when"]):
-        pytest.skip(f"the offline guard isn't {case['active_when'].replace('_', ' ')}")
-    start = len(offline_guard.violations)
-    with pytest.raises(case["raises"]):
-        case["call"](hgvs_cached_data_provider)
-    assert offline_guard.violations[start:] == [case["violation"]]
-    # these violations are expected; keep them from failing this test at teardown
-    del offline_guard.violations[start:]
+@pytest.mark.parametrize("client", ["http", "connect_ex", "postgres"])
+def test_live_connections_fail(network_blocked: bool, client: str) -> None:
+    if not network_blocked:
+        pytest.skip("live connections are enabled for recording")
+    message = "Live PostgreSQL" if client == "postgres" else "Live network"
+
+    def connect_with_fallback() -> None:
+        # An ordinary application error handler must not hide the failure.
+        try:
+            if client == "http":
+                requests.get("http://127.0.0.1:1/", timeout=1)
+            elif client == "connect_ex":
+                with socket.socket() as sock:
+                    sock.connect_ex(("127.0.0.1", 1))
+            else:
+                psycopg2.connect("postgresql://anonymous@127.0.0.1:1/uta")
+        except Exception:
+            return
+
+    with pytest.raises(pytest.fail.Exception, match=message):
+        connect_with_fallback()
+
+
+def test_hgvs_cache_miss_fails_through_fallback(hgvs_cache_mode: str) -> None:
+    if hgvs_cache_mode != "run":
+        pytest.skip("HGVS recording uses live data")
+    # An insertion needs no data-proxy fetch before reaching HGVS normalization.
+    # This accession is deliberately absent from the recorded provider data.
+    allele = models.Allele(
+        location=models.SequenceLocation(start=10, end=10),
+        state=models.LiteralSequenceExpression(sequence="A"),
+    )
+    tools = HgvsTools()
+    with pytest.raises(pytest.fail.Exception, match="Missing HGVS recording"):
+        tools._to_sequence_variant(allele, "c", "unused", "NM_000000.0")
