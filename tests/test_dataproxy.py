@@ -7,6 +7,7 @@ from ga4gh.vrs import models
 from ga4gh.vrs.dataproxy import (
     DataProxyValidationError,
     _DataProxy,
+    _SeqRepoDataProxyBase,
     create_dataproxy,
 )
 
@@ -104,7 +105,16 @@ location_bounds_valid_cases = [
     {"id": "zero-width-at-start", "start": 0, "end": 0},
     {"id": "terminal-residue", "start": 4559, "end": 4560},
     {"id": "insertion-at-end", "start": 4560, "end": 4560},
-    {"id": "circular-start-gt-end", "start": 4000, "end": 5},
+    {
+        "id": "overlapping-ranges",
+        "start": models.Range([100, 200]),
+        "end": models.Range([150, 300]),
+    },
+    {
+        "id": "open-ranges-never-start-after-end",
+        "start": models.Range([None, 4000]),
+        "end": models.Range([10, None]),
+    },
     {
         "id": "indefinite-end-open-upper",
         "start": 4400,
@@ -164,6 +174,33 @@ location_bounds_invalid_cases = [
 ]
 
 
+# In-bounds locations whose start is after their end: on a circular sequence these
+# would span its origin, which is not supported. A Range is reported by its lowest
+# possible start and highest possible end.
+location_start_after_end_cases = [
+    {"id": "start-after-end", "start": 4000, "end": 5, "detail": "start=4000, end=5"},
+    {
+        "id": "definite-ranges-disjoint",
+        "start": models.Range([4000, 4100]),
+        "end": models.Range([10, 20]),
+        "detail": "start=4000, end=20",
+    },
+    {
+        "id": "indefinite-ranges-disjoint",
+        "start": models.Range([4000, None]),
+        "end": models.Range([None, 20]),
+        "detail": "start=4000, end=20",
+    },
+]
+
+
+def _start_after_end_msg(identifier: str, detail: str) -> str:
+    return (
+        f"Interval start is after end on {identifier}: {detail} "
+        "(locations spanning the origin of a circular sequence are not supported)"
+    )
+
+
 @pytest.mark.parametrize("case", location_bounds_valid_cases, ids=lambda c: c["id"])
 def test_validate_location_bounds_valid(case: dict) -> None:
     dp = _bounds_dp([BOUNDS_SEQ_ID, BOUNDS_REFGET_ID])
@@ -181,6 +218,14 @@ def test_validate_location_bounds_invalid(case: dict) -> None:
         dp.validate_location_bounds(BOUNDS_SEQ_ID, case["start"], case["end"])
 
 
+@pytest.mark.parametrize("case", location_start_after_end_cases, ids=lambda c: c["id"])
+def test_validate_location_bounds_start_after_end(case: dict) -> None:
+    dp = _bounds_dp([BOUNDS_SEQ_ID, BOUNDS_REFGET_ID])
+    expected_msg = _start_after_end_msg(BOUNDS_SEQ_ID, case["detail"])
+    with pytest.raises(DataProxyValidationError, match=f"^{re.escape(expected_msg)}$"):
+        dp.validate_location_bounds(BOUNDS_SEQ_ID, case["start"], case["end"])
+
+
 def test_validate_ref_seq_checks_bounds_before_fetching() -> None:
     # The stub's get_sequence raises, so this also shows nothing is fetched
     dp = _bounds_dp([BOUNDS_SEQ_ID, BOUNDS_REFGET_ID])
@@ -190,6 +235,24 @@ def test_validate_ref_seq_checks_bounds_before_fetching() -> None:
     )
     with pytest.raises(DataProxyValidationError, match=f"^{re.escape(expected_msg)}$"):
         dp.validate_ref_seq(BOUNDS_SEQ_ID, 4560, 4561, "A", require_validation=False)
+
+
+class _BackendlessSeqRepoDataProxy(_SeqRepoDataProxyBase):
+    """SeqRepo-style dataproxy whose backend must never be reached"""
+
+    def _get_sequence(
+        self, identifier: str, start: int | None = None, end: int | None = None
+    ) -> str:
+        raise NotImplementedError
+
+    def _get_metadata(self, identifier: str) -> dict:
+        raise NotImplementedError
+
+
+def test_get_sequence_rejects_start_after_end_before_the_backend() -> None:
+    expected_msg = _start_after_end_msg(BOUNDS_SEQ_ID, "start=4000, end=5")
+    with pytest.raises(DataProxyValidationError, match=f"^{re.escape(expected_msg)}$"):
+        _BackendlessSeqRepoDataProxy().get_sequence(BOUNDS_SEQ_ID, 4000, 5)
 
 
 # Name used for the sequence in the error message, given the sequence_id passed in

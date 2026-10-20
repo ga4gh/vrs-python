@@ -25,6 +25,24 @@ class DataProxyValidationError(Exception):
     """Class for validation errors during data proxy methods"""
 
 
+def validate_start_le_end(identifier: str, start: int | None, end: int | None) -> None:
+    """Reject an interval whose ``start`` is after its ``end``.
+
+    vrs-python treats every sequence as linear. The VRS spec allows ``start > end`` on a
+    circular sequence as a location spanning its origin, but vrs-python does not
+    implement this, so such an interval is currently rejected rather than passed to
+    a backend.
+
+    :raises DataProxyValidationError: If both are defined and ``start > end``
+    """
+    if start is not None and end is not None and start > end:
+        err_msg = (
+            f"Interval start is after end on {identifier}: start={start}, end={end} "
+            "(locations spanning the origin of a circular sequence are not supported)"
+        )
+        raise DataProxyValidationError(err_msg)
+
+
 class _DataProxy(ABC):
     """abstract class / interface for VRS data needs
 
@@ -44,7 +62,9 @@ class _DataProxy(ABC):
 
         start and end are optional
 
-        If the given sequence does not exist, KeyError is raised.
+        If the given sequence does not exist, KeyError is raised. If start is
+        after end, DataProxyValidationError is raised without consulting the
+        backend (see ``validate_start_le_end``).
 
         >> dp.get_sequence("NM_000551.3", 0, 10)
         'CCTCGCCTCC'
@@ -198,8 +218,12 @@ class _DataProxy(ABC):
 
         Each defined coordinate must be within ``[0, len(sequence)]`` (inter-residue).
         Undefined (``None``) endpoints are skipped, and for a ``Range`` every defined
-        member is checked. ``start_pos`` and ``end_pos`` are checked independently, so
-        ``start_pos > end_pos`` (circular sequences) is permitted.
+        member is checked.
+
+        ``start_pos`` must also not be after ``end_pos`` (see
+        ``validate_start_le_end``). A ``Range`` fails this only when even its lowest
+        possible start is after the highest possible end, so an open bound (``None``)
+        never fails it.
 
         There is no ``require_validation`` option: an out-of-bounds location has no
         meaning, so the error is always raised, including from ``validate_ref_seq``.
@@ -209,7 +233,8 @@ class _DataProxy(ABC):
         :param sequence_id: Sequence ID to use
         :param start_pos: Start pos (inter-residue) on the sequence_id
         :param end_pos: End pos (inter-residue) on the sequence_id
-        :raises DataProxyValidationError: If a defined coordinate is out of bounds
+        :raises DataProxyValidationError: If a defined coordinate is out of bounds, or
+            ``start_pos`` is after ``end_pos``
         :raises KeyError: If ``sequence_id`` is not found
         """
         # same cache key as derive_refget_accession
@@ -238,6 +263,12 @@ class _DataProxy(ABC):
             )
             raise DataProxyValidationError(err_msg)
 
+        validate_start_le_end(
+            sequence_id,
+            start_pos.root[0] if isinstance(start_pos, Range) else start_pos,
+            end_pos.root[1] if isinstance(end_pos, Range) else end_pos,
+        )
+
 
 class _SeqRepoDataProxyBase(_DataProxy):
     # wraps seqreqpo classes in order to provide translation to/from
@@ -253,6 +284,9 @@ class _SeqRepoDataProxyBase(_DataProxy):
     def get_sequence(
         self, identifier: str, start: int | None = None, end: int | None = None
     ) -> str:
+        # Checked here because backends disagree: pysam raises ValueError and
+        # seqrepo-rest-service answers HTTP 422
+        validate_start_le_end(identifier, start, end)
         return self._get_sequence(identifier, start=start, end=end)
 
     @abstractmethod

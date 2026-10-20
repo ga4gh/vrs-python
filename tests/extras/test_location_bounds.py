@@ -1,10 +1,12 @@
 """Out-of-bounds SequenceLocations are rejected on every translator input path
-except ``vrs``, whose input is trusted as-is
+except ``vrs``, whose input is trusted as-is, as are locations whose start is
+after their end
 
 Sequence lengths used below:
     NM_000551.3     4560
     NP_001346993.1  193
     NC_000007.14    159345973
+    NC_000012.11    133851895
     GRCh38:1        248956422
 """
 
@@ -119,6 +121,23 @@ out_of_bounds_cases = [
 ]
 
 
+# ClinVar VariationID 1299657 gives NC_000012.11:g.110593351_110576466dup: both
+# coordinates are on the sequence, but the start is after the end.
+START_AFTER_END_MSG = (
+    "Interval start is after end on refseq:NC_000012.11: "
+    "start=110593350, end=110576466 "
+    "(locations spanning the origin of a circular sequence are not supported)"
+)
+
+start_after_end_cases = [
+    {
+        "id": "cnv-hgvs-dup",
+        "tlr_fixture": "cnv_tlr",
+        "var": "NC_000012.11:g.110593351_110576466dup",
+    },
+]
+
+
 in_bounds_cases = [
     {
         "id": "spdi-insertion-at-end",
@@ -136,6 +155,16 @@ def test_out_of_bounds(request: pytest.FixtureRequest, case: dict) -> None:
     tlr = request.getfixturevalue(case["tlr_fixture"])
     with pytest.raises(DataProxyValidationError, match=f"^{re.escape(case['msg'])}$"):
         tlr.translate_from(case["var"], fmt=case["fmt"], **case.get("kwargs", {}))
+
+
+@pytest.mark.parametrize("case", start_after_end_cases, ids=lambda c: c["id"])
+@pytest.mark.vcr
+def test_start_after_end(request: pytest.FixtureRequest, case: dict) -> None:
+    tlr = request.getfixturevalue(case["tlr_fixture"])
+    with pytest.raises(
+        DataProxyValidationError, match=f"^{re.escape(START_AFTER_END_MSG)}$"
+    ):
+        tlr.translate_from(case["var"], fmt="hgvs")
 
 
 @pytest.mark.parametrize("case", in_bounds_cases, ids=lambda c: c["id"])
