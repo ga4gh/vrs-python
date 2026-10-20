@@ -31,7 +31,11 @@ _JSON_SCALARS = (str, int, float, bool, type(None))
 def _encode_value(value: Any) -> Any:  # noqa: ANN401
     """Convert a cached hgvs result to a JSON value"""
     if isinstance(value, DictRow):
-        return {_DICTROW_TAG: dict(value.items())}
+        columns = dict(value.items())
+        if len(columns) != len(value):
+            msg = f"row has {len(value)} values but {len(columns)} column names: {value!r}"
+            raise ValueError(msg)
+        return {_DICTROW_TAG: {c: _encode_value(v) for c, v in columns.items()}}
     if isinstance(value, list):
         return [_encode_value(v) for v in value]
     if isinstance(value, _JSON_SCALARS):
@@ -69,7 +73,16 @@ def pickle_to_json(pickle_file: Path, json_file: Path) -> None:
         if marker != _FUNC_MARKER:
             msg = f"unexpected hgvs cache key layout: {key!r}"
             raise ValueError(msg)
-        entries.append({"func": func, "args": args, "value": _encode_value(cache[key])})
+        try:
+            entry = {
+                "func": func,
+                "args": _encode_value(args),
+                "value": _encode_value(cache[key]),
+            }
+        except (TypeError, ValueError) as err:
+            msg = f"{pickle_file}: {func} {args}: {err}"
+            raise type(err)(msg) from err
+        entries.append(entry)
     entries.sort(key=lambda e: (e["func"], json.dumps(e["args"])))
     json_file.write_text(json.dumps(entries, indent=2) + "\n")
 
