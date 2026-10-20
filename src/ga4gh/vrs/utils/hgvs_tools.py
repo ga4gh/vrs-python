@@ -107,6 +107,8 @@ class HgvsTools:
 
         Raises:
             ValueError: If the HGVS variant type is unsupported.
+            DataProxyValidationError: If an identity or duplication's location is
+                out of bounds or its start is after its end.
 
         """
         if sv.posedit.edit.type == "ins":
@@ -118,20 +120,19 @@ class HgvsTools:
             start = sv.posedit.pos.start.base - 1
             end = sv.posedit.pos.end.base
             if sv.posedit.edit.type == "identity":
-                state = self.data_proxy.get_sequence(
-                    sv.ac,
-                    start=sv.posedit.pos.start.base - 1,
-                    end=sv.posedit.pos.end.base,
-                )
+                # Checked before fetching: a backend may silently truncate the
+                # fetch or reject it with an error of its own
+                self.data_proxy.validate_location_bounds(sv.ac, start, end)
+                state = self.data_proxy.get_sequence(sv.ac, start=start, end=end)
             else:
                 state = sv.posedit.edit.alt or ""
 
         elif sv.posedit.edit.type == "dup":
             start = sv.posedit.pos.start.base - 1
             end = sv.posedit.pos.end.base
-            ref = self.data_proxy.get_sequence(
-                sv.ac, start=sv.posedit.pos.start.base - 1, end=sv.posedit.pos.end.base
-            )
+            # Checked before fetching, as for identity above
+            self.data_proxy.validate_location_bounds(sv.ac, start, end)
+            ref = self.data_proxy.get_sequence(sv.ac, start=start, end=end)
             state = ref + ref
 
         else:
@@ -191,6 +192,7 @@ class HgvsTools:
         (start, end, state) = self.get_position_and_state(sv)
 
         return {
+            "sequence_id": sv.ac,
             "refget_accession": refget_accession,
             "start": start,
             "end": end,
