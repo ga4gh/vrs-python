@@ -62,6 +62,14 @@ out_of_bounds_cases = [
         "var": "NM_000551.3:n.4561_4562insA",
         "msg": _bounds_msg("refseq:NM_000551.3", "start=4561, end=4561", 4560),
     },
+    # Checked before the duplicated reference is fetched, which would be truncated
+    {
+        "id": "hgvs-n-dup-past-end",
+        "tlr_fixture": "allele_tlr",
+        "fmt": "hgvs",
+        "var": "NM_000551.3:n.4560_4561dup",
+        "msg": _bounds_msg("refseq:NM_000551.3", "end=4561", 4560),
+    },
     # ClinVar references the stop codon, which is not part of the protein sequence
     {
         "id": "hgvs-p-ter-at-length-plus-one",
@@ -122,7 +130,9 @@ out_of_bounds_cases = [
 
 
 # ClinVar VariationID 1299657 gives NC_000012.11:g.110593351_110576466dup: both
-# coordinates are on the sequence, but the start is after the end.
+# coordinates are on the sequence, but the start is after the end. Identity and
+# duplication fetch the reference, so they are checked before the fetch, which
+# the backend would otherwise reject with an error of its own.
 START_AFTER_END_MSG = (
     "Interval start is after end on refseq:NC_000012.11: "
     "start=110593350, end=110576466 "
@@ -130,6 +140,16 @@ START_AFTER_END_MSG = (
 )
 
 start_after_end_cases = [
+    {
+        "id": "hgvs-g-dup",
+        "tlr_fixture": "allele_tlr",
+        "var": "NC_000012.11:g.110593351_110576466dup",
+    },
+    {
+        "id": "hgvs-g-identity",
+        "tlr_fixture": "allele_tlr",
+        "var": "NC_000012.11:g.110593351_110576466=",
+    },
     {
         "id": "cnv-hgvs-dup",
         "tlr_fixture": "cnv_tlr",
