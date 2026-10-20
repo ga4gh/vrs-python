@@ -323,11 +323,13 @@ service, a UTA database, or network access. Set `SEQREPO_ROOT_DIR=tests/data/seq
 
 - **VCR cassettes** (`tests/**/cassettes/*.yaml`) replay vrs-python's HTTP requests to
   the [SeqRepo REST service](https://github.com/biocommons/seqrepo-rest-service). CI
-  runs `pytest --vcr-record=none`, so a test making an unrecorded request fails.
+  runs `pytest --vcr-record=none`. In that mode, any test that opens a network
+  connection fails, including HTTP requests from tests not marked `@pytest.mark.vcr`
+  and Postgres connections (`tests/offline_guard.py`).
 - **The hgvs cache** (`tests/data/hgvs_cache.json`) replays the hgvs library's UTA
   queries and sequence fetches. `tests/conftest.py` enables it by default
-  (`VRS_HGVS_CACHE_MODE=run`), and a lookup missing from the cache raises
-  `HGVSDataNotAvailableError`. hgvs itself reads and writes its cache as a pickle;
+  (`VRS_HGVS_CACHE_MODE=run`). In that mode, any test fails if hgvs looks up data
+  missing from the cache. hgvs itself reads and writes its cache as a pickle;
   `tests/hgvs_cache_json.py` converts between the two.
 
 To re-record, start the external services (`docker compose up` starts
