@@ -173,7 +173,12 @@ class _DataProxy(ABC):
             logged.
         :raises DataProxyValidationError: If excepted reference sequence does not match
             the actual reference sequence and ``require_validation`` is ``True``.
+            Raised regardless of ``require_validation`` if the location is invalid
+            (see ``validate_location_bounds``).
         """
+        # An out-of-bounds fetch may be silently truncated, which would be misreported
+        # as a reference mismatch
+        self.validate_location_bounds(sequence_id, start_pos, end_pos)
         correct_ref = self.get_sequence(sequence_id, start_pos, end_pos)
 
         if correct_ref != ref:
@@ -196,10 +201,10 @@ class _DataProxy(ABC):
         member is checked. ``start_pos`` and ``end_pos`` are checked independently, so
         ``start_pos > end_pos`` (circular sequences) is permitted.
 
-        Unlike ``validate_ref_seq``, there is no ``require_validation`` option: an
-        out-of-bounds location has no meaning, so the error is always raised. Sequence
-        backends may silently truncate out-of-range fetches, so this check must be made
-        before relying on fetched sequence.
+        There is no ``require_validation`` option: an out-of-bounds location has no
+        meaning, so the error is always raised, including from ``validate_ref_seq``.
+        Sequence backends may silently truncate out-of-range fetches, so this check
+        must be made before relying on fetched sequence.
 
         :param sequence_id: Sequence ID to use
         :param start_pos: Start pos (inter-residue) on the sequence_id

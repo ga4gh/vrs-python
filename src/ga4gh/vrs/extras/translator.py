@@ -346,9 +346,6 @@ class AlleleTranslator(_Translator):
         ins_seq = alt
 
         # validation checks
-        # Bounds must be checked before the ref check: an out-of-bounds fetch may be
-        # silently truncated, which would be misreported as a reference mismatch
-        self.data_proxy.validate_location_bounds(sequence, start, end)
         self.data_proxy.validate_ref_seq(
             sequence,
             start,

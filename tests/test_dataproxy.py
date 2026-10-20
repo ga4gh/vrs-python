@@ -181,6 +181,17 @@ def test_validate_location_bounds_invalid(case: dict) -> None:
         dp.validate_location_bounds(BOUNDS_SEQ_ID, case["start"], case["end"])
 
 
+def test_validate_ref_seq_checks_bounds_before_fetching() -> None:
+    # The stub's get_sequence raises, so this also shows nothing is fetched
+    dp = _bounds_dp([BOUNDS_SEQ_ID, BOUNDS_REFGET_ID])
+    expected_msg = (
+        f"Location out of bounds on {BOUNDS_SEQ_ID} ({BOUNDS_REFGET_ID}): "
+        f"end=4561 not within [0, {BOUNDS_SEQ_LEN}]"
+    )
+    with pytest.raises(DataProxyValidationError, match=f"^{re.escape(expected_msg)}$"):
+        dp.validate_ref_seq(BOUNDS_SEQ_ID, 4560, 4561, "A", require_validation=False)
+
+
 # Name used for the sequence in the error message, given the sequence_id passed in
 # and the aliases of the sequence
 location_bounds_sequence_name_cases = [
