@@ -243,6 +243,28 @@ def _recurse_ga4gh_serialize(obj):
     return obj
 
 
+def _recurse_ga4gh_serialize_no_store(obj, recompute: bool = False):
+    """Serialize without mutating any object.
+
+    Mirrors `_recurse_ga4gh_serialize`, but digest computation never stores
+    digests: nested identifiable objects contribute their existing digest when
+    set (unless `recompute`), otherwise a digest computed with `store=False`.
+    """
+    if isinstance(obj, Ga4ghIdentifiableObject):
+        if obj.digest is not None and not recompute:
+            return obj.digest
+        return obj._compute_digest_no_store(recompute)
+    if isinstance(obj, _ValueObject):
+        return obj._ga4gh_serialize_no_store(recompute)
+    if isinstance(obj, RootModel):
+        return _recurse_ga4gh_serialize_no_store(obj.model_dump(), recompute)
+    if isinstance(obj, str):
+        return obj
+    if isinstance(obj, list):
+        return [_recurse_ga4gh_serialize_no_store(x, recompute) for x in obj]
+    return obj
+
+
 class _ValueObject(Entity, ABC):
     """A contextual value whose equality is based on value, not identity.
     See https://en.wikipedia.org/wiki/Value_object for more on Value Objects.
@@ -256,6 +278,15 @@ class _ValueObject(Entity, ABC):
         for k in self.ga4gh.inherent:
             v = getattr(self, k)
             out[k] = _recurse_ga4gh_serialize(v)
+        return out
+
+    def _ga4gh_serialize_no_store(self, recompute: bool = False) -> dict:
+        """Serialize like `ga4gh_serialize`, but digest computation for nested
+        identifiable objects never stores digests on those objects."""
+        out = OrderedDict()
+        for k in self.ga4gh.inherent:
+            v = getattr(self, k)
+            out[k] = _recurse_ga4gh_serialize_no_store(v, recompute)
         return out
 
     class ga4gh:  # noqa: N801
@@ -327,7 +358,10 @@ class Ga4ghIdentifiableObject(_ValueObject, ABC):
         - 'always': this will update the vro.id field any time the
             identifier is computed
         - 'never': the vro.id field will not be edited in-place,
-            even when empty
+            even when empty. The vro object is not mutated in any way:
+            digests are computed with ``store=False`` at every level of the
+            serialization, so neither the vro.digest field nor digest fields
+            on nested objects are set.
 
         Digests will be recalculated even if present if recompute is True.
 
@@ -344,7 +378,11 @@ class Ga4ghIdentifiableObject(_ValueObject, ABC):
         elif in_place == "always":
             self.id = self.compute_ga4gh_identifier(recompute)
         elif in_place == "never":
-            return self.compute_ga4gh_identifier(recompute)
+            # Compute the identifier without mutating the object: digests are
+            # computed with store=False at every level, so the caller's
+            # object (including its digest fields) is left untouched.
+            digest = self._compute_digest_no_store(recompute)
+            return f"{CURIE_NAMESPACE}{CURIE_SEP}{self.ga4gh.prefix}{GA4GH_PREFIX_SEP}{digest}"
         else:
             msg = "Expected 'in_place' to be one of 'default', 'always', or 'never'"
             raise ValueError(msg)
@@ -375,6 +413,16 @@ class Ga4ghIdentifiableObject(_ValueObject, ABC):
         if self.digest is None or recompute:
             return self.compute_digest()
         return self.digest
+
+    def _compute_digest_no_store(self, recompute: bool = False) -> str:
+        """Compute a sha512t24u digest without mutating any object.
+
+        Like `compute_digest(store=False)`, but the serialization step also
+        avoids storing digests on nested identifiable objects.
+        """
+        return sha512t24u(
+            encode_canonical_json(self._ga4gh_serialize_no_store(recompute))
+        )
 
     class ga4gh(_ValueObject.ga4gh):  # noqa: N801
         prefix: str
@@ -735,6 +783,11 @@ class CisPhasedBlock(_VariationBase, BaseModelForbidExtra):
 
     def ga4gh_serialize(self) -> dict:
         out = _ValueObject.ga4gh_serialize(self)
+        out["members"] = sorted(out["members"])
+        return out
+
+    def _ga4gh_serialize_no_store(self, recompute: bool = False) -> dict:
+        out = _ValueObject._ga4gh_serialize_no_store(self, recompute)
         out["members"] = sorted(out["members"])
         return out
 
