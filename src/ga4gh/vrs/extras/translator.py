@@ -161,16 +161,15 @@ class _Translator(ABC):  # noqa: B024
         return HgvsTools(self.data_proxy)
 
     def _from_vrs(self, var: dict, **kwargs) -> models._VariationBase | None:  # noqa: ARG002
-        """Convert from dict representation of VRS JSON to VRS object"""
+        """Convert from dict representation of VRS JSON to VRS object
+
+        :raise pydantic.ValidationError: If `var` is not a valid VRS variation
+        """
         if not isinstance(var, Mapping):
             return None
         if "type" not in var:
             return None
-        try:
-            model = models[var["type"]]
-        except KeyError:
-            return None
-        return model(**var)
+        return models.Variation.model_validate(var).root
 
 
 class AlleleTranslator(_Translator):
@@ -263,7 +262,7 @@ class AlleleTranslator(_Translator):
         if not isinstance(beacon_expr, str):
             return None
 
-        m = self.beacon_re.match(beacon_expr.replace(" ", ""))
+        m = self.beacon_re.fullmatch(beacon_expr.replace(" ", ""))
         if not m:
             return None
 
@@ -328,7 +327,7 @@ class AlleleTranslator(_Translator):
         """
         if not isinstance(gnomad_expr, str):
             return None
-        m = self.gnomad_re.match(gnomad_expr)
+        m = self.gnomad_re.fullmatch(gnomad_expr)
         if not m:
             return None
 
@@ -403,7 +402,7 @@ class AlleleTranslator(_Translator):
         if not isinstance(spdi_expr, str):
             return None
 
-        m = self.spdi_re.match(spdi_expr)
+        m = self.spdi_re.fullmatch(spdi_expr)
         if not m:
             return None
 
