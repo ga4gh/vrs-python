@@ -1,6 +1,6 @@
-"""Out-of-bounds SequenceLocations are rejected on every translator input path
-except ``vrs``, whose input is trusted as-is, as are locations whose start is
-after their end
+"""Out-of-bounds locations, and locations whose start is after their end, are
+rejected on every translator input path except ``vrs``, whose input is trusted
+as-is
 
 Sequence lengths used below:
     NM_000551.3     4560
@@ -134,9 +134,8 @@ out_of_bounds_cases = [
 # duplication fetch the reference, so they are checked before the fetch, which
 # the backend would otherwise reject with an error of its own.
 START_AFTER_END_MSG = (
-    "Interval start is after end on refseq:NC_000012.11: "
-    "start=110593350, end=110576466 "
-    "(locations spanning the origin of a circular sequence are not supported)"
+    "Interval start must not be after end on refseq:NC_000012.11: "
+    "start=110593350, end=110576466"
 )
 
 start_after_end_cases = [

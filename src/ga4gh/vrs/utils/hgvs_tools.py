@@ -108,7 +108,7 @@ class HgvsTools:
         Raises:
             ValueError: If the HGVS variant type is unsupported.
             DataProxyValidationError: If an identity or duplication's location is
-                out of bounds or its start is after its end.
+                invalid.
 
         """
         if sv.posedit.edit.type == "ins":
@@ -120,8 +120,7 @@ class HgvsTools:
             start = sv.posedit.pos.start.base - 1
             end = sv.posedit.pos.end.base
             if sv.posedit.edit.type == "identity":
-                # Checked before fetching: a backend may silently truncate the
-                # fetch or reject it with an error of its own
+                # Checked before fetching, which a backend may silently truncate
                 self.data_proxy.validate_location_bounds(sv.ac, start, end)
                 state = self.data_proxy.get_sequence(sv.ac, start=start, end=end)
             else:
@@ -130,7 +129,6 @@ class HgvsTools:
         elif sv.posedit.edit.type == "dup":
             start = sv.posedit.pos.start.base - 1
             end = sv.posedit.pos.end.base
-            # Checked before fetching, as for identity above
             self.data_proxy.validate_location_bounds(sv.ac, start, end)
             ref = self.data_proxy.get_sequence(sv.ac, start=start, end=end)
             state = ref + ref

@@ -174,9 +174,8 @@ location_bounds_invalid_cases = [
 ]
 
 
-# In-bounds locations whose start is after their end: on a circular sequence these
-# would span its origin, which is not supported. A Range is reported by its lowest
-# possible start and highest possible end.
+# In-bounds locations whose start is after their end. A Range is reported by its
+# lowest possible start and highest possible end.
 location_start_after_end_cases = [
     {"id": "start-after-end", "start": 4000, "end": 5, "detail": "start=4000, end=5"},
     {
@@ -195,10 +194,7 @@ location_start_after_end_cases = [
 
 
 def _start_after_end_msg(identifier: str, detail: str) -> str:
-    return (
-        f"Interval start is after end on {identifier}: {detail} "
-        "(locations spanning the origin of a circular sequence are not supported)"
-    )
+    return f"Interval start must not be after end on {identifier}: {detail}"
 
 
 @pytest.mark.parametrize("case", location_bounds_valid_cases, ids=lambda c: c["id"])

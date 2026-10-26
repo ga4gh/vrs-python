@@ -26,20 +26,13 @@ class DataProxyValidationError(Exception):
 
 
 def validate_start_le_end(identifier: str, start: int | None, end: int | None) -> None:
-    """Reject an interval whose ``start`` is after its ``end``.
-
-    vrs-python treats every sequence as linear. The VRS spec allows ``start > end`` on a
-    circular sequence as a location spanning its origin, but vrs-python does not
-    implement this, so such an interval is currently rejected rather than passed to
-    a backend.
+    """Reject an interval whose ``start`` is after its ``end``, since vrs-python treats
+    every sequence as linear.
 
     :raises DataProxyValidationError: If both are defined and ``start > end``
     """
     if start is not None and end is not None and start > end:
-        err_msg = (
-            f"Interval start is after end on {identifier}: start={start}, end={end} "
-            "(locations spanning the origin of a circular sequence are not supported)"
-        )
+        err_msg = f"Interval start must not be after end on {identifier}: start={start}, end={end}"
         raise DataProxyValidationError(err_msg)
 
 
@@ -63,8 +56,7 @@ class _DataProxy(ABC):
         start and end are optional
 
         If the given sequence does not exist, KeyError is raised. If start is
-        after end, DataProxyValidationError is raised without consulting the
-        backend (see ``validate_start_le_end``).
+        after end, DataProxyValidationError may be raised.
 
         >> dp.get_sequence("NM_000551.3", 0, 10)
         'CCTCGCCTCC'
@@ -220,10 +212,8 @@ class _DataProxy(ABC):
         Undefined (``None``) endpoints are skipped, and for a ``Range`` every defined
         member is checked.
 
-        ``start_pos`` must also not be after ``end_pos`` (see
-        ``validate_start_le_end``). A ``Range`` fails this only when even its lowest
-        possible start is after the highest possible end, so an open bound (``None``)
-        never fails it.
+        ``start_pos`` must also not be after ``end_pos``, comparing a ``Range`` by its
+        lowest possible start and highest possible end.
 
         There is no ``require_validation`` option: an out-of-bounds location has no
         meaning, so the error is always raised, including from ``validate_ref_seq``.
@@ -284,8 +274,7 @@ class _SeqRepoDataProxyBase(_DataProxy):
     def get_sequence(
         self, identifier: str, start: int | None = None, end: int | None = None
     ) -> str:
-        # Checked here because backends disagree: pysam raises ValueError and
-        # seqrepo-rest-service answers HTTP 422
+        # Checked here because backends disagree on how to handle it
         validate_start_le_end(identifier, start, end)
         return self._get_sequence(identifier, start=start, end=end)
 
