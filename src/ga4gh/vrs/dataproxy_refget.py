@@ -41,6 +41,7 @@ from ga4gh.vrs.dataproxy import (
     DataProxy,
     SequenceDataProxy,
     coerce_accession_namespace,
+    validate_start_le_end,
 )
 
 if TYPE_CHECKING:
@@ -151,7 +152,10 @@ class RefgetSequenceDataProxy(SequenceDataProxy):
         :param end: Optional end position (interbase)
         :return: Sequence string
         :raises KeyError: if identifier is not a GA4GH SQ form or not found in store
+        :raises DataProxyValidationError: if ``start`` is after ``end``
         """
+        # A slice would otherwise return "" for it
+        validate_start_le_end(identifier, start, end)
         digest = _extract_digest(identifier)
         if digest is None:
             raise KeyError(identifier)

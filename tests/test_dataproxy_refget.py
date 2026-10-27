@@ -8,7 +8,11 @@ from urllib.parse import urlparse
 
 import pytest
 
-from ga4gh.vrs.dataproxy import CompositeDataProxy, create_dataproxy
+from ga4gh.vrs.dataproxy import (
+    CompositeDataProxy,
+    DataProxyValidationError,
+    create_dataproxy,
+)
 from ga4gh.vrs.dataproxy_refget import (
     RefgetAliasDataProxy,
     RefgetSequenceDataProxy,
@@ -167,13 +171,22 @@ class TestRefgetGetSequence:
         assert result == SEQ
         store.get_substring.assert_called_once_with(DIGEST, 0, 5)
 
-    def test_start_ge_end_returns_empty(self) -> None:
-        """When clamped start >= end, return empty string."""
+    def test_empty_interval_returns_empty(self) -> None:
+        """A zero-width interval, before or after clamping, is the empty string."""
         store = _make_mock_store()
         dp = RefgetSequenceDataProxy(store)
         assert dp.get_sequence(GA4GH_ID, 10, 10) == ""
         assert dp.get_sequence(GA4GH_ID, -5, 0) == ""
         store.get_substring.assert_not_called()
+
+    def test_start_after_end_rejected(self) -> None:
+        """A start after the end is rejected before the store is consulted."""
+        store = _make_mock_store()
+        dp = RefgetSequenceDataProxy(store)
+        with pytest.raises(DataProxyValidationError, match="start=10, end=5"):
+            dp.get_sequence(GA4GH_ID, 10, 5)
+        store.get_substring.assert_not_called()
+        store.get_sequence_metadata.assert_not_called()
 
 
 # --- RefgetSequenceDataProxy.get_sequence_length ---

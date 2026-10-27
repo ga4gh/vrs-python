@@ -165,8 +165,14 @@ class _Translator(ABC):  # noqa: B024
         kwargs:
             ref_seq_limit Optional(int):
                 If vo.state is a ReferenceLengthExpression, and `ref_seq_limit` is specified, and `fmt` is `spdi`, the reference sequence is included in the SPDI expression if it is below the limit Otherwise only the length of the reference sequence is included. If the limit is None, the reference sequence is always included. In all cases, the alt sequence is included. Default is 0 (never include reference sequence).
+        :raise NotImplementedError: If `fmt` is not supported
         """
-        t = self.to_translators[fmt]
+        try:
+            t = self.to_translators[fmt]
+        except KeyError as e:
+            msg = f"{fmt} is not supported"
+            raise NotImplementedError(msg) from e
+
         return t(vo, **kwargs)
 
     ############################################################################
@@ -177,17 +183,16 @@ class _Translator(ABC):  # noqa: B024
         """Instantiate and return an HgvsTools instance"""
         return HgvsTools(self.data_proxy)
 
-    def _from_vrs(self, var: dict) -> models._VariationBase | None:
-        """Convert from dict representation of VRS JSON to VRS object"""
+    def _from_vrs(self, var: dict, **kwargs) -> models._VariationBase | None:  # noqa: ARG002
+        """Convert from dict representation of VRS JSON to VRS object
+
+        :raise pydantic.ValidationError: If `var` is not a valid VRS variation
+        """
         if not isinstance(var, Mapping):
             return None
         if "type" not in var:
             return None
-        try:
-            model = models[var["type"]]
-        except KeyError:
-            return None
-        return model(**var)
+        return models.Variation.model_validate(var).root
 
 
 class AlleleTranslator(_Translator):
@@ -220,6 +225,8 @@ class AlleleTranslator(_Translator):
 
         Args:
             values (dict): The values to use for creating the allele object.
+                'sequence_id' (str): The sequence identifier from the input
+                    expression, used to validate `start` and `end`.
                 'refget_accession' (str): The accession ID of the reference genome.
                 'start' (int): The start position of the allele.
                 'end' (int): The end position of the allele.
@@ -230,6 +237,9 @@ class AlleleTranslator(_Translator):
             models.Allele: The created allele object.
 
         """
+        self.data_proxy.validate_location_bounds(
+            values["sequence_id"], values["start"], values["end"]
+        )
         seq_ref = models.SequenceReference(refgetAccession=values["refget_accession"])
         location = models.SequenceLocation(
             sequenceReference=seq_ref, start=values["start"], end=values["end"]
@@ -275,7 +285,7 @@ class AlleleTranslator(_Translator):
         if not isinstance(beacon_expr, str):
             return None
 
-        m = self.beacon_re.match(beacon_expr.replace(" ", ""))
+        m = self.beacon_re.fullmatch(beacon_expr.replace(" ", ""))
         if not m:
             return None
 
@@ -291,6 +301,7 @@ class AlleleTranslator(_Translator):
         ins_seq = alt
 
         values = {
+            "sequence_id": sequence,
             "refget_accession": refget_accession,
             "start": start,
             "end": end,
@@ -337,7 +348,7 @@ class AlleleTranslator(_Translator):
         """
         if not isinstance(gnomad_expr, str):
             return None
-        m = self.gnomad_re.match(gnomad_expr)
+        m = self.gnomad_re.fullmatch(gnomad_expr)
         if not m:
             return None
 
@@ -362,6 +373,7 @@ class AlleleTranslator(_Translator):
         )
 
         values = {
+            "sequence_id": sequence,
             "refget_accession": refget_accession,
             "start": start,
             "end": end,
@@ -409,7 +421,7 @@ class AlleleTranslator(_Translator):
         if not isinstance(spdi_expr, str):
             return None
 
-        m = self.spdi_re.match(spdi_expr)
+        m = self.spdi_re.fullmatch(spdi_expr)
         if not m:
             return None
 
@@ -425,6 +437,7 @@ class AlleleTranslator(_Translator):
         ins_seq = g["ins_seq"]
 
         values = {
+            "sequence_id": g["ac"],
             "refget_accession": refget_accession,
             "start": start,
             "end": end,
@@ -579,12 +592,16 @@ class CnvTranslator(_Translator):
 
         refget_accession = require_refget_accession(self.data_proxy, sv.ac)
 
+        start = sv.posedit.pos.start.base - 1
+        end = sv.posedit.pos.end.base
+        self.data_proxy.validate_location_bounds(sv.ac, start, end)
+
         location = models.SequenceLocation(
             sequenceReference=models.SequenceReference(
                 refgetAccession=refget_accession
             ),
-            start=sv.posedit.pos.start.base - 1,
-            end=sv.posedit.pos.end.base,
+            start=start,
+            end=end,
         )
 
         copies = kwargs.get("copies")

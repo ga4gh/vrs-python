@@ -21,7 +21,17 @@ from ga4gh.core.identifiers import (
 )
 from ga4gh.core.pydantic import is_curie_type, is_pydantic_instance, pydantic_copy
 
+try:
+    __version__ = version(__name__)
+except PackageNotFoundError:  # pragma: nocover
+    __version__ = "unknown"
+finally:
+    del version, PackageNotFoundError
+
+CORE_VERSION = "1.0.0"
+
 __all__ = [
+    "CORE_VERSION",
     "CURIE_NAMESPACE",
     "CURIE_SEP",
     "GA4GH_DIGEST_REGEXP",
@@ -42,10 +52,3 @@ __all__ = [
     "sha512t24u",
     "use_ga4gh_compute_identifier_when",
 ]
-
-try:
-    __version__ = version(__name__)
-except PackageNotFoundError:  # pragma: nocover
-    __version__ = "unknown"
-finally:
-    del version, PackageNotFoundError

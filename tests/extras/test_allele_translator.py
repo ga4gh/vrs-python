@@ -2,6 +2,7 @@ from unittest.mock import MagicMock
 
 import hgvs.parser
 import pytest
+from pydantic import ValidationError
 
 from ga4gh.vrs import models
 from ga4gh.vrs.dataproxy import DataProxyValidationError, UnresolvableAccessionError
@@ -334,6 +335,27 @@ def test_from_invalid(tlr):
         ValueError, match="Unable to parse data as beacon, gnomad, hgvs, spdi, vrs"
     ):
         tlr.translate_from("BRAF amplication")
+
+    with pytest.raises(
+        ValueError, match="Unable to parse data as beacon, gnomad, hgvs, spdi, vrs"
+    ):
+        tlr.translate_from("BRAF amplication", assembly_name="GRCh37")
+
+
+@pytest.mark.parametrize(
+    ("expr", "fmt"),
+    [
+        # multi-allelic gnomAD-style input must not be truncated to its first ALT
+        ("1-55516888-G-GA,GT", "gnomad"),
+        ("19-44908822-C-T;foo", "gnomad"),
+        ("NC_000019.10:44908821:1:T:extra", "spdi"),
+        ("19 : 44908822 C > T,G", "beacon"),
+    ],
+)
+def test_from_trailing_input_rejected(tlr, expr, fmt):
+    """Expressions with trailing content must be rejected, not partially parsed"""
+    with pytest.raises(ValueError, match=f"Unable to parse data as {fmt}"):
+        tlr.translate_from(expr, fmt=fmt)
 
 
 def _unresolving_translator(cls: type) -> AlleleTranslator | CnvTranslator:
@@ -1057,20 +1079,49 @@ def test_normalize_microsatellite_counts(tlr, case):
     )
 
 
-# TODO: Readd these tests
-# @pytest.mark.vcr
-# def test_errors(tlr):
-#     with pytest.raises(ValueError):
-#         tlr._from_beacon("bogus")
-#
-#     with pytest.raises(ValueError):
-#         tlr._from_gnomad("NM_182763.2:c.688+403C>T")
-#
-#     with pytest.raises(ValueError):
-#         tlr._from_hgvs("NM_182763.2:c.688+403C>T")
-#
-#     with pytest.raises(ValueError):
-#         tlr._from_hgvs("NM_182763.2:c.688_690inv")
-#
-#     with pytest.raises(ValueError):
-#         tlr._from_spdi("NM_182763.2:c.688+403C>T")
+@pytest.mark.vcr
+def test_translate_to_invalid_fmt(tlr):
+    with pytest.raises(NotImplementedError, match="gnomad is not supported"):
+        tlr.translate_to(models.Allele.model_validate(snv_output), fmt="gnomad")
+
+
+def test_from_vrs_dict():
+    """Regression test for ga4gh/vrs-python#489.
+
+    Translating a VRS dict must resolve the model class from its `type`
+    instead of crashing with TypeError (the `models` module was subscripted).
+    """
+    tlr = AlleleTranslator(data_proxy=None, identify=False)
+
+    # valid VRS dict translates to a VRS object (previously raised TypeError)
+    allele = tlr.translate_from(snv_output, fmt="vrs")
+    assert isinstance(allele, models.Allele)
+    assert allele.type == "Allele"
+    assert allele.location.start == snv_output["location"]["start"]
+    assert allele.location.end == snv_output["location"]["end"]
+
+    # non-dict and missing-type inputs still return None
+    assert tlr._from_vrs("NC_000019.10:g.44908822C>T") is None
+    assert tlr._from_vrs({"location": {}}) is None
+
+
+from_vrs_non_variation_type_cases = [
+    {"id": "unknown-name", "type": "NotARealModel"},
+    {"id": "non-variation-vrs-class", "type": "SequenceLocation"},
+    {"id": "non-model-module-attribute", "type": "Field"},
+    {"id": "variation-base-class", "type": "_VariationBase"},
+    {"id": "non-string", "type": 5},
+]
+
+
+@pytest.mark.parametrize(
+    "case", from_vrs_non_variation_type_cases, ids=lambda c: c["id"]
+)
+def test_from_vrs_non_variation_type(case):
+    """A VRS dict whose `type` is not a VRS variation class is rejected, rather than
+    resolved to whatever `ga4gh.vrs.models` attribute has that name
+    """
+    tlr = AlleleTranslator(data_proxy=None, identify=False)
+    with pytest.raises(ValidationError) as e:
+        tlr.translate_from({"type": case["type"]}, fmt="vrs")
+    assert e.value.errors()[0]["type"] == "union_tag_invalid"

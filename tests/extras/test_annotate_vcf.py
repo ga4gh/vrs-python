@@ -234,7 +234,7 @@ def test_get_vrs_object_invalid_input(vcf_annotator: VcfAnnotator, caplog):
 
 
 @pytest.mark.vcr
-def test_annotate_vcf_rle(vcf_annotator: VcfAnnotator, vcr_cassette):
+def test_annotate_vcf_rle(vcf_annotator: VcfAnnotator, vcr_cassette, tmp_path: Path):
     """Test VCF annotation with ReferenceLengthExpression states.
 
     Tests two variants that should produce ReferenceLengthExpression states:
@@ -243,8 +243,8 @@ def test_annotate_vcf_rle(vcf_annotator: VcfAnnotator, vcr_cassette):
     """
     vcr_cassette.allow_playback_repeats = False
     input_vcf = TEST_DATA_DIR / "test_rle.vcf"
-    output_vcf = TEST_DATA_DIR / "test_rle_output.vcf"
-    output_vrs_pkl = TEST_DATA_DIR / "test_rle_output.pkl"
+    output_vcf = tmp_path / "test_rle_output.vcf"
+    output_vrs_pkl = tmp_path / "test_rle_output.pkl"
 
     # Annotate the VCF with VRS attributes enabled
     vcf_annotator.annotate(

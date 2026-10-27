@@ -5,6 +5,7 @@ import re
 
 import hgvs
 import hgvs.dataproviders.uta
+import hgvs.location
 import hgvs.normalizer
 import hgvs.parser
 import hgvs.variantmapper
@@ -77,9 +78,17 @@ class HgvsTools:
             bool: True if the SequenceVariant is intronic, False otherwise.
 
         """
-        if isinstance(sv.posedit.pos, hgvs.location.BaseOffsetInterval):
-            return sv.posedit.pos.start.is_intronic or sv.posedit.pos.end.is_intronic
-        return False
+        # Coding (c.) intervals are BaseOffsetInterval, but RNA (r.) intervals
+        # are plain Interval even when their endpoints carry a base-offset
+        # position, so inspect the endpoints directly rather than the interval
+        # type. Non-offset coordinates (g./p.) use position types without
+        # is_intronic and are correctly reported as not intronic.
+        pos = sv.posedit.pos
+        start = getattr(pos, "start", None)
+        end = getattr(pos, "end", None)
+        return (
+            isinstance(start, hgvs.location.BaseOffsetPosition) and start.is_intronic
+        ) or (isinstance(end, hgvs.location.BaseOffsetPosition) and end.is_intronic)
 
     def get_edit_type(self, sv: HgvsSequenceVariant) -> str | None:
         """Safely extract ``type`` property from SequenceVariant"""
@@ -98,6 +107,8 @@ class HgvsTools:
 
         Raises:
             ValueError: If the HGVS variant type is unsupported.
+            DataProxyValidationError: If an identity or duplication's location is
+                invalid.
 
         """
         if sv.posedit.edit.type == "ins":
@@ -109,20 +120,17 @@ class HgvsTools:
             start = sv.posedit.pos.start.base - 1
             end = sv.posedit.pos.end.base
             if sv.posedit.edit.type == "identity":
-                state = self.data_proxy.get_sequence(
-                    sv.ac,
-                    start=sv.posedit.pos.start.base - 1,
-                    end=sv.posedit.pos.end.base,
-                )
+                # Checked before fetching, which a backend may silently truncate
+                self.data_proxy.validate_location_bounds(sv.ac, start, end)
+                state = self.data_proxy.get_sequence(sv.ac, start=start, end=end)
             else:
                 state = sv.posedit.edit.alt or ""
 
         elif sv.posedit.edit.type == "dup":
             start = sv.posedit.pos.start.base - 1
             end = sv.posedit.pos.end.base
-            ref = self.data_proxy.get_sequence(
-                sv.ac, start=sv.posedit.pos.start.base - 1, end=sv.posedit.pos.end.base
-            )
+            self.data_proxy.validate_location_bounds(sv.ac, start, end)
+            ref = self.data_proxy.get_sequence(sv.ac, start=start, end=end)
             state = ref + ref
 
         else:
@@ -180,6 +188,7 @@ class HgvsTools:
         (start, end, state) = self.get_position_and_state(sv)
 
         return {
+            "sequence_id": sv.ac,
             "refget_accession": refget_accession,
             "start": start,
             "end": end,

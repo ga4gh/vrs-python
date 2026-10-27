@@ -18,6 +18,7 @@ from ga4gh.vrs.dataproxy import (
     REST_SEQUENCE_CACHE_SIZE,
     DataProxy,
     coerce_accession_namespace,
+    validate_start_le_end,
 )
 
 _logger = logging.getLogger(__name__)
@@ -38,6 +39,7 @@ class SeqRepoDataProxy(DataProxy):
         self, identifier: str, start: int | None = None, end: int | None = None
     ) -> str:
         """Return the specified sequence or subsequence from local SeqRepo."""
+        validate_start_le_end(identifier, start, end)
         return self.sr.fetch_uri(coerce_accession_namespace(identifier), start, end)
 
     @functools.lru_cache(maxsize=DATAPROXY_CACHE_SIZE)  # noqa: B019
@@ -86,6 +88,7 @@ class SeqRepoRESTDataProxy(DataProxy):
         self, identifier: str, start: int | None = None, end: int | None = None
     ) -> str:
         """Return the specified sequence or subsequence from REST SeqRepo."""
+        validate_start_le_end(identifier, start, end)
         url = self.base_url + f"sequence/{identifier}"
         _logger.info("Fetching %s", url)
         params = {"start": start, "end": end}

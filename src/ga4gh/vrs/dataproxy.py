@@ -15,6 +15,8 @@ from abc import ABC, abstractmethod
 from collections.abc import Callable, Sequence
 from urllib.parse import urlparse
 
+from ga4gh.vrs.models import Range
+
 _logger = logging.getLogger(__name__)
 
 
@@ -86,6 +88,17 @@ class DataProxyValidationError(Exception):
     """Class for validation errors during data proxy methods"""
 
 
+def validate_start_le_end(identifier: str, start: int | None, end: int | None) -> None:
+    """Reject an interval whose ``start`` is after its ``end``, since vrs-python treats
+    every sequence as linear.
+
+    :raises DataProxyValidationError: If both are defined and ``start > end``
+    """
+    if start is not None and end is not None and start > end:
+        err_msg = f"Interval start must not be after end on {identifier}: start={start}, end={end}"
+        raise DataProxyValidationError(err_msg)
+
+
 class UnresolvableAccessionError(KeyError):
     """An accession that the data proxy cannot resolve to a refget accession.
 
@@ -118,7 +131,8 @@ class SequenceDataProxy(ABC):
 
         start and end are optional.
 
-        If the given sequence does not exist, KeyError is raised.
+        If the given sequence does not exist, KeyError is raised. If start is
+        after end, DataProxyValidationError may be raised.
 
         >> dp.get_sequence("NM_000551.3", 0, 10)
         'CCTCGCCTCC'
@@ -157,7 +171,12 @@ class SequenceDataProxy(ABC):
             logged.
         :raises DataProxyValidationError: If excepted reference sequence does not match
             the actual reference sequence and ``require_validation`` is ``True``.
+            Raised regardless of ``require_validation`` if the location is invalid
+            (see ``validate_location_bounds``).
         """
+        # An out-of-bounds fetch may be silently truncated, which would be misreported
+        # as a reference mismatch
+        self.validate_location_bounds(sequence_id, start_pos, end_pos)
         correct_ref = self.get_sequence(sequence_id, start_pos, end_pos)
 
         if correct_ref != ref:
@@ -166,6 +185,65 @@ class SequenceDataProxy(ABC):
 
             if require_validation:
                 raise DataProxyValidationError(err_msg)
+
+    def validate_location_bounds(
+        self,
+        sequence_id: str,
+        start_pos: int | Range | None,
+        end_pos: int | Range | None,
+    ) -> None:
+        """Ensure that ``start_pos`` and ``end_pos`` are representable on ``sequence_id``.
+
+        Each defined coordinate must be within ``[0, len(sequence)]`` (inter-residue).
+        Undefined (``None``) endpoints are skipped, and for a ``Range`` every defined
+        member is checked.
+
+        ``start_pos`` must also not be after ``end_pos``, comparing a ``Range`` by its
+        lowest possible start and highest possible end.
+
+        There is no ``require_validation`` option: an out-of-bounds location has no
+        meaning, so the error is always raised, including from ``validate_ref_seq``.
+        Sequence backends may silently truncate out-of-range fetches, so this check
+        must be made before relying on fetched sequence.
+
+        :param sequence_id: Sequence ID to use
+        :param start_pos: Start pos (inter-residue) on the sequence_id
+        :param end_pos: End pos (inter-residue) on the sequence_id
+        :raises DataProxyValidationError: If a defined coordinate is out of bounds, or
+            ``start_pos`` is after ``end_pos``
+        :raises KeyError: If ``sequence_id`` is not found
+        """
+        # same cache key as derive_refget_accession
+        sequence_id = coerce_accession_namespace(sequence_id)
+        seq_len = self.get_sequence_length(sequence_id)
+        bad = []
+        for name, pos in (("start", start_pos), ("end", end_pos)):
+            values = pos.root if isinstance(pos, Range) else [pos]
+            if any(v is not None and not 0 <= v <= seq_len for v in values):
+                bad.append((name, pos))
+        if bad:
+            # Range is shown as its list form, e.g. end=[4500, 4600]
+            detail = ", ".join(
+                f"{name}={pos.root if isinstance(pos, Range) else pos}"
+                for name, pos in bad
+            )
+            err_msg = (
+                f"Location out of bounds on {self._sequence_label(sequence_id)}: "
+                f"{detail} not within [0, {seq_len}]"
+            )
+            raise DataProxyValidationError(err_msg)
+
+        validate_start_le_end(
+            sequence_id,
+            start_pos.root[0] if isinstance(start_pos, Range) else start_pos,
+            end_pos.root[1] if isinstance(end_pos, Range) else end_pos,
+        )
+
+    def _sequence_label(self, sequence_id: str) -> str:
+        """Name a sequence in an error message. A proxy that can resolve aliases
+        also names the refget accession.
+        """
+        return sequence_id
 
 
 class AliasDataProxy(ABC):
@@ -319,6 +397,13 @@ class DataProxy(SequenceDataProxy, AliasDataProxy):
             "length": self.get_sequence_length(identifier),
             "aliases": self.get_aliases(identifier),
         }
+
+    def _sequence_label(self, sequence_id: str) -> str:
+        """Name the sequence as given, plus the refget accession it resolves to"""
+        refget_accession = self.derive_refget_accession(sequence_id)
+        if not refget_accession or sequence_id == f"ga4gh:{refget_accession}":
+            return sequence_id
+        return f"{sequence_id} (ga4gh:{refget_accession})"
 
 
 def require_refget_accession(data_proxy: AliasDataProxy, ac: str) -> str:
