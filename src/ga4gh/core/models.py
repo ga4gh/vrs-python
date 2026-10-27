@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import Annotated, Any, ClassVar, Literal
+from typing import Annotated, Any, ClassVar, Literal, Self
 
 from pydantic import (
     BaseModel,
@@ -13,7 +13,7 @@ from pydantic import (
     StringConstraints,
     model_validator,
 )
-from typing_extensions import Self, deprecated
+from typing_extensions import deprecated
 
 from ga4gh.core.identifiers import GA4GH_IR_REGEXP
 from ga4gh.core.metadata import GKMMetadataMixin, Maturity

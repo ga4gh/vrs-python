@@ -16,7 +16,7 @@ else
 endif
 XRM=xargs -0${_XRM_R} rm
 
-PYV:=3.12
+PYV:=3.14
 VEDIR=venv/${PYV}
 
 export SEQREPO_ROOT_DIR=tests/data/seqrepo/latest
