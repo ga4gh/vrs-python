@@ -350,6 +350,10 @@ def _create_refget_dataproxy(
         cache_dir = _resolve_remote_cache_dir(remote_url)
         cache_dir.mkdir(parents=True, exist_ok=True)
         store = RefgetStore.open_remote(str(cache_dir), remote_url)
+        # open_remote defers the sequence index, and alias lookups do not load
+        # it, so they would find nothing. Metadata lookups load it; the digest
+        # is irrelevant.
+        store.get_sequence_metadata("")
     else:
         msg = f"Refget URI protocol {proto!r} not supported"
         raise ValueError(msg)

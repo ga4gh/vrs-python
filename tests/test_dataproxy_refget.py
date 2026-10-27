@@ -408,6 +408,7 @@ class TestCreateRefgetDataProxyFactory:
             str(expected_cache_dir), remote_url
         )
         assert expected_cache_dir.is_dir()
+        remote_store.get_sequence_metadata.assert_called_once_with("")
         remote_store.pull_aliases.assert_called_once_with()
 
     def test_https_uri_dispatches_via_create_dataproxy(
