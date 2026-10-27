@@ -17,7 +17,7 @@ from abc import ABC
 from collections import OrderedDict
 from enum import Enum
 from types import UnionType
-from typing import Annotated, Literal, get_args, get_origin
+from typing import Annotated, ClassVar, Literal, get_args, get_origin
 
 from canonicaljson import encode_canonical_json
 from pydantic import (
@@ -44,7 +44,9 @@ from ga4gh.core.models import (
     Entity,
     iriReference,
 )
+from ga4gh.core.metadata import GKMMetadataMixin, Maturity
 from ga4gh.core.pydantic import get_pydantic_root, getattr_in
+from ga4gh.vrs.version import VRS_VERSION
 
 
 def flatten(vals):
@@ -161,7 +163,10 @@ class VrsType(str, Enum):
     LIT_SEQ_EXPR = "LiteralSequenceExpression"
     SEQ_REF = "SequenceReference"
     SEQ_LOC = "SequenceLocation"
+    SEQ_OFFSET_LOCATION = "SequenceOffsetLocation"
+    RELATIVE_SEQ_LOC = "RelativeSequenceLocation"
     ALLELE = "Allele"
+    RELATIVE_ALLELE = "RelativeAllele"
     CIS_PHASED_BLOCK = "CisPhasedBlock"
     ADJACENCY = "Adjacency"
     TERMINUS = "Terminus"
@@ -229,6 +234,21 @@ class Syntax(str, Enum):
     SPDI = "spdi"
 
 
+class AnchorOrientation(str, Enum):
+    """Indicates which side of a discontinuous anchor on the sequenceReference is used
+    as the reference point for interpreting offsetStart/offsetEnd. The anchor is an
+    inter-residue coordinate on the sequenceReference. When that anchor corresponds to a
+    boundary whose realization on a base sequence yields two distinct locations (e.g.,
+    an exon junction), this property disambiguates which anchor side on the
+    sequenceReference is intended. `left` denotes the side immediately preceding the
+    anchor in sequenceReference coordinate order; `right` denotes the side immediately
+    following the anchor in sequenceReference coordinate order.
+    """
+
+    LEFT = "left"
+    RIGHT = "right"
+
+
 def _recurse_ga4gh_serialize(obj):
     if isinstance(obj, Ga4ghIdentifiableObject):
         return obj.get_or_create_digest()
@@ -241,6 +261,13 @@ def _recurse_ga4gh_serialize(obj):
     if isinstance(obj, list):
         return [_recurse_ga4gh_serialize(x) for x in obj]
     return obj
+
+
+class VRSMetadataMixin(GKMMetadataMixin):
+    """Provide metadata for a concrete VRS model."""
+
+    _product_name = "vrs"
+    _product_version = VRS_VERSION
 
 
 class _ValueObject(Entity, ABC):
@@ -266,11 +293,14 @@ class _ValueObject(Entity, ABC):
         return False
 
 
-class Ga4ghIdentifiableObject(_ValueObject, ABC):
+class Ga4ghIdentifiableObject(VRSMetadataMixin, _ValueObject):
     """A contextual value object for which a GA4GH computed identifier can be created.
     All GA4GH Identifiable Objects may have computed digests from the VRS Computed
     Identifier algorithm.
     """
+
+    _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
+    _abstract: ClassVar[bool] = True
 
     type: str
     digest: (
@@ -380,11 +410,13 @@ class Ga4ghIdentifiableObject(_ValueObject, ABC):
         prefix: str
 
 
-class Expression(Element, BaseModelForbidExtra):
+class Expression(VRSMetadataMixin, Element, BaseModelForbidExtra):
     """Representation of a variation by a specified nomenclature or syntax for a
     Variation object. Common examples of expressions for the description of molecular
     variation include the HGVS and ISCN nomenclatures.
     """
+
+    _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
 
     model_config = ConfigDict(use_enum_values=True)
 
@@ -407,8 +439,10 @@ class Expression(Element, BaseModelForbidExtra):
 #########################################
 
 
-class Range(RootModel):
+class Range(VRSMetadataMixin, RootModel):
     """An inclusive range of values bounded by one or more integers."""
+
+    _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
 
     root: list[int | None] = Field(
         ...,
@@ -441,12 +475,14 @@ class Range(RootModel):
         return v
 
 
-class residue(RootModel):
+class residue(VRSMetadataMixin, RootModel):
     """A character representing a specific residue (i.e., molecular species) or
     groupings of these ("ambiguity codes"), using `one-letter IUPAC abbreviations
     <https://en.wikipedia.org/wiki/International_Union_of_Pure_and_Applied_Chemistry#Amino_acid_and_nucleotide_base_codes>`_
     for nucleic acids and amino acids.
     """
+
+    _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
 
     root: Annotated[str, StringConstraints(pattern=r"[A-Z*\-]")] = Field(
         ...,
@@ -456,12 +492,14 @@ class residue(RootModel):
     )
 
 
-class sequenceString(RootModel):
+class sequenceString(VRSMetadataMixin, RootModel):
     """A character string of `Residues` that represents a biological sequence using the
     conventional sequence order (5'-to-3' for nucleic acid sequences, and
     amino-to-carboxyl for amino acid sequences). IUPAC ambiguity codes are permitted in
     Sequence Strings.
     """
+
+    _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
 
     root: Annotated[str, StringConstraints(pattern=r"^[A-Z*\-]*$")] = Field(
         ...,
@@ -476,8 +514,10 @@ class sequenceString(RootModel):
 #########################################
 
 
-class LengthExpression(_ValueObject, BaseModelForbidExtra):
+class LengthExpression(VRSMetadataMixin, _ValueObject, BaseModelForbidExtra):
     """A sequence expressed only by its length."""
+
+    _maturity: ClassVar[Maturity] = Maturity.DRAFT
 
     type: Literal["LengthExpression"] = Field(
         default=VrsType.LEN_EXPR.value,
@@ -491,8 +531,10 @@ class LengthExpression(_ValueObject, BaseModelForbidExtra):
         inherent = ["length", "type"]
 
 
-class ReferenceLengthExpression(_ValueObject, BaseModelForbidExtra):
+class ReferenceLengthExpression(VRSMetadataMixin, _ValueObject, BaseModelForbidExtra):
     """An expression of a length of a sequence from a repeating reference."""
+
+    _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
 
     type: Literal["ReferenceLengthExpression"] = Field(
         default=VrsType.REF_LEN_EXPR.value,
@@ -503,7 +545,7 @@ class ReferenceLengthExpression(_ValueObject, BaseModelForbidExtra):
     )
     sequence: sequenceString | None = Field(
         default=None,
-        description="the literal Sequence encoded by the Reference Length Expression.",
+        description="the literal sequence encoded by the Reference Length Expression.",
     )
     repeatSubunitLength: int = Field(
         ..., description="The number of residues in the repeat subunit."
@@ -513,8 +555,10 @@ class ReferenceLengthExpression(_ValueObject, BaseModelForbidExtra):
         inherent = ["length", "repeatSubunitLength", "type"]
 
 
-class LiteralSequenceExpression(_ValueObject, BaseModelForbidExtra):
+class LiteralSequenceExpression(VRSMetadataMixin, _ValueObject, BaseModelForbidExtra):
     """An explicit expression of a Sequence."""
+
+    _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
 
     type: Literal["LiteralSequenceExpression"] = Field(
         default=VrsType.LIT_SEQ_EXPR.value,
@@ -531,8 +575,10 @@ class LiteralSequenceExpression(_ValueObject, BaseModelForbidExtra):
 #########################################
 
 
-class SequenceReference(_ValueObject, BaseModelForbidExtra):
+class SequenceReference(VRSMetadataMixin, _ValueObject, BaseModelForbidExtra):
     """A sequence of nucleic or amino acid character codes."""
+
+    _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
 
     model_config = ConfigDict(use_enum_values=True)
 
@@ -568,6 +614,8 @@ class SequenceReference(_ValueObject, BaseModelForbidExtra):
 
 class SequenceLocation(Ga4ghIdentifiableObject, BaseModelForbidExtra):
     """A `Location` defined by an interval on a `Sequence`."""
+
+    _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
 
     type: Literal["SequenceLocation"] = Field(
         default=VrsType.SEQ_LOC.value, description=f'MUST be "{VrsType.SEQ_LOC.value}"'
@@ -656,15 +704,74 @@ class SequenceLocation(Ga4ghIdentifiableObject, BaseModelForbidExtra):
         inherent = ["end", "sequenceReference", "start", "type"]
 
 
-#########################################
-# base variation
-#########################################
+class SequenceOffsetLocation(VRSMetadataMixin, _ValueObject, BaseModelForbidExtra):
+    """A location defined by an offset relative to an anchor on a mapped sequence
+    reference.
+    """
+
+    model_config = ConfigDict(use_enum_values=True)
+
+    _maturity: ClassVar[Maturity] = Maturity.DRAFT
+
+    type: Literal["SequenceOffsetLocation"] = Field(
+        default=VrsType.SEQ_OFFSET_LOCATION.value,
+        description=f'MUST be "{VrsType.SEQ_OFFSET_LOCATION.value}"',
+    )
+    sequenceReference: SequenceReference | iriReference = Field(
+        ...,
+        description="A sequence reference that has been mapped from which a relative location is defined.",
+    )
+    anchor: int = Field(
+        ...,
+        description="The inter-residue position on the sequence reference from which the relative location offset is calculated.",
+    )
+    anchorOrientation: AnchorOrientation = Field(
+        ...,
+        description="Indicates which side of a discontinuous anchor on the sequenceReference is used as the reference point for interpreting offsetStart/offsetEnd. The anchor is an inter-residue coordinate on the sequenceReference. When that anchor corresponds to a boundary whose realization on a base sequence yields two distinct locations (e.g., an exon junction), this property disambiguates which anchor side on the sequenceReference is intended. `left` denotes the side immediately preceding the anchor in sequenceReference coordinate order; `right` denotes the side immediately following the anchor in sequenceReference coordinate order.",
+    )
+    offsetStart: int | Range | None = Field(
+        default=None,
+        description="The start offset, in inter-residue coordinates, from the anchor realization selected by anchorOrientation on the sequenceReference.",
+    )
+    offsetEnd: int | Range | None = Field(
+        default=None,
+        description="The end offset, in inter-residue coordinates, from the anchor realization selected by anchorOrientation on the sequenceReference.",
+    )
+
+    class ga4gh(_ValueObject.ga4gh):
+        inherent = [
+            "sequenceReference",
+            "anchor",
+            "anchorOrientation",
+            "offsetStart",
+            "offsetEnd",
+            "type",
+        ]
 
 
-class _VariationBase(Ga4ghIdentifiableObject, ABC):
-    """Base class for variation"""
+class RelativeSequenceLocation(Ga4ghIdentifiableObject, BaseModelForbidExtra):
+    """A location on a base sequence and its position relative to a boundary offset on a
+    mapped sequence gap. Typically used to describe intronic locations that exist with
+    respect to a mapped RNA transcript sequence.
+    """
 
-    expressions: list[Expression] | None = None
+    _maturity: ClassVar[Maturity] = Maturity.DRAFT
+
+    type: Literal["RelativeSequenceLocation"] = Field(
+        default=VrsType.RELATIVE_SEQ_LOC.value,
+        description=f'MUST be "{VrsType.RELATIVE_SEQ_LOC.value}"',
+    )
+    baseSequenceLocation: SequenceLocation | iriReference = Field(
+        ..., description="An absolute location on a sequence."
+    )
+    mappedSequenceLocation: SequenceOffsetLocation | iriReference = Field(
+        ...,
+        description="A location relative to an offset on a mapped sequence.",
+    )
+
+    class ga4gh(Ga4ghIdentifiableObject.ga4gh):
+        prefix = "RSL"
+        inherent = ["baseSequenceLocation", "mappedSequenceLocation", "type"]
 
 
 #########################################
@@ -672,8 +779,16 @@ class _VariationBase(Ga4ghIdentifiableObject, ABC):
 #########################################
 
 
+class _VariationBase(Ga4ghIdentifiableObject, ABC):
+    """Base class for variation."""
+
+    expressions: list[Expression] | None = None
+
+
 class Allele(_VariationBase, BaseModelForbidExtra):
     """The state of a molecule at a `Location`."""
+
+    _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
 
     type: Literal["Allele"] = Field(
         default=VrsType.ALLELE.value, description=f'MUST be "{VrsType.ALLELE.value}"'
@@ -716,8 +831,41 @@ class Allele(_VariationBase, BaseModelForbidExtra):
         inherent = ["location", "state", "type"]
 
 
+class RelativeAllele(_VariationBase, BaseModelForbidExtra):
+    """An Allele defined on a mapped location relative to a base location. Often used to describe intronic variants."""
+
+    _maturity: ClassVar[Maturity] = Maturity.DRAFT
+
+    type: Literal["RelativeAllele"] = Field(
+        default=VrsType.RELATIVE_ALLELE.value,
+        description=f'MUST be "{VrsType.RELATIVE_ALLELE.value}"',
+    )
+    mappedState: (
+        LiteralSequenceExpression | ReferenceLengthExpression | LengthExpression
+    ) = Field(
+        ...,
+        description='The state of the RelativeAllele as expressed on the mapped sequence. This will differ from the base state when mapping to a reverse complement sequence, commonly observed when representing the state on transcripts mapped to the "negative strand" of a chromosome.',
+    )
+    baseState: (
+        LiteralSequenceExpression | ReferenceLengthExpression | LengthExpression
+    ) = Field(
+        ...,
+        description="The state of the RelativeAllele as expressed on the base sequence.",
+    )
+    relativeLocation: RelativeSequenceLocation | iriReference = Field(
+        ...,
+        description="The relative location at which the baseState and mappedState are expressed.",
+    )
+
+    class ga4gh(Ga4ghIdentifiableObject.ga4gh):
+        prefix = "RA"
+        inherent = ["mappedState", "baseState", "relativeLocation", "type"]
+
+
 class CisPhasedBlock(_VariationBase, BaseModelForbidExtra):
     """An ordered set of co-occurring `Variation` on the same molecule."""
+
+    _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
 
     type: Literal["CisPhasedBlock"] = Field(
         default=VrsType.CIS_PHASED_BLOCK.value,
@@ -752,6 +900,8 @@ class Adjacency(_VariationBase, BaseModelForbidExtra):
     """The `Adjacency` class represents the adjoining of the end of a sequence with the
     beginning of an adjacent sequence, potentially with an intervening linker sequence.
     """
+
+    _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
 
     type: Literal["Adjacency"] = Field(
         default=VrsType.ADJACENCY.value,
@@ -798,6 +948,8 @@ class Terminus(_VariationBase, BaseModelForbidExtra):
     is not allowed and it removes the unnecessary array structure.
     """
 
+    _maturity: ClassVar[Maturity] = Maturity.DRAFT
+
     type: Literal["Terminus"] = Field(
         default=VrsType.TERMINUS.value,
         description=f'MUST be "{VrsType.TERMINUS.value}".',
@@ -811,12 +963,14 @@ class Terminus(_VariationBase, BaseModelForbidExtra):
         inherent = ["location", "type"]
 
 
-class TraversalBlock(_ValueObject, BaseModelForbidExtra):
+class TraversalBlock(VRSMetadataMixin, _ValueObject, BaseModelForbidExtra):
     """A component used to describe the orientation of applicable molecular variation
     within a DerivativeMolecule.
     """
 
     model_config = ConfigDict(use_enum_values=True)
+
+    _maturity: ClassVar[Maturity] = Maturity.DRAFT
 
     type: Literal["TraversalBlock"] = Field(
         default=VrsType.TRAVERSAL_BLOCK.value,
@@ -839,6 +993,8 @@ class DerivativeMolecule(_VariationBase, BaseModelForbidExtra):
     """The "Derivative Molecule" data class is a structure for describing a derivate
     molecule composed from multiple sequence components.
     """
+
+    _maturity: ClassVar[Maturity] = Maturity.DRAFT
 
     type: Literal["DerivativeMolecule"] = Field(
         default=VrsType.DERIVATIVE_MOL.value,
@@ -871,6 +1027,8 @@ class CopyNumberCount(_VariationBase, BaseModelForbidExtra):
     (e.g. genome, cell, etc.).
     """
 
+    _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
+
     type: Literal["CopyNumberCount"] = Field(
         default=VrsType.CN_COUNT.value,
         description=f'MUST be "{VrsType.CN_COUNT.value}"',
@@ -895,6 +1053,8 @@ class CopyNumberChange(_VariationBase, BaseModelForbidExtra):
 
     model_config = ConfigDict(use_enum_values=True)
 
+    _maturity: ClassVar[Maturity] = Maturity.DRAFT
+
     type: Literal["CopyNumberChange"] = Field(
         default=VrsType.CN_CHANGE.value,
         description=f'MUST be "{VrsType.CN_CHANGE.value}"',
@@ -914,22 +1074,35 @@ class CopyNumberChange(_VariationBase, BaseModelForbidExtra):
 
 
 #########################################
-# vrs kinds of variation, expression, and location
+# Sealed-union adapters
 #########################################
 
 
-class MolecularVariation(RootModel):
-    """A `variation` on a contiguous molecule."""
+class MolecularVariation(VRSMetadataMixin, RootModel):
+    """A `Variation` on a contiguous molecule."""
 
-    root: Allele | CisPhasedBlock | Adjacency | Terminus | DerivativeMolecule = Field(
+    _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
+    _abstract: ClassVar[bool] = True
+
+    root: (
+        Allele
+        | RelativeAllele
+        | CisPhasedBlock
+        | Adjacency
+        | Terminus
+        | DerivativeMolecule
+    ) = Field(
         ...,
         json_schema_extra={"description": "A `variation` on a contiguous molecule."},
         discriminator="type",
     )
 
 
-class SequenceExpression(RootModel):
+class SequenceExpression(VRSMetadataMixin, RootModel):
     """An expression describing a `Sequence`."""
+
+    _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
+    _abstract: ClassVar[bool] = True
 
     root: LiteralSequenceExpression | ReferenceLengthExpression | LengthExpression = (
         Field(
@@ -940,10 +1113,13 @@ class SequenceExpression(RootModel):
     )
 
 
-class Location(RootModel):
+class Location(VRSMetadataMixin, RootModel):
     """A contiguous segment of a biological sequence."""
 
-    root: SequenceLocation = Field(
+    _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
+    _abstract: ClassVar[bool] = True
+
+    root: SequenceLocation | RelativeSequenceLocation = Field(
         ...,
         json_schema_extra={
             "description": "A contiguous segment of a biological sequence."
@@ -952,11 +1128,15 @@ class Location(RootModel):
     )
 
 
-class Variation(RootModel):
+class Variation(VRSMetadataMixin, RootModel):
     """A representation of the state of one or more biomolecules."""
+
+    _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
+    _abstract: ClassVar[bool] = True
 
     root: (
         Allele
+        | RelativeAllele
         | CisPhasedBlock
         | Adjacency
         | Terminus
@@ -972,10 +1152,13 @@ class Variation(RootModel):
     )
 
 
-class SystemicVariation(RootModel):
+class SystemicVariation(VRSMetadataMixin, RootModel):
     """A Variation of multiple molecules in the context of a system, e.g. a genome,
     sample, or homologous chromosomes.
     """
+
+    _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
+    _abstract: ClassVar[bool] = True
 
     root: CopyNumberChange | CopyNumberCount = Field(
         ...,

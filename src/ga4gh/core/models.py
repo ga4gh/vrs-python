@@ -1,10 +1,9 @@
-"""GKS Core Class Definitions"""
+"""GKM Core Class Definitions"""
 
 from __future__ import annotations
 
-from abc import ABC
 from enum import Enum
-from typing import Annotated, Any
+from typing import Annotated, Any, ClassVar, Literal
 
 from pydantic import (
     BaseModel,
@@ -14,9 +13,23 @@ from pydantic import (
     StringConstraints,
     model_validator,
 )
-from typing_extensions import Self
+from typing_extensions import Self, deprecated
 
 from ga4gh.core.identifiers import GA4GH_IR_REGEXP
+from ga4gh.core.metadata import GKMMetadataMixin, Maturity
+from ga4gh.core.version import CORE_VERSION
+
+
+class GKMCoreMetadataMixin(GKMMetadataMixin):
+    """Provide gkm-core model metadata."""
+
+    _product_name = "gkm-core"
+    _product_version = CORE_VERSION
+
+
+@deprecated("GKSCoreMetadataMixin is deprecated; use GKMCoreMetadataMixin instead.")
+class GKSCoreMetadataMixin(GKMCoreMetadataMixin):
+    """Deprecated alias for :class:`GKMCoreMetadataMixin`."""
 
 
 class BaseModelForbidExtra(BaseModel):
@@ -37,17 +50,33 @@ class Relation(str, Enum):
     RELATED_MATCH = "relatedMatch"
 
 
+class MembershipOperator(str, Enum):
+    """The logical relationship between concepts in the set, in the context of some
+    knowledge reported about them. The value 'AND' indicates that the concepts are
+    dependent and occur together in this context - i.e. the reported assertion is not
+    necessarily true for each concept on its own - only in combination with the
+    other(s). The value 'OR' indicates that each concept applies independently in this
+    context - i.e. the reported assertion is necessarily true for each concept on its
+    own, independent of the presence of the other(s).
+    """
+
+    AND = "AND"
+    OR = "OR"
+
+
 #########################################
 # Primitive data types
 #########################################
 
 
-class code(RootModel):  # noqa: N801
+class code(GKMCoreMetadataMixin, RootModel):  # noqa: N801
     """Indicates that the value is taken from a set of controlled strings defined
     elsewhere. Technically, a code is restricted to a string which has at least one
     character and no leading or trailing whitespace, and where there is no whitespace
     other than single spaces in the contents.
     """
+
+    _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
 
     root: Annotated[str, StringConstraints(pattern=r"\S+( \S+)*")] = Field(
         ...,
@@ -58,13 +87,15 @@ class code(RootModel):  # noqa: N801
     )
 
 
-class iriReference(RootModel):  # noqa: N801
+class iriReference(GKMCoreMetadataMixin, RootModel):  # noqa: N801
     """An IRI Reference (either an IRI or a relative-reference), according to `RFC3986
     section 4.1 <https://datatracker.ietf.org/doc/html/rfc3986#section-4.1>`_ and
     `RFC3987 section 2.1 <https://datatracker.ietf.org/doc/html/rfc3987#section-2.1>`_.
     MAY be a JSON Pointer as an IRI fragment, as described by `RFC6901 section 6
     <https://datatracker.ietf.org/doc/html/rfc6901#section-6>`_.
     """
+
+    _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
 
     def __hash__(self) -> int:  # noqa: D105
         return self.root.__hash__()
@@ -88,11 +119,62 @@ class iriReference(RootModel):  # noqa: N801
 #########################################
 
 
-class Entity(BaseModel, ABC):
-    """Anything that exists, has existed, or will exist.
+class Element(GKMCoreMetadataMixin, BaseModel):
+    """The base definition for all identifiable data objects."""
 
-    Abstract base class to be extended by other classes. Do NOT instantiate directly.
+    _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
+    _abstract: ClassVar[bool] = True
+
+    id: str | None = Field(
+        default=None,
+        description="The 'logical' identifier of the data element in the system of record, e.g. a UUID.  This 'id' is unique within a given system, but may or may not be globally unique outside the system. It is used within a system to reference an object from another.",
+    )
+    extensions: list[Extension] | None = Field(
+        default=None,
+        description="A list of extensions to the Entity, that allow for capture of information not directly supported by elements defined in the model.",
+    )
+
+    def get_extensions_by_name(self, name: str) -> list[Extension]:
+        """Fetch all contained extension exactly matching the provided name
+
+        :param name: name of extension to fetch
+        :return: a list of all matching extensions, empty if no matches found (or if instance contains no extensions)
+        """
+        if not self.extensions:
+            return []
+        return [e for e in self.extensions if e.name == name]
+
+
+# Not an ABC, but needs to go here so there's no circular imports
+class Extension(Element, BaseModelForbidExtra):
+    """The Extension class provides entities with a means to include additional
+    attributes that are outside of the specified standard but needed by a given content
+    provider or system implementer. These extensions are not expected to be natively
+    understood, but may be used for pre-negotiated exchange of message attributes
+    between systems.
     """
+
+    _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
+
+    name: str = Field(
+        ...,
+        description="A name for the Extension. Should be indicative of its meaning and/or the type of information it value represents.",
+    )
+    value: int | float | str | bool | dict[str, Any] | list[Any] | None = Field(
+        ...,
+        description="The value of the Extension - can be any primitive or structured object",
+    )
+    description: str | None = Field(
+        default=None,
+        description="A description of the meaning or utility of the Extension, to explain the type of information it is meant to hold.",
+    )
+
+
+class Entity(GKMCoreMetadataMixin, BaseModel):
+    """Anything that exists, has existed, or will exist."""
+
+    _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
+    _abstract: ClassVar[bool] = True
 
     id: str | None = Field(
         default=None,
@@ -115,32 +197,6 @@ class Entity(BaseModel, ABC):
     )
 
 
-class Element(BaseModel, ABC):
-    """The base definition for all identifiable data objects.
-
-    Abstract base class to be extended by other classes. Do NOT instantiate directly.
-    """
-
-    id: str | None = Field(
-        default=None,
-        description="The 'logical' identifier of the data element in the system of record, e.g. a UUID.  This 'id' is unique within a given system, but may or may not be globally unique outside the system. It is used within a system to reference an object from another.",
-    )
-    extensions: list[Extension] | None = Field(
-        default=None,
-        description="A list of extensions to the Entity, that allow for capture of information not directly supported by elements defined in the model.",
-    )
-
-    def get_extensions_by_name(self, name: str) -> list[Extension]:
-        """Fetch all contained extension exactly matching the provided name
-
-        :param name: name of extension to fetch
-        :return: a list of all matching extensions, empty if no matches found (or if instance contains no extensions)
-        """
-        if not self.extensions:
-            return []
-        return [e for e in self.extensions if e.name == name]
-
-
 #########################################
 # General-purpose data classes
 #########################################
@@ -150,6 +206,8 @@ class Coding(Element, BaseModelForbidExtra):
     """A structured representation of a code for a defined concept in a terminology or
     code system.
     """
+
+    _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
 
     name: str | None = Field(
         default=None,
@@ -175,6 +233,8 @@ class ConceptMapping(Element, BaseModelForbidExtra):
 
     model_config = ConfigDict(use_enum_values=True)
 
+    _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
+
     coding: Coding = Field(
         ...,
         description="A structured representation of a code for a defined concept in a terminology or code system.",
@@ -185,31 +245,46 @@ class ConceptMapping(Element, BaseModelForbidExtra):
     )
 
 
-class Extension(Element, BaseModelForbidExtra):
-    """The Extension class provides entities with a means to include additional
-    attributes that are outside of the specified standard but needed by a given content
-    provider or system implementer. These extensions are not expected to be natively
-    understood, but may be used for pre-negotiated exchange of message attributes
-    between systems.
+class ConceptSet(Entity, BaseModelForbidExtra):
+    """A set of concepts that may be considered as dependent (occurring together), or
+    independent (existing separately) in the context of some knowledge reported about
+    them, as indicated by a set membership operator. e.g. a set of independent molecular
+    consequences that both result from the presence of a particular genetic variant
+    (membership operator = OR).
     """
 
-    name: str = Field(
-        ...,
-        description="A name for the Extension. Should be indicative of its meaning and/or the type of information it value represents.",
+    model_config = ConfigDict(use_enum_values=True)
+
+    _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
+
+    type: Literal["ConceptSet"] = Field(
+        default="ConceptSet",
+        description='MUST be "ConceptSet".',
     )
-    value: int | float | str | bool | dict[str, Any] | list[Any] | None = Field(
-        ...,
-        description="The value of the Extension - can be any primitive or structured object",
-    )
-    description: str | None = Field(
+    conceptSetType: str | None = Field(  # noqa: N815
         default=None,
-        description="A description of the meaning or utility of the Extension, to explain the type of information it is meant to hold.",
+        description="A term indicating the type of concept being represented by the ConceptSet.",
+    )
+    concepts: list[MappableConcept | ConceptSet | iriReference] = Field(
+        ...,
+        description="A list of concepts that are dependent (occurring together), or independent (existing separately), depending on the membership operator.",
+        min_length=2,
+    )
+    membershipOperator: MembershipOperator = Field(  # noqa: N815
+        ...,
+        description="The logical relationship between concepts in the set, in the context of some knowledge reported about them. The value 'AND' indicates that the concepts are dependent and occur together in this context - i.e. the reported assertion is not necessarily true for each concept on its own - only in combination with the other(s). The value 'OR' indicates that each concept applies independently in this context - i.e. the reported assertion is necessarily true for each concept on its own, independent of the presence of the other(s).",
     )
 
 
-class MappableConcept(Element, BaseModelForbidExtra):
+class MappableConcept(Entity, BaseModelForbidExtra):
     """A concept based on a primaryCoding and/or name that may be mapped to one or more other `Codings`."""
 
+    _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
+
+    type: Literal["MappableConcept"] = Field(
+        default="MappableConcept",
+        description='MUST be "MappableConcept".',
+    )
     conceptType: str | None = Field(  # noqa: N815
         default=None,
         description="A term indicating the type of concept being represented by the MappableConcept.",

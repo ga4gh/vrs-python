@@ -18,7 +18,6 @@ def tlr(rest_dataproxy):
 # https://www.ncbi.nlm.nih.gov/clinvar/variation/17848/?new_evidence=true
 snv_inputs = {
     "hgvs": "NC_000019.10:g.44908822C>T",
-    "beacon": "19 : 44908822 C > T",
     "spdi": "NC_000019.10:44908821:1:T",
     "gnomad": "19-44908822-C-T",
 }
@@ -40,7 +39,6 @@ snv_output = {
 # https://www.ncbi.nlm.nih.gov/clinvar/variation/693259/?new_evidence=true
 mito_inputs = {
     "hgvs": "NC_012920.1:m.10083A>G",
-    "beacon": "MT : 10083 A > G",
     "spdi": "NC_012920.1:10082:A:G",
     "gnomad": "MT-10083-A-G",
 }
@@ -328,12 +326,12 @@ def test_rle_round_trip_gnomad_spdi(tlr):
 
 def test_from_invalid(tlr):
     with pytest.raises(
-        ValueError, match="Unable to parse data as beacon, gnomad, hgvs, spdi, vrs"
+        ValueError, match="Unable to parse data as gnomad, hgvs, spdi, vrs"
     ):
         tlr.translate_from("BRAF amplication")
 
     with pytest.raises(
-        ValueError, match="Unable to parse data as beacon, gnomad, hgvs, spdi, vrs"
+        ValueError, match="Unable to parse data as gnomad, hgvs, spdi, vrs"
     ):
         tlr.translate_from("BRAF amplication", assembly_name="GRCh37")
 
@@ -352,26 +350,6 @@ def test_from_trailing_input_rejected(tlr, expr, fmt):
     """Expressions with trailing content must be rejected, not partially parsed"""
     with pytest.raises(ValueError, match=f"Unable to parse data as {fmt}"):
         tlr.translate_from(expr, fmt=fmt)
-
-
-@pytest.mark.vcr
-def test_from_beacon(tlr):
-    do_normalize = False
-    with pytest.deprecated_call():
-        assert (
-            tlr._from_beacon(
-                snv_inputs["beacon"], do_normalize=do_normalize
-            ).model_dump(exclude_none=True)
-            == snv_output
-        )
-
-    with pytest.deprecated_call():
-        assert (
-            tlr._from_beacon(
-                mito_inputs["beacon"], do_normalize=do_normalize
-            ).model_dump(exclude_none=True)
-            == mito_output
-        )
 
 
 @pytest.mark.vcr
@@ -1041,3 +1019,33 @@ def test_from_vrs_non_variation_type(case):
     with pytest.raises(ValidationError) as e:
         tlr.translate_from({"type": case["type"]}, fmt="vrs")
     assert e.value.errors()[0]["type"] == "union_tag_invalid"
+
+
+def test_from_hgvs_uncertain_range_raises(tlr):
+    """Uncertain-range HGVS cannot be represented as an Allele with a literal
+    sequence state; use CnvTranslator instead. See issue #609.
+
+    No cassette needed: the rejection happens before any data-proxy call.
+    """
+    with pytest.raises(ValueError, match="Uncertain-range"):
+        tlr._from_hgvs("NC_000019.9:g.(11211022_11213339)_(11217364_11218067)dup")
+
+
+@pytest.mark.vcr
+def test_to_hgvs_uncertain_range(tlr):
+    """An Allele with a ``Range`` SequenceLocation.start/end round-trips to
+    uncertain-range HGVS syntax. See issue #609.
+    """
+    allele = models.Allele(
+        location=models.SequenceLocation(
+            sequenceReference=models.SequenceReference(
+                refgetAccession="SQ.pnAqCRBrTsUoBghSD1yp_jXWSmlbdh4g"
+            ),
+            start=models.Range(root=[None, 202376934]),
+            end=models.Range(root=[202377551, 202464808]),
+        ),
+        state=models.LiteralSequenceExpression(sequence=models.sequenceString(root="")),
+    )
+    assert tlr.translate_to(allele, "hgvs") == [
+        "NC_000002.12:g.(?_202376935)_(202377551_202464808)del"
+    ]
