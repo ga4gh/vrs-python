@@ -55,23 +55,31 @@ def test_complex(tmp_path):
     object_store.close()
 
 
+class StoredObject:
+    """Custom class for object store round-trip tests.
+
+    Defined at module level because pickle stores classes by reference, and a class
+    local to the test function can't be imported when unpickling.
+    """
+
+    def __init__(self, id_value):
+        """Initialize with an id and some nested attribute values."""
+        self.id = id_value
+        self.A = "A"
+        self.B = ["B1", "B2", 3]
+        self.C = {"C1": "C1-value"}
+
+    def somefunction(self, arg):
+        return f"{self.id}-{arg}"
+
+
 def test_classes(tmp_path):
     db_path = str(tmp_path) + "/test_complex.sqlite3"
 
-    class TestClass:
-        def __init__(self, id_value):
-            self.id = id_value
-            self.A = "A"
-            self.B = ["B1", "B2", 3]
-            self.C = {"C1": "C1-value"}
-
-        def somefunction(self, arg):
-            return f"{self.id}-{arg}"
-
     object_store = Sqlite3MutableMapping(db_path)
 
-    val1 = TestClass("val1")
-    val2 = TestClass("val2")
+    val1 = StoredObject("val1")
+    val2 = StoredObject("val2")
     object_store["val1"] = val1
     object_store["val2"] = val2
 

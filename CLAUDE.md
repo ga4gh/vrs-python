@@ -9,9 +9,9 @@ VRS-Python is the reference implementation of the GA4GH Variation Representation
 ## Development Commands
 
 ### Environment Setup
-- `make devready` - Create Python 3.12 venv, install dev dependencies, setup pre-commit hooks
-- `make nbready` - Create Python 3.12 venv, install notebook dependencies for Jupyter usage
-- `source venv/3.12/bin/activate` - Activate the virtual environment (required before development)
+- `make devready` - Create Python 3.14 venv, install dev dependencies, setup pre-commit hooks
+- `make nbready` - Create Python 3.14 venv, install notebook dependencies for Jupyter usage
+- `source venv/3.14/bin/activate` - Activate the virtual environment (required before development)
 
 ### Development Tasks
 - `make test` - Run pytest test suite
@@ -51,7 +51,7 @@ VRS-Python is the reference implementation of the GA4GH Variation Representation
 ## Development Notes
 
 ### Dependencies
-- Requires Python >= 3.10 (Python 3.12 required for development)
+- Requires Python >= 3.11 (Python 3.14 required for development)
 - External services: SeqRepo (sequence data), UTA (transcript alignments)
 - Key libraries: Pydantic 2.x, bioutils, HGVS, requests
 

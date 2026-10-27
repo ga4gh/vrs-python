@@ -1,9 +1,8 @@
+import pickle
 import sqlite3
 from collections.abc import MutableMapping
 from threading import Lock
 from typing import Any
-
-import dill
 
 
 class Sqlite3MutableMapping(MutableMapping):
@@ -59,7 +58,7 @@ class Sqlite3MutableMapping(MutableMapping):
     def __setitem__(self, key: Any, value: Any) -> None:
         cur = self.db.cursor()
         try:
-            ser = dill.dumps(value)
+            ser = pickle.dumps(value)
             cur.execute(
                 "insert or replace into mapping(key, value) values (?, ?)",
                 (key, sqlite3.Binary(ser)),
@@ -75,7 +74,7 @@ class Sqlite3MutableMapping(MutableMapping):
             rows = cur.execute("select value from mapping where key = ?", (key,))
             row0 = next(rows)
             if row0:
-                return dill.loads(row0[0])  # noqa: S301
+                return pickle.loads(row0[0])  # noqa: S301
         except StopIteration as e:
             raise KeyError("Key not found: " + str(key)) from e
         finally:
