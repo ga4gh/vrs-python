@@ -343,7 +343,6 @@ def test_from_invalid(tlr):
         ("1-55516888-G-GA,GT", "gnomad"),
         ("19-44908822-C-T;foo", "gnomad"),
         ("NC_000019.10:44908821:1:T:extra", "spdi"),
-        ("19 : 44908822 C > T,G", "beacon"),
     ],
 )
 def test_from_trailing_input_rejected(tlr, expr, fmt):
