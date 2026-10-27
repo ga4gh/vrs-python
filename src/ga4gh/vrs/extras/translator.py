@@ -48,7 +48,7 @@ class _Translator(ABC):  # noqa: B024
 
      Translates various variation formats to and from GA4GH VRS models
 
-    All `from_` methods follow this pattern:
+    Private `_from_*` parsers follow this pattern:
     * If the argument does not appear to be an appropriate type, None is returned
     * Otherwise, the argument is expected to be of the correct type.  If an error occurs during processing,
       an exception is raised.
@@ -71,14 +71,21 @@ class _Translator(ABC):  # noqa: B024
         identify: bool = True,
         rle_seq_limit: int | None = 50,
     ) -> None:
+        """Initialize shared translation settings and format dispatch dictionaries.
+
+        :param data_proxy: Sequence data provider used during translation.
+        :param default_assembly_name: Default assembly for inputs without an assembly.
+        :param identify: Whether to assign GA4GH identifiers to translated objects.
+        :param rle_seq_limit: Maximum RLE sequence length to include, or None for no limit.
+        """
         self.default_assembly_name = default_assembly_name
         self.data_proxy = data_proxy
         self.identify = identify
         self.rle_seq_limit = rle_seq_limit
-        self.from_translators: dict[str, VariationFromStrProtocol] = {}
-        self.to_translators: dict[str, VariationToStrProtocol] = {}
+        self.to_vrs_translators: dict[str, VariationFromStrProtocol] = {}
+        self.from_vrs_translators: dict[str, VariationToStrProtocol] = {}
 
-    def translate_from(
+    def to_vrs(
         self, var: str, fmt: str | None = None, **kwargs
     ) -> models._VariationBase:
         """Translate variation `var` to VRS object
@@ -86,7 +93,7 @@ class _Translator(ABC):  # noqa: B024
         If `fmt` is None, guess the appropriate format and return the variant.
         If `fmt` is specified, try only that format.
 
-        See also notes about `from_` and `to_` methods.
+        See the class notes about private `_from_*` parsers.
 
         kwargs:
             For CnvTranslator
@@ -111,7 +118,7 @@ class _Translator(ABC):  # noqa: B024
         """
         if fmt:
             try:
-                t = self.from_translators[fmt]
+                t = self.to_vrs_translators[fmt]
             except KeyError as e:
                 msg = f"{fmt} is not supported"
                 raise NotImplementedError(msg) from e
@@ -122,16 +129,16 @@ class _Translator(ABC):  # noqa: B024
                     raise ValueError(msg)
                 return o
 
-        for t in self.from_translators.values():
+        for t in self.to_vrs_translators.values():
             o = t(var, **kwargs)
             if o:
                 return o
 
-        formats = list(self.from_translators.keys())
+        formats = list(self.to_vrs_translators.keys())
         msg = f"Unable to parse data as {', '.join(formats)}"
         raise ValueError(msg)
 
-    def translate_to(self, vo: models._VariationBase, fmt: str, **kwargs) -> list[str]:
+    def from_vrs(self, vo: models._VariationBase, fmt: str, **kwargs) -> list[str]:
         """Translate vrs object `vo` to named format `fmt`
 
         kwargs:
@@ -140,7 +147,7 @@ class _Translator(ABC):  # noqa: B024
         :raise NotImplementedError: If `fmt` is not supported
         """
         try:
-            t = self.to_translators[fmt]
+            t = self.from_vrs_translators[fmt]
         except KeyError as e:
             msg = f"{fmt} is not supported"
             raise NotImplementedError(msg) from e
@@ -179,14 +186,14 @@ class AlleleTranslator(_Translator):
         """Initialize AlleleTranslator class"""
         super().__init__(data_proxy, default_assembly_name, identify)
 
-        self.from_translators = {
+        self.to_vrs_translators = {
             "gnomad": self._from_gnomad,
             "hgvs": self._from_hgvs,
             "spdi": self._from_spdi,
             "vrs": self._from_vrs,
         }
 
-        self.to_translators = {
+        self.from_vrs_translators = {
             "hgvs": self._to_hgvs,
             "spdi": self._to_spdi,
         }
@@ -481,7 +488,7 @@ class CnvTranslator(_Translator):
     ) -> None:
         """Initialize CnvTranslator class"""
         super().__init__(data_proxy, default_assembly_name, identify)
-        self.from_translators = {
+        self.to_vrs_translators = {
             "hgvs": self._from_hgvs,
         }
 
