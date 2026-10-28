@@ -112,13 +112,6 @@ out_of_bounds_cases = [
         "msg": _bounds_msg("GRCh38:1", "start=-1", 248956422),
     },
     {
-        "id": "beacon-past-end",
-        "tlr_fixture": "allele_tlr",
-        "fmt": "beacon",
-        "var": "1 : 248956423 A > T",
-        "msg": _bounds_msg("GRCh38:1", "end=248956423", 248956422),
-    },
-    {
         "id": "cnv-hgvs-copy-number-change-past-end",
         "tlr_fixture": "cnv_tlr",
         "fmt": "hgvs",

@@ -16,7 +16,7 @@ else
 endif
 XRM=xargs -0${_XRM_R} rm
 
-PYV:=3.12
+PYV:=3.14
 VEDIR=venv/${PYV}
 
 export SEQREPO_ROOT_DIR=tests/data/seqrepo/latest
@@ -45,7 +45,7 @@ venv/%:
 #=> develop: install package in develop mode
 .PHONY: develop setup
 develop setup:
-	pip install -e .[dev,extras,notebooks]; \
+	pip install -e .[tests,lint,docs,extras,notebooks]; \
 	pre-commit install
 
 #=> devready: create venv, install prerequisites, install pkg in develop mode

@@ -284,6 +284,8 @@ def test_enref2():
 def test_class_refatt_map():
     class_refatt_map_expected = {
         "Allele": ["location"],
+        "RelativeAllele": ["relativeLocation"],
+        "RelativeSequenceLocation": ["baseSequenceLocation"],
         "CisPhasedBlock": ["members"],
         "CopyNumberCount": ["location"],
         "CopyNumberChange": ["location"],

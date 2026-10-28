@@ -67,13 +67,13 @@ interactions:
     body: null
     headers: {}
     method: GET
-    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nucleotide&id=NM_181798.1&rettype=fasta&seq_start=1263&seq_stop=1268&tool=bioutils&email=biocommons-dev@googlegroups.com
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nucleotide&id=NR_040711.1&rettype=fasta&seq_start=1263&seq_stop=1263&tool=bioutils&email=biocommons-dev@googlegroups.com
   response:
     body:
-      string: '>NM_181798.1:1263-1268 Homo sapiens potassium voltage-gated channel
-        subfamily Q member 1 (KCNQ1), transcript variant 2, mRNA
+      string: '>NR_040711.1:1263-1263 Homo sapiens potassium voltage-gated channel,
+        KQT-like subfamily, member 1 (KCNQ1), transcript variant 2, non-coding RNA
 
-        GTTCTG
+        G
 
 
         '
@@ -85,13 +85,13 @@ interactions:
     body: null
     headers: {}
     method: GET
-    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nucleotide&id=NR_040711.1&rettype=fasta&seq_start=1263&seq_stop=1263&tool=bioutils&email=biocommons-dev@googlegroups.com
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nucleotide&id=NM_181798.1&rettype=fasta&seq_start=1263&seq_stop=1268&tool=bioutils&email=biocommons-dev@googlegroups.com
   response:
     body:
-      string: '>NR_040711.1:1263-1263 Homo sapiens potassium voltage-gated channel,
-        KQT-like subfamily, member 1 (KCNQ1), transcript variant 2, non-coding RNA
+      string: '>NM_181798.1:1263-1268 Homo sapiens potassium voltage-gated channel
+        subfamily Q member 1 (KCNQ1), transcript variant 2, mRNA
 
-        G
+        GTTCTG
 
 
         '
