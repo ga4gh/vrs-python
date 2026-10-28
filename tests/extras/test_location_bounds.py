@@ -15,7 +15,8 @@ import re
 
 import pytest
 
-from ga4gh.vrs.dataproxy import DataProxyValidationError, SeqRepoRESTDataProxy
+from ga4gh.vrs.dataproxy import DataProxyValidationError
+from ga4gh.vrs.dataproxy_seqrepo import SeqRepoRESTDataProxy
 from ga4gh.vrs.extras.translator import AlleleTranslator, CnvTranslator
 
 # Refget accession each input sequence resolves to, named alongside it in errors
@@ -109,13 +110,6 @@ out_of_bounds_cases = [
         "fmt": "gnomad",
         "var": "1-0-A-T",
         "msg": _bounds_msg("GRCh38:1", "start=-1", 248956422),
-    },
-    {
-        "id": "beacon-past-end",
-        "tlr_fixture": "allele_tlr",
-        "fmt": "beacon",
-        "var": "1 : 248956423 A > T",
-        "msg": _bounds_msg("GRCh38:1", "end=248956423", 248956422),
     },
     {
         "id": "cnv-hgvs-copy-number-change-past-end",

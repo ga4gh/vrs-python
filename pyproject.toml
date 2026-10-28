@@ -18,10 +18,11 @@ classifiers = [
     "Operating System :: OS Independent",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: 3.15",
     "Topic :: Scientific/Engineering :: Bio-Informatics",
     "Topic :: Scientific/Engineering :: Medical Science Apps.",
 ]
@@ -33,7 +34,7 @@ keywords = [
     "spdi",
     "variation"
 ]
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 dynamic = ["version"]
 dependencies = [
     "pydantic~=2.1",
@@ -48,22 +49,22 @@ extras = [
     "psycopg2-binary",
     "biocommons.seqrepo>=0.5.1",
     "bioutils>=0.5.2",
-    "hgvs>=1.5.5,<2.0",
-    "dill~=0.3.7",
+    "hgvs>=2.0.0a0,<3.0",
     "click",
     "pysam>=0.24.0",
 ]
-dev = [
-    # tests
+tests = [
     "pytest",
     "pytest-cov",
     "pytest-vcr",
     "vcrpy>=7.0.0",
     "pyyaml",
-    # style
+]
+lint = [
     "pre-commit>=4.0.1",
     "ruff==0.9.4",
-    # docs
+]
+docs = [
     "sphinx",
     "sphinx_rtd_theme",
 ]
@@ -71,6 +72,18 @@ notebooks = [
     "jupyter",
     "pyyaml"
 ]
+refget = [
+    "gtars>=0.11.0",
+]
+
+[tool.uv.sources]
+# No gtars release yet includes databio/gtars#273, which fixes residues that
+# RefgetStore's encoded mode returned differently than imported, and stores
+# written with it are misread by gtars <= 0.10 without error. This pins the
+# PR head plus the fix that makes its Python bindings compile. Replace with the
+# version floor alone once a release includes #273. Building it needs a Rust
+# toolchain.
+gtars = { git = "https://github.com/theferrit32/gtars", rev = "7831e09f596042e3983c7a123c3f6c019ca6c05f", subdirectory = "gtars-python" }
 
 [project.urls]
 Homepage = "https://github.com/ga4gh/vrs-python"
@@ -170,7 +183,8 @@ ignore = [
 # ANN001 - missing-type-function-argument
 # ANN2 - missing-return-type
 # D100 - undocumented-public-module
-# D102 - undocumented-public-class
+# D101 - undocumented-public-class
+# D102 - undocumented-public-method
 # D103 - undocumented-public-function
 # S101 - assert
 # B011 - assert-false
@@ -180,6 +194,7 @@ ignore = [
     "ANN001",
     "ANN2",
     "D100",
+    "D101",
     "D102",
     "D103",
     "S101",

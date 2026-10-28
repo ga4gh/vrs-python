@@ -9,7 +9,8 @@ from pathlib import Path
 import pysam
 import pytest
 
-from ga4gh.vrs.dataproxy import DataProxyValidationError, SeqRepoRESTDataProxy
+from ga4gh.vrs.dataproxy import DataProxyValidationError
+from ga4gh.vrs.dataproxy_seqrepo import SeqRepoRESTDataProxy
 from ga4gh.vrs.extras.annotator.vcf import VcfAnnotator, VcfAnnotatorError
 
 TEST_DATA_DIR = Path("tests/extras/data")
@@ -199,7 +200,7 @@ def test_get_vrs_object_invalid_input(vcf_annotator: VcfAnnotator, caplog):
 
     # No CHROM
     vcf_annotator._get_vrs_object(".-140753336-A-T", [], {}, "GRCh38")
-    assert "KeyError when getting refget accession: GRCh38:." in caplog.text
+    assert "Unable to derive refget accession for GRCh38:." in caplog.text
 
     # No POS
     vcf_annotator._get_vrs_object("7-.-A-T", [], {}, "GRCh38")

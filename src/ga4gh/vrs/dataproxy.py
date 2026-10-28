@@ -1,24 +1,87 @@
-"""provides an abstract class for all data access required for
-VRS, and a concrete implementation based on seqrepo.
+"""Provides abstract interfaces for all data access required by VRS,
+and a concrete implementation based on seqrepo.
 
 See https://vr-spec.readthedocs.io/en/1.1/impl-guide/required_data.html
 
 """
 
-import datetime
+from __future__ import annotations
+
 import functools
 import logging
 import os
+import re
 from abc import ABC, abstractmethod
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from urllib.parse import urlparse
-
-import requests
-from bioutils.accessions import coerce_namespace
 
 from ga4gh.vrs.models import Range
 
 _logger = logging.getLogger(__name__)
+
+
+def resolve_cache_size(env_var: str, default: str) -> int | None:
+    """Resolve an :func:`functools.lru_cache` ``maxsize`` from the environment.
+
+    Accepts an integer, or ``-1``/``"none"`` for an unbounded cache. ``0``
+    disables caching, per ``functools`` semantics. Read at import time, since
+    the decorators are applied when the class bodies are evaluated.
+
+    :raises ValueError: if the value is neither an integer nor ``"none"``
+    """
+    value = os.environ.get(env_var) or default
+    if value.strip().lower() == "none":
+        return None
+    try:
+        size = int(value)
+    except ValueError as e:
+        msg = f"{env_var} must be an integer or 'none', got {value!r}"
+        raise ValueError(msg) from e
+    return None if size < 0 else size
+
+
+# maxsize for caches of small fixed-size values: lengths, digests, aliases.
+DATAPROXY_CACHE_SIZE = resolve_cache_size("GA4GH_VRS_DATAPROXY_CACHE_SIZE", "8192")
+
+# maxsize for the REST backend's sequence payload cache. Much smaller by default
+# because entries are bounded only by the caller's span: the normalization path
+# stores 1-2 base strings, but an unbounded fetch stores a whole contig per
+# entry. This is the only get_sequence cache; the local SeqRepo and refget
+# backends do not cache sequence payloads.
+#
+# Note this memoizes fetched *regions*, keyed on the exact (identifier, start,
+# end) triple — not sequences. An overlapping span is a miss, and a cached
+# full-sequence entry never serves a sub-range request, so raising this only
+# helps when identical regions are re-fetched.
+REST_SEQUENCE_CACHE_SIZE = resolve_cache_size(
+    "GA4GH_VRS_REST_DATAPROXY_SEQUENCE_CACHE_SIZE", "128"
+)
+
+
+# LRG genomic (LRG_1, LRG_1g), transcript (LRG_1t1) and protein (LRG_1p1)
+# accessions. bioutils.accessions does not recognize LRG.
+_LRG_ACCESSION_RE = re.compile(r"^LRG_\d+(?:g|[tp]\d+)?$")
+
+
+def coerce_accession_namespace(ac: str) -> str:
+    """Prefix a bare accession with its inferred namespace.
+
+    As :func:`bioutils.accessions.coerce_namespace`, but also infers ``lrg``
+    for Locus Reference Genomic accessions. An accession that already has a
+    namespace is returned unchanged.
+
+    >>> coerce_accession_namespace("LRG_1t1")
+    'lrg:LRG_1t1'
+    >>> coerce_accession_namespace("NM_000551.3")
+    'refseq:NM_000551.3'
+
+    :raises ValueError: if no namespace can be inferred
+    """
+    if ":" not in ac and _LRG_ACCESSION_RE.match(ac):
+        return f"lrg:{ac}"
+    from bioutils.accessions import coerce_namespace
+
+    return coerce_namespace(ac)
 
 
 class DataProxyValidationError(Exception):
@@ -36,131 +99,54 @@ def validate_start_le_end(identifier: str, start: int | None, end: int | None) -
         raise DataProxyValidationError(err_msg)
 
 
-class _DataProxy(ABC):
-    """abstract class / interface for VRS data needs
+class UnresolvableAccessionError(KeyError):
+    """An accession that the data proxy cannot resolve to a refget accession.
 
-    The proxy MUST support the use of GA4GH sequence identifers (i.e.,
-    `ga4gh:SQ...`) as keys, and return these identifiers among the
-    aliases for a sequence.  These identifiers may be supported
-    natively by the data source or synthesized by the proxy from the
-    data source or synthesized.
+    A ``KeyError``, like any other lookup miss, but distinguishable from one
+    raised deeper in translation, so callers can skip an input on a sequence
+    the backend lacks without masking other failures.
+    """
 
+    def __init__(self, accession: str) -> None:
+        """Initialize with the accession that failed to resolve."""
+        super().__init__(accession)
+        self.accession = accession
+
+    def __str__(self) -> str:
+        """Describe the failure (``KeyError`` would show only the quoted key)."""
+        return f"Unable to resolve {self.accession} to a refget accession"
+
+
+class SequenceDataProxy(ABC):
+    """Abstract interface for sequence data access.
+
+    Provides methods for retrieving genomic sequences and their lengths.
     """
 
     @abstractmethod
     def get_sequence(
         self, identifier: str, start: int | None = None, end: int | None = None
     ) -> str:
-        """Return the specified sequence or subsequence
+        """Return the specified sequence or subsequence.
 
-        start and end are optional
+        start and end are optional.
 
         If the given sequence does not exist, KeyError is raised. If start is
         after end, DataProxyValidationError may be raised.
 
         >> dp.get_sequence("NM_000551.3", 0, 10)
         'CCTCGCCTCC'
-
         """
 
     @abstractmethod
-    def get_metadata(self, identifier: str) -> dict:
-        """For a given identifier, return a structure (dict) containing
-        sequence length, aliases, and other optional info
+    def get_sequence_length(self, identifier: str) -> int:
+        """Return the length of the specified sequence.
 
         If the given sequence does not exist, KeyError is raised.
 
-        >> dp.get_metadata("NM_000551.3")
-        {'added': '2016-08-24T05:03:11Z',
-         'aliases': ['MD5:215137b1973c1a5afcf86be7d999574a',
-                     'RefSeq:NM_000551.3',
-                     'SEGUID:T12L0p2X5E8DbnL0+SwI4Wc1S6g',
-                     'SHA1:4f5d8bd29d97e44f036e72f4f92c08e167354ba8',
-                     'ga4gh:SQ.v_QTc1p-MUYdgrRv4LMT6ByXIOsdw3C_',
-                     'gi:319655736'],
-         'alphabet': 'ACGT',
-         'length': 4560}
-
+        >> dp.get_sequence_length("NM_000551.3")
+        4560
         """
-
-    @staticmethod
-    def extract_sequence_type(alias: str) -> str | None:
-        """Provide a convenient way to extract the sequence type from an accession by matching its prefix to a known set of prefixes.
-
-        Args:
-        alias (str): The accession string.
-
-        Returns:
-        str or None: The sequence type associated with the accession string, or None if no matching prefix is found.
-
-        """
-        prefix_dict = {
-            "refseq:NM_": "c",
-            "refseq:NC_012920": "m",
-            "refseq:NG_": "g",
-            "refseq:NC_00": "g",
-            "refseq:NW_": "g",
-            "refseq:NT_": "g",
-            "refseq:NR_": "n",
-            "refseq:NP_": "p",
-            "refseq:XM_": "c",
-            "refseq:XR_": "n",
-            "refseq:XP_": "p",
-            "GRCh": "g",
-        }
-
-        for prefix, seq_type in prefix_dict.items():
-            if alias.startswith(prefix):
-                return seq_type
-        return None
-
-    @functools.lru_cache
-    def translate_sequence_identifier(
-        self, identifier: str, namespace: str | None = None
-    ) -> list[str]:
-        """Translate given identifier to a list of identifiers in the
-        specified namespace.
-
-        `identifier` must be a string
-        `namespace` is case-sensitive
-
-        On success, returns string identifier.  Raises KeyError if given
-        identifier isn't found.
-
-        """
-        try:
-            md = self.get_metadata(identifier)
-        except (ValueError, KeyError, IndexError) as e:
-            raise KeyError(identifier) from e
-        aliases = list(set(md["aliases"]))  # ensure uniqueness
-        if namespace is not None:
-            nsd = namespace + ":"
-            aliases = [a for a in aliases if a.startswith(nsd)]
-        return aliases
-
-    def derive_refget_accession(self, ac: str) -> str | None:
-        """Derive the refget accession from a public accession identifier
-
-        :param ac: public accession in simple or curie form from which to derive the refget accession
-        :return: Refget Accession if found
-        """
-        if ac is None:
-            return None
-
-        if ":" not in ac[1:]:
-            # always coerce the namespace if none provided
-            ac = coerce_namespace(ac)
-
-        refget_accession = None
-        try:
-            aliases = self.translate_sequence_identifier(ac, namespace="ga4gh")
-        except KeyError:
-            _logger.exception("KeyError when getting refget accession: %s", ac)
-        else:
-            if aliases:
-                refget_accession = aliases[0].split("ga4gh:")[-1]
-
-        return refget_accession
 
     def validate_ref_seq(
         self,
@@ -228,9 +214,8 @@ class _DataProxy(ABC):
         :raises KeyError: If ``sequence_id`` is not found
         """
         # same cache key as derive_refget_accession
-        sequence_id = coerce_namespace(sequence_id)
-        md = self.get_metadata(sequence_id)
-        seq_len = md["length"]
+        sequence_id = coerce_accession_namespace(sequence_id)
+        seq_len = self.get_sequence_length(sequence_id)
         bad = []
         for name, pos in (("start", start_pos), ("end", end_pos)):
             values = pos.root if isinstance(pos, Range) else [pos]
@@ -242,14 +227,9 @@ class _DataProxy(ABC):
                 f"{name}={pos.root if isinstance(pos, Range) else pos}"
                 for name, pos in bad
             )
-            # Name the sequence as given, plus the refget accession it resolved to
-            refget_ac = next((a for a in md["aliases"] if a.startswith("ga4gh:")), None)
-            seq_name = sequence_id
-            if refget_ac and refget_ac != sequence_id:
-                seq_name += f" ({refget_ac})"
             err_msg = (
-                f"Location out of bounds on {seq_name}: {detail} "
-                f"not within [0, {seq_len}]"
+                f"Location out of bounds on {self._sequence_label(sequence_id)}: "
+                f"{detail} not within [0, {seq_len}]"
             )
             raise DataProxyValidationError(err_msg)
 
@@ -259,107 +239,257 @@ class _DataProxy(ABC):
             end_pos.root[1] if isinstance(end_pos, Range) else end_pos,
         )
 
+    def _sequence_label(self, sequence_id: str) -> str:
+        """Name a sequence in an error message. A proxy that can resolve aliases
+        also names the refget accession.
+        """
+        return sequence_id
 
-class _SeqRepoDataProxyBase(_DataProxy):
-    # wraps seqreqpo classes in order to provide translation to/from
-    # `ga4gh` identifiers.
 
-    @functools.lru_cache
+class AliasDataProxy(ABC):
+    """Abstract interface for sequence alias / identifier resolution.
+
+    Provides methods for translating between different sequence identifier
+    namespaces and deriving refget accessions.
+    """
+
+    @abstractmethod
+    def get_aliases(self, identifier: str) -> list[str]:
+        """Return a list of aliases for the given sequence identifier.
+
+        Each alias is a string of the form ``namespace:accession``.
+
+        If the given sequence does not exist, KeyError is raised.
+
+        >> dp.get_aliases("NM_000551.3")
+        ['MD5:215137b1973c1a5afcf86be7d999574a',
+         'RefSeq:NM_000551.3',
+         'SEGUID:T12L0p2X5E8DbnL0+SwI4Wc1S6g',
+         'SHA1:4f5d8bd29d97e44f036e72f4f92c08e167354ba8',
+         'ga4gh:SQ.v_QTc1p-MUYdgrRv4LMT6ByXIOsdw3C_',
+         'gi:319655736']
+        """
+
+    def translate_sequence_identifier(
+        self, identifier: str, namespace: str | None = None
+    ) -> list[str]:
+        """Translate given identifier to a list of identifiers in the
+        specified namespace.
+
+        ``identifier`` must be a string.
+        ``namespace`` is case-sensitive.
+
+        On success, returns list of string identifiers. Raises KeyError if given
+        identifier isn't found.
+        """
+        try:
+            aliases = self.get_aliases(identifier)
+        except (ValueError, KeyError, IndexError) as e:
+            raise KeyError(identifier) from e
+        aliases = list(set(aliases))  # ensure uniqueness
+        if namespace is not None:
+            nsd = namespace + ":"
+            aliases = [a for a in aliases if a.startswith(nsd)]
+        return aliases
+
+    def derive_refget_accession(self, ac: str) -> str | None:
+        """Derive the refget accession from a public accession identifier.
+
+        :param ac: public accession in simple or curie form from which to derive the refget accession
+        :return: Refget Accession if found, else ``None`` (including for a bare
+            accession whose namespace cannot be inferred)
+        :raises ValueError: if the backend reports more than one ``ga4gh:`` alias
+        """
+        if ac is None:
+            return None
+
+        if ":" not in ac[1:]:
+            # always coerce the namespace if none provided
+            try:
+                ac = coerce_accession_namespace(ac)
+            except ValueError:
+                _logger.debug("Unable to infer a namespace for %s", ac)
+                return None
+
+        refget_accession = None
+        try:
+            aliases = self.translate_sequence_identifier(ac, namespace="ga4gh")
+        except KeyError:
+            # A missing accession is a normal backend coverage outcome. Avoid
+            # formatting and emitting a traceback for every lookup miss.
+            _logger.debug("Unable to derive refget accession for %s", ac)
+        else:
+            # A sequence can only have 1 refget accession because it is based on
+            # content digest, so taking [0] is sufficient. Assert that rather than
+            # assuming it: translate_sequence_identifier filters on the ``ga4gh:``
+            # namespace, not on ``SQ.``, and returns a set-derived list whose order
+            # is arbitrary, so silently taking [0] of a longer list would pick
+            # unpredictably between genuinely different accessions.
+            if len(aliases) > 1:
+                msg = (
+                    f"Expected at most one ga4gh alias for {ac}, got {sorted(aliases)}"
+                )
+                raise ValueError(msg)
+            if aliases:
+                refget_accession = aliases[0].split("ga4gh:")[-1]
+
+        return refget_accession
+
+    @staticmethod
+    def extract_sequence_type(alias: str) -> str | None:
+        """Provide a convenient way to extract the sequence type from an accession by matching its prefix to a known set of prefixes.
+
+        Args:
+            alias (str): The accession string.
+
+        Returns:
+            str or None: The sequence type associated with the accession string, or None if no matching prefix is found.
+
+        """
+        prefix_dict = {
+            "refseq:NM_": "c",
+            "refseq:NC_012920": "m",
+            "refseq:NG_": "g",
+            "refseq:NC_00": "g",
+            "refseq:NW_": "g",
+            "refseq:NT_": "g",
+            "refseq:NR_": "n",
+            "refseq:NP_": "p",
+            "refseq:XM_": "c",
+            "refseq:XR_": "n",
+            "refseq:XP_": "p",
+            "GRCh": "g",
+        }
+
+        for prefix, seq_type in prefix_dict.items():
+            if alias.startswith(prefix):
+                return seq_type
+        return None
+
+
+class DataProxy(SequenceDataProxy, AliasDataProxy):
+    """Combined abstract interface for sequence data access and alias mapping.
+
+    The proxy MUST support the use of GA4GH sequence identifiers (i.e.,
+    ``ga4gh:SQ...``) as keys, and return these identifiers among the
+    aliases for a sequence. These identifiers may be supported
+    natively by the data source or synthesized by the proxy from the
+    data source.
+    """
+
     def get_metadata(self, identifier: str) -> dict:
-        md = self._get_metadata(identifier)
-        md["aliases"] = list(a for a in md["aliases"])  # noqa: C400
-        return md
+        """Return sequence length and aliases for the given identifier.
 
-    @functools.lru_cache
+        Composes :meth:`get_sequence_length` and :meth:`get_aliases`. Backends
+        with a cheaper native path (e.g. a single REST call that returns both)
+        should override this method.
+
+        If the given sequence does not exist, KeyError is raised.
+
+        >> dp.get_metadata("NM_000551.3")
+        {'length': 4560,
+         'aliases': ['MD5:215137b1973c1a5afcf86be7d999574a',
+                     'RefSeq:NM_000551.3',
+                     'ga4gh:SQ.v_QTc1p-MUYdgrRv4LMT6ByXIOsdw3C_',
+                     ...]}
+        """
+        return {
+            "length": self.get_sequence_length(identifier),
+            "aliases": self.get_aliases(identifier),
+        }
+
+    def _sequence_label(self, sequence_id: str) -> str:
+        """Name the sequence as given, plus the refget accession it resolves to"""
+        refget_accession = self.derive_refget_accession(sequence_id)
+        if not refget_accession or sequence_id == f"ga4gh:{refget_accession}":
+            return sequence_id
+        return f"{sequence_id} (ga4gh:{refget_accession})"
+
+
+def require_refget_accession(data_proxy: AliasDataProxy, ac: str) -> str:
+    """Derive the refget accession for ``ac``, raising if the backend has none.
+
+    For translators that have already recognized their input format: an
+    accession the backend cannot resolve is a failure of that input, not a
+    sign that the input is in some other format.
+
+    :raises UnresolvableAccessionError: if ``ac`` does not resolve to a refget
+        accession
+    """
+    refget_accession = data_proxy.derive_refget_accession(ac)
+    if not refget_accession:
+        raise UnresolvableAccessionError(ac)
+    return refget_accession
+
+
+class CompositeDataProxy(DataProxy):
+    """Composes a SequenceDataProxy and AliasDataProxy into a full DataProxy.
+
+    For sequence methods: tries the sequence backend first; on KeyError,
+    translates the identifier to a GA4GH digest via the alias backend and retries.
+    For alias methods: delegates directly to the alias backend.
+    """
+
+    def __init__(
+        self, sequence_proxy: SequenceDataProxy, alias_proxy: AliasDataProxy
+    ) -> None:
+        """Initialize CompositeDataProxy.
+
+        :param sequence_proxy: Backend for sequence retrieval
+        :param alias_proxy: Backend for alias / identifier resolution
+        """
+        super().__init__()
+        self._sequence_proxy = sequence_proxy
+        self._alias_proxy = alias_proxy
+
+    @functools.lru_cache(maxsize=DATAPROXY_CACHE_SIZE)
+    def _resolve_ga4gh_identifier(self, identifier: str) -> str:
+        """Translate identifier to a GA4GH SQ digest via the alias backend.
+
+        :param identifier: Sequence identifier in any namespace
+        :return: GA4GH identifier (``ga4gh:SQ.…``)
+        :raises KeyError: if no GA4GH alias is found
+        """
+        refget_accession = self._alias_proxy.derive_refget_accession(identifier)
+        if refget_accession is None:
+            raise KeyError(identifier)
+        return f"ga4gh:{refget_accession}"
+
     def get_sequence(
         self, identifier: str, start: int | None = None, end: int | None = None
     ) -> str:
-        # Checked here because backends disagree on how to handle it
-        validate_start_le_end(identifier, start, end)
-        return self._get_sequence(identifier, start=start, end=end)
+        """Return the specified sequence or subsequence.
 
-    @abstractmethod
-    def _get_metadata(self, identifier: str) -> dict:  # pragma: no cover
-        pass
-
-    @abstractmethod
-    def _get_sequence(
-        self, identifier: str, start: int | None = None, end: int | None = None
-    ) -> str:  # pragma: no cover
-        pass
-
-
-class SeqRepoDataProxy(_SeqRepoDataProxyBase):
-    """DataProxy based on a local instance of SeqRepo"""
-
-    def __init__(self, sr) -> None:  # noqa: ANN001
-        """Initialize DataProxy instance.
-
-        :param sr: SeqRepo instance
+        Tries the sequence backend first; on KeyError, resolves the identifier
+        to a GA4GH digest via the alias backend and retries.
         """
-        super().__init__()
-        self.sr = sr
+        try:
+            return self._sequence_proxy.get_sequence(identifier, start, end)
+        except KeyError:
+            pass
+        ga4gh_id = self._resolve_ga4gh_identifier(identifier)
+        return self._sequence_proxy.get_sequence(ga4gh_id, start, end)
 
-    def _get_sequence(
-        self, identifier: str, start: int | None = None, end: int | None = None
-    ) -> str:
-        # fetch raises KeyError if not found
-        return self.sr.fetch_uri(coerce_namespace(identifier), start, end)
+    def get_sequence_length(self, identifier: str) -> int:
+        """Return the length of the specified sequence.
 
-    def _get_metadata(self, identifier: str) -> dict:
-        ns, a = coerce_namespace(identifier).split(":", 2)
-        r = list(self.sr.aliases.find_aliases(namespace=ns, alias=a))
-        if len(r) == 0:
-            raise KeyError(identifier)
-        seq_id = r[0]["seq_id"]
-        seqinfo = self.sr.sequences.fetch_seqinfo(seq_id)
-        aliases = self.sr.aliases.find_aliases(seq_id=seq_id)
-        return {
-            "length": seqinfo["len"],
-            "alphabet": seqinfo["alpha"],
-            "added": _isoformat(seqinfo["added"]),
-            "aliases": [f"{a['namespace']}:{a['alias']}" for a in aliases],
-        }
-
-
-class SeqRepoRESTDataProxy(_SeqRepoDataProxyBase):
-    """DataProxy based on a REST instance of SeqRepo, as provided by seqrepo-rest-services"""
-
-    rest_version = "1"
-
-    def __init__(self, base_url: str, disable_healthcheck: bool = False) -> None:
-        """Initialize REST-based dataproxy instance.
-
-        :param base_url: root URL to server
-        :param disable_healthcheck: Whether healthcheck should be disabled
+        Tries the sequence backend first; on KeyError, resolves the identifier
+        to a GA4GH digest via the alias backend and retries.
         """
-        super().__init__()
-        self.base_url = f"{base_url}/{self.rest_version}/"
-        if not disable_healthcheck:
-            ping_url = self.base_url + "ping"
-            ping_resp = requests.get(ping_url)  # noqa: S113
-            ping_resp.raise_for_status()
+        try:
+            return self._sequence_proxy.get_sequence_length(identifier)
+        except KeyError:
+            pass
+        ga4gh_id = self._resolve_ga4gh_identifier(identifier)
+        return self._sequence_proxy.get_sequence_length(ga4gh_id)
 
-    def _get_sequence(
-        self, identifier: str, start: int | None = None, end: int | None = None
-    ) -> str:
-        url = self.base_url + f"sequence/{identifier}"
-        _logger.info("Fetching %s", url)
-        params = {"start": start, "end": end}
-        resp = requests.get(url, params=params)  # noqa: S113
-        if resp.status_code == 404:
-            raise KeyError(identifier)
-        resp.raise_for_status()
-        return resp.text
+    def get_aliases(self, identifier: str) -> list[str]:
+        """Return all aliases for the specified sequence, delegating to the alias backend."""
+        return self._alias_proxy.get_aliases(identifier)
 
-    def _get_metadata(self, identifier: str) -> dict:
-        url = self.base_url + f"metadata/{identifier}"
-        _logger.info("Fetching %s", url)
-        resp = requests.get(url)  # noqa: S113
-        if resp.status_code == 404:
-            raise KeyError(identifier)
-        resp.raise_for_status()
-        return resp.json()
+    def derive_refget_accession(self, ac: str) -> str | None:
+        """Derive a refget accession through the alias backend's optimized path."""
+        return self._alias_proxy.derive_refget_accession(ac)
 
 
 class SequenceProxy(Sequence):
@@ -369,16 +499,16 @@ class SequenceProxy(Sequence):
 
     """
 
-    def __init__(self, dp: _DataProxy, alias: str) -> None:  # noqa: D107
+    def __init__(self, dp: SequenceDataProxy, alias: str) -> None:  # noqa: D107
         self.dp = dp
         self.alias = alias
-        self._md = self.dp.get_metadata(self.alias)
+        self._length = self.dp.get_sequence_length(self.alias)
 
     def __str__(self) -> str:  # noqa: D105
         return self.dp.get_sequence(self.alias)
 
     def __len__(self):  # noqa: D105 ANN204
-        return self._md["length"]
+        return self._length
 
     def __reversed__(self):  # noqa: D105 ANN204
         msg = "Reversed iteration of a SequenceProxy is not implemented"
@@ -395,39 +525,22 @@ class SequenceProxy(Sequence):
         return self.dp.get_sequence(self.alias, key.start, key.stop)
 
 
-def _isoformat(o: datetime.datetime) -> str:
-    """Convert datetime.datetime to iso formatted timestamp
+# Provider registry for extensible create_dataproxy
+_provider_registry: dict[str, Callable[..., DataProxy]] = {}
 
-    >>> dt = datetime.datetime(2019, 10, 15, 10, 23, 41, 115927)
-    >>> _isoformat(dt)
-    '2019-10-15T10:23:41.115927Z'
 
-    :param o: date object to format
-    :return: ISO8601-formatted string equivalent
-    :raise TypeError: if object given isn't a Python datetime instance
+def register_provider(name: str, factory: Callable[..., DataProxy]) -> None:
+    """Register a custom DataProxy provider factory.
+
+    :param name: Provider name used in URIs (e.g. "seqrepo" for "seqrepo+http://...")
+    :param factory: Callable that accepts (parsed_uri, proto, disable_healthcheck) and returns a DataProxy
     """
-    # stolen from connexion flask_app.py
-    if not isinstance(o, datetime.datetime):
-        raise TypeError
-    if o.tzinfo:
-        # eg: '2015-09-25T23:14:42.588601+00:00'
-        return o.isoformat("T")
-    # No timezone present - assume UTC.
-    # eg: '2015-09-25T23:14:42.588601Z'
-    return o.isoformat("T") + "Z"
-
-
-# Future implementations
-# * The RefGetDataProxy is waiting on support for sequence lookup by alias
-# class RefGetDataProxy(_DataProxy):
-#     def __init__(self, base_url):
-#         super().__init__()
-#         self.base_url = base_url
+    _provider_registry[name] = factory
 
 
 def create_dataproxy(
     uri: str | None = None, disable_healthcheck: bool = False
-) -> _DataProxy:
+) -> DataProxy:
     """Create a dataproxy from uri or GA4GH_VRS_DATAPROXY_URI
 
     :param uri: Dataproxy URI. Currently accepted URI schemes:
@@ -436,9 +549,16 @@ def create_dataproxy(
         * seqrepo+:../relative/path/to/seqrepo/root
         * seqrepo+http://localhost:5000/seqrepo
         * seqrepo+https://somewhere:5000/seqrepo
+        * refget+file:///path/to/refgetstore/root
+        * refget+http://host[:port]/refgetstore/root
+        * refget+https://host/refgetstore/root
+
+        Remote refget stores cache their local working set under
+        ``GA4GH_VRS_REFGET_CACHE_DIR`` when set. If unset, the cache defaults
+        to ``$XDG_CACHE_HOME/gtars/refget`` or ``~/.cache/gtars/refget``.
     :param disable_healthcheck: Whether healthcheck should be disabled in REST dataproxy
     :raise ValueError: if URI doesn't match recognized schemes, e.g. is missing provider
-        prefix (`"seqrepo+"`)
+        prefix (``"seqrepo+"``)
     """
     uri = uri or os.environ.get("GA4GH_VRS_DATAPROXY_URI", None)
 
@@ -455,22 +575,24 @@ def create_dataproxy(
 
     provider, proto = scheme.split("+")
 
+    if provider in _provider_registry:
+        return _provider_registry[provider](
+            parsed_uri, proto, disable_healthcheck=disable_healthcheck
+        )
+
     if provider == "seqrepo":
-        if proto in ("", "file"):
-            from biocommons.seqrepo import SeqRepo
+        from ga4gh.vrs.dataproxy_seqrepo import _create_seqrepo_dataproxy
 
-            sr = SeqRepo(root_dir=parsed_uri.path)
-            dp = SeqRepoDataProxy(sr)
-        elif proto in ("http", "https"):
-            dp = SeqRepoRESTDataProxy(
-                uri[len(provider) + 1 :], disable_healthcheck=disable_healthcheck
-            )
-        else:
-            msg = f"SeqRepo URI scheme {parsed_uri.scheme} not implemented"
-            raise ValueError(msg)
+        return _create_seqrepo_dataproxy(
+            uri, parsed_uri, proto, disable_healthcheck=disable_healthcheck
+        )
 
-    else:
-        msg = f"DataProxy provider {provider} not implemented"
-        raise ValueError(msg)
+    if provider == "refget":
+        from ga4gh.vrs.dataproxy_refget import _create_refget_dataproxy
 
-    return dp
+        return _create_refget_dataproxy(
+            parsed_uri, proto, disable_healthcheck=disable_healthcheck
+        )
+
+    msg = f"DataProxy provider {provider} not implemented"
+    raise ValueError(msg)

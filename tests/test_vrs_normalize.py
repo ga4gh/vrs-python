@@ -3,7 +3,8 @@ import re
 import pytest
 
 from ga4gh.vrs import models, normalize
-from ga4gh.vrs.dataproxy import DataProxyValidationError, SeqRepoDataProxy
+from ga4gh.vrs.dataproxy import DataProxyValidationError
+from ga4gh.vrs.dataproxy_seqrepo import SeqRepoDataProxy
 
 # Single nucleotide same-as-reference allele.
 allele_dict1 = {

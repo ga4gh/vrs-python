@@ -18,12 +18,13 @@
 
 ## Features
 
-- Pydantic implementation of GKS core models and VRS models
+- Pydantic implementation of GKM-Core models and VRS models
 - Algorithm for generating consistent, globally unique identifiers for variation without a central authority
 - Algorithm for performing fully justified allele normalization
 - Translating from and to other variant formats
 - [Annotate VCFs with VRS](https://github.com/ga4gh/vrs-python/blob/main/docs/extras/vcf_annotator.md)
 - Convert GA4GH objects between inlined and referenced forms
+- [Pluggable sequence/alias data backends (SeqRepo, refget)](https://github.com/ga4gh/vrs-python/blob/main/docs/dataproxy_backends.md)
 
 ## Known Issues
 
@@ -34,10 +35,10 @@ All known issues are listed there. Please report any issues you find.
 
 ### Prerequisites
 
-- Python >= 3.10
-  - _Note: Python 3.12 is required for developers contributing to VRS-Python. The
-    Makefile sets up a virtual environment in `venv/3.12` and expects Python to be
-    available as `python3.12`._
+- Python >= 3.11
+  - _Note: Python 3.14 is required for developers contributing to VRS-Python. The
+    Makefile sets up a virtual environment in `venv/3.14` and expects Python to be
+    available as `python3.14`._
 - libpq
 - postgresql
 
@@ -231,11 +232,30 @@ Here are some things to try.
     curl 'http://127.0.0.1:[your_port_number]/seqrepo/1/sequence/refseq:NM_000059.4?end=20'
     ```
   - Set the `GA4GH_VRS_DATAPROXY_URI` environment variable to point to
-    this UL:
+    this URL:
     ```shell
-    $ export GA4GH_VRS_DATAPROXY_URI=http://localhost:[your_port_number]/seqrepo
+    $ export GA4GH_VRS_DATAPROXY_URI=seqrepo+http://localhost:[your_port_number]/seqrepo
     $ export SEQREPO_URI=http://localhost:[your_port_number]
     ```
+
+Remote refget stores are also supported when exposed as a static HTTP(S) URL tree,
+such as an S3/R2 bucket endpoint or CDN origin. Set the dataproxy URI to the remote
+store and optionally override the local cache root:
+
+```shell
+export GA4GH_VRS_DATAPROXY_URI=refget+https://example-bucket.s3.amazonaws.com/refget-store
+export GA4GH_VRS_REFGET_CACHE_DIR=/path/to/refget-cache-root
+```
+
+If `GA4GH_VRS_REFGET_CACHE_DIR` is unset, vrs-python falls back to an XDG-style
+cache root under `XDG_CACHE_HOME` or `~/.cache`. Each remote refget store gets
+its own deterministic cache subdirectory under that root.
+
+In-process lookup caches can be sized with `GA4GH_VRS_DATAPROXY_CACHE_SIZE`
+(lengths, digests, and aliases; default 8192) and
+`GA4GH_VRS_REST_DATAPROXY_SEQUENCE_CACHE_SIZE` (REST sequence payloads; default
+128). See [DataProxy backends](docs/dataproxy_backends.md) for the full list of
+backends, URI schemes, and caching behavior.
 
 ## VRS-Python and VRS Version Correspondence
 
@@ -277,13 +297,13 @@ Then, clone your fork and initialize a development environment:
 git clone --recurse-submodules git@github.com:YOUR_GITHUB_ID/vrs-python.git
 cd vrs-python
 make devready
-source venv/3.12/bin/activate
+source venv/3.14/bin/activate
 ```
 
 This setup includes [pre-commit hooks](https://pre-commit.com/). If you create a virtual environment manually, be sure to install the hooks yourself; otherwise, commits may fail during [CI/CD checks](https://github.com/ga4gh/vrs-python/actions/workflows/python-cqa.yml):
 
 ```shell
-source venv/3.12/bin/activate
+source venv/3.14/bin/activate
 pre-commit install
 ```
 
@@ -339,7 +359,7 @@ We have created a public [`VRS-demo-notebooks`](https://app.terra.bio/#workspace
 1. Open VS Code.
 2. Use Extensions view (Ctrl+Shift+X or ⌘+Shift+X) to install the [Jupyter extension](https://marketplace.visualstudio.com/items?itemName=ms-toolsai.jupyter).
 3. Navigate to your vrs-python project folder and open it in VS Code.
-4. In a notebook, click `Select Kernel` at the top right. Select the option where the path is `venv/3.12/bin/python3`. See [here](https://code.visualstudio.com/docs/datascience/jupyter-kernel-management) for more information on managing Jupyter Kernels in VS Code.
+4. In a notebook, click `Select Kernel` at the top right. Select the option where the path is `venv/3.14/bin/python3`. See [here](https://code.visualstudio.com/docs/datascience/jupyter-kernel-management) for more information on managing Jupyter Kernels in VS Code.
 5. After selecting the kernel you can now run the notebook.
 
 ## Security Note (from the GA4GH Security Team)

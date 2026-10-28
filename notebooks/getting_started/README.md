@@ -27,20 +27,20 @@ cd vrs-python
 
 ### Virtual Environment
 
-You must first install python@3.12, if not already installed.
+You must first install python@3.14, if not already installed.
 
 Next, run the following:
 
 ```shell
 make nbready
-source venv/3.12/bin/activate
+source venv/3.14/bin/activate
 ```
 
 #### Virtual Environment: Selecting the Kernel
 
 When opening a notebook with this option, click `Select Kernel`,
 `Python Environments...`, and select the first option:
-`3.12 (Python 3.12.z) venv/3.12/bin/python`
+`3.14 (Python 3.14.z) venv/3.14/bin/python`
 
 _Note: Patch version may vary._
 
@@ -114,7 +114,7 @@ You should see `Dev Container: VRS-Python Notebooks @ desktop-linux` on the bott
 
 When opening a notebook with this option, click `Select Kernel`,
 `Python Environments...`, and select the first option:
-`Python 3.12.z /usr/local/bin/python`
+`Python 3.14.z /usr/local/bin/python`
 
 _Note: Patch version may vary._
 
@@ -140,7 +140,7 @@ from its component parts. The notebook details how to add VRS identifiers to the
 ### 4 Exploring the Allele Translator
 
 The current implementation of vrs-python facilitates transformation of variants
-in a number of different variant nomenclatures (SPDI, HGVS, gnomAD and Beacon) to VRS form. In the
+in a number of different variant nomenclatures (SPDI, HGVS, and gnomAD) to VRS form. In the
 [Exploring the Allele Translator](4_Exploring_the_AlleleTranslator.ipynb) notebook,
 we show how to transform basic variants to VRS, and in some cases, back to the original nomenclature of the variant.
 

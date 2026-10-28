@@ -1,6 +1,6 @@
 """Translates various external formats into VRS models.
 
-Input formats: VRS (serialized), hgvs, spdi, gnomad (vcf), beacon
+Input formats: VRS (serialized), hgvs, spdi, gnomad (vcf)
 Output formats: VRS (serialized), hgvs, spdi, gnomad (vcf)
 
 """
@@ -11,11 +11,14 @@ from abc import ABC
 from collections.abc import Mapping
 from typing import Protocol
 
-from typing_extensions import deprecated
-
 from ga4gh.core import ga4gh_identify
 from ga4gh.vrs import models, normalize
-from ga4gh.vrs.dataproxy import SequenceProxy, _DataProxy
+from ga4gh.vrs.dataproxy import (
+    DataProxy,
+    DataProxyValidationError,
+    SequenceProxy,
+    require_refget_accession,
+)
 from ga4gh.vrs.extras.decorators import lazy_property
 from ga4gh.vrs.normalize import denormalize_reference_length_expression
 from ga4gh.vrs.utils.hgvs_tools import HgvsTools
@@ -58,9 +61,6 @@ class _Translator(ABC):  # noqa: B024
 
     """
 
-    beacon_re = re.compile(
-        r"(?P<chr>[^-]+)\s*:\s*(?P<pos>\d+)\s*(?P<ref>\w+)\s*>\s*(?P<alt>\w+)"
-    )
     gnomad_re = re.compile(
         r"(?P<chr>[^-]+)-(?P<pos>\d+)-(?P<ref>[ACGTURYKMSWBDHVN]+)-(?P<alt>[ACGTURYKMSWBDHVN]+)",
         re.IGNORECASE,
@@ -71,7 +71,7 @@ class _Translator(ABC):  # noqa: B024
 
     def __init__(
         self,
-        data_proxy: _DataProxy,
+        data_proxy: DataProxy,
         default_assembly_name: str = "GRCh38",
         identify: bool = True,
         rle_seq_limit: int | None = 50,
@@ -101,7 +101,7 @@ class _Translator(ABC):  # noqa: B024
                     EFO:0030067 for deletions and EFO:0030070 for duplications
             For AlleleTranslator
                 assembly_name (str): Assembly used for `var`. Defaults to the
-                    `default_assembly_name`. Only used for beacon and gnomad.
+                    `default_assembly_name`. Only used for gnomad.
                 require_validation (bool): If `True` then validation checks must pass in
                     order to return a VRS object. A `DataProxyValidationError` will be
                     raised if validation checks fail. If `False` then VRS object will be
@@ -127,14 +127,32 @@ class _Translator(ABC):  # noqa: B024
                     raise ValueError(msg)
                 return o
 
-        for t in self.from_translators.values():
-            o = t(var, **kwargs)
-            if o:
+        # A format that recognizes `var` but fails to translate it does not end
+        # the guess: an earlier pattern can match spuriously, and a later format
+        # may still succeed. Its error is kept and reported if none does.
+        errors: list[tuple[str, Exception]] = []
+        for name, t in self.from_translators.items():
+            try:
+                o = t(var, **kwargs)
+            except (KeyError, ValueError, DataProxyValidationError) as e:
+                errors.append((name, e))
+                continue
+            if o is not None:
                 return o
 
-        formats = list(self.from_translators.keys())
-        msg = f"Unable to parse data as {', '.join(formats)}"
-        raise ValueError(msg)
+        if not errors:
+            formats = list(self.from_translators.keys())
+            msg = f"Unable to parse data as {', '.join(formats)}"
+            raise ValueError(msg)
+
+        # Recognized but untranslatable: report why, rather than "cannot parse".
+        _, first = errors[0]
+        if len(errors) > 1 and hasattr(first, "add_note"):  # Python 3.11+
+            first.add_note(
+                "Also recognized as: "
+                + "; ".join(f"{n} ({type(e).__name__}: {e})" for n, e in errors[1:])
+            )
+        raise first
 
     def translate_to(self, vo: models._VariationBase, fmt: str, **kwargs) -> list[str]:
         """Translate vrs object `vo` to named format `fmt`
@@ -177,7 +195,7 @@ class AlleleTranslator(_Translator):
 
     def __init__(
         self,
-        data_proxy: _DataProxy,
+        data_proxy: DataProxy,
         default_assembly_name: str = "GRCh38",
         identify: bool = True,
     ) -> None:
@@ -185,7 +203,6 @@ class AlleleTranslator(_Translator):
         super().__init__(data_proxy, default_assembly_name, identify)
 
         self.from_translators = {
-            "beacon": self._from_beacon,
             "gnomad": self._from_gnomad,
             "hgvs": self._from_hgvs,
             "spdi": self._from_spdi,
@@ -224,69 +241,6 @@ class AlleleTranslator(_Translator):
         state = models.LiteralSequenceExpression(sequence=values["literal_sequence"])
         allele = models.Allele(location=location, state=state)
         return self._post_process_imported_allele(allele, **kwargs)
-
-    @deprecated("This method does not match the Beacon spec and will be removed in v3.")
-    def _from_beacon(self, beacon_expr: str, **kwargs) -> models.Allele | None:
-        """Parse beacon expression into VRS Allele
-
-        kwargs:
-            assembly_name (str): Assembly used for `beacon_expr`.
-            rle_seq_limit Optional(int): If RLE is set as the new state after
-                normalization, this sets the limit for the length of the `sequence`.
-                To exclude `sequence` from the response, set to 0.
-                For no limit, set to `None`.
-                Defaults value set in instance variable, `rle_seq_limit`.
-            do_normalize (bool): `True` if fully justified normalization should be
-                performed. `False` otherwise. Defaults to `True`
-
-        #>>> a = tlr.from_beacon("19 : 44908822 C > T")
-        #>>> a.model_dump()
-        {
-          'location': {
-            'end': 44908822,
-            'start': 44908821,
-            'sequenceReference': {
-              'type': 'SequenceReference',
-              'refgetAccession': 'SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl'
-            },
-            'type': 'SequenceLocation'
-          },
-          'state': {
-            'sequence': 'C',
-            'type': 'LiteralSequenceExpression'
-          },
-          'type': 'Allele'
-        }
-
-        """
-        if not isinstance(beacon_expr, str):
-            return None
-
-        m = self.beacon_re.fullmatch(beacon_expr.replace(" ", ""))
-        if not m:
-            return None
-
-        g = m.groupdict()
-        assembly_name = kwargs.get("assembly_name", self.default_assembly_name)
-        sequence = assembly_name + ":" + g["chr"]
-        refget_accession = self.data_proxy.derive_refget_accession(sequence)
-        if not refget_accession:
-            return None
-
-        start = int(g["pos"]) - 1
-        ref = g["ref"]
-        alt = g["alt"]
-        end = start + len(ref)
-        ins_seq = alt
-
-        values = {
-            "sequence_id": sequence,
-            "refget_accession": refget_accession,
-            "start": start,
-            "end": end,
-            "literal_sequence": ins_seq,
-        }
-        return self._create_allele(values, **kwargs)
 
     def _from_gnomad(self, gnomad_expr: str, **kwargs) -> models.Allele | None:
         """Parse gnomAD-style VCF expression into VRS Allele
@@ -334,9 +288,7 @@ class AlleleTranslator(_Translator):
         g = m.groupdict()
         assembly_name = kwargs.get("assembly_name", self.default_assembly_name)
         sequence = assembly_name + ":" + g["chr"]
-        refget_accession = self.data_proxy.derive_refget_accession(sequence)
-        if not refget_accession:
-            return None
+        refget_accession = require_refget_accession(self.data_proxy, sequence)
 
         start = int(g["pos"]) - 1
         ref = g["ref"].upper()
@@ -363,6 +315,19 @@ class AlleleTranslator(_Translator):
         return self._create_allele(values, **kwargs)
 
     def _from_hgvs(self, hgvs_expr: str, **kwargs) -> models.Allele | None:
+        # Uncertain-range expressions (e.g. g.(A_B)_(C_D)del) have no faithful
+        # Allele representation — their endpoints aren't single positions.
+        # Reject here rather than inside HgvsTools so that helper layer stays
+        # unaware of sibling translator classes. CnvTranslator handles the
+        # uncertain-range del/dup path.
+        sv = self.hgvs_tools.parse(hgvs_expr)
+        if sv is not None and self.hgvs_tools.has_uncertain_range(sv):
+            msg = (
+                "Uncertain-range HGVS expressions are not supported for Allele "
+                "translation; use CnvTranslator for del/dup"
+            )
+            raise ValueError(msg)
+
         allele_values = self.hgvs_tools.extract_allele_values(hgvs_expr)
         if allele_values:
             return self._create_allele(allele_values, **kwargs)
@@ -407,9 +372,7 @@ class AlleleTranslator(_Translator):
             return None
 
         g = m.groupdict()
-        refget_accession = self.data_proxy.derive_refget_accession(g["ac"])
-        if not refget_accession:
-            return None
+        refget_accession = require_refget_accession(self.data_proxy, g["ac"])
 
         start = int(g["pos"])
         try:
@@ -538,7 +501,7 @@ class CnvTranslator(_Translator):
 
     def __init__(
         self,
-        data_proxy: _DataProxy,
+        data_proxy: DataProxy,
         default_assembly_name: str = "GRCh38",
         identify: bool = True,
     ) -> None:
@@ -573,21 +536,10 @@ class CnvTranslator(_Translator):
             msg = "Intronic HGVS variants are not supported"
             raise ValueError(msg)
 
-        refget_accession = self.data_proxy.derive_refget_accession(sv.ac)
-        if not refget_accession:
-            return None
+        refget_accession = require_refget_accession(self.data_proxy, sv.ac)
 
-        start = sv.posedit.pos.start.base - 1
-        end = sv.posedit.pos.end.base
-        self.data_proxy.validate_location_bounds(sv.ac, start, end)
-
-        location = models.SequenceLocation(
-            sequenceReference=models.SequenceReference(
-                refgetAccession=refget_accession
-            ),
-            start=start,
-            end=end,
-        )
+        location = self.hgvs_tools.build_cnv_location(sv, refget_accession)
+        self.data_proxy.validate_location_bounds(sv.ac, location.start, location.end)
 
         copies = kwargs.get("copies")
         if copies is not None:

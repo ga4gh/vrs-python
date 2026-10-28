@@ -1,9 +1,13 @@
+from unittest.mock import MagicMock
+
+import hgvs.parser
 import pytest
 from pydantic import ValidationError
 
 from ga4gh.vrs import models
-from ga4gh.vrs.dataproxy import DataProxyValidationError
-from ga4gh.vrs.extras.translator import AlleleTranslator
+from ga4gh.vrs.dataproxy import DataProxyValidationError, UnresolvableAccessionError
+from ga4gh.vrs.extras.translator import AlleleTranslator, CnvTranslator
+from ga4gh.vrs.utils.hgvs_tools import HgvsTools
 
 
 @pytest.fixture(scope="module")
@@ -18,7 +22,6 @@ def tlr(rest_dataproxy):
 # https://www.ncbi.nlm.nih.gov/clinvar/variation/17848/?new_evidence=true
 snv_inputs = {
     "hgvs": "NC_000019.10:g.44908822C>T",
-    "beacon": "19 : 44908822 C > T",
     "spdi": "NC_000019.10:44908821:1:T",
     "gnomad": "19-44908822-C-T",
 }
@@ -40,7 +43,6 @@ snv_output = {
 # https://www.ncbi.nlm.nih.gov/clinvar/variation/693259/?new_evidence=true
 mito_inputs = {
     "hgvs": "NC_012920.1:m.10083A>G",
-    "beacon": "MT : 10083 A > G",
     "spdi": "NC_012920.1:10082:A:G",
     "gnomad": "MT-10083-A-G",
 }
@@ -328,12 +330,12 @@ def test_rle_round_trip_gnomad_spdi(tlr):
 
 def test_from_invalid(tlr):
     with pytest.raises(
-        ValueError, match="Unable to parse data as beacon, gnomad, hgvs, spdi, vrs"
+        ValueError, match="Unable to parse data as gnomad, hgvs, spdi, vrs"
     ):
         tlr.translate_from("BRAF amplication")
 
     with pytest.raises(
-        ValueError, match="Unable to parse data as beacon, gnomad, hgvs, spdi, vrs"
+        ValueError, match="Unable to parse data as gnomad, hgvs, spdi, vrs"
     ):
         tlr.translate_from("BRAF amplication", assembly_name="GRCh37")
 
@@ -345,7 +347,6 @@ def test_from_invalid(tlr):
         ("1-55516888-G-GA,GT", "gnomad"),
         ("19-44908822-C-T;foo", "gnomad"),
         ("NC_000019.10:44908821:1:T:extra", "spdi"),
-        ("19 : 44908822 C > T,G", "beacon"),
     ],
 )
 def test_from_trailing_input_rejected(tlr, expr, fmt):
@@ -354,24 +355,83 @@ def test_from_trailing_input_rejected(tlr, expr, fmt):
         tlr.translate_from(expr, fmt=fmt)
 
 
-@pytest.mark.vcr
-def test_from_beacon(tlr):
-    do_normalize = False
-    with pytest.deprecated_call():
-        assert (
-            tlr._from_beacon(
-                snv_inputs["beacon"], do_normalize=do_normalize
-            ).model_dump(exclude_none=True)
-            == snv_output
-        )
+def _unresolving_translator(cls: type) -> AlleleTranslator | CnvTranslator:
+    """Build a translator whose data proxy resolves no accession, without UTA."""
+    data_proxy = MagicMock()
+    data_proxy.derive_refget_accession.return_value = None
+    tlr = cls(data_proxy=data_proxy, identify=False)
+    hgvs_tools = HgvsTools.__new__(HgvsTools)  # skip __init__'s UTA connection
+    hgvs_tools.parser = hgvs.parser.Parser()
+    hgvs_tools.data_proxy = data_proxy
+    tlr._lazy_hgvs_tools = hgvs_tools
+    return tlr
 
-    with pytest.deprecated_call():
-        assert (
-            tlr._from_beacon(
-                mito_inputs["beacon"], do_normalize=do_normalize
-            ).model_dump(exclude_none=True)
-            == mito_output
-        )
+
+@pytest.mark.parametrize(
+    ("cls", "fmt", "expr", "accession"),
+    [
+        (AlleleTranslator, "hgvs", "NC_000099.1:g.100A>T", "NC_000099.1"),
+        (AlleleTranslator, "spdi", "NC_000099.1:100:A:T", "NC_000099.1"),
+        (AlleleTranslator, "gnomad", "Z-100-A-T", "GRCh38:Z"),
+        (CnvTranslator, "hgvs", "NC_000099.1:g.100_200del", "NC_000099.1"),
+    ],
+)
+@pytest.mark.parametrize("given_fmt", [True, False], ids=["given", "guessed"])
+@pytest.mark.filterwarnings("ignore::DeprecationWarning")
+def test_from_unresolvable_accession(cls, fmt, expr, accession, given_fmt):
+    """Report an unknown accession as a lookup failure, not a parse failure.
+
+    Applies whether the expression's format is given or guessed.
+    """
+    tlr = _unresolving_translator(cls)
+    with pytest.raises(UnresolvableAccessionError) as excinfo:
+        tlr.translate_from(expr, fmt=fmt if given_fmt else None)
+    assert excinfo.value.accession == accession
+
+
+def _raises(exc: Exception):
+    def translate(*_args, **_kwargs):
+        raise exc
+
+    return translate
+
+
+def test_guess_continues_past_a_format_that_fails():
+    """A format that recognizes the input but fails does not end the guess."""
+    tlr = _unresolving_translator(AlleleTranslator)
+    allele = object()
+    tlr.from_translators = {
+        "unmatched": lambda *_a, **_k: None,
+        "spurious": _raises(UnresolvableAccessionError("X")),
+        "real": lambda *_a, **_k: allele,
+    }
+    assert tlr.translate_from("anything") is allele
+
+
+def test_guess_reports_the_first_recognized_failure():
+    tlr = _unresolving_translator(AlleleTranslator)
+    first = UnresolvableAccessionError("X")
+    tlr.from_translators = {
+        "unmatched": lambda *_a, **_k: None,
+        "a": _raises(first),
+        "b": _raises(DataProxyValidationError("bad ref")),
+    }
+    with pytest.raises(UnresolvableAccessionError) as excinfo:
+        tlr.translate_from("anything")
+    assert excinfo.value is first
+    if hasattr(first, "add_note"):
+        assert "b (DataProxyValidationError: bad ref)" in excinfo.value.__notes__[0]
+
+
+def test_guess_does_not_absorb_unexpected_errors():
+    """Errors outside the diagnostic set are programming errors and abort."""
+    tlr = _unresolving_translator(AlleleTranslator)
+    tlr.from_translators = {
+        "broken": _raises(TypeError("bug")),
+        "real": lambda *_a, **_k: object(),
+    }
+    with pytest.raises(TypeError, match="bug"):
+        tlr.translate_from("anything")
 
 
 @pytest.mark.vcr
@@ -1041,3 +1101,33 @@ def test_from_vrs_non_variation_type(case):
     with pytest.raises(ValidationError) as e:
         tlr.translate_from({"type": case["type"]}, fmt="vrs")
     assert e.value.errors()[0]["type"] == "union_tag_invalid"
+
+
+def test_from_hgvs_uncertain_range_raises(tlr):
+    """Uncertain-range HGVS cannot be represented as an Allele with a literal
+    sequence state; use CnvTranslator instead. See issue #609.
+
+    No cassette needed: the rejection happens before any data-proxy call.
+    """
+    with pytest.raises(ValueError, match="Uncertain-range"):
+        tlr._from_hgvs("NC_000019.9:g.(11211022_11213339)_(11217364_11218067)dup")
+
+
+@pytest.mark.vcr
+def test_to_hgvs_uncertain_range(tlr):
+    """An Allele with a ``Range`` SequenceLocation.start/end round-trips to
+    uncertain-range HGVS syntax. See issue #609.
+    """
+    allele = models.Allele(
+        location=models.SequenceLocation(
+            sequenceReference=models.SequenceReference(
+                refgetAccession="SQ.pnAqCRBrTsUoBghSD1yp_jXWSmlbdh4g"
+            ),
+            start=models.Range(root=[None, 202376934]),
+            end=models.Range(root=[202377551, 202464808]),
+        ),
+        state=models.LiteralSequenceExpression(sequence=models.sequenceString(root="")),
+    )
+    assert tlr.translate_to(allele, "hgvs") == [
+        "NC_000002.12:g.(?_202376935)_(202377551_202464808)del"
+    ]

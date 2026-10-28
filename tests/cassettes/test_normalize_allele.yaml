@@ -169,6 +169,30 @@ interactions:
     body: null
     headers: {}
     method: GET
+    uri: http://localhost:5000/seqrepo/1/metadata/ga4gh:SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl
+  response:
+    body:
+      string: "{\n  \"added\": \"2016-08-24T08:19:02Z\",\n  \"aliases\": [\n    \"Ensembl:19\",\n
+        \   \"ensembl:19\",\n    \"GRCh38:19\",\n    \"GRCh38:chr19\",\n    \"GRCh38.p1:19\",\n
+        \   \"GRCh38.p1:chr19\",\n    \"GRCh38.p10:19\",\n    \"GRCh38.p10:chr19\",\n
+        \   \"GRCh38.p11:19\",\n    \"GRCh38.p11:chr19\",\n    \"GRCh38.p12:19\",\n
+        \   \"GRCh38.p12:chr19\",\n    \"GRCh38.p2:19\",\n    \"GRCh38.p2:chr19\",\n
+        \   \"GRCh38.p3:19\",\n    \"GRCh38.p3:chr19\",\n    \"GRCh38.p4:19\",\n    \"GRCh38.p4:chr19\",\n
+        \   \"GRCh38.p5:19\",\n    \"GRCh38.p5:chr19\",\n    \"GRCh38.p6:19\",\n    \"GRCh38.p6:chr19\",\n
+        \   \"GRCh38.p7:19\",\n    \"GRCh38.p7:chr19\",\n    \"GRCh38.p8:19\",\n    \"GRCh38.p8:chr19\",\n
+        \   \"GRCh38.p9:19\",\n    \"GRCh38.p9:chr19\",\n    \"MD5:b0eba2c7bb5c953d1e06a508b5e487de\",\n
+        \   \"NCBI:NC_000019.10\",\n    \"refseq:NC_000019.10\",\n    \"SEGUID:AHxM5/L8jIX08UhBBkKXkiO5rhY\",\n
+        \   \"SHA1:007c4ce7f2fc8c85f4f148410642979223b9ae16\",\n    \"VMC:GS_IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl\",\n
+        \   \"sha512t24u:IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl\",\n    \"ga4gh:SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl\"\n
+        \ ],\n  \"alphabet\": \"ACGNT\",\n  \"length\": 58617616\n}\n"
+    headers: {}
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers: {}
+    method: GET
     uri: http://localhost:5000/seqrepo/1/sequence/ga4gh:SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl?start=289464&end=289464
   response:
     body:
@@ -269,6 +293,29 @@ interactions:
   response:
     body:
       string: CAGCA
+    headers: {}
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers: {}
+    method: GET
+    uri: http://localhost:5000/seqrepo/1/metadata/ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO
+  response:
+    body:
+      string: "{\n  \"added\": \"2016-08-27T21:17:00Z\",\n  \"aliases\": [\n    \"GRCh38:1\",\n
+        \   \"GRCh38:chr1\",\n    \"GRCh38.p1:1\",\n    \"GRCh38.p1:chr1\",\n    \"GRCh38.p10:1\",\n
+        \   \"GRCh38.p10:chr1\",\n    \"GRCh38.p11:1\",\n    \"GRCh38.p11:chr1\",\n
+        \   \"GRCh38.p12:1\",\n    \"GRCh38.p12:chr1\",\n    \"GRCh38.p2:1\",\n    \"GRCh38.p2:chr1\",\n
+        \   \"GRCh38.p3:1\",\n    \"GRCh38.p3:chr1\",\n    \"GRCh38.p4:1\",\n    \"GRCh38.p4:chr1\",\n
+        \   \"GRCh38.p5:1\",\n    \"GRCh38.p5:chr1\",\n    \"GRCh38.p6:1\",\n    \"GRCh38.p6:chr1\",\n
+        \   \"GRCh38.p7:1\",\n    \"GRCh38.p7:chr1\",\n    \"GRCh38.p8:1\",\n    \"GRCh38.p8:chr1\",\n
+        \   \"GRCh38.p9:1\",\n    \"GRCh38.p9:chr1\",\n    \"MD5:6aef897c3d6ff0c78aff06ac189178dd\",\n
+        \   \"NCBI:NC_000001.11\",\n    \"refseq:NC_000001.11\",\n    \"SEGUID:FCUd6VJ6uikS/VWLbhGdVmj2rOA\",\n
+        \   \"SHA1:14251de9527aba2912fd558b6e119d5668f6ace0\",\n    \"VMC:GS_Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO\",\n
+        \   \"sha512t24u:Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO\",\n    \"ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO\"\n
+        \ ],\n  \"alphabet\": \"ACGMNRT\",\n  \"length\": 248956422\n}\n"
     headers: {}
     status:
       code: 200
