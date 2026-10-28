@@ -285,6 +285,8 @@ class HgvsTools:
             ValueError: If the HGVS variant type is unsupported, or if ``pos``
                 is an intronic :class:`~hgvs.location.BaseOffsetPosition`.
             TypeError: If ``pos`` is a :class:`~hgvs.location.BaseOffsetInterval`.
+            DataProxyValidationError: If an identity or duplication's location is
+                invalid.
 
         """
         pos = sv.posedit.pos
@@ -308,11 +310,14 @@ class HgvsTools:
 
         if edit_type in ("sub", "del", "delins", "identity"):
             if edit_type == "identity":
+                # Checked before fetching, which a backend may silently truncate
+                self.data_proxy.validate_location_bounds(sv.ac, start, end)
                 state = self.data_proxy.get_sequence(sv.ac, start=start, end=end)
             else:
                 state = sv.posedit.edit.alt or ""
 
         elif edit_type == "dup":
+            self.data_proxy.validate_location_bounds(sv.ac, start, end)
             ref = self.data_proxy.get_sequence(sv.ac, start=start, end=end)
             state = ref + ref
 
@@ -373,6 +378,7 @@ class HgvsTools:
         (start, end, state) = self.get_position_and_state(sv)
 
         return {
+            "sequence_id": sv.ac,
             "refget_accession": refget_accession,
             "start": start,
             "end": end,

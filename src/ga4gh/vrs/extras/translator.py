@@ -196,6 +196,8 @@ class AlleleTranslator(_Translator):
 
         Args:
             values (dict): The values to use for creating the allele object.
+                'sequence_id' (str): The sequence identifier from the input
+                    expression, used to validate `start` and `end`.
                 'refget_accession' (str): The accession ID of the reference genome.
                 'start' (int): The start position of the allele.
                 'end' (int): The end position of the allele.
@@ -206,6 +208,9 @@ class AlleleTranslator(_Translator):
             models.Allele: The created allele object.
 
         """
+        self.data_proxy.validate_location_bounds(
+            values["sequence_id"], values["start"], values["end"]
+        )
         seq_ref = models.SequenceReference(refgetAccession=values["refget_accession"])
         location = models.SequenceLocation(
             sequenceReference=seq_ref, start=values["start"], end=values["end"]
@@ -280,6 +285,7 @@ class AlleleTranslator(_Translator):
         )
 
         values = {
+            "sequence_id": sequence,
             "refget_accession": refget_accession,
             "start": start,
             "end": end,
@@ -358,6 +364,7 @@ class AlleleTranslator(_Translator):
         ins_seq = g["ins_seq"]
 
         values = {
+            "sequence_id": g["ac"],
             "refget_accession": refget_accession,
             "start": start,
             "end": end,
@@ -515,6 +522,7 @@ class CnvTranslator(_Translator):
             return None
 
         location = self.hgvs_tools.build_cnv_location(sv, refget_accession)
+        self.data_proxy.validate_location_bounds(sv.ac, location.start, location.end)
 
         copies = kwargs.get("copies")
         if copies is not None:
