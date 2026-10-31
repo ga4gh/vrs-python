@@ -10,7 +10,12 @@ import pysam
 import pytest
 
 from ga4gh.vrs.dataproxy import DataProxyValidationError, SeqRepoRESTDataProxy
-from ga4gh.vrs.extras.annotator.vcf import VcfAnnotator, VcfAnnotatorError
+from ga4gh.vrs.extras.annotator.vcf import (
+    VcfAnnotator,
+    VcfAnnotatorAbortError,
+    VcfAnnotatorError,
+)
+from ga4gh.vrs.models import Allele
 
 TEST_DATA_DIR = Path("tests/extras/data")
 
@@ -314,3 +319,87 @@ def test_annotate_vcf_rle(vcf_annotator: VcfAnnotator, vcr_cassette, tmp_path: P
     assert output_vrs_pkl.exists()
     if vcr_cassette.write_protected:
         assert vcr_cassette.all_played
+
+
+class FailingVcfAnnotator(VcfAnnotator):
+    """Raise ``error`` when ``on_vrs_object`` reaches the given VCF coordinates"""
+
+    def __init__(
+        self, data_proxy: SeqRepoRESTDataProxy, fail_on: str, error: Exception
+    ) -> None:
+        """Initialize the annotator.
+
+        :param data_proxy: GA4GH sequence dataproxy instance
+        :param fail_on: VCF coordinates (CHR-POS-REF-ALT) at which to raise ``error``
+        :param error: exception to raise
+        """
+        super().__init__(data_proxy)
+        self.fail_on = fail_on
+        self.error = error
+
+    def on_vrs_object(self, vcf_coords: str, vrs_allele: Allele, **kwargs) -> Allele:
+        if vcf_coords == self.fail_on:
+            raise self.error
+        return super().on_vrs_object(vcf_coords, vrs_allele, **kwargs)
+
+
+def test_annotate_vcf_record_error(
+    rest_dataproxy: SeqRepoRESTDataProxy, vcr, tmp_path: Path
+):
+    """Test that a non-abort error in a child class hook only fails the current
+    record, and annotation continues with the rest of the VCF
+    """
+    input_vcf = TEST_DATA_DIR / "test_rle.vcf"
+    output_vcf = tmp_path / "test_record_error_output.vcf"
+    output_vrs_pkl = tmp_path / "test_record_error_output.pkl"
+
+    # test_rle.vcf is the input of test_annotate_vcf_rle, so its cassette covers every
+    # sequence request made here
+    with vcr.use_cassette("test_annotate_vcf_rle.yaml"):
+        vcf_annotator = FailingVcfAnnotator(
+            rest_dataproxy,
+            fail_on="1-100210778-AA-AA",
+            error=RuntimeError("Unable to store allele"),
+        )
+        vcf_annotator.annotate(input_vcf, output_vcf, output_pkl_path=output_vrs_pkl)
+
+    with pysam.VariantFile(str(output_vcf)) as vcf:
+        variants = list(vcf)
+    assert len(variants) == 2
+    assert variants[0].info["VRS_Error"] == ("Unable to store allele",)
+    assert "VRS_Allele_IDs" not in variants[0].info
+    assert "VRS_Error" not in variants[1].info
+    assert len(variants[1].info["VRS_Allele_IDs"]) == 2
+    assert output_vrs_pkl.exists()
+
+
+def test_annotate_vcf_abort(
+    rest_dataproxy: SeqRepoRESTDataProxy, vcr, tmp_path: Path, caplog
+):
+    """Test that raising ``VcfAnnotatorAbortError`` from a child class hook stops
+    annotation of the entire VCF and propagates to the caller
+    """
+    input_vcf = TEST_DATA_DIR / "test_rle.vcf"
+    output_vcf = tmp_path / "test_abort_output.vcf.gz"
+    output_vrs_pkl = tmp_path / "test_abort_output.pkl"
+
+    with vcr.use_cassette("test_annotate_vcf_rle.yaml"):
+        vcf_annotator = FailingVcfAnnotator(
+            rest_dataproxy,
+            fail_on="1-102995989-CTTT-CTTT",
+            error=VcfAnnotatorAbortError("Lost connection to storage"),
+        )
+        with pytest.raises(VcfAnnotatorAbortError, match="Lost connection to storage"):
+            vcf_annotator.annotate(
+                input_vcf, output_vcf, output_pkl_path=output_vrs_pkl
+            )
+
+    assert "Aborting VCF annotation at 1-102995989" in caplog.text
+    # Collection hooks (e.g. PKL dump) are not run for an aborted annotation
+    assert not output_vrs_pkl.exists()
+    # Output VCF is closed, containing only the records annotated before aborting
+    with pysam.VariantFile(str(output_vcf)) as vcf:
+        variants = list(vcf)
+    assert len(variants) == 1
+    assert variants[0].pos == 100210778
+    assert len(variants[0].info["VRS_Allele_IDs"]) == 2
