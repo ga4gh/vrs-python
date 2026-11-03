@@ -80,9 +80,14 @@ class _Translator(ABC):  # noqa: B024
         self.data_proxy = data_proxy
         self.identify = identify
         self.rle_seq_limit = rle_seq_limit
-        self.from_translators: dict[str, VariationFromStrProtocol] = {}
-        self.to_translators: dict[str, VariationToStrProtocol] = {}
+        self.from_translators: dict[
+            str, VariationFromStrProtocol
+        ] = {}  # Will be renamed to ``to_vrs_translators`` in v3.
+        self.to_translators: dict[
+            str, VariationToStrProtocol
+        ] = {}  # Will be renamed to ``from_vrs_translators`` in v3.
 
+    @deprecated("translate_from is deprecated and will be renamed to to_vrs in v3.")
     def translate_from(
         self, var: str, fmt: str | None = None, **kwargs
     ) -> models._VariationBase:
@@ -136,6 +141,7 @@ class _Translator(ABC):  # noqa: B024
         msg = f"Unable to parse data as {', '.join(formats)}"
         raise ValueError(msg)
 
+    @deprecated("translate_to is deprecated and will be renamed to from_vrs in v3.")
     def translate_to(self, vo: models._VariationBase, fmt: str, **kwargs) -> list[str]:
         """Translate vrs object `vo` to named format `fmt`
 
