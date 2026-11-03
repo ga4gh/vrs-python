@@ -312,12 +312,12 @@ def test_rle_round_trip_gnomad_spdi(tlr):
         gnomad = inp["gnomad"]
         spdi = inp["spdi"]
         expected_dict = inp["expected_allele"]
-        allele_gnomad = tlr.translate_from(gnomad, fmt="gnomad", rle_seq_limit=None)
+        allele_gnomad = tlr.to_vrs(gnomad, fmt="gnomad", rle_seq_limit=None)
         assert allele_gnomad.model_dump(exclude_none=True) == expected_dict
-        allele_spdi = tlr.translate_from(spdi, fmt="spdi", rle_seq_limit=None)
+        allele_spdi = tlr.to_vrs(spdi, fmt="spdi", rle_seq_limit=None)
         assert allele_spdi.model_dump(exclude_none=True) == expected_dict
 
-        allele_gnomad_to_spdi = tlr.translate_to(
+        allele_gnomad_to_spdi = tlr.from_vrs(
             allele_gnomad, fmt="spdi", ref_seq_limit=None
         )
         assert len(allele_gnomad_to_spdi) == 1
@@ -328,12 +328,12 @@ def test_from_invalid(tlr):
     with pytest.raises(
         ValueError, match="Unable to parse data as gnomad, hgvs, spdi, vrs"
     ):
-        tlr.translate_from("BRAF amplication")
+        tlr.to_vrs("BRAF amplication")
 
     with pytest.raises(
         ValueError, match="Unable to parse data as gnomad, hgvs, spdi, vrs"
     ):
-        tlr.translate_from("BRAF amplication", assembly_name="GRCh37")
+        tlr.to_vrs("BRAF amplication", assembly_name="GRCh37")
 
 
 @pytest.mark.parametrize(
@@ -348,7 +348,7 @@ def test_from_invalid(tlr):
 def test_from_trailing_input_rejected(tlr, expr, fmt):
     """Expressions with trailing content must be rejected, not partially parsed"""
     with pytest.raises(ValueError, match=f"Unable to parse data as {fmt}"):
-        tlr.translate_from(expr, fmt=fmt)
+        tlr.to_vrs(expr, fmt=fmt)
 
 
 @pytest.mark.vcr
@@ -426,7 +426,7 @@ def test_from_gnomad(tlr):
     assert str(e.value) == error_msg
 
     with pytest.raises(DataProxyValidationError) as e:
-        tlr.translate_from(invalid_var, fmt="gnomad")
+        tlr.to_vrs(invalid_var, fmt="gnomad")
     assert str(e.value) == error_msg
 
     # require_validation set to False
@@ -509,8 +509,8 @@ def test_from_spdi(tlr):
 def test_to_spdi(tlr):
     # do_normalize defaults to true
     spdiexpr = snv_inputs["spdi"]
-    allele = tlr.translate_from(spdiexpr, "spdi")
-    to_spdi = tlr.translate_to(allele, "spdi")
+    allele = tlr.to_vrs(spdiexpr, "spdi")
+    to_spdi = tlr.from_vrs(allele, "spdi")
     assert len(to_spdi) == 1
     assert spdiexpr == to_spdi[0]
 
@@ -520,15 +520,15 @@ def test_to_spdi_with_ref(tlr):
     spdi_expr_no_ref = "NC_000019.10:44908821:1:T"
     spdi_expr_with_ref = "NC_000019.10:44908821:C:T"
 
-    allele_no_ref = tlr.translate_from(spdi_expr_no_ref, "spdi")
-    allele_with_ref = tlr.translate_from(spdi_expr_with_ref, "spdi")
+    allele_no_ref = tlr.to_vrs(spdi_expr_no_ref, "spdi")
+    allele_with_ref = tlr.to_vrs(spdi_expr_with_ref, "spdi")
     assert allele_no_ref == allele_with_ref
 
-    to_spdi_no_ref = tlr.translate_to(allele_no_ref, "spdi", ref_seq_limit=0)
+    to_spdi_no_ref = tlr.from_vrs(allele_no_ref, "spdi", ref_seq_limit=0)
     assert len(to_spdi_no_ref) == 1
     assert spdi_expr_no_ref == to_spdi_no_ref[0]
 
-    to_spdi_with_ref = tlr.translate_to(allele_with_ref, "spdi", ref_seq_limit=None)
+    to_spdi_with_ref = tlr.from_vrs(allele_with_ref, "spdi", ref_seq_limit=None)
     assert len(to_spdi_with_ref) == 1
     assert spdi_expr_with_ref == to_spdi_with_ref[0]
 
@@ -736,10 +736,10 @@ hgvs_tests_to_hgvs_map = {
 @pytest.mark.vcr
 def test_hgvs(tlr, hgvsexpr, expected):
     # do_normalize defaults to true
-    allele = tlr.translate_from(hgvsexpr, "hgvs")
+    allele = tlr.to_vrs(hgvsexpr, "hgvs")
     assert allele.model_dump(exclude_none=True) == expected
 
-    to_hgvs = tlr.translate_to(allele, "hgvs")
+    to_hgvs = tlr.from_vrs(allele, "hgvs")
     assert (hgvsexpr in to_hgvs) or (
         hgvs_tests_to_hgvs_map.get(hgvsexpr, hgvsexpr) in to_hgvs
     )
@@ -772,25 +772,23 @@ def test_rle_seq_limit(tlr):
     input_hgvs_expr = "NC_000013.11:g.32331043_32331094dup"
 
     # use default rle_seq_limit
-    allele_no_seq = tlr.translate_from(input_hgvs_expr, fmt="hgvs")
+    allele_no_seq = tlr.to_vrs(input_hgvs_expr, fmt="hgvs")
     assert allele_no_seq.model_dump(exclude_none=True) == a_dict
 
     with pytest.raises(
         AttributeError, match="'NoneType' object has no attribute 'root'"
     ):
-        tlr.translate_to(allele_no_seq, "hgvs")
+        tlr.from_vrs(allele_no_seq, "hgvs")
 
     # set rle_seq_limit to None
-    allele_with_seq = tlr.translate_from(
-        input_hgvs_expr, fmt="hgvs", rle_seq_limit=None
-    )
+    allele_with_seq = tlr.to_vrs(input_hgvs_expr, fmt="hgvs", rle_seq_limit=None)
     a_dict_with_seq = a_dict.copy()
     a_dict_with_seq["state"]["sequence"] = (
         "TTTAGTTGAACTACAGGTTTTTTTGTTGTTGTTGTTTTGATTTTTTTTTTTTTTTAGTTGAACTACAGGTTTTTTTGTTGTTGTTGTTTTGATTTTTTTTTTTT"
     )
     assert allele_with_seq.model_dump(exclude_none=True) == a_dict_with_seq
 
-    output_hgvs_expr = tlr.translate_to(allele_with_seq, "hgvs")
+    output_hgvs_expr = tlr.from_vrs(allele_with_seq, "hgvs")
     assert output_hgvs_expr == [input_hgvs_expr]
 
 
@@ -812,7 +810,7 @@ def test_to_hgvs_iri_ref_keyerror(tlr):
     with pytest.raises(KeyError) as e:
         # even though the seqrefs.jsonc#/NM_181798.1 is a valid iri-reference for json schema, it is not yet handled here
         # we have to add functionality to address the handling of iri-references in the future
-        tlr.translate_to(iri_vo, "hgvs")
+        tlr.from_vrs(iri_vo, "hgvs")
     assert str(e.value) == "'ga4gh:seqrefs.jsonc#/NM_181798.1'"
 
 
@@ -854,7 +852,7 @@ def test_reference_allele_rle(tlr):
     assert allele_spdi.model_dump(exclude_none=True) == expected
 
     # Test round-trip to SPDI
-    to_spdi = tlr.translate_to(allele_spdi, "spdi", ref_seq_limit=None)
+    to_spdi = tlr.from_vrs(allele_spdi, "spdi", ref_seq_limit=None)
     assert len(to_spdi) == 1
     assert to_spdi[0] == spdi_ref_allele
 
@@ -956,17 +954,13 @@ def test_normalize_microsatellite_counts(tlr, case):
     For identity: keep input coordinates (930089-930152) with repeatSubunitLength=63
     """
     # Test HGVS format
-    allele_hgvs = tlr.translate_from(
-        case["hgvs"], "hgvs", normalize=True, rle_seq_limit=100
-    )
+    allele_hgvs = tlr.to_vrs(case["hgvs"], "hgvs", normalize=True, rle_seq_limit=100)
     assert allele_hgvs.model_dump(exclude_none=True) == case["expected"], (
         f"HGVS failed: {case['description']}"
     )
 
     # Test SPDI format
-    allele_spdi = tlr.translate_from(
-        case["spdi"], "spdi", normalize=True, rle_seq_limit=100
-    )
+    allele_spdi = tlr.to_vrs(case["spdi"], "spdi", normalize=True, rle_seq_limit=100)
     assert allele_spdi.model_dump(exclude_none=True) == case["expected"], (
         f"SPDI failed: {case['description']}"
     )
@@ -975,7 +969,7 @@ def test_normalize_microsatellite_counts(tlr, case):
 @pytest.mark.vcr
 def test_translate_to_invalid_fmt(tlr):
     with pytest.raises(NotImplementedError, match="gnomad is not supported"):
-        tlr.translate_to(models.Allele.model_validate(snv_output), fmt="gnomad")
+        tlr.from_vrs(models.Allele.model_validate(snv_output), fmt="gnomad")
 
 
 def test_from_vrs_dict():
@@ -987,7 +981,7 @@ def test_from_vrs_dict():
     tlr = AlleleTranslator(data_proxy=None, identify=False)
 
     # valid VRS dict translates to a VRS object (previously raised TypeError)
-    allele = tlr.translate_from(snv_output, fmt="vrs")
+    allele = tlr.to_vrs(snv_output, fmt="vrs")
     assert isinstance(allele, models.Allele)
     assert allele.type == "Allele"
     assert allele.location.start == snv_output["location"]["start"]
@@ -1016,7 +1010,7 @@ def test_from_vrs_non_variation_type(case):
     """
     tlr = AlleleTranslator(data_proxy=None, identify=False)
     with pytest.raises(ValidationError) as e:
-        tlr.translate_from({"type": case["type"]}, fmt="vrs")
+        tlr.to_vrs({"type": case["type"]}, fmt="vrs")
     assert e.value.errors()[0]["type"] == "union_tag_invalid"
 
 
@@ -1045,6 +1039,6 @@ def test_to_hgvs_uncertain_range(tlr):
         ),
         state=models.LiteralSequenceExpression(sequence=models.sequenceString(root="")),
     )
-    assert tlr.translate_to(allele, "hgvs") == [
+    assert tlr.from_vrs(allele, "hgvs") == [
         "NC_000002.12:g.(?_202376935)_(202377551_202464808)del"
     ]
