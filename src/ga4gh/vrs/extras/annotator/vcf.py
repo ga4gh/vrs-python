@@ -14,6 +14,7 @@ from ga4gh.core.identifiers import (
     use_ga4gh_compute_identifier_when,
 )
 from ga4gh.vrs import VRS_VERSION, VrsType, __version__
+from ga4gh.vrs.config import RLE_SEQ_LIMIT
 from ga4gh.vrs.dataproxy import _DataProxy
 from ga4gh.vrs.extras.translator import AlleleTranslator
 from ga4gh.vrs.models import Allele, Range
@@ -63,11 +64,6 @@ VCF_ESCAPE_MAP = str.maketrans(
         "\n": "%0A",
     }
 )
-
-# ReferenceLengthExpression .sequence values will be included in output VCF if
-# length <= this value. This field is optional for RLE since it can be derived
-# from the reference sequence. Set to None to always include the sequence.
-RLE_SEQ_LIMIT = 50
 
 
 def dump_alleles_to_pkl(alleles: list[Allele], output_pkl_path: Path) -> None:

@@ -233,13 +233,32 @@ def test_get_vrs_object_invalid_input(vcf_annotator: VcfAnnotator, caplog):
 
 
 @pytest.mark.vcr
-def test_annotate_vcf_rle(vcf_annotator: VcfAnnotator, vcr_cassette, tmp_path: Path):
+@pytest.mark.parametrize(
+    ("configured_modules", "expected_sequence", "vcr_cassette_name"),
+    [
+        (None, "CTTTCTTT", "test_annotate_vcf_rle"),
+        ("0", None, "test_annotate_vcf_rle"),
+        ("4", None, "test_annotate_vcf_rle"),
+        ("8", "CTTTCTTT", "test_annotate_vcf_rle"),
+        ("none", "CTTTCTTT", "test_annotate_vcf_rle"),
+        ("NoNe", "CTTTCTTT", "test_annotate_vcf_rle"),
+    ],
+    indirect=["configured_modules"],
+)
+def test_annotate_vcf_rle(
+    configured_modules,
+    expected_sequence,
+    rest_dataproxy_fn_scope,
+    vcr_cassette,
+    tmp_path: Path,
+):
     """Test VCF annotation with ReferenceLengthExpression states.
 
     Tests two variants that should produce ReferenceLengthExpression states:
     1. Deletion (1:100210778 AA>A): Expected RLE with length=1, repeatSubunitLength=1
     2. Duplication (1:102995989 CTTT>CTTTCTTT): Expected RLE with length=8, repeatSubunitLength=4
     """
+    vcf_annotator = configured_modules[2].VcfAnnotator(rest_dataproxy_fn_scope)
     vcr_cassette.allow_playback_repeats = False
     input_vcf = TEST_DATA_DIR / "test_rle.vcf"
     output_vcf = tmp_path / "test_rle_output.vcf"
@@ -295,6 +314,7 @@ def test_annotate_vcf_rle(vcf_annotator: VcfAnnotator, vcr_cassette, tmp_path: P
         assert duplication_variant.pos == 102995989
         assert duplication_variant.ref == "CTTT"
         assert duplication_variant.alts == ("CTTTCTTT",)
+        assert duplication_variant.info["VRS_States"][-1] == (expected_sequence or ".")
 
         # Check VRS attributes for duplication
         assert "VRS_Allele_IDs" in duplication_variant.info
