@@ -29,6 +29,18 @@ class VcfAnnotatorArgsError(VcfAnnotatorError):
     """Raise for improper args passed to VCF annotator"""
 
 
+class VcfAnnotatorAbortError(VcfAnnotatorError):
+    """Raise to abort annotation of the entire VCF.
+
+    By default, an exception raised while processing a VCF record is logged and
+    recorded in that record's ``VRS_Error`` INFO field, and annotation continues
+    with the next record. Child classes of ``AbstractVcfAnnotator`` can raise this
+    exception (e.g. from ``on_vrs_object``) to signal an unrecoverable error, such as
+    a lost database connection, that should instead stop annotation and propagate
+    to the caller of ``annotate()``.
+    """
+
+
 class FieldName(str, Enum):
     """Define VCF field names for VRS annotations"""
 
@@ -243,6 +255,8 @@ class AbstractVcfAnnotator(abc.ABC):
             validation checks fail, although all instances of failed validation are
             logged as warnings regardless.
         :raise VCFAnnotatorError: if no output formats are selected
+        :raise VcfAnnotatorAbortError: if a child class aborts annotation while a
+            record is being processed
         """
         self.raise_for_output_args(output_vcf_path, **kwargs)
         # This can be pushed up to the click arg parsing too
@@ -264,67 +278,72 @@ class AbstractVcfAnnotator(abc.ABC):
             if (self.collect_alleles and self.should_collect_alleles(**kwargs))
             else None
         )
-        for record in vcf:
-            if vcf_out:
-                additional_info_fields = [FieldName.IDS_FIELD]
-                if vrs_attributes:
-                    additional_info_fields += [
-                        FieldName.STARTS_FIELD,
-                        FieldName.ENDS_FIELD,
-                        FieldName.STATES_FIELD,
-                        FieldName.LENGTHS_FIELD,
-                        FieldName.REPEAT_SUBUNIT_LENGTHS_FIELD,
-                    ]
-            else:
-                # no INFO field names need to be designated if not producing an annotated VCF
-                additional_info_fields = []
-            try:
-                vrs_field_data = self._get_vrs_data(
-                    record,
-                    allele_collection,
-                    assembly,
-                    additional_info_fields,
-                    vrs_attributes=vrs_attributes,
-                    compute_for_ref=compute_for_ref,
-                    require_validation=require_validation,
-                    **kwargs,
+        try:
+            for record in vcf:
+                if vcf_out:
+                    additional_info_fields = [FieldName.IDS_FIELD]
+                    if vrs_attributes:
+                        additional_info_fields += [
+                            FieldName.STARTS_FIELD,
+                            FieldName.ENDS_FIELD,
+                            FieldName.STATES_FIELD,
+                            FieldName.LENGTHS_FIELD,
+                            FieldName.REPEAT_SUBUNIT_LENGTHS_FIELD,
+                        ]
+                else:
+                    # no INFO field names need to be designated if not producing an annotated VCF
+                    additional_info_fields = []
+                try:
+                    vrs_field_data = self._get_vrs_data(
+                        record,
+                        allele_collection,
+                        assembly,
+                        additional_info_fields,
+                        vrs_attributes=vrs_attributes,
+                        compute_for_ref=compute_for_ref,
+                        require_validation=require_validation,
+                        **kwargs,
+                    )
+                except VcfAnnotatorAbortError:
+                    _logger.exception(
+                        "Aborting VCF annotation at %s-%s", record.chrom, record.pos
+                    )
+                    raise
+                except Exception as ex:
+                    _logger.exception("VRS error on %s-%s", record.chrom, record.pos)
+                    err_msg = f"{ex}" or f"{type(ex)}"
+                    err_msg = err_msg.translate(VCF_ESCAPE_MAP)
+                    additional_info_fields = [FieldName.ERROR_FIELD]
+                    vrs_field_data = {FieldName.ERROR_FIELD.value: [err_msg]}
+
+                _logger.debug(
+                    "VCF record %s-%s generated vrs_field_data %s",
+                    record.chrom,
+                    record.pos,
+                    vrs_field_data,
                 )
-            except Exception as ex:
-                _logger.exception("VRS error on %s-%s", record.chrom, record.pos)
-                err_msg = f"{ex}" or f"{type(ex)}"
-                err_msg = err_msg.translate(VCF_ESCAPE_MAP)
-                additional_info_fields = [FieldName.ERROR_FIELD]
-                vrs_field_data = {FieldName.ERROR_FIELD.value: [err_msg]}
 
-            _logger.debug(
-                "VCF record %s-%s generated vrs_field_data %s",
-                record.chrom,
-                record.pos,
-                vrs_field_data,
-            )
-
-            if output_vcf_path and vcf_out:
-                for k in additional_info_fields:
-                    # pysam correctly converts None → "." for Integer/Float
-                    # INFO fields, but for String fields it converts None →
-                    # "" (empty bytes), violating the VCF spec.  Work around
-                    # by using the literal string "." for String-typed fields.
-                    if k in _STRING_FIELDS:
-                        record.info[k.value] = [
-                            "." if v in ("", None) else v
-                            for v in vrs_field_data[k.value]
-                        ]
-                    else:
-                        record.info[k.value] = [
-                            None if v in ("", None) else v
-                            for v in vrs_field_data[k.value]
-                        ]
-                vcf_out.write(record)
-
-        vcf.close()
-
-        if vcf_out:
-            vcf_out.close()
+                if output_vcf_path and vcf_out:
+                    for k in additional_info_fields:
+                        # pysam correctly converts None → "." for Integer/Float
+                        # INFO fields, but for String fields it converts None →
+                        # "" (empty bytes), violating the VCF spec.  Work around
+                        # by using the literal string "." for String-typed fields.
+                        if k in _STRING_FIELDS:
+                            record.info[k.value] = [
+                                "." if v in ("", None) else v
+                                for v in vrs_field_data[k.value]
+                            ]
+                        else:
+                            record.info[k.value] = [
+                                None if v in ("", None) else v
+                                for v in vrs_field_data[k.value]
+                            ]
+                    vcf_out.write(record)
+        finally:
+            vcf.close()
+            if vcf_out:
+                vcf_out.close()
 
         if allele_collection is not None:
             self.on_vrs_object_collection(allele_collection, **kwargs)
@@ -338,6 +357,10 @@ class AbstractVcfAnnotator(abc.ABC):
 
         Reimplement in a child class to add custom logic. Otherwise, simply pass through
         ``vrs_allele`` without altering it further or storing it.
+
+        Exceptions raised here are recorded in the VCF record's ``VRS_Error`` INFO
+        field and annotation continues with the next record, unless the exception is
+        a ``VcfAnnotatorAbortError``, which stops annotation altogether.
 
         :param vcf_coords: CHR-POS-REF-ALT from VCF for this allele
         :param vrs_allele: allele translated from coords
