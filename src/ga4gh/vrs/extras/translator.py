@@ -25,9 +25,9 @@ _logger = logging.getLogger(__name__)
 class TranslationDefault(Enum):
     """Mark options that use the translator instance setting.
 
-    USE_INSTANCE_DEFAULT distinguishes an omitted option from an explicit None.
-    For rle_seq_limit, the default uses the instance limit, while None means no
-    limit. Enum members preserve their identity through copying and pickling.
+    USE_INSTANCE_DEFAULT distinguishes an omitted option from an explicit None. For
+    rle_seq_limit, the default uses the instance limit, while None means no limit. Enum
+    members preserve their identity through copying and pickling.
     """
 
     INSTANCE = "instance"
@@ -40,8 +40,8 @@ USE_INSTANCE_DEFAULT = TranslationDefault.INSTANCE
 class VariationToStrProtocol(Protocol):
     """Protocol for translating VRS objects to other string expressions.
 
-    This protocol defines a callable interface for translating a VRS object
-    into variation strings, with optional keyword arguments for customization.
+    This protocol defines a callable interface for translating a VRS object into
+    variation strings, with optional keyword arguments for customization.
     """
 
     def __call__(self, vo: models._VariationBase, **kwargs: object) -> list[str]:
@@ -56,8 +56,8 @@ class VariationToStrProtocol(Protocol):
 class VariationFromStrProtocol(Protocol):
     """Protocol for translating variation strings to VRS objects.
 
-    This protocol defines a callable interface for translating a variation
-    string into a VRS object, with optional keyword arguments for customization.
+    This protocol defines a callable interface for translating a variation string into a
+    VRS object, with optional keyword arguments for customization.
     """
 
     def __call__(
@@ -77,11 +77,11 @@ class _Translator(ABC):  # noqa: B024
      Translates various variation formats to and from GA4GH VRS models
 
     Format-specific `from_*` parsers follow this pattern:
+
     * If the argument does not appear to be an appropriate type, None is returned
     * Otherwise, the argument is expected to be of the correct type.  If an error occurs during processing,
       an exception is raised.
     * Otherwise, the VRS object is returned
-
     """
 
     gnomad_re = re.compile(
@@ -118,8 +118,8 @@ class _Translator(ABC):  # noqa: B024
     ) -> models._VariationBase:
         """Translate a variation expression or VRS JSON dictionary to a VRS object.
 
-        If fmt is omitted, try the registered parsers in order. Format-specific
-        methods return None for unrecognized input; this method raises ValueError.
+        If fmt is omitted, try the registered parsers in order. Format-specific methods
+        return None for unrecognized input; this method raises ValueError.
 
         :param var: Variation expression, or a VRS JSON dictionary with fmt="vrs".
         :param fmt: Input format, or None to try the registered parsers.
@@ -326,24 +326,14 @@ class AlleleTranslator(_Translator):
         :raises DataProxyValidationError: If reference validation is required and fails,
             or the location is outside the reference sequence.
 
-        #>>> a = tlr.from_gnomad("1-55516888-G-GA")
-        #>>> a.model_dump()
-        {
-          'location': {
-            'end': 55516888,
-            'start': 55516887,
-            'sequenceReference': {
-              'refgetAccession': 'SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO',
-              'type': 'SequenceReference'
-            },
-            'type': 'SequenceLocation'
-          },
-          'state': {
-            'sequence': 'GA',
-            'type': 'LiteralSequenceExpression'
-          },
-          'type': 'Allele'
-        }
+        With ``tlr`` configured for the reference sequence, disable normalization
+        to inspect the input coordinates and alternate sequence:
+
+        >>> a = tlr.from_gnomad("1-55516888-G-GA", do_normalize=False)
+        >>> a.location.start, a.location.end
+        (55516887, 55516888)
+        >>> a.state.sequence.root
+        'GA'
 
         """
         if not isinstance(gnomad_expr, str):
@@ -440,24 +430,15 @@ class AlleleTranslator(_Translator):
         :return: Translated Allele, or None if the expression or accession is unrecognized.
         :raises DataProxyValidationError: If the location is outside the reference sequence.
 
-        #>>> a = tlr.from_spdi("NC_000013.11:32936731:1:C")
-        #>>> a.model_dump()
-        {
-          'location': {
-            'end': 32936732,
-            'start': 32936731,
-            'sequenceReference': {
-                'refgetAccession': 'SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT',
-                'type': 'SequenceReference'
-            },
-            'type': 'SequenceLocation'
-          },
-          'state': {
-              'sequence': 'C',
-              'type': 'LiteralSequenceExpression'
-          },
-          'type': 'Allele'
-        }
+        With ``tlr`` configured for the reference sequence, disable normalization
+        to inspect the input coordinates and alternate sequence:
+
+        >>> a = tlr.from_spdi("NC_000013.11:32936731:1:C", do_normalize=False)
+        >>> a.location.start, a.location.end
+        (32936731, 32936732)
+        >>> a.state.sequence.root
+        'C'
+
         """
         if not isinstance(spdi_expr, str):
             return None
@@ -517,29 +498,25 @@ class AlleleTranslator(_Translator):
     ) -> list[str]:
         """Generate a *list* of SPDI expressions for VRS Allele.
 
-        If `namespace` is not None, returns SPDI strings for the
-        specified namespace.
+        If `namespace` is not None, returns SPDI strings for the specified namespace.
 
-        If `namespace` is None, returns SPDI strings for all alias
-        translations.
+        If `namespace` is None, returns SPDI strings for all alias translations.
 
-        If `ref_seq_limit` is specified, the reference sequence is
-        included in the SPDI expression only if its length is at most the limit.
-        Otherwise only the length of the reference sequence is
-        included. If the limit is None, the reference sequence is
-        always included. In all cases, the alt sequence is included.
-        Default is 0 (never include reference sequence).
+        If `ref_seq_limit` is specified, the reference sequence is included in the SPDI
+        expression only if its length is at most the limit. Otherwise only the length of
+        the reference sequence is included. If the limit is None, the reference sequence
+        is always included. In all cases, the alt sequence is included. Default is 0
+        (never include reference sequence).
 
-        If no alias translations are available, an empty list is
-        returned.
+        If no alias translations are available, an empty list is returned.
 
         Requires an inline SequenceLocation with integer bounds and either a
-        LiteralSequenceExpression or a ReferenceLengthExpression with integer
-        length and a positive repeatSubunitLength. Unsupported model shapes
-        are not validated before their fields are accessed.
+        LiteralSequenceExpression or a ReferenceLengthExpression with integer length and
+        a positive repeatSubunitLength. Unsupported model shapes are not validated
+        before their fields are accessed.
 
-        SPDI and VRS use identical normalization. The incoming Allele
-        is expected to be normalized per VRS spec.
+        SPDI and VRS use identical normalization. The incoming Allele is expected to be
+        normalized per VRS spec.
 
         :param vo: Allele to translate.
         :param namespace: Sequence identifier namespace, or None for all aliases.

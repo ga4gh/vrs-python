@@ -59,12 +59,12 @@ _VrsPos = int | models.Range | None
 
 
 def _is_uncertain_range(pos: _HgvsPos) -> TypeGuard[hgvs.location.Interval]:
-    """Return True if ``pos`` is a nested :class:`hgvs.location.Interval` representing an uncertain range (e.g. ``(A_B)`` from ``(A_B)_(C_D)del``).
+    """Check whether an HGVS position is an uncertain interval.
 
-    Note that hgvs 2.0.0a0 also emits a non-uncertain ``Interval`` (with
-    ``start == end``) for the exact side of a mixed expression like
-    ``g.100_(200_?)del``, so the ``.uncertain`` check is required to distinguish
-    real uncertain ranges from that wrapper shape.
+    Note that hgvs 2.0.0a0 also emits a non-uncertain ``Interval`` (with ``start ==
+    end``) for the exact side of a mixed expression like ``g.100_(200_?)del``, so the
+    ``.uncertain`` check is required to distinguish real uncertain ranges from that
+    wrapper shape.
 
     :param pos: HGVS position to inspect or convert.
     :return: Whether the position is an uncertain interval.
@@ -73,13 +73,13 @@ def _is_uncertain_range(pos: _HgvsPos) -> TypeGuard[hgvs.location.Interval]:
 
 
 def _has_intron_offset(pos: _HgvsPos) -> bool:
-    """Return True if ``pos`` is a :class:`hgvs.location.BaseOffsetPosition` with a non-zero intron offset (e.g. ``100+5`` or ``200-3``).
+    """Check whether an HGVS position has a nonzero intron offset.
 
-    VRS :class:`SequenceLocation` coordinates are transcript-relative; a
-    non-zero offset means the position lies inside an intron, which has no
-    faithful single-integer representation in VRS. This helper lets the
-    low-level converters refuse such inputs defensively; upstream callers
-    typically reject at the variant level via :meth:`HgvsTools.is_intronic`.
+    VRS :class:`SequenceLocation` coordinates are transcript-relative; a non-zero offset
+    means the position lies inside an intron, which has no faithful single-integer
+    representation in VRS. This helper lets the low-level converters refuse such inputs
+    defensively; upstream callers typically reject at the variant level via
+    :meth:`HgvsTools.is_intronic`.
 
     :param pos: HGVS position to inspect or convert.
     :return: Whether the position has a nonzero intron offset.
@@ -88,7 +88,7 @@ def _has_intron_offset(pos: _HgvsPos) -> bool:
 
 
 def _shift_hgvs_to_vrs(base: int | None, side: _Side) -> int | None:
-    """Convert an HGVS 1-based inclusive coordinate to a VRS 0-based interbase coordinate, accounting for which side of the outer interval it is on.
+    """Convert an HGVS coordinate to the corresponding VRS interbase coordinate.
 
     :param base: HGVS coordinate, or None if unknown.
     :param side: Start or end side of the variant interval.
@@ -112,7 +112,7 @@ def _shift_vrs_to_hgvs(value: int | None, side: _Side) -> int | None:
 
 
 def _hgvs_pos_to_vrs(pos: _HgvsPos, side: _Side) -> _VrsPos:
-    """Convert the ``pos.start`` or ``pos.end`` of a parsed hgvs variant to the corresponding VRS value for :attr:`models.SequenceLocation.start` / :attr:`models.SequenceLocation.end`.
+    """Convert an HGVS variant endpoint to a VRS coordinate or range.
 
     Handles three shapes of ``pos``:
 
@@ -183,7 +183,7 @@ def _vrs_pos_to_hgvs(
     *,
     as_interval: bool = False,
 ) -> hgvs.location.SimplePosition | hgvs.location.Interval:
-    """Convert a VRS :attr:`models.SequenceLocation.start` / ``end`` value to the corresponding hgvs position object.
+    """Convert a VRS coordinate or range to an HGVS position.
 
     For an ``int``, returns a :class:`hgvs.location.SimplePosition`. For a
     :class:`models.Range` (or equivalent 2-element list), returns a nested
@@ -191,10 +191,10 @@ def _vrs_pos_to_hgvs(
     within a Range become ``SimplePosition(base=None)`` (rendered as ``?``).
 
     When ``as_interval`` is True, an ``int`` value is wrapped in a non-uncertain
-    ``Interval`` with ``start == end``. This matches the hgvs parser's
-    representation of mixed certain/uncertain outer intervals (e.g.
-    ``g.N_(M_?)del``), where both sides of the outer interval must have the
-    same kind of inner position for the hgvs formatter to work.
+    ``Interval`` with ``start == end``. This matches the hgvs parser's representation of
+    mixed certain/uncertain outer intervals (e.g. ``g.N_(M_?)del``), where both sides of
+    the outer interval must have the same kind of inner position for the hgvs formatter
+    to work.
 
     :param value: Value to convert.
     :param side: Start or end side of the variant interval.
@@ -223,8 +223,8 @@ def _vrs_pos_to_hgvs(
 class HgvsTools:
     """Provide tools for working with HGVS notation.
 
-    Use a context manager or call ``close()`` to close this instance's UTA
-    connection. The caller owns the supplied data proxy, which stays open.
+    Use a context manager or call ``close()`` to close this instance's UTA connection.
+    The caller owns the supplied data proxy, which stays open.
 
     Attributes:
         parser (hgvs.parser.Parser): The HGVS parser object.
@@ -240,8 +240,8 @@ class HgvsTools:
     def __init__(self, data_proxy: _DataProxy | None = None) -> None:
         """Create the HGVS parser, normalizer, variant mapper, and UTA connection.
 
-        Close the UTA connection if normalizer or variant mapper setup fails.
-        If cleanup also fails, raise its error with the setup error chained.
+        Close the UTA connection if normalizer or variant mapper setup fails. If cleanup
+        also fails, raise its error with the setup error chained.
 
         :param data_proxy: Optional caller-owned GA4GH data proxy.
         """
@@ -259,9 +259,9 @@ class HgvsTools:
     def close(self) -> None:
         """Close this instance's UTA connection.
 
-        Repeated calls after success do nothing. Cleanup errors propagate;
-        callers can retry. Keep all resource references and leave the supplied
-        data proxy open. Operations that need UTA are unsupported after closure.
+        Repeated calls after success do nothing. Cleanup errors propagate; callers can
+        retry. Keep all resource references and leave the supplied data proxy open.
+        Operations that need UTA are unsupported after closure.
         """
         if not self._closed:
             self.uta_conn.close()
@@ -307,7 +307,9 @@ class HgvsTools:
         return self.parser.parse_hgvs_variant(hgvs_str)
 
     def has_uncertain_range(self, sv: HgvsSequenceVariant) -> bool:
-        """Return True if either endpoint of ``sv.posedit.pos`` is a nested uncertain :class:`hgvs.location.Interval` (e.g. the ``(A_B)`` sides of ``(A_B)_(C_D)del``). Surfaces the module-private :func:`_is_uncertain_range` check to external callers without requiring them to import an underscore helper across module boundaries.
+        """Check whether either variant endpoint is an uncertain interval.
+
+        For example, the endpoints in ``(A_B)_(C_D)del`` are nested uncertain intervals.
 
         :param sv: Parsed HGVS sequence variant.
         :return: Whether either endpoint is an uncertain range.
@@ -435,11 +437,11 @@ class HgvsTools:
     ) -> models.SequenceLocation:
         """Build a VRS :class:`SequenceLocation` from a parsed hgvs CNV variant.
 
-        CDS-relative (``c.``) inputs are translated to transcript-relative
-        (``n.``) coordinates first; without that step the VRS location would
-        point into the 5' UTR. Handles both certain positions and uncertain-
-        range endpoints; the resulting ``start`` / ``end`` are ints for exact
-        positions and :class:`models.Range` values for uncertain ranges.
+        CDS-relative (``c.``) inputs are translated to transcript-relative (``n.``)
+        coordinates first; without that step the VRS location would point into the 5'
+        UTR. Handles both certain positions and uncertain- range endpoints; the
+        resulting ``start`` / ``end`` are ints for exact positions and
+        :class:`models.Range` values for uncertain ranges.
 
         :param sv: Parsed HGVS sequence variant.
         :param refget_accession: Refget accession for the location sequence.
@@ -462,14 +464,11 @@ class HgvsTools:
     ) -> list[str]:
         """Generate a *list* of HGVS expressions for VRS Allele.
 
-        If `namespace` is not None, returns HGVS strings for the
-        specified namespace.
+        If `namespace` is not None, returns HGVS strings for the specified namespace.
 
-        If `namespace` is None, returns HGVS strings for all alias
-        translations.
+        If `namespace` is None, returns HGVS strings for all alias translations.
 
-        If no alias translations are available, an empty list is
-        returned.
+        If no alias translations are available, an empty list is returned.
 
         If the VRS object cannot be expressed as HGVS, raises ValueError.
 

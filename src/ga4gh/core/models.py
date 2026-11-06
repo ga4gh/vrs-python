@@ -49,7 +49,15 @@ class Relation(str, Enum):
 
 
 class MembershipOperator(str, Enum):
-    """The logical relationship between concepts in the set, in the context of some knowledge reported about them. The value 'AND' indicates that the concepts are dependent and occur together in this context - i.e. the reported assertion is not necessarily true for each concept on its own - only in combination with the other(s). The value 'OR' indicates that each concept applies independently in this context - i.e. the reported assertion is necessarily true for each concept on its own, independent of the presence of the other(s)."""
+    """The logical relationship between concepts in the set, in the context of some knowledge reported about them.
+
+    The value 'AND' indicates that the concepts are dependent and occur together in this
+    context - i.e. the reported assertion is not necessarily true for each concept on
+    its own - only in combination with the other(s). The value 'OR' indicates that each
+    concept applies independently in this context - i.e. the reported assertion is
+    necessarily true for each concept on its own, independent of the presence of the
+    other(s).
+    """
 
     AND = "AND"
     OR = "OR"

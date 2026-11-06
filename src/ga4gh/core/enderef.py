@@ -102,8 +102,7 @@ def ga4gh_deref(
 ) -> BaseModel:
     """Copy an object and replace referable identifiers with inline objects.
 
-    `object_store` must be a mappable object and is required for
-    dereferencing.
+    `object_store` must be a mappable object and is required for dereferencing.
 
     The top-level input is copied. Objects retrieved from the store are inserted
     directly and may be mutated while their own references are resolved.

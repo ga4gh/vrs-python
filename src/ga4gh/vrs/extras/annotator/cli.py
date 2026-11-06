@@ -206,7 +206,8 @@ def _annotate_vcf_cli(
 
     Sequence data from a provider such as SeqRepo is required. Use the `--dataproxy-uri`
     option or the environment variable `GA4GH_VRS_DATAPROXY_URI` to define its location
-    (the former will take priority over the latter when both are set). A URI must be supplied through one of these sources; there is no default server.
+    (the former will take priority over the latter when both are set). A URI must be
+    supplied through one of these sources; there is no default server.
 
     Currently accepted URI schemes:
 

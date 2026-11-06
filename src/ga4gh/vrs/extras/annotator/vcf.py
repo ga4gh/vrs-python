@@ -381,8 +381,8 @@ class AbstractVcfAnnotator(abc.ABC):
     ) -> Allele | None:
         """Perform side-effects (eg additional annotation or storage) or additional filtering on VRS alleles as they are constructed during VCF annotation.
 
-        Implementations return the retained allele or None to discard it. The
-        abstract method itself performs no processing.
+        Implementations return the retained allele or None to discard it. The abstract
+        method itself performs no processing.
 
         :param vcf_coords: CHR-POS-REF-ALT from VCF for this allele
         :param vrs_allele: allele translated from coords
@@ -583,9 +583,9 @@ class AbstractVcfAnnotator(abc.ABC):
 class VcfAnnotator(AbstractVcfAnnotator):
     """Annotate VCFs with VRS allele IDs.
 
-    Uses pysam to ingest a VCF and produce a copy annotated with VRS IDs
-    (and, optionally, normalized allele attributes). Alleles are translated
-    using the VRS-Python translator class.
+    Uses pysam to ingest a VCF and produce a copy annotated with VRS IDs (and,
+    optionally, normalized allele attributes). Alleles are translated using the
+    VRS-Python translator class.
     """
 
     collect_alleles = True

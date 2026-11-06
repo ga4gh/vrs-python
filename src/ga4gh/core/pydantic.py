@@ -10,7 +10,9 @@ _Model = TypeVar("_Model", bound=BaseModel)
 
 
 def getattr_in(obj: object, names: Sequence[str]) -> object:
-    """Call getattr on obj and the successive returns from getattr using names as attribute names in order. If any return is None, terminate early, and return None.
+    """Traverse successive attributes by name.
+
+    Stop and return None when an attribute is missing or its value is None.
 
     Like clojure (get-in obj names) or (some-> obj .name1 .name2 ...)
 
@@ -32,8 +34,8 @@ def getattr_in(obj: object, names: Sequence[str]) -> object:
 def is_curie_type(o: object) -> re.Match[str] | Literal[False] | None:
     """Match a string or root-model value against the CURIE pattern.
 
-    If object is a Pydantic custom root type, extracts the value first,
-    which enables (for example) a GA4GH iriReference pydantic model object to be passed.
+    If object is a Pydantic custom root type, extracts the value first, which enables
+    (for example) a GA4GH iriReference pydantic model object to be passed.
 
     :param o: Object to process.
     :return: Regex match for a CURIE, None for a nonmatching string, or False for other values.

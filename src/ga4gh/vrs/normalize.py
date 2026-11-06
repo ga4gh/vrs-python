@@ -111,20 +111,24 @@ def _get_new_allele_location_pos(
 def _normalize_allele(
     input_allele: models.Allele, data_proxy: _DataProxy, rle_seq_limit: int | None = 50
 ) -> models.Allele:
-    """Normalize Allele using "fully-justified" normalization adapted from NCBI's VOCA. Fully-justified normalization expands such ambiguous representation over the entire region of ambiguity, resulting in an unambiguous representation that may be readily compared with other alleles.
+    """Normalize an Allele using fully justified normalization.
+
+    Adapted from NCBI's VOCA, this expands ambiguous representations over the entire
+    region of ambiguity so they can be compared with other alleles.
 
     This function assumes that IRIs are dereferenced, providing a `SequenceReference` as
-    the `allele.location.sequenceReference`. If a `SequenceReference` is not provided, the allele
-    will be returned as is with no normalization.
+    the `allele.location.sequenceReference`. If a `SequenceReference` is not provided,
+    the allele will be returned as is with no normalization.
 
-    Does not attempt to normalize Alleles with definite ranges or non-LiteralSequenceExpression
-    states and will instead return the `input_allele`.
+    Does not attempt to normalize Alleles with definite ranges or
+    non-LiteralSequenceExpression states and will instead return the `input_allele`.
 
-    If attempting to re-normalize a ReferenceLengthExpression allele,
-    use denormalize_reference_length_expression to construct a LiteralSequenceExpression
+    If attempting to re-normalize a ReferenceLengthExpression allele, use
+    denormalize_reference_length_expression to construct a LiteralSequenceExpression
     allele and then call normalize() on that LiteralSequenceExpression allele.
 
-    See: https://vrs.ga4gh.org/en/2.0/conventions/normalization.html#literalsequenceexpression-alleles
+    See:
+    https://vrs.ga4gh.org/en/2.0/conventions/normalization.html#literalsequenceexpression-alleles
 
     :param input_allele: Input VRS Allele object
     :param data_proxy: SeqRepo dataproxy
@@ -280,8 +284,8 @@ def _trim_for_normalization(
     Return the trimmed interval and trimmed alleles:
         ((trim_start, trim_end), (trim_ref, trim_alt))
 
-    If the alleles are the same, return the original interval and alleles.
-    The first allele (ref) will be populated by bioutils.
+    If the alleles are the same, return the original interval and alleles. The first
+    allele (ref) will be populated by bioutils.
 
     :param ref_seq: Reference sequence proxy.
     :param ival: Input start and end coordinates.
@@ -332,7 +336,10 @@ def denormalize_reference_length_expression(
     repeat_subunit_length: int,
     alt_length: int,
 ) -> str:
-    """Reverse the process of repeat subunit compaction for a ReferenceLengthExpression. The alt is reference-derived so repeat the repeat subunit until it is alt_length characters long. May include a trailing partial copy of the repeat subunit.
+    """Expand a ReferenceLengthExpression into its alternate sequence.
+
+    Repeat the reference subunit to alt_length characters, including a trailing partial
+    copy when needed.
 
     e.g. "ACGT" (repeat_subunit_length=4, length=10) -> "ACGTACGTAC" (ACGT ACGT AC)
 

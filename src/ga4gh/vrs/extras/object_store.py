@@ -11,11 +11,10 @@ from typing import Self
 class Sqlite3MutableMapping(MutableMapping[str, object]):
     """Store a mutable mapping in SQLite.
 
-    The context manager commits or rolls back pending transactions. With
-    autocommit enabled, earlier writes have already been committed and cannot
-    be rolled back by the context manager. Call ``close`` to
-    release the connection. With autocommit disabled, call ``commit`` to persist
-    changes outside a context manager.
+    The context manager commits or rolls back pending transactions. With autocommit
+    enabled, earlier writes have already been committed and cannot be rolled back by the
+    context manager. Call ``close`` to release the connection. With autocommit disabled,
+    call ``commit`` to persist changes outside a context manager.
     """
 
     def __init__(

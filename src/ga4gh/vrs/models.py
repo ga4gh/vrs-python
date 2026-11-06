@@ -107,8 +107,8 @@ def pydantic_class_refatt_map() -> tuple[
 ]:
     """Collect referable model classes, field references, and inherent fields.
 
-    Referable fields can contain identifiable objects or references to them.
-    For example, the referable-field map includes {"Allele": ["location"]}.
+    Referable fields can contain identifiable objects or references to them. For
+    example, the referable-field map includes {"Allele": ["location"]}.
 
     :return: Referable classes, root-model unions containing them, the referable-field
         map, and the inherent-field map, in that order.
@@ -220,7 +220,10 @@ class MoleculeType(str, Enum):
 
 
 class CopyChange(str, Enum):
-    """MUST use one of the defined enumerations that are based on the corresponding EFO ontological terms for copy number variation. See Implementation Guidance for more details."""
+    """MUST use one of the defined enumerations that are based on the corresponding EFO ontological terms for copy number variation.
+
+    See Implementation Guidance for more details.
+    """
 
     COMPLETE_GENOMIC_LOSS = "complete genomic loss"
     HIGH_LEVEL_LOSS = "high-level loss"
@@ -247,7 +250,15 @@ class Syntax(str, Enum):
 
 
 class AnchorOrientation(str, Enum):
-    """Indicates which side of a discontinuous anchor on the sequenceReference is used as the reference point for interpreting offsetStart/offsetEnd. The anchor is an inter-residue coordinate on the sequenceReference. When that anchor corresponds to a boundary whose realization on a base sequence yields two distinct locations (e.g., an exon junction), this property disambiguates which anchor side on the sequenceReference is intended. `left` denotes the side immediately preceding the anchor in sequenceReference coordinate order; `right` denotes the side immediately following the anchor in sequenceReference coordinate order."""
+    """Indicates which side of a discontinuous anchor on the sequenceReference is used as the reference point for interpreting offsetStart/offsetEnd.
+
+    The anchor is an inter-residue coordinate on the sequenceReference. When that anchor
+    corresponds to a boundary whose realization on a base sequence yields two distinct
+    locations (e.g., an exon junction), this property disambiguates which anchor side on
+    the sequenceReference is intended. `left` denotes the side immediately preceding the
+    anchor in sequenceReference coordinate order; `right` denotes the side immediately
+    following the anchor in sequenceReference coordinate order.
+    """
 
     LEFT = "left"
     RIGHT = "right"
@@ -280,7 +291,10 @@ class VRSMetadataMixin(GKMMetadataMixin):
 
 
 class _ValueObject(Entity, ABC):
-    """A contextual value whose equality is based on value, not identity. See https://en.wikipedia.org/wiki/Value_object for more on Value Objects."""
+    """A contextual value whose equality is based on value, not identity.
+
+    See https://en.wikipedia.org/wiki/Value_object for more on Value Objects.
+    """
 
     def __hash__(self) -> int:
         """Hash the canonical JSON representation.
@@ -315,7 +329,11 @@ class _ValueObject(Entity, ABC):
 
 
 class Ga4ghIdentifiableObject(VRSMetadataMixin, _ValueObject):
-    """A contextual value object for which a GA4GH computed identifier can be created. All GA4GH Identifiable Objects may have computed digests from the VRS Computed Identifier algorithm."""
+    """A contextual value object for which a GA4GH computed identifier can be created.
+
+    All GA4GH Identifiable Objects may have computed digests from the VRS Computed
+    Identifier algorithm.
+    """
 
     _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
     _abstract: ClassVar[bool] = True
@@ -359,7 +377,8 @@ class Ga4ghIdentifiableObject(VRSMetadataMixin, _ValueObject):
         Stores the digest in the object if ``store`` is ``True``.
 
         If ``as_version`` is provided, other parameters are ignored and a digest is
-        returned following the conventions of the VRS version indicated by ``as_version``.
+        returned following the conventions of the VRS version indicated by
+        ``as_version``.
 
         :param store: Save the computed digest on the object.
         :param as_version: Optional prior VRS version for serialization.
@@ -389,6 +408,7 @@ class Ga4ghIdentifiableObject(VRSMetadataMixin, _ValueObject):
         """Get a GA4GH computed identifier and optionally update the object ID.
 
         This function has three options for in_place editing of vro.id:
+
         - 'default': the standard identifier update behavior for GA4GH
             identifiable objects, this mode will update the vro.id
             field only when it is None
@@ -397,10 +417,9 @@ class Ga4ghIdentifiableObject(VRSMetadataMixin, _ValueObject):
         - 'never': the vro.id field will not be edited in-place,
             even when empty
 
-        ``recompute`` applies when this call computes an identifier. A valid existing
-        ID returned by the default policy bypasses digest computation. An invalid
-        existing ID is replaced in the return value, but is only stored with the
-        always policy.
+        ``recompute`` applies when this call computes an identifier. A valid existing ID
+        returned by the default policy bypasses digest computation. An invalid existing
+        ID is replaced in the return value, but is only stored with the always policy.
 
         If ``as_version`` is provided, other parameters are ignored and an identifier is
         returned following the conventions of the VRS version indicated by
@@ -452,7 +471,7 @@ class Ga4ghIdentifiableObject(VRSMetadataMixin, _ValueObject):
             return f"{CURIE_NAMESPACE}{CURIE_SEP}{self.ga4gh.priorPrefix[as_version]}{GA4GH_PREFIX_SEP}{digest}"
 
     def get_or_create_digest(self, recompute: bool = False) -> str:
-        """Set and returns a sha512t24u digest of the GA4GH Identifiable Object, or create the digest if it does not exist.
+        """Return the cached digest, computing and storing it when needed.
 
         :param recompute: Recompute an existing digest when true.
         :return: Existing or newly computed digest.
@@ -468,7 +487,11 @@ class Ga4ghIdentifiableObject(VRSMetadataMixin, _ValueObject):
 
 
 class Expression(VRSMetadataMixin, Element, BaseModelForbidExtra):
-    """Representation of a variation by a specified nomenclature or syntax for a Variation object. Common examples of expressions for the description of molecular variation include the HGVS and ISCN nomenclatures."""
+    """Representation of a variation by a specified nomenclature or syntax for a Variation object.
+
+    Common examples of expressions for the description of molecular variation include
+    the HGVS and ISCN nomenclatures.
+    """
 
     _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
 
@@ -543,7 +566,10 @@ class residue(VRSMetadataMixin, RootModel):
 
 
 class sequenceString(VRSMetadataMixin, RootModel):
-    """A character string of `Residues` that represents a biological sequence using the conventional sequence order (5'-to-3' for nucleic acid sequences, and amino-to-carboxyl for amino acid sequences). IUPAC ambiguity codes are permitted in Sequence Strings."""
+    """A character string of `Residues` that represents a biological sequence using the conventional sequence order (5'-to-3' for nucleic acid sequences, and amino-to-carboxyl for amino acid sequences).
+
+    IUPAC ambiguity codes are permitted in Sequence Strings.
+    """
 
     _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
 
@@ -813,7 +839,11 @@ class SequenceOffsetLocation(VRSMetadataMixin, _ValueObject, BaseModelForbidExtr
 
 
 class RelativeSequenceLocation(Ga4ghIdentifiableObject, BaseModelForbidExtra):
-    """A location on a base sequence and its position relative to a boundary offset on a mapped sequence gap. Typically used to describe intronic locations that exist with respect to a mapped RNA transcript sequence."""
+    """A location on a base sequence and its position relative to a boundary offset on a mapped sequence gap.
+
+    Typically used to describe intronic locations that exist with respect to a mapped
+    RNA transcript sequence.
+    """
 
     _maturity: ClassVar[Maturity] = Maturity.DRAFT
 
@@ -1023,7 +1053,11 @@ class Adjacency(_VariationBase, BaseModelForbidExtra):
 
 
 class Terminus(_VariationBase, BaseModelForbidExtra):
-    """The `Terminus` data class provides a structure for describing the end (terminus) of a sequence. Structurally similar to Adjacency but the linker sequence is not allowed and it removes the unnecessary array structure."""
+    """The `Terminus` data class provides a structure for describing the end (terminus) of a sequence.
+
+    Structurally similar to Adjacency but the linker sequence is not allowed and it
+    removes the unnecessary array structure.
+    """
 
     _maturity: ClassVar[Maturity] = Maturity.DRAFT
 

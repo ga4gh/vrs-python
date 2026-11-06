@@ -44,12 +44,10 @@ def validate_start_le_end(identifier: str, start: int | None, end: int | None) -
 class _DataProxy(ABC):
     """abstract class / interface for VRS data needs
 
-    The proxy MUST support the use of GA4GH sequence identifers (i.e.,
-    `ga4gh:SQ...`) as keys, and return these identifiers among the
-    aliases for a sequence.  These identifiers may be supported
-    natively by the data source or synthesized by the proxy from the
-    data source or synthesized.
-
+    The proxy MUST support the use of GA4GH sequence identifers (i.e., `ga4gh:SQ...`) as
+    keys, and return these identifiers among the aliases for a sequence.  These
+    identifiers may be supported natively by the data source or synthesized by the proxy
+    from the data source or synthesized.
     """
 
     @abstractmethod
@@ -60,10 +58,10 @@ class _DataProxy(ABC):
 
         start and end are optional
 
-        If the given sequence does not exist, KeyError is raised. If start is
-        after end, DataProxyValidationError may be raised.
+        If the given sequence does not exist, KeyError is raised. If start is after end,
+        DataProxyValidationError may be raised.
 
-        >> dp.get_sequence("NM_000551.3", 0, 10)
+        >>> dp.get_sequence("NM_000551.3", 0, 10)
         'CCTCGCCTCC'
 
         :param identifier: Sequence identifier to resolve.
@@ -80,7 +78,7 @@ class _DataProxy(ABC):
 
         If the given sequence does not exist, KeyError is raised.
 
-        >> dp.get_metadata("NM_000551.3")
+        >>> dp.get_metadata("NM_000551.3")
         {'added': '2016-08-24T05:03:11Z',
          'aliases': ['MD5:215137b1973c1a5afcf86be7d999574a',
                      'RefSeq:NM_000551.3',
@@ -98,7 +96,7 @@ class _DataProxy(ABC):
 
     @staticmethod
     def extract_sequence_type(alias: str) -> str | None:
-        """Provide a convenient way to extract the sequence type from an accession by matching its prefix to a known set of prefixes.
+        """Infer the HGVS sequence type from a recognized accession prefix.
 
         :param alias: Sequence accession or alias.
         :return: HGVS sequence type, or None for an unknown prefix.
@@ -129,8 +127,7 @@ class _DataProxy(ABC):
     ) -> list[str]:
         """Translate given identifier to a list of identifiers in the specified namespace.
 
-        `identifier` must be a string
-        `namespace` is case-sensitive
+        `identifier` must be a string `namespace` is case-sensitive
 
         On success, returns a list of matching identifiers.  Raises KeyError if given
         identifier isn't found.
@@ -182,7 +179,10 @@ class _DataProxy(ABC):
         ref: str,
         require_validation: bool = True,
     ) -> None:
-        """Determine whether or not the expected reference sequence matches the actual reference sequence. Returns ``None``, but invalid results are logged at level WARN by default. If ``require_validation`` is ``True``, then invalid data will cause a ``DataProxyValidationError`` to be raised.
+        """Validate the expected reference sequence against the data proxy.
+
+        Reference mismatches are logged as warnings. With require_validation=True, they
+        also raise DataProxyValidationError. Invalid location bounds always raise.
 
         :param sequence_id: Sequence ID to use
         :param start_pos: Start pos (inter-residue) on the sequence_id
@@ -226,8 +226,8 @@ class _DataProxy(ABC):
 
         There is no ``require_validation`` option: an out-of-bounds location has no
         meaning, so the error is always raised, including from ``validate_ref_seq``.
-        Sequence backends may silently truncate out-of-range fetches, so this check
-        must be made before relying on fetched sequence.
+        Sequence backends may silently truncate out-of-range fetches, so this check must
+        be made before relying on fetched sequence.
 
         :param sequence_id: Sequence ID to use
         :param start_pos: Start pos (inter-residue) on the sequence_id
@@ -434,8 +434,8 @@ class SeqRepoRESTDataProxy(_SeqRepoDataProxyBase):
 class SequenceProxy(Sequence[str]):
     """Fetch sequence characters and contiguous slices through a data proxy.
 
-    Slice steps and reversed iteration are unsupported. Coordinates are passed
-    to the backend without Python-style negative-index normalization.
+    Slice steps and reversed iteration are unsupported. Coordinates are passed to the
+    backend without Python-style negative-index normalization.
     """
 
     def __init__(self, dp: _DataProxy, alias: str) -> None:
