@@ -1,24 +1,49 @@
-"""serializes, digests, and identifies GA4GH objects
+"""Serialize, digest, and identify GA4GH models.
 
-In GA4GH schemas with nested objects, serialize, digest, and identify
-are entangled.
+For an Allele without cached IDs or digests, the main steps are
+(intermediate helper calls omitted)::
 
-For example, here is a call path for ga4gh_identify called on an Allele:
     ga4gh_identify(allele)
-    + ga4gh_digest(allele)
-    ++ ga4gh_serialize(allele)
-    +++ ga4gh_digest(allele.location)
-    ++++ ga4gh_serialize(allele.location)
-    +++ ga4gh_serialize(allele.state)
+    + allele.compute_ga4gh_identifier()
+      + allele.compute_digest()
+        + allele.ga4gh_serialize()
+          + location.get_or_create_digest()  # identifiable child
+          + state.ga4gh_serialize()          # inline value object
+        + encode_canonical_json(...)
+        + sha512t24u(...)
 
-For that reason, they are implemented here in one file.
+Given an Allele, call the public helpers::
 
+    from ga4gh.core import ga4gh_digest, ga4gh_identify, ga4gh_serialize
+
+    identifier = ga4gh_identify(allele, in_place="never")  # GA4GH CURIE
+    digest = ga4gh_digest(allele)  # digest component
+    serialized = ga4gh_serialize(allele)  # canonical JSON bytes
+
+``in_place="never"`` leaves the ID unchanged; ``"always"`` stores the result;
+``"default"`` stores it only when the ID is None. Digests may still be cached.
+
+To reuse any nonempty ID::
+
+    from ga4gh.core import VrsObjectIdentifierIs, use_ga4gh_compute_identifier_when
+
+    with use_ga4gh_compute_identifier_when(VrsObjectIdentifierIs.MISSING):
+        identifier = ga4gh_identify(allele)
+
+``GA4GH_INVALID`` instead requires an ID matching the GA4GH pattern. ``ANY``
+always calls the model identifier method, which may reuse cached IDs or digests.
+After editing an allele, refresh changed identifiable children first, then::
+
+    identifier = allele.get_or_create_ga4gh_identifier(
+        in_place="always", recompute=True
+    )
 """
 
 import contextvars
 import re
 from contextlib import ContextDecorator
 from enum import Enum, IntEnum
+from types import TracebackType
 
 from canonicaljson import encode_canonical_json
 from pydantic import BaseModel
@@ -38,14 +63,10 @@ NS_W_SEP = f"{CURIE_NAMESPACE}{CURIE_SEP}"
 
 
 class VrsObjectIdentifierIs(IntEnum):
-    """Defines the state for when the `ga4gh_identify` method should compute
-    an identifier ('id' attribute) for the specified object.  The options are:
-      ANY - Always compute the identifier (this is the default behavior)
-      GA4GH_INVALID - Compute the identifier if it is missing or is present but syntactically invalid
-      MISSING - Only compute the identifier if missing
+    """Defines the state for when the `ga4gh_identify` method should compute an identifier ('id' attribute) for the specified object.  The options are: ANY - Always compute the identifier (this is the default behavior) GA4GH_INVALID - Compute the identifier if it is missing or is present but syntactically invalid MISSING - Only compute the identifier if missing
 
-    The default behavior is safe and ensures that the identifiers are correct,
-    but at a performance cost. Where the source of inputs to `ga4gh_identify`
+    The default policy calls the model identifier method. That method may reuse
+    an existing valid identifier or digest; this policy does not force recomputation. Where the source of inputs to `ga4gh_identify`
     are well controlled, for example when annotating a VCF file with VRS IDs,
     using `MISSING` can improve performance.
     """
@@ -56,14 +77,17 @@ class VrsObjectIdentifierIs(IntEnum):
 
 
 class PrevVrsVersion(str, Enum):
-    """Define previous VRS versions that are supported for computing digests and
-    identifiers based on the current VRS model
-    """
+    """Define previous VRS versions that are supported for computing digests and identifiers based on the current VRS model"""
 
     V1_3 = "1.3"
 
     @classmethod
-    def validate(cls, version) -> None:  # noqa: ANN001
+    def validate(cls, version: object) -> None:
+        """Validate a supported prior VRS version.
+
+        :param version: Version value to validate; None selects the current version.
+        :raises ValueError: If the version is unsupported.
+        """
         if version is not None and version not in cls.__members__.values():
             err_msg = f"Expected `PrevVrsVersion`, but got {version}"
             raise ValueError(err_msg)
@@ -73,8 +97,7 @@ ga4gh_compute_identifier_when = contextvars.ContextVar("ga4gh_compute_identifier
 
 
 class use_ga4gh_compute_identifier_when(ContextDecorator):  # noqa: N801
-    """Context manager that defines when to compute identifiers
-    for all operations within the context.  For example:
+    """Context manager that defines when to compute identifiers for all operations within the context.  For example:
 
     with use_ga4gh_compute_identifier_when(VrsObjectIdentifierIs.GA4GH_INVALID):
         VCFAnnotator(...).annotate(...)
@@ -86,18 +109,34 @@ class use_ga4gh_compute_identifier_when(ContextDecorator):  # noqa: N801
     """
 
     def __init__(self, when: VrsObjectIdentifierIs) -> None:
+        """Set the identifier computation policy.
+
+        :param when: Identifier computation policy for the context.
+        """
         self.when = when
         self.token = None
 
     def __enter__(self) -> None:
+        """Apply the identifier computation policy."""
         self.token = ga4gh_compute_identifier_when.set(self.when)
 
-    def __exit__(self, exc_type, exc, exc_tb) -> None:  # noqa: ANN001
+    def __exit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc: BaseException | None,
+        exc_tb: TracebackType | None,
+    ) -> None:
+        """Restore the previous identifier computation policy.
+
+        :param exc_type: Exception class from the context body, if any.
+        :param exc: Exception instance from the context body, if any.
+        :param exc_tb: Traceback from the context body, if any.
+        """
         ga4gh_compute_identifier_when.reset(self.token)
 
 
-def is_ga4gh_identifier(ir: str) -> bool:
-    """Check whether a string is a valid GA4GH identifier
+def is_ga4gh_identifier(ir: object) -> bool:
+    """Check whether a value starts with the GA4GH namespace prefix
 
     >>> is_ga4gh_identifier("ga4gh:SQ.0123abcd")
     True
@@ -108,31 +147,34 @@ def is_ga4gh_identifier(ir: str) -> bool:
     >>> is_ga4gh_identifier(None)
     False
 
+    :param ir: Value or root model to inspect.
+    :return: Whether the value has the GA4GH namespace prefix.
     """
     return str(get_pydantic_root(ir)).startswith(NS_W_SEP)
 
 
 def ga4gh_identify(
-    vro,  # noqa: ANN001
+    vro: BaseModel,
     in_place: str = "default",
     as_version: PrevVrsVersion | None = None,
 ) -> str | None:
-    """Return the GA4GH digest-based id for the object, as a CURIE
-    (string).  Returns None if object is not identifiable.
+    """Return the GA4GH digest-based id for the object, as a CURIE (string).  Returns None if object is not identifiable.
 
     This function has three options for in_place editing of vro.id:
     - 'default': the standard identifier update behavior for GA4GH
         identifiable objects, this mode will update the vro.id
-        field if the field is empty
+        field only when it is None
     - 'always': this will update the vro.id field any time the
         identifier is computed (compute behavior is controlled by the
         use_ga4gh_compute_identifier_when context)
     - 'never': the vro.id field will not be edited in-place,
         even when empty
 
-    If ``as_version`` is provided, other parameters are ignored and an identifier is
-    returned following the conventions of the VRS version indicated by ``as_version_``.
-    Raises ``ValueError`` if ``as_version`` is not a ``PrevVrsVersion``.
+    The context policy may return an existing ID without computing one. When
+    computation occurs, ``as_version`` selects legacy serialization and bypasses
+    in-place ID updates; it does not override the context policy.
+    Accepts a supported PrevVrsVersion member or its string value.
+    Raises ValueError for other version values.
 
     >>> from ga4gh.core import ga4gh_identify
     >>> import ga4gh.vrs
@@ -145,6 +187,14 @@ def ga4gh_identify(
     ... )
     >>> ga4gh_identify(location)
     'ga4gh:SL.4t6JnYWqHwYw9WzBT_lmWBb3tLQNalkT'
+
+    :param vro: GA4GH model implementing is_ga4gh_identifiable and the digest
+        and identifier methods used for identifiable objects.
+    :param in_place: Identifier update policy: default, always, or never.
+    :param as_version: Optional prior VRS version to use.
+    :return: Identifier, or None for a non-identifiable model.
+    :raises ValueError: If as_version is unsupported.
+    :raises AttributeError: If the model lacks the required GA4GH methods.
     """
     PrevVrsVersion.validate(as_version)
 
@@ -176,8 +226,9 @@ def ga4gh_digest(
     Only GA4GH identifiable objects are GA4GH digestible.
 
     If ``as_version`` is provided, other parameters are ignored and a digest is returned
-    following the conventions of the VRS version indicated by ``as_version_``.
-    Raises ``ValueError`` if ``as_version`` is not a ``PrevVrsVersion``.
+    following the conventions of the VRS version indicated by ``as_version``.
+    Accepts a supported PrevVrsVersion member or its string value.
+    Raises ValueError for other version values.
 
     >>> from ga4gh.core import ga4gh_digest
     >>> import ga4gh.vrs
@@ -190,6 +241,14 @@ def ga4gh_digest(
     ... )
     >>> ga4gh_digest(location)
     '4t6JnYWqHwYw9WzBT_lmWBb3tLQNalkT'
+
+    :param vro: GA4GH model implementing is_ga4gh_identifiable and the digest
+        and identifier methods used for identifiable objects.
+    :param overwrite: Recompute an existing digest when true.
+    :param as_version: Optional prior VRS version to use.
+    :return: Digest, or None for a non-identifiable model.
+    :raises ValueError: If as_version is unsupported.
+    :raises AttributeError: If the model lacks the required GA4GH methods.
     """
     PrevVrsVersion.validate(as_version)
 
@@ -202,11 +261,18 @@ def ga4gh_digest(
 
 def ga4gh_serialize(
     obj: BaseModel, as_version: PrevVrsVersion | None = None
-) -> bytes | None:
+) -> bytes | str:
     """Serialize an object for use in computed digest computation.
 
     If ``as_version`` is provided, the returned serialization follows
-    the conventions of the VRS version indicated by ``as_version_``.
+    the conventions of the VRS version indicated by ``as_version``.
+
+    :param obj: Model implementing ga4gh_serialize, and ga4gh_serialize_as_version
+        when legacy serialization is requested.
+    :param as_version: Optional prior VRS version to use.
+    :return: Canonical JSON bytes, or legacy serialization text.
+    :raises ValueError: If as_version is unsupported.
+    :raises AttributeError: If the model lacks the required GA4GH methods.
     """
     PrevVrsVersion.validate(as_version)
 

@@ -30,7 +30,10 @@ class GKMMaturityMixin:
 
     @classmethod
     def maturity(cls) -> Maturity:
-        """Return the GKM maturity level for the model."""
+        """Return the GKM maturity level for the model.
+
+        :return: Declared maturity level.
+        """
         return cls._maturity
 
 
@@ -43,7 +46,10 @@ class GKMSchemaMixin:
 
     @classmethod
     def schema_id(cls) -> str:
-        """Return the canonical JSON Schema identifier for the model."""
+        """Return the canonical JSON Schema identifier for the model.
+
+        :return: Canonical schema URI.
+        """
         return f"{cls._schema_base_uri}/{cls._product_name}/{cls._product_version}/json/{cls.__name__}"
 
 
@@ -56,8 +62,8 @@ class GKMMetadataMixin(GKMMaturityMixin, GKMSchemaMixin):
     def apply_schema_metadata(cls, schema: dict[str, Any]) -> dict[str, Any]:
         """Add GKM metadata to a generated JSON Schema.
 
-        :param schema: Generated JSON Schema to annotate.
-        :returns: The annotated JSON Schema.
+        :param schema: Generated JSON Schema to mutate in place.
+        :return: The annotated JSON Schema.
         """
         schema["$id"] = cls.schema_id()
         schema["maturity"] = cls.maturity().value
@@ -101,8 +107,9 @@ class GKMMetadataMixin(GKMMaturityMixin, GKMSchemaMixin):
         :param ref_template: Template for schema references.
         :param schema_generator: Pydantic schema generator class.
         :param mode: Pydantic schema generation mode.
-        :param union_format: How to represent unions in the generated schema.
-        :returns: JSON Schema annotated with GKM metadata.
+        :param union_format: How to represent unions; ignored on Pydantic versions
+            older than 2.12.
+        :return: JSON Schema annotated with GKM metadata.
         """
         schema_kwargs: dict[str, Any] = {
             "by_alias": by_alias,

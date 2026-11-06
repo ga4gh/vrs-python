@@ -15,6 +15,7 @@ import inspect
 import sys
 from abc import ABC
 from collections import OrderedDict
+from collections.abc import Iterator
 from enum import Enum
 from types import UnionType
 from typing import Annotated, ClassVar, Literal, get_args, get_origin
@@ -49,13 +50,18 @@ from ga4gh.core.pydantic import get_pydantic_root, getattr_in
 from ga4gh.vrs.version import VRS_VERSION
 
 
-def flatten(vals):
-    """Flatten vals recursively, lazily using yield"""
+def flatten(vals: object) -> Iterator[object]:
+    """Yield values from nested lists and sets.
 
-    def is_coll(thing) -> bool:
+    :param vals: Scalar or nested collection to flatten.
+    :return: Iterator over leaf values.
+    """
+
+    def is_coll(thing: object) -> bool:
         """Return True if the thing looks like a collection.
 
-        This is not exhaustive, do not use in general.
+        :param thing: Value to inspect.
+        :return: Whether the value is exactly a built-in list or set, excluding subclasses.
         """
         return type(thing) in [list, set]
 
@@ -66,8 +72,12 @@ def flatten(vals):
         yield vals
 
 
-def flatten_type(t):
-    """Flatten a complex type into a list of constituent types."""
+def flatten_type(t: object) -> list[object]:
+    """Flatten a complex type into a list of constituent types.
+
+    :param t: Type annotation to inspect.
+    :return: Constituent types or literal values.
+    """
     origin = get_origin(t)
     args = get_args(t)
 
@@ -80,18 +90,28 @@ def flatten_type(t):
 
 
 def overlaps(a: list, b: list) -> bool:
-    """Return true if there are any elements in common between a and b"""
+    """Return true if there are any elements in common between a and b
+
+    :param a: First collection.
+    :param b: Second collection.
+    :return: Whether the collections share any values.
+    """
     return len(set(a).intersection(set(b))) > 0
 
 
-def pydantic_class_refatt_map():
-    """Build a map of class names to their field names that are referable types.
+def pydantic_class_refatt_map() -> tuple[
+    list[type[BaseModel]],
+    list[type[BaseModel]],
+    dict[str, list[str]],
+    dict[str, list[str]],
+]:
+    """Collect referable model classes, field references, and inherent fields.
 
-    As in, types with an identifier that can be referred to elsewhere, collapsed to that identifier and dereferenced.
+    Referable fields can contain identifiable objects or references to them.
+    For example, the referable-field map includes {"Allele": ["location"]}.
 
-    Returns a map like:
-
-    {"Allele": ["location"], ...}
+    :return: Referable classes, root-model unions containing them, the referable-field
+        map, and the inherent-field map, in that order.
     """
     # Things defined here that are classes that inherit from BaseModel
     this_module = sys.modules[__name__]
@@ -184,10 +204,7 @@ class Orientation(str, Enum):
 
 
 class ResidueAlphabet(str, Enum):
-    """The interpretation of the character codes referred to by the refget accession,
-    where "aa" specifies an amino acid character set, and "na" specifies a nucleic acid
-    character set.
-    """
+    """The interpretation of the character codes referred to by the refget accession, where "aa" specifies an amino acid character set, and "na" specifies a nucleic acid character set."""
 
     AA = "aa"
     NA = "na"
@@ -203,10 +220,7 @@ class MoleculeType(str, Enum):
 
 
 class CopyChange(str, Enum):
-    """MUST use one of the defined enumerations that are based on the corresponding EFO
-    ontological terms for copy number variation. See Implementation Guidance for more
-    details.
-    """
+    """MUST use one of the defined enumerations that are based on the corresponding EFO ontological terms for copy number variation. See Implementation Guidance for more details."""
 
     COMPLETE_GENOMIC_LOSS = "complete genomic loss"
     HIGH_LEVEL_LOSS = "high-level loss"
@@ -219,9 +233,7 @@ class CopyChange(str, Enum):
 
 
 class Syntax(str, Enum):
-    """The syntax used to describe the variation. The value should be one of the
-    supported syntaxes.
-    """
+    """The syntax used to describe the variation. The value should be one of the supported syntaxes."""
 
     HGVS_C = "hgvs.c"
     HGVS_P = "hgvs.p"
@@ -235,21 +247,18 @@ class Syntax(str, Enum):
 
 
 class AnchorOrientation(str, Enum):
-    """Indicates which side of a discontinuous anchor on the sequenceReference is used
-    as the reference point for interpreting offsetStart/offsetEnd. The anchor is an
-    inter-residue coordinate on the sequenceReference. When that anchor corresponds to a
-    boundary whose realization on a base sequence yields two distinct locations (e.g.,
-    an exon junction), this property disambiguates which anchor side on the
-    sequenceReference is intended. `left` denotes the side immediately preceding the
-    anchor in sequenceReference coordinate order; `right` denotes the side immediately
-    following the anchor in sequenceReference coordinate order.
-    """
+    """Indicates which side of a discontinuous anchor on the sequenceReference is used as the reference point for interpreting offsetStart/offsetEnd. The anchor is an inter-residue coordinate on the sequenceReference. When that anchor corresponds to a boundary whose realization on a base sequence yields two distinct locations (e.g., an exon junction), this property disambiguates which anchor side on the sequenceReference is intended. `left` denotes the side immediately preceding the anchor in sequenceReference coordinate order; `right` denotes the side immediately following the anchor in sequenceReference coordinate order."""
 
     LEFT = "left"
     RIGHT = "right"
 
 
-def _recurse_ga4gh_serialize(obj):
+def _recurse_ga4gh_serialize(obj: object) -> object:
+    """Serialize nested values using GA4GH digests for identifiable objects.
+
+    :param obj: Value to serialize.
+    :return: Serialized value or unchanged scalar.
+    """
     if isinstance(obj, Ga4ghIdentifiableObject):
         return obj.get_or_create_digest()
     if isinstance(obj, _ValueObject):
@@ -271,14 +280,20 @@ class VRSMetadataMixin(GKMMetadataMixin):
 
 
 class _ValueObject(Entity, ABC):
-    """A contextual value whose equality is based on value, not identity.
-    See https://en.wikipedia.org/wiki/Value_object for more on Value Objects.
-    """
+    """A contextual value whose equality is based on value, not identity. See https://en.wikipedia.org/wiki/Value_object for more on Value Objects."""
 
     def __hash__(self) -> int:
+        """Hash the canonical JSON representation.
+
+        :return: Hash of the serialized value.
+        """
         return encode_canonical_json(self.ga4gh_serialize()).decode("utf-8").__hash__()
 
     def ga4gh_serialize(self) -> dict:
+        """Serialize inherent fields for GA4GH digest computation.
+
+        :return: Mapping of inherent fields to serialized values.
+        """
         out = OrderedDict()
         for k in self.ga4gh.inherent:
             v = getattr(self, k)
@@ -286,18 +301,21 @@ class _ValueObject(Entity, ABC):
         return out
 
     class ga4gh:  # noqa: N801
+        """Define GA4GH serialization metadata for this model."""
+
         inherent: list[str]
 
     @staticmethod
     def is_ga4gh_identifiable() -> bool:
+        """Report whether this class supports GA4GH computed identifiers.
+
+        :return: Whether instances are identifiable.
+        """
         return False
 
 
 class Ga4ghIdentifiableObject(VRSMetadataMixin, _ValueObject):
-    """A contextual value object for which a GA4GH computed identifier can be created.
-    All GA4GH Identifiable Objects may have computed digests from the VRS Computed
-    Identifier algorithm.
-    """
+    """A contextual value object for which a GA4GH computed identifier can be created. All GA4GH Identifiable Objects may have computed digests from the VRS Computed Identifier algorithm."""
 
     _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
     _abstract: ClassVar[bool] = True
@@ -310,14 +328,27 @@ class Ga4ghIdentifiableObject(VRSMetadataMixin, _ValueObject):
         description="A sha512t24u digest created using the VRS Computed Identifier algorithm.",
     )
 
-    def __lt__(self, other) -> bool:
+    def __lt__(self, other: "Ga4ghIdentifiableObject") -> bool:
+        """Compare objects by their computed digests.
+
+        :param other: Object to compare.
+        :return: Whether this digest sorts before the other digest.
+        """
         return self.get_or_create_digest() < other.get_or_create_digest()
 
     @staticmethod
     def is_ga4gh_identifiable() -> bool:
+        """Report whether this class supports GA4GH computed identifiers.
+
+        :return: Whether instances are identifiable.
+        """
         return True
 
     def has_valid_ga4gh_id(self) -> bool | str | None:
+        """Check the existing identifier against the GA4GH identifier pattern.
+
+        :return: Match status, or the unset or empty identifier.
+        """
         return self.id and GA4GH_IR_REGEXP.match(self.id) is not None
 
     def compute_digest(
@@ -328,7 +359,12 @@ class Ga4ghIdentifiableObject(VRSMetadataMixin, _ValueObject):
         Stores the digest in the object if ``store`` is ``True``.
 
         If ``as_version`` is provided, other parameters are ignored and a digest is
-        returned following the conventions of the VRS version indicated by ``as_version_``.
+        returned following the conventions of the VRS version indicated by ``as_version``.
+
+        :param store: Save the computed digest on the object.
+        :param as_version: Optional prior VRS version for serialization.
+        :return: Computed digest.
+        :raises AttributeError: If prior-version serialization is unsupported.
         """
         if as_version is None:
             digest = sha512t24u(encode_canonical_json(self.ga4gh_serialize()))
@@ -345,25 +381,36 @@ class Ga4ghIdentifiableObject(VRSMetadataMixin, _ValueObject):
         return digest
 
     def get_or_create_ga4gh_identifier(
-        self, in_place: str = "default", recompute: bool = False, as_version=None
+        self,
+        in_place: str = "default",
+        recompute: bool = False,
+        as_version: PrevVrsVersion | None = None,
     ) -> str:
-        """Sets and returns a GA4GH Computed Identifier for the object.
-        Overwrites the existing identifier if overwrite is True.
+        """Get a GA4GH computed identifier and optionally update the object ID.
 
         This function has three options for in_place editing of vro.id:
         - 'default': the standard identifier update behavior for GA4GH
             identifiable objects, this mode will update the vro.id
-            field if the field is empty
+            field only when it is None
         - 'always': this will update the vro.id field any time the
             identifier is computed
         - 'never': the vro.id field will not be edited in-place,
             even when empty
 
-        Digests will be recalculated even if present if recompute is True.
+        ``recompute`` applies when this call computes an identifier. A valid existing
+        ID returned by the default policy bypasses digest computation. An invalid
+        existing ID is replaced in the return value, but is only stored with the
+        always policy.
 
         If ``as_version`` is provided, other parameters are ignored and an identifier is
         returned following the conventions of the VRS version indicated by
-        ``as_version_``.
+        ``as_version``.
+
+        :param in_place: ID update policy: default, always, or never.
+        :param recompute: Recompute an existing digest.
+        :param as_version: Optional prior VRS version.
+        :return: GA4GH computed identifier.
+        :raises ValueError: If the update policy is invalid.
         """
         if as_version is not None:
             return self.compute_ga4gh_identifier(as_version=as_version)
@@ -384,12 +431,18 @@ class Ga4ghIdentifiableObject(VRSMetadataMixin, _ValueObject):
         else:
             return self.compute_ga4gh_identifier(recompute)
 
-    def compute_ga4gh_identifier(self, recompute: bool = False, as_version=None) -> str:
+    def compute_ga4gh_identifier(
+        self, recompute: bool = False, as_version: PrevVrsVersion | None = None
+    ) -> str:
         """Return a GA4GH Computed Identifier.
 
         If ``as_version`` is provided, other parameters are ignored and a computed
         identifier is returned following the conventions of the VRS version indicated by
-        ``as_version_``.
+        ``as_version``.
+
+        :param recompute: Recompute an existing digest.
+        :param as_version: Optional prior VRS version.
+        :return: GA4GH computed identifier.
         """
         if as_version is None:
             self.get_or_create_digest(recompute)
@@ -399,22 +452,23 @@ class Ga4ghIdentifiableObject(VRSMetadataMixin, _ValueObject):
             return f"{CURIE_NAMESPACE}{CURIE_SEP}{self.ga4gh.priorPrefix[as_version]}{GA4GH_PREFIX_SEP}{digest}"
 
     def get_or_create_digest(self, recompute: bool = False) -> str:
-        """Set and returns a sha512t24u digest of the GA4GH Identifiable Object, or create
-        the digest if it does not exist.
+        """Set and returns a sha512t24u digest of the GA4GH Identifiable Object, or create the digest if it does not exist.
+
+        :param recompute: Recompute an existing digest when true.
+        :return: Existing or newly computed digest.
         """
         if self.digest is None or recompute:
             return self.compute_digest()
         return self.digest
 
     class ga4gh(_ValueObject.ga4gh):  # noqa: N801
+        """Define GA4GH serialization metadata for this model."""
+
         prefix: str
 
 
 class Expression(VRSMetadataMixin, Element, BaseModelForbidExtra):
-    """Representation of a variation by a specified nomenclature or syntax for a
-    Variation object. Common examples of expressions for the description of molecular
-    variation include the HGVS and ISCN nomenclatures.
-    """
+    """Representation of a variation by a specified nomenclature or syntax for a Variation object. Common examples of expressions for the description of molecular variation include the HGVS and ISCN nomenclatures."""
 
     _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
 
@@ -476,11 +530,7 @@ class Range(VRSMetadataMixin, RootModel):
 
 
 class residue(VRSMetadataMixin, RootModel):
-    """A character representing a specific residue (i.e., molecular species) or
-    groupings of these ("ambiguity codes"), using `one-letter IUPAC abbreviations
-    <https://en.wikipedia.org/wiki/International_Union_of_Pure_and_Applied_Chemistry#Amino_acid_and_nucleotide_base_codes>`_
-    for nucleic acids and amino acids.
-    """
+    """A character representing a specific residue (i.e., molecular species) or groupings of these ("ambiguity codes"), using `one-letter IUPAC abbreviations <https://en.wikipedia.org/wiki/International_Union_of_Pure_and_Applied_Chemistry#Amino_acid_and_nucleotide_base_codes>`_ for nucleic acids and amino acids."""
 
     _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
 
@@ -493,11 +543,7 @@ class residue(VRSMetadataMixin, RootModel):
 
 
 class sequenceString(VRSMetadataMixin, RootModel):
-    """A character string of `Residues` that represents a biological sequence using the
-    conventional sequence order (5'-to-3' for nucleic acid sequences, and
-    amino-to-carboxyl for amino acid sequences). IUPAC ambiguity codes are permitted in
-    Sequence Strings.
-    """
+    """A character string of `Residues` that represents a biological sequence using the conventional sequence order (5'-to-3' for nucleic acid sequences, and amino-to-carboxyl for amino acid sequences). IUPAC ambiguity codes are permitted in Sequence Strings."""
 
     _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
 
@@ -528,6 +574,8 @@ class LengthExpression(VRSMetadataMixin, _ValueObject, BaseModelForbidExtra):
     )
 
     class ga4gh(_ValueObject.ga4gh):
+        """Define GA4GH serialization metadata for this model."""
+
         inherent = ["length", "type"]
 
 
@@ -552,6 +600,8 @@ class ReferenceLengthExpression(VRSMetadataMixin, _ValueObject, BaseModelForbidE
     )
 
     class ga4gh(_ValueObject.ga4gh):
+        """Define GA4GH serialization metadata for this model."""
+
         inherent = ["length", "repeatSubunitLength", "type"]
 
 
@@ -567,6 +617,8 @@ class LiteralSequenceExpression(VRSMetadataMixin, _ValueObject, BaseModelForbidE
     sequence: sequenceString = Field(..., description="the literal sequence")
 
     class ga4gh(_ValueObject.ga4gh):
+        """Define GA4GH serialization metadata for this model."""
+
         inherent = ["sequence", "type"]
 
 
@@ -609,6 +661,8 @@ class SequenceReference(VRSMetadataMixin, _ValueObject, BaseModelForbidExtra):
     )
 
     class ga4gh(_ValueObject.ga4gh):
+        """Define GA4GH serialization metadata for this model."""
+
         inherent = ["refgetAccession", "type"]
 
 
@@ -646,7 +700,7 @@ class SequenceLocation(Ga4ghIdentifiableObject, BaseModelForbidExtra):
         :param v: ``start`` or ``end`` value
         :param info: Validation info
         :raises ValueError: If ``start`` or ``end`` has a value less than 0
-        :return: Sequence Location
+        :return: The validated coordinate or range, or None.
         """
         if v is not None:
             if isinstance(v, int):
@@ -660,11 +714,14 @@ class SequenceLocation(Ga4ghIdentifiableObject, BaseModelForbidExtra):
         return v
 
     def ga4gh_serialize_as_version(self, as_version: PrevVrsVersion) -> str:
-        """Return a serialized string following the conventions for SequenceLocation
-        serialization as defined in the VRS version specified by ``as_version``.
+        """Return a serialized string following the conventions for SequenceLocation serialization as defined in the VRS version specified by ``as_version``.
 
         :raises ValueError: If ``sequenceReference`` is not a ``SequenceReference``
             object; ``start`` or ``end`` are not an int or list.
+
+        :param as_version: Prior VRS version to use.
+        :raises TypeError: If the requested version is unsupported.
+        :return: Serialization for the requested prior version.
         """
         if as_version == PrevVrsVersion.V1_3:
             if not isinstance(self.sequenceReference, SequenceReference):
@@ -692,6 +749,10 @@ class SequenceLocation(Ga4ghIdentifiableObject, BaseModelForbidExtra):
         raise TypeError(msg)
 
     def get_refget_accession(self) -> str | None:
+        """Get the sequence reference accession or IRI.
+
+        :return: Accession or IRI, or None if no reference is available.
+        """
         if isinstance(self.sequenceReference, SequenceReference):
             return self.sequenceReference.refgetAccession
         if isinstance(self.sequenceReference, iriReference):
@@ -699,15 +760,15 @@ class SequenceLocation(Ga4ghIdentifiableObject, BaseModelForbidExtra):
         return None
 
     class ga4gh(Ga4ghIdentifiableObject.ga4gh):  # noqa: N801
+        """Define GA4GH serialization metadata for this model."""
+
         prefix = "SL"
         priorPrefix = {PrevVrsVersion.V1_3.value: "VSL"}  # noqa: N815
         inherent = ["end", "sequenceReference", "start", "type"]
 
 
 class SequenceOffsetLocation(VRSMetadataMixin, _ValueObject, BaseModelForbidExtra):
-    """A location defined by an offset relative to an anchor on a mapped sequence
-    reference.
-    """
+    """A location defined by an offset relative to an anchor on a mapped sequence reference."""
 
     model_config = ConfigDict(use_enum_values=True)
 
@@ -739,6 +800,8 @@ class SequenceOffsetLocation(VRSMetadataMixin, _ValueObject, BaseModelForbidExtr
     )
 
     class ga4gh(_ValueObject.ga4gh):
+        """Define GA4GH serialization metadata for this model."""
+
         inherent = [
             "sequenceReference",
             "anchor",
@@ -750,10 +813,7 @@ class SequenceOffsetLocation(VRSMetadataMixin, _ValueObject, BaseModelForbidExtr
 
 
 class RelativeSequenceLocation(Ga4ghIdentifiableObject, BaseModelForbidExtra):
-    """A location on a base sequence and its position relative to a boundary offset on a
-    mapped sequence gap. Typically used to describe intronic locations that exist with
-    respect to a mapped RNA transcript sequence.
-    """
+    """A location on a base sequence and its position relative to a boundary offset on a mapped sequence gap. Typically used to describe intronic locations that exist with respect to a mapped RNA transcript sequence."""
 
     _maturity: ClassVar[Maturity] = Maturity.DRAFT
 
@@ -770,6 +830,8 @@ class RelativeSequenceLocation(Ga4ghIdentifiableObject, BaseModelForbidExtra):
     )
 
     class ga4gh(Ga4ghIdentifiableObject.ga4gh):
+        """Define GA4GH serialization metadata for this model."""
+
         prefix = "RSL"
         inherent = ["baseSequenceLocation", "mappedSequenceLocation", "type"]
 
@@ -801,11 +863,14 @@ class Allele(_VariationBase, BaseModelForbidExtra):
     )
 
     def ga4gh_serialize_as_version(self, as_version: PrevVrsVersion) -> str:
-        """Return a serialized string following the conventions for
-        Allele serialization as defined in the VRS version specified by 'as_version`.
+        """Return a serialized string following the conventions for Allele serialization as defined in the VRS version specified by ``as_version``.
 
         :raises ValueError: If ``state`` is not a ``LiteralSequenceExpression`` or
             ``ReferenceLengthExpression``; ``state.sequence`` is null.
+
+        :param as_version: Prior VRS version to use.
+        :raises TypeError: If the requested version is unsupported.
+        :return: Serialization for the requested prior version.
         """
         location_digest = self.location.compute_digest(as_version=as_version)
 
@@ -826,6 +891,8 @@ class Allele(_VariationBase, BaseModelForbidExtra):
         raise TypeError(msg)
 
     class ga4gh(Ga4ghIdentifiableObject.ga4gh):  # noqa: N801
+        """Define GA4GH serialization metadata for this model."""
+
         prefix = "VA"
         priorPrefix = {PrevVrsVersion.V1_3.value: "VA"}  # noqa: N815
         inherent = ["location", "state", "type"]
@@ -858,6 +925,8 @@ class RelativeAllele(_VariationBase, BaseModelForbidExtra):
     )
 
     class ga4gh(Ga4ghIdentifiableObject.ga4gh):
+        """Define GA4GH serialization metadata for this model."""
+
         prefix = "RA"
         inherent = ["mappedState", "baseState", "relativeLocation", "type"]
 
@@ -882,11 +951,17 @@ class CisPhasedBlock(_VariationBase, BaseModelForbidExtra):
     )
 
     def ga4gh_serialize(self) -> dict:
+        """Serialize inherent fields for GA4GH digest computation.
+
+        :return: Mapping of inherent fields to serialized values.
+        """
         out = _ValueObject.ga4gh_serialize(self)
         out["members"] = sorted(out["members"])
         return out
 
     class ga4gh(Ga4ghIdentifiableObject.ga4gh):
+        """Define GA4GH serialization metadata for this model."""
+
         prefix = "CPB"
         inherent = ["members", "type"]
 
@@ -897,9 +972,7 @@ class CisPhasedBlock(_VariationBase, BaseModelForbidExtra):
 
 
 class Adjacency(_VariationBase, BaseModelForbidExtra):
-    """The `Adjacency` class represents the adjoining of the end of a sequence with the
-    beginning of an adjacent sequence, potentially with an intervening linker sequence.
-    """
+    """The `Adjacency` class represents the adjoining of the end of a sequence with the beginning of an adjacent sequence, potentially with an intervening linker sequence."""
 
     _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
 
@@ -924,11 +997,16 @@ class Adjacency(_VariationBase, BaseModelForbidExtra):
     )
 
     @field_validator("adjoinedSequences", mode="after")
-    def validate_adjoined_sequences(cls, v) -> list[iriReference | SequenceLocation]:
-        """Ensure ``adjoinedSequences`` do not have both ``start`` and ``end``
+    def validate_adjoined_sequences(
+        cls, v: list[iriReference | SequenceLocation]
+    ) -> list[iriReference | SequenceLocation]:
+        """Reject adjoined sequence locations with two truthy endpoints.
 
-        :raises ValueError: If an adjoined sequence has both ``start`` and ``end``
+        :raises ValueError: If both endpoints are truthy. Zero and None do not
+            trigger this check.
         :return: Adjoined sequences represented as iri reference or sequence location
+
+        :param v: Adjoined sequence references or locations to validate.
         """
         for adjoined_seq in v:
             if isinstance(adjoined_seq, SequenceLocation):
@@ -938,15 +1016,14 @@ class Adjacency(_VariationBase, BaseModelForbidExtra):
         return v
 
     class ga4gh(Ga4ghIdentifiableObject.ga4gh):
+        """Define GA4GH serialization metadata for this model."""
+
         prefix = "AJ"
         inherent = ["adjoinedSequences", "linker", "type"]
 
 
 class Terminus(_VariationBase, BaseModelForbidExtra):
-    """The `Terminus` data class provides a structure for describing the end
-    (terminus) of a sequence. Structurally similar to Adjacency but the linker sequence
-    is not allowed and it removes the unnecessary array structure.
-    """
+    """The `Terminus` data class provides a structure for describing the end (terminus) of a sequence. Structurally similar to Adjacency but the linker sequence is not allowed and it removes the unnecessary array structure."""
 
     _maturity: ClassVar[Maturity] = Maturity.DRAFT
 
@@ -959,14 +1036,14 @@ class Terminus(_VariationBase, BaseModelForbidExtra):
     )
 
     class ga4gh(Ga4ghIdentifiableObject.ga4gh):  # noqa: N815
+        """Define GA4GH serialization metadata for this model."""
+
         prefix = "TM"
         inherent = ["location", "type"]
 
 
 class TraversalBlock(VRSMetadataMixin, _ValueObject, BaseModelForbidExtra):
-    """A component used to describe the orientation of applicable molecular variation
-    within a DerivativeMolecule.
-    """
+    """A component used to describe the orientation of applicable molecular variation within a DerivativeMolecule."""
 
     model_config = ConfigDict(use_enum_values=True)
 
@@ -986,13 +1063,13 @@ class TraversalBlock(VRSMetadataMixin, _ValueObject, BaseModelForbidExtra):
     )
 
     class ga4gh(_ValueObject.ga4gh):
+        """Define GA4GH serialization metadata for this model."""
+
         inherent = ["component", "orientation", "type"]
 
 
 class DerivativeMolecule(_VariationBase, BaseModelForbidExtra):
-    """The "Derivative Molecule" data class is a structure for describing a derivate
-    molecule composed from multiple sequence components.
-    """
+    """The "Derivative Molecule" data class is a structure for describing a derivate molecule composed from multiple sequence components."""
 
     _maturity: ClassVar[Maturity] = Maturity.DRAFT
 
@@ -1013,6 +1090,8 @@ class DerivativeMolecule(_VariationBase, BaseModelForbidExtra):
     )
 
     class ga4gh(Ga4ghIdentifiableObject.ga4gh):  # noqa: N815
+        """Define GA4GH serialization metadata for this model."""
+
         prefix = "DM"
         inherent = ["components", "type"]
 
@@ -1023,9 +1102,7 @@ class DerivativeMolecule(_VariationBase, BaseModelForbidExtra):
 
 
 class CopyNumberCount(_VariationBase, BaseModelForbidExtra):
-    """The absolute count of discrete copies of a `Location`, within a system
-    (e.g. genome, cell, etc.).
-    """
+    """The absolute count of discrete copies of a `Location`, within a system (e.g. genome, cell, etc.)."""
 
     _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
 
@@ -1042,14 +1119,14 @@ class CopyNumberCount(_VariationBase, BaseModelForbidExtra):
     )
 
     class ga4gh(Ga4ghIdentifiableObject.ga4gh):  # noqa: N815
+        """Define GA4GH serialization metadata for this model."""
+
         prefix = "CN"
         inherent = ["copies", "location", "type"]
 
 
 class CopyNumberChange(_VariationBase, BaseModelForbidExtra):
-    """An assessment of the copy number of a `Location` within a system
-    (e.g. genome, cell, etc.) relative to a baseline ploidy.
-    """
+    """An assessment of the copy number of a `Location` within a system (e.g. genome, cell, etc.) relative to a baseline ploidy."""
 
     model_config = ConfigDict(use_enum_values=True)
 
@@ -1069,6 +1146,8 @@ class CopyNumberChange(_VariationBase, BaseModelForbidExtra):
     )
 
     class ga4gh(Ga4ghIdentifiableObject.ga4gh):
+        """Define GA4GH serialization metadata for this model."""
+
         prefix = "CX"
         inherent = ["copyChange", "location", "type"]
 
@@ -1153,9 +1232,7 @@ class Variation(VRSMetadataMixin, RootModel):
 
 
 class SystemicVariation(VRSMetadataMixin, RootModel):
-    """A Variation of multiple molecules in the context of a system, e.g. a genome,
-    sample, or homologous chromosomes.
-    """
+    """A Variation of multiple molecules in the context of a system, e.g. a genome, sample, or homologous chromosomes."""
 
     _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
     _abstract: ClassVar[bool] = True

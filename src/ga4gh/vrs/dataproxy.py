@@ -1,8 +1,6 @@
-"""provides an abstract class for all data access required for
-VRS, and a concrete implementation based on seqrepo.
+"""provides an abstract class for all data access required for VRS, and a concrete implementation based on seqrepo.
 
 See https://vr-spec.readthedocs.io/en/1.1/impl-guide/required_data.html
-
 """
 
 import datetime
@@ -11,7 +9,11 @@ import logging
 import os
 from abc import ABC, abstractmethod
 from collections.abc import Sequence
+from typing import TYPE_CHECKING, NoReturn
 from urllib.parse import urlparse
+
+if TYPE_CHECKING:
+    from biocommons.seqrepo import SeqRepo
 
 import requests
 from bioutils.accessions import coerce_namespace
@@ -26,10 +28,13 @@ class DataProxyValidationError(Exception):
 
 
 def validate_start_le_end(identifier: str, start: int | None, end: int | None) -> None:
-    """Reject an interval whose ``start`` is after its ``end``, since vrs-python treats
-    every sequence as linear.
+    """Reject an interval whose ``start`` is after its ``end``, since vrs-python treats every sequence as linear.
 
     :raises DataProxyValidationError: If both are defined and ``start > end``
+
+    :param identifier: Sequence identifier to resolve.
+    :param start: Zero-based inclusive start, or None for the sequence start.
+    :param end: Zero-based exclusive end, or None for the sequence end.
     """
     if start is not None and end is not None and start > end:
         err_msg = f"Interval start must not be after end on {identifier}: start={start}, end={end}"
@@ -61,12 +66,17 @@ class _DataProxy(ABC):
         >> dp.get_sequence("NM_000551.3", 0, 10)
         'CCTCGCCTCC'
 
+        :param identifier: Sequence identifier to resolve.
+        :param start: Zero-based inclusive start, or None for the sequence start.
+        :param end: Zero-based exclusive end, or None for the sequence end.
+        :return: Requested sequence or subsequence.
+        :raises KeyError: If the sequence identifier is not found.
+        :raises DataProxyValidationError: If start exceeds end.
         """
 
     @abstractmethod
     def get_metadata(self, identifier: str) -> dict:
-        """For a given identifier, return a structure (dict) containing
-        sequence length, aliases, and other optional info
+        """For a given identifier, return a structure (dict) containing sequence length, aliases, and other optional info
 
         If the given sequence does not exist, KeyError is raised.
 
@@ -81,18 +91,17 @@ class _DataProxy(ABC):
          'alphabet': 'ACGT',
          'length': 4560}
 
+        :param identifier: Sequence identifier to resolve.
+        :return: Sequence metadata, including length and aliases.
+        :raises KeyError: If the sequence identifier is not found.
         """
 
     @staticmethod
     def extract_sequence_type(alias: str) -> str | None:
         """Provide a convenient way to extract the sequence type from an accession by matching its prefix to a known set of prefixes.
 
-        Args:
-        alias (str): The accession string.
-
-        Returns:
-        str or None: The sequence type associated with the accession string, or None if no matching prefix is found.
-
+        :param alias: Sequence accession or alias.
+        :return: HGVS sequence type, or None for an unknown prefix.
         """
         prefix_dict = {
             "refseq:NM_": "c",
@@ -118,15 +127,18 @@ class _DataProxy(ABC):
     def translate_sequence_identifier(
         self, identifier: str, namespace: str | None = None
     ) -> list[str]:
-        """Translate given identifier to a list of identifiers in the
-        specified namespace.
+        """Translate given identifier to a list of identifiers in the specified namespace.
 
         `identifier` must be a string
         `namespace` is case-sensitive
 
-        On success, returns string identifier.  Raises KeyError if given
+        On success, returns a list of matching identifiers.  Raises KeyError if given
         identifier isn't found.
 
+        :param identifier: Sequence identifier to resolve.
+        :param namespace: Optional namespace used to filter sequence aliases.
+        :return: Distinct matching sequence aliases.
+        :raises KeyError: If the sequence identifier is not found.
         """
         try:
             md = self.get_metadata(identifier)
@@ -138,11 +150,11 @@ class _DataProxy(ABC):
             aliases = [a for a in aliases if a.startswith(nsd)]
         return aliases
 
-    def derive_refget_accession(self, ac: str) -> str | None:
+    def derive_refget_accession(self, ac: str | None) -> str | None:
         """Derive the refget accession from a public accession identifier
 
         :param ac: public accession in simple or curie form from which to derive the refget accession
-        :return: Refget Accession if found
+        :return: Refget accession, or None for a missing input or unresolved alias.
         """
         if ac is None:
             return None
@@ -170,10 +182,7 @@ class _DataProxy(ABC):
         ref: str,
         require_validation: bool = True,
     ) -> None:
-        """Determine whether or not the expected reference sequence matches the actual
-        reference sequence. Returns ``None``, but invalid results are logged at level
-        WARN by default. If ``require_validation`` is ``True``, then invalid data will
-        cause a ``DataProxyValidationError`` to be raised.
+        """Determine whether or not the expected reference sequence matches the actual reference sequence. Returns ``None``, but invalid results are logged at level WARN by default. If ``require_validation`` is ``True``, then invalid data will cause a ``DataProxyValidationError`` to be raised.
 
         :param sequence_id: Sequence ID to use
         :param start_pos: Start pos (inter-residue) on the sequence_id
@@ -183,7 +192,7 @@ class _DataProxy(ABC):
         :param require_validation: If ``True`` and if validation checks fail, a
             ``DataProxyValidationError`` will be raised. Error message will always be
             logged.
-        :raises DataProxyValidationError: If excepted reference sequence does not match
+        :raises DataProxyValidationError: If expected reference sequence does not match
             the actual reference sequence and ``require_validation`` is ``True``.
             Raised regardless of ``require_validation`` if the location is invalid
             (see ``validate_location_bounds``).
@@ -261,11 +270,19 @@ class _DataProxy(ABC):
 
 
 class _SeqRepoDataProxyBase(_DataProxy):
+    """Cache sequence access and metadata shared by SeqRepo backends."""
+
     # wraps seqreqpo classes in order to provide translation to/from
     # `ga4gh` identifiers.
 
     @functools.lru_cache
     def get_metadata(self, identifier: str) -> dict:
+        """Fetch sequence metadata.
+
+        :param identifier: Sequence identifier to resolve.
+        :return: Sequence metadata, including length and aliases.
+        :raises KeyError: If the sequence identifier is not found.
+        """
         md = self._get_metadata(identifier)
         md["aliases"] = list(a for a in md["aliases"])  # noqa: C400
         return md
@@ -275,24 +292,45 @@ class _SeqRepoDataProxyBase(_DataProxy):
         self, identifier: str, start: int | None = None, end: int | None = None
     ) -> str:
         # Checked here because backends disagree on how to handle it
+        """Fetch a sequence or subsequence.
+
+        :param identifier: Sequence identifier to resolve.
+        :param start: Zero-based inclusive start, or None for the sequence start.
+        :param end: Zero-based exclusive end, or None for the sequence end.
+        :return: Requested sequence or subsequence.
+        :raises KeyError: If the sequence identifier is not found.
+        :raises DataProxyValidationError: If start exceeds end.
+        """
         validate_start_le_end(identifier, start, end)
         return self._get_sequence(identifier, start=start, end=end)
 
     @abstractmethod
     def _get_metadata(self, identifier: str) -> dict:  # pragma: no cover
-        pass
+        """Fetch sequence metadata from the backend.
+
+        :param identifier: Sequence identifier to resolve.
+        :return: Sequence metadata, including length and aliases.
+        :raises KeyError: If the sequence identifier is not found.
+        """
 
     @abstractmethod
     def _get_sequence(
         self, identifier: str, start: int | None = None, end: int | None = None
     ) -> str:  # pragma: no cover
-        pass
+        """Fetch a sequence or subsequence from the backend.
+
+        :param identifier: Sequence identifier to resolve.
+        :param start: Zero-based inclusive start, or None for the sequence start.
+        :param end: Zero-based exclusive end, or None for the sequence end.
+        :return: Requested sequence or subsequence.
+        :raises KeyError: If the sequence identifier is not found.
+        """
 
 
 class SeqRepoDataProxy(_SeqRepoDataProxyBase):
     """DataProxy based on a local instance of SeqRepo"""
 
-    def __init__(self, sr) -> None:  # noqa: ANN001
+    def __init__(self, sr: "SeqRepo") -> None:
         """Initialize DataProxy instance.
 
         :param sr: SeqRepo instance
@@ -304,9 +342,23 @@ class SeqRepoDataProxy(_SeqRepoDataProxyBase):
         self, identifier: str, start: int | None = None, end: int | None = None
     ) -> str:
         # fetch raises KeyError if not found
+        """Fetch a sequence or subsequence from the backend.
+
+        :param identifier: Sequence identifier to resolve.
+        :param start: Zero-based inclusive start, or None for the sequence start.
+        :param end: Zero-based exclusive end, or None for the sequence end.
+        :return: Requested sequence or subsequence.
+        :raises KeyError: If the sequence identifier is not found.
+        """
         return self.sr.fetch_uri(coerce_namespace(identifier), start, end)
 
     def _get_metadata(self, identifier: str) -> dict:
+        """Fetch sequence metadata from the backend.
+
+        :param identifier: Sequence identifier to resolve.
+        :return: Sequence metadata, including length and aliases.
+        :raises KeyError: If the sequence identifier is not found.
+        """
         ns, a = coerce_namespace(identifier).split(":", 2)
         r = list(self.sr.aliases.find_aliases(namespace=ns, alias=a))
         if len(r) == 0:
@@ -332,6 +384,7 @@ class SeqRepoRESTDataProxy(_SeqRepoDataProxyBase):
 
         :param base_url: root URL to server
         :param disable_healthcheck: Whether healthcheck should be disabled
+        :raises requests.RequestException: If the enabled health check fails.
         """
         super().__init__()
         self.base_url = f"{base_url}/{self.rest_version}/"
@@ -343,6 +396,15 @@ class SeqRepoRESTDataProxy(_SeqRepoDataProxyBase):
     def _get_sequence(
         self, identifier: str, start: int | None = None, end: int | None = None
     ) -> str:
+        """Fetch a sequence or subsequence from the backend.
+
+        :param identifier: Sequence identifier to resolve.
+        :param start: Zero-based inclusive start, or None for the sequence start.
+        :param end: Zero-based exclusive end, or None for the sequence end.
+        :return: Requested sequence or subsequence.
+        :raises KeyError: If the sequence identifier is not found.
+        :raises requests.RequestException: If the request fails with an error other than a missing sequence.
+        """
         url = self.base_url + f"sequence/{identifier}"
         _logger.info("Fetching %s", url)
         params = {"start": start, "end": end}
@@ -353,6 +415,13 @@ class SeqRepoRESTDataProxy(_SeqRepoDataProxyBase):
         return resp.text
 
     def _get_metadata(self, identifier: str) -> dict:
+        """Fetch sequence metadata from the backend.
+
+        :param identifier: Sequence identifier to resolve.
+        :return: Sequence metadata, including length and aliases.
+        :raises KeyError: If the sequence identifier is not found.
+        :raises requests.RequestException: If the request fails with an error other than a missing sequence.
+        """
         url = self.base_url + f"metadata/{identifier}"
         _logger.info("Fetching %s", url)
         resp = requests.get(url)  # noqa: S113
@@ -362,30 +431,52 @@ class SeqRepoRESTDataProxy(_SeqRepoDataProxyBase):
         return resp.json()
 
 
-class SequenceProxy(Sequence):
-    """Provides efficient and transparent string-like access, including
-    random access slicing and reversing, to a biological sequence that
-    is stored elsewhere.
+class SequenceProxy(Sequence[str]):
+    """Fetch sequence characters and contiguous slices through a data proxy.
 
+    Slice steps and reversed iteration are unsupported. Coordinates are passed
+    to the backend without Python-style negative-index normalization.
     """
 
-    def __init__(self, dp: _DataProxy, alias: str) -> None:  # noqa: D107
+    def __init__(self, dp: _DataProxy, alias: str) -> None:
+        """Initialize the sequence proxy.
+
+        :param dp: Sequence data proxy.
+        :param alias: Sequence accession or alias.
+        """
         self.dp = dp
         self.alias = alias
         self._md = self.dp.get_metadata(self.alias)
 
-    def __str__(self) -> str:  # noqa: D105
+    def __str__(self) -> str:
+        """Fetch the complete sequence.
+
+        :return: Complete sequence.
+        """
         return self.dp.get_sequence(self.alias)
 
-    def __len__(self):  # noqa: D105 ANN204
+    def __len__(self) -> int:
+        """Return the sequence length.
+
+        :return: Sequence length.
+        """
         return self._md["length"]
 
-    def __reversed__(self):  # noqa: D105 ANN204
+    def __reversed__(self) -> NoReturn:
+        """Reject reversed iteration.
+
+        :raises NotImplementedError: Reversed iteration is unsupported.
+        """
         msg = "Reversed iteration of a SequenceProxy is not implemented"
         raise NotImplementedError(msg)
 
-    def __getitem__(self, key) -> str:  # noqa: ANN001
-        """Return sequence for key (slice), fetching if necessary"""
+    def __getitem__(self, key: int | slice) -> str:
+        """Return sequence for key (slice), fetching if necessary
+
+        :param key: Integer position or contiguous slice.
+        :return: Sequence at the requested position or slice.
+        :raises ValueError: If the slice specifies any step, including 1.
+        """
         if isinstance(key, int):
             key = slice(key, key + 1)
         if key.step is not None:
@@ -404,7 +495,7 @@ def _isoformat(o: datetime.datetime) -> str:
 
     :param o: date object to format
     :return: ISO8601-formatted string equivalent
-    :raise TypeError: if object given isn't a Python datetime instance
+    :raises TypeError: if object given isn't a Python datetime instance
     """
     # stolen from connexion flask_app.py
     if not isinstance(o, datetime.datetime):
@@ -430,15 +521,18 @@ def create_dataproxy(
 ) -> _DataProxy:
     """Create a dataproxy from uri or GA4GH_VRS_DATAPROXY_URI
 
-    :param uri: Dataproxy URI. Currently accepted URI schemes:
+    :param uri: Dataproxy URI, or None to read GA4GH_VRS_DATAPROXY_URI.
+        No default server is assumed. Currently accepted URI schemes:
 
         * seqrepo+file:///path/to/seqrepo/root
         * seqrepo+:../relative/path/to/seqrepo/root
         * seqrepo+http://localhost:5000/seqrepo
         * seqrepo+https://somewhere:5000/seqrepo
     :param disable_healthcheck: Whether healthcheck should be disabled in REST dataproxy
-    :raise ValueError: if URI doesn't match recognized schemes, e.g. is missing provider
+    :raises ValueError: if no URI is configured or the URI does not match recognized schemes, e.g. is missing provider
         prefix (`"seqrepo+"`)
+
+    :return: Data proxy for the requested provider.
     """
     uri = uri or os.environ.get("GA4GH_VRS_DATAPROXY_URI", None)
 

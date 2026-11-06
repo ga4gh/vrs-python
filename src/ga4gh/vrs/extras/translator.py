@@ -1,7 +1,7 @@
 """Translates various external formats into VRS models.
 
 Input formats: VRS (serialized), hgvs, spdi, gnomad (vcf)
-Output formats: VRS (serialized), hgvs, spdi, gnomad (vcf)
+Output formats: hgvs and spdi for Alleles; no copy-number exporters.
 
 """
 
@@ -44,8 +44,13 @@ class VariationToStrProtocol(Protocol):
     into variation strings, with optional keyword arguments for customization.
     """
 
-    def __call__(self, vo: models._VariationBase, **kwargs) -> list[str]:
-        """Translate vrs object `vo` to variation string expressions"""
+    def __call__(self, vo: models._VariationBase, **kwargs: object) -> list[str]:
+        """Translate vrs object `vo` to variation string expressions
+
+        :param vo: VRS object to translate.
+        :param kwargs: Additional options passed to the implementation.
+        :return: Translated expressions.
+        """
 
 
 class VariationFromStrProtocol(Protocol):
@@ -55,8 +60,15 @@ class VariationFromStrProtocol(Protocol):
     string into a VRS object, with optional keyword arguments for customization.
     """
 
-    def __call__(self, expr: str, **kwargs) -> models._VariationBase | None:
-        """Translate variation string `expr` to a VRS object"""
+    def __call__(
+        self, expr: str | dict, **kwargs: object
+    ) -> models._VariationBase | None:
+        """Translate variation string `expr` to a VRS object
+
+        :param expr: Variation expression or VRS dictionary for the selected parser.
+        :param kwargs: Additional options passed to the implementation.
+        :return: Translated VRS object, or None if unsupported.
+        """
 
 
 class _Translator(ABC):  # noqa: B024
@@ -102,7 +114,7 @@ class _Translator(ABC):  # noqa: B024
         self.from_vrs_translators: dict[str, VariationToStrProtocol] = {}
 
     def to_vrs(
-        self, var: str | dict, fmt: str | None = None, **kwargs
+        self, var: str | dict, fmt: str | None = None, **kwargs: object
     ) -> models._VariationBase:
         """Translate a variation expression or VRS JSON dictionary to a VRS object.
 
@@ -137,8 +149,8 @@ class _Translator(ABC):  # noqa: B024
               including zero. If supplied, returns CopyNumberCount and takes
               precedence over ``copy_change``. Defaults to None.
             * ``copy_change`` (models.CopyChange or None): Copy change used when
-              ``copies`` is omitted or None. Defaults to LOSS (EFO:0030067) for
-              deletions and GAIN (EFO:0030070) for duplications.
+              ``copies`` is omitted or None. Defaults to CopyChange.LOSS ("loss") for
+              deletions and CopyChange.GAIN ("gain") for duplications.
         :return: Translated VRS variation.
         :raises NotImplementedError: If the requested format is unsupported.
         :raises ValueError: If the input cannot be parsed or represented.
@@ -166,7 +178,9 @@ class _Translator(ABC):  # noqa: B024
         msg = f"Unable to parse data as {', '.join(formats)}"
         raise ValueError(msg)
 
-    def from_vrs(self, vo: models._VariationBase, fmt: str, **kwargs) -> list[str]:
+    def from_vrs(
+        self, vo: models._VariationBase, fmt: str, **kwargs: object
+    ) -> list[str]:
         """Translate a VRS object to expressions in the requested format.
 
         :param vo: VRS variation to translate.
@@ -198,7 +212,11 @@ class _Translator(ABC):  # noqa: B024
 
         return t(vo, **kwargs)
 
-    def from_vrs_dict(self, var: dict, **kwargs) -> models._VariationBase | None:  # noqa: ARG002
+    def from_vrs_dict(
+        self,
+        var: object,
+        **kwargs: object,  # noqa: ARG002
+    ) -> models._VariationBase | None:
         """Parse a VRS JSON dictionary into a VRS variation object.
 
         :param var: Dictionary containing a VRS variation and its ``type``.
@@ -217,7 +235,10 @@ class _Translator(ABC):  # noqa: B024
 
     @lazy_property
     def hgvs_tools(self) -> HgvsTools:
-        """Instantiate and return an HgvsTools instance"""
+        """Instantiate and return an HgvsTools instance
+
+        :return: Lazily initialized HGVS tools.
+        """
         return HgvsTools(self.data_proxy)
 
 
@@ -289,7 +310,7 @@ class AlleleTranslator(_Translator):
         require_validation: bool = True,
         do_normalize: bool = True,
         rle_seq_limit: int | None | TranslationDefault = USE_INSTANCE_DEFAULT,
-        **kwargs,  # noqa: ARG002
+        **kwargs: object,  # noqa: ARG002
     ) -> models.Allele | None:
         """Parse gnomAD-style VCF expression into VRS Allele
 
@@ -371,7 +392,7 @@ class AlleleTranslator(_Translator):
         *,
         do_normalize: bool = True,
         rle_seq_limit: int | None | TranslationDefault = USE_INSTANCE_DEFAULT,
-        **kwargs,  # noqa: ARG002
+        **kwargs: object,  # noqa: ARG002
     ) -> models.Allele | None:
         """Parse an HGVS expression into a VRS Allele.
 
@@ -406,7 +427,7 @@ class AlleleTranslator(_Translator):
         *,
         do_normalize: bool = True,
         rle_seq_limit: int | None | TranslationDefault = USE_INSTANCE_DEFAULT,
-        **kwargs,  # noqa: ARG002
+        **kwargs: object,  # noqa: ARG002
     ) -> models.Allele | None:
         """Parse SPDI expression in to a GA4GH Allele
 
@@ -474,7 +495,7 @@ class AlleleTranslator(_Translator):
         self,
         vo: models.Allele,
         namespace: str | None = "refseq",
-        **kwargs,  # noqa: ARG002
+        **kwargs: object,  # noqa: ARG002
     ) -> list[str]:
         """Generate HGVS expressions for a VRS Allele.
 
@@ -492,7 +513,7 @@ class AlleleTranslator(_Translator):
         namespace: str | None = "refseq",
         *,
         ref_seq_limit: int | None = 0,
-        **kwargs,  # noqa: ARG002
+        **kwargs: object,  # noqa: ARG002
     ) -> list[str]:
         """Generate a *list* of SPDI expressions for VRS Allele.
 
@@ -503,7 +524,7 @@ class AlleleTranslator(_Translator):
         translations.
 
         If `ref_seq_limit` is specified, the reference sequence is
-        included in the SPDI expression only if it is below the limit.
+        included in the SPDI expression only if its length is at most the limit.
         Otherwise only the length of the reference sequence is
         included. If the limit is None, the reference sequence is
         always included. In all cases, the alt sequence is included.
@@ -512,7 +533,10 @@ class AlleleTranslator(_Translator):
         If no alias translations are available, an empty list is
         returned.
 
-        If the VRS object cannot be expressed as SPDI, raises ValueError.
+        Requires an inline SequenceLocation with integer bounds and either a
+        LiteralSequenceExpression or a ReferenceLengthExpression with integer
+        length and a positive repeatSubunitLength. Unsupported model shapes
+        are not validated before their fields are accessed.
 
         SPDI and VRS use identical normalization. The incoming Allele
         is expected to be normalized per VRS spec.
@@ -523,7 +547,7 @@ class AlleleTranslator(_Translator):
             None always includes the reference sequence.
         :param kwargs: Unused options accepted for format dispatch.
         :return: SPDI expressions, or an empty list if no aliases are available.
-        :raises ValueError: If the object cannot be represented as SPDI.
+        :raises ValueError: If a reference repeat subunit cannot be reconstructed.
         """
         sequence = f"ga4gh:{vo.location.get_refget_accession()}"
         aliases = self.data_proxy.translate_sequence_identifier(sequence, namespace)
@@ -624,7 +648,7 @@ class CnvTranslator(_Translator):
         *,
         copies: int | models.Range | None = None,
         copy_change: models.CopyChange | None = None,
-        **kwargs,  # noqa: ARG002
+        **kwargs: object,  # noqa: ARG002
     ) -> models.CopyNumberChange | models.CopyNumberCount | None:
         """Parse an HGVS deletion or duplication into a VRS copy number object.
 
@@ -679,7 +703,11 @@ class CnvTranslator(_Translator):
     def _post_process_imported_cnv(
         self, copy_number: models.CopyNumberChange | models.CopyNumberCount
     ) -> models.CopyNumberChange | models.CopyNumberCount:
-        """Provide common post-processing for imported Copy Numbers IN-PLACE."""
+        """Provide common post-processing for imported Copy Numbers IN-PLACE.
+
+        :param copy_number: Copy-number object to update in place.
+        :return: Updated copy-number object.
+        """
         if self.identify:
             copy_number.id = ga4gh_identify(copy_number)
             copy_number.location.id = ga4gh_identify(copy_number.location)

@@ -1,4 +1,39 @@
-"""Annotate VCFs with VRS identifiers and attributes."""
+"""Annotate VCFs with VRS identifiers and attributes.
+
+The main processing path is::
+
+    annotate(...)
+    + for each record: _get_vrs_data(...)
+      + for each allele: _get_vrs_object(...)
+        + AlleleTranslator.from_gnomad(...)
+        + on_vrs_object(...)             # return an allele or None
+    + on_vrs_object_collection(...)       # when collection is enabled
+
+For example, keep only alleles with literal states::
+
+    from pathlib import Path
+    from ga4gh.vrs.extras.annotator.vcf import VcfAnnotator
+    from ga4gh.vrs.models import Allele, LiteralSequenceExpression
+
+
+    class LiteralStateAnnotator(VcfAnnotator):
+        def on_vrs_object(
+            self, vcf_coords: str, vrs_allele: Allele, **kwargs: object
+        ) -> Allele | None:
+            if isinstance(vrs_allele.state, LiteralSequenceExpression):
+                return vrs_allele
+            return None
+
+
+    # data_proxy must serve the input VCF's reference assembly.
+    LiteralStateAnnotator(data_proxy).annotate(
+        Path("input.vcf"), output_ndjson_path=Path("literal-alleles.ndjson")
+    )
+
+A pickle or NDJSON output enables VcfAnnotator's collection hook. Returning None
+excludes the allele from collection. If writing a VCF, its record remains with
+missing annotation values. Per-record errors are logged and written to VRS_Error.
+"""
 
 import abc
 import logging
@@ -88,8 +123,9 @@ def dump_alleles_to_ndjson(
 ) -> None:
     """Create NDJSON dump of all alleles ingested from VCF
 
-    :param alleles: all alleles + constructed + annotated during VCF ingestion
     :param output_ndjson_path: location to save NDJSON file to
+
+    :param allele_collection: Alleles to write.
     """
     with output_ndjson_path.open("w") as f:
         for allele in allele_collection:
@@ -111,15 +147,17 @@ class AbstractVcfAnnotator(abc.ABC):
 
     collect_alleles: bool = False
 
-    def __init__(self, data_proxy: _DataProxy, **kwargs) -> None:  # noqa: ARG002
+    def __init__(self, data_proxy: _DataProxy, **kwargs: object) -> None:  # noqa: ARG002
         """Initialize the VCFAnnotator class.
 
         :param data_proxy: GA4GH sequence dataproxy instance.
+
+        :param kwargs: Additional options passed to the implementation.
         """
         self.data_proxy = data_proxy
         self.tlr = AlleleTranslator(self.data_proxy)
 
-    def should_collect_alleles(self, **kwargs) -> bool:  # noqa: ARG002
+    def should_collect_alleles(self, **kwargs: object) -> bool:  # noqa: ARG002
         """Determine whether allele aggregation is necessary.
 
         This method is called to initialize (or not) an initial allele collection for
@@ -128,17 +166,24 @@ class AbstractVcfAnnotator(abc.ABC):
         arguments.
 
         :return: ``True`` if alleles should be collected
+
+        :param kwargs: Additional options passed to the implementation.
         """
         return self.collect_alleles
 
     @abc.abstractmethod
-    def raise_for_output_args(self, output_vcf_path: Path | None, **kwargs) -> None:
+    def raise_for_output_args(
+        self, output_vcf_path: Path | Literal["-"] | None, **kwargs: object
+    ) -> None:
         """Raise an exception if no output appears to be configured or declared.
 
         Child classes should implement this to ensure that any other outputs are checked
         on top of an annotated VCF output.
 
-        :raise VCFAnnotatorError: if no output args are shown
+        :raises VcfAnnotatorError: if no output args are shown
+
+        :param output_vcf_path: Optional annotated VCF output path.
+        :param kwargs: Additional options passed to the implementation.
         """
 
     def _update_vcf_header(
@@ -225,10 +270,9 @@ class AbstractVcfAnnotator(abc.ABC):
         assembly: str = "GRCh38",
         compute_for_ref: bool = True,
         require_validation: bool = True,
-        **kwargs,
+        **kwargs: object,
     ) -> None:
-        """Given a VCF, produce an output VCF annotated with VRS allele IDs, and/or
-        additional storage outputs as implemented in a specific child class.
+        """Given a VCF, produce an output VCF annotated with VRS allele IDs, and/or additional storage outputs as implemented in a specific child class.
 
         :param input_vcf_path: Location of input VCF (or "-" to read from stdin)
         :param output_vcf_path: The path for the output VCF file (or "-" to write to stdout)
@@ -239,10 +283,12 @@ class AbstractVcfAnnotator(abc.ABC):
         :param compute_for_ref: If true, compute VRS IDs for the reference allele
         :param require_validation: If `True`, validation checks (i.e., REF value
             matches expected REF at given location) must pass in order to return a VRS
-            object for a record. If `False` then VRS object will be returned even if
-            validation checks fail, although all instances of failed validation are
-            logged as warnings regardless.
-        :raise VCFAnnotatorError: if no output formats are selected
+            object for a record. False permits reference mismatches, which are
+            logged as warnings; location bounds are still validated. Per-record
+            errors are logged and written to VRS_Error when VCF output is enabled.
+        :raises VcfAnnotatorError: if no output formats are selected
+
+        :param kwargs: Additional options passed to the implementation.
         """
         self.raise_for_output_args(output_vcf_path, **kwargs)
         # This can be pushed up to the click arg parsing too
@@ -331,30 +377,32 @@ class AbstractVcfAnnotator(abc.ABC):
 
     @abc.abstractmethod
     def on_vrs_object(
-        self, vcf_coords: str, vrs_allele: Allele, **kwargs
+        self, vcf_coords: str, vrs_allele: Allele, **kwargs: object
     ) -> Allele | None:
-        """Perform side-effects (eg additional annotation or storage) or additional
-        filtering on VRS alleles as they are constructed during VCF annotation.
+        """Perform side-effects (eg additional annotation or storage) or additional filtering on VRS alleles as they are constructed during VCF annotation.
 
-        Reimplement in a child class to add custom logic. Otherwise, simply pass through
-        ``vrs_allele`` without altering it further or storing it.
+        Implementations return the retained allele or None to discard it. The
+        abstract method itself performs no processing.
 
         :param vcf_coords: CHR-POS-REF-ALT from VCF for this allele
         :param vrs_allele: allele translated from coords
-        :return: final VRS allele
+        :return: Final allele, or None to filter it from collection.
+
+        :param kwargs: Additional options passed to the implementation.
         """
 
     @abc.abstractmethod
     def on_vrs_object_collection(
-        self, vrs_alleles_collection: list[Allele] | None, **kwargs
+        self, vrs_alleles_collection: list[Allele] | None, **kwargs: object
     ) -> None:
-        """Perform clean-up operations (eg file writing) on VRS objects collected
-        during VCF ingestion.
+        """Perform clean-up operations (eg file writing) on VRS objects collected during VCF ingestion.
 
         Reimplement in a child class to add custom logic. Otherwise, this method does
         nothing.
 
         :param vrs_alleles_collection: VRS alleles constructed from ingested VCF
+
+        :param kwargs: Additional options passed to the implementation.
         """
 
     def _get_vrs_object(
@@ -365,25 +413,25 @@ class AbstractVcfAnnotator(abc.ABC):
         assembly: str,
         vrs_attributes: bool = False,
         require_validation: bool = True,
-        **kwargs,
+        **kwargs: object,
     ) -> None:
-        """Get VRS object given `vcf_coords`. `vrs_data` and `vrs_field_data` will
-        be mutated.
+        """Translate one allele and append it and its attributes to the supplied collections.
 
         :param vcf_coords: Allele to get VRS object for. Format is chr-pos-ref-alt
         :param allele_collection: All constructed VRS objects. Can be `None` if no data dumps
             will be created.
-        :param vrs_field_data: If `vrs_data`, keys are VRS Fields and values are list
-            of VRS data. Empty dict otherwise.
+        :param vrs_field_data: Mapping from requested INFO field names to lists to append to.
+            An empty mapping disables attribute collection.
         :param assembly: The assembly used in `vcf_coords`
         :param vrs_attributes: If `True` will include VRS_Start, VRS_End, VRS_State
             fields in the INFO field. If `False` will not include these fields. Only
             used if `output_vcf` set to `True`.
         :param require_validation: If `True` then validation checks must pass in order
-            to return a VRS object. If `False` then VRS object will be returned even if
-            validation checks fail. Defaults to `True`.
+            to accept a reference match. False permits reference mismatches;
+            invalid location bounds still raise. Defaults to True.
         :param kwargs: Additional options passed to ``on_vrs_object``.
         :raises Exception: If translation fails. The exception is logged and re-raised.
+        :raises VcfAnnotatorError: If a requested attribute has an unsupported state or length.
         """
         try:
             vrs_obj = self.tlr.from_gnomad(
@@ -467,13 +515,13 @@ class AbstractVcfAnnotator(abc.ABC):
     def _get_vrs_data(
         self,
         record: pysam.VariantRecord,
-        allele_collection: list | None,
+        allele_collection: list[Allele] | None,
         assembly: str,
         additional_info_fields: list[FieldName],
         vrs_attributes: bool = False,
         compute_for_ref: bool = True,
         require_validation: bool = True,
-        **kwargs,
+        **kwargs: object,
     ) -> dict:
         """Get VRS data for record's reference and alt alleles.
 
@@ -488,10 +536,12 @@ class AbstractVcfAnnotator(abc.ABC):
         :param compute_for_ref: If true, compute VRS IDs for the reference allele
         :param require_validation: If `True` then validation checks must pass in
             order to return a VRS object. A `DataProxyValidationError` will be raised if
-            validation checks fail. If `False` then VRS object will be returned even if
-            validation checks fail. Defaults to `True`.
+            validation checks fail. False permits reference mismatches;
+            invalid location bounds still raise. Defaults to True.
         :return: A dictionary mapping VRS-related INFO fields to lists of associated
-            values. Will be empty if `create_annotated_vcf` is false.
+            values. Empty when additional_info_fields is empty.
+
+        :param kwargs: Additional options passed to the implementation.
         """
         vrs_field_data = {field.value: [] for field in additional_info_fields}
 
@@ -542,28 +592,27 @@ class VcfAnnotator(AbstractVcfAnnotator):
     pkl_arg_name = "output_pkl_path"
     ndjson_arg_name = "output_ndjson_path"
 
-    def should_collect_alleles(self, **kwargs) -> bool:
+    def should_collect_alleles(self, **kwargs: object) -> bool:
         """Inhibit allele collection parameter if no means of output are given.
 
-        :kwparam output_pkl_path: Optional path to output PKL dump of all alleles
-        :kwparam output_ndjson_path: Optional path to output NDJSON dump of all alleles
-        :return: ``True`` if at least one of the output path args is ``True``
+        :return: ``True`` if at least one output path is truthy
+
+        :param kwargs: Optional output_pkl_path and output_ndjson_path destinations.
         """
         return bool(kwargs.get("output_pkl_path") or kwargs.get("output_ndjson_path"))
 
     @use_ga4gh_compute_identifier_when(VrsObjectIdentifierIs.MISSING)
     def annotate(
         self,
-        input_vcf_path: Path,
-        output_vcf_path: Path | None = None,
+        input_vcf_path: Path | Literal["-"],
+        output_vcf_path: Path | Literal["-"] | None = None,
         vrs_attributes: bool = False,
         assembly: str = "GRCh38",
         compute_for_ref: bool = True,
         require_validation: bool = True,
-        **kwargs,
+        **kwargs: object,
     ) -> None:
-        """Given a VCF, produce an output VCF annotated with VRS allele IDs, and/or
-        a PKL or NDJSON dump of the corresponding VRS objects.
+        """Given a VCF, produce an output VCF annotated with VRS allele IDs, and/or a PKL or NDJSON dump of the corresponding VRS objects.
 
         :param input_vcf_path: Location of input VCF
         :param output_vcf_path: The path for the output VCF file
@@ -574,12 +623,12 @@ class VcfAnnotator(AbstractVcfAnnotator):
         :param compute_for_ref: If true, compute VRS IDs for the reference allele
         :param require_validation: If `True`, validation checks (i.e., REF value
             matches expected REF at given location) must pass in order to return a VRS
-            object for a record. If `False` then VRS object will be returned even if
-            validation checks fail, although all instances of failed validation are
-            logged as warnings regardless.
-        :kwparam output_pkl_path: Optional path to output PKL dump of all alleles
-        :kwparam output_ndjson_path: Optional path to output NDJSON dump of all alleles
-        :raise VCFAnnotatorError: if no output formats are selected
+            object for a record. False permits reference mismatches, which are
+            logged as warnings; location bounds are still validated. Per-record
+            errors are logged and written to VRS_Error when VCF output is enabled.
+        :raises VcfAnnotatorError: if no output formats are selected
+
+        :param kwargs: Optional output_pkl_path and output_ndjson_path destinations.
         """
         return super().annotate(
             input_vcf_path,
@@ -591,14 +640,15 @@ class VcfAnnotator(AbstractVcfAnnotator):
             **kwargs,
         )
 
-    def raise_for_output_args(self, output_vcf_path: Path | None, **kwargs) -> None:
-        """Raise an exception if no output (VCF, PKL, NDJSON) appears to be configured
-        or declared.
+    def raise_for_output_args(
+        self, output_vcf_path: Path | Literal["-"] | None, **kwargs: object
+    ) -> None:
+        """Raise an exception if no output (VCF, PKL, NDJSON) appears to be configured or declared.
 
         :param output_vcf_path: VCF output path arg passed to `annotate()`
-        :kwparam output_pkl_path: optional path to PKL output
-        :kwparam output_ndjson_path: optional path to NDJSON output
-        :raise VCFAnnotatorArgsError: if no output args are given
+        :raises VcfAnnotatorArgsError: if no output args are given
+
+        :param kwargs: Optional output_pkl_path and output_ndjson_path destinations.
         """
         if (
             output_vcf_path is None
@@ -612,26 +662,28 @@ class VcfAnnotator(AbstractVcfAnnotator):
         self,
         vcf_coords: str,  # noqa: ARG002
         vrs_allele: Allele,
-        **kwargs,  # noqa: ARG002
+        **kwargs: object,  # noqa: ARG002
     ) -> Allele | None:
-        """Perform side-effects (eg additional annotation or storage) or additional
-        filtering on VRS alleles as they are constructed during VCF annotation.
+        """Perform side-effects (eg additional annotation or storage) or additional filtering on VRS alleles as they are constructed during VCF annotation.
 
         For this basic implementation, no additional operations are performed.
 
         :param vcf_coords: CHR-POS-REF-ALT from VCF for this allele
         :param vrs_allele: allele translated from coords
-        :return: final VRS allele
+        :return: Final allele, or None to filter it from collection.
+
+        :param kwargs: Optional output_pkl_path and output_ndjson_path destinations.
         """
         return vrs_allele
 
     def on_vrs_object_collection(
-        self, vrs_alleles_collection: list[Allele] | None, **kwargs
+        self, vrs_alleles_collection: list[Allele] | None, **kwargs: object
     ) -> None:
-        """Perform clean-up operations (eg file writing) on VRS objects collected
-        during VCF ingestion.
+        """Perform clean-up operations (eg file writing) on VRS objects collected during VCF ingestion.
 
         :param vrs_alleles_collection: VRS alleles constructed from ingested VCF
+
+        :param kwargs: Optional output_pkl_path and output_ndjson_path destinations.
         """
         if vrs_alleles_collection is not None:
             output_pkl_path = kwargs.get(self.pkl_arg_name)
