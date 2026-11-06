@@ -2,7 +2,8 @@
 
 import logging
 import re
-from typing import Literal, TypeGuard
+from types import TracebackType
+from typing import Literal, Self, TypeGuard
 
 import hgvs
 import hgvs.dataproviders.uta
@@ -178,7 +179,10 @@ def _vrs_pos_to_hgvs(
 
 
 class HgvsTools:
-    """A convenience class that exposes only the tools needed by vrs-python for working with HGVS (Human Genome Variation Society) notation.
+    """Provide tools for working with HGVS notation.
+
+    Use a context manager or call ``close()`` to close this instance's UTA
+    connection. The caller owns the supplied data proxy, which stays open.
 
     Attributes:
         parser (hgvs.parser.Parser): The HGVS parser object.
@@ -192,26 +196,61 @@ class HgvsTools:
     hgvs_re = re.compile(r"[^:]+:[cgmnpr]\.")
 
     def __init__(self, data_proxy: _DataProxy | None = None) -> None:
-        """Initialize object.
+        """Create the HGVS parser, normalizer, variant mapper, and UTA connection.
 
-        :param data_proxy: GA4GH data proxy instance
+        Close the UTA connection if normalizer or variant mapper setup fails.
+        If cleanup also fails, raise its error with the setup error chained.
+
+        :param data_proxy: Optional caller-owned GA4GH data proxy.
         """
         self.parser = hgvs.parser.Parser()
         self.uta_conn = hgvs.dataproviders.uta.connect()
-        self.normalizer = hgvs.normalizer.Normalizer(self.uta_conn, validate=True)
-        self.variant_mapper = hgvs.variantmapper.VariantMapper(self.uta_conn)
+        self._closed = False
+        try:
+            self.normalizer = hgvs.normalizer.Normalizer(self.uta_conn, validate=True)
+            self.variant_mapper = hgvs.variantmapper.VariantMapper(self.uta_conn)
+        except BaseException:
+            self.close()
+            raise
         self.data_proxy = data_proxy
 
     def close(self) -> None:
-        """Close resources.
+        """Close this instance's UTA connection.
 
-        # TODO These should only be closed if they are owned by this instance
+        Repeated calls after success do nothing. Cleanup errors propagate;
+        callers can retry. Keep all resource references and leave the supplied
+        data proxy open. Operations that need UTA are unsupported after closure.
         """
-        self.normalizer = None
-        self.variant_mapper = None
-        self.data_proxy = None
-        if self.uta_conn is not None:
+        if not self._closed:
             self.uta_conn.close()
+            self._closed = True
+
+    def __enter__(self) -> Self:
+        """Return this instance for use in a context manager.
+
+        :return: This instance.
+        :raises RuntimeError: If already closed.
+        """
+        if self._closed:
+            msg = "HgvsTools is closed"
+            raise RuntimeError(msg)
+        return self
+
+    def __exit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_value: BaseException | None,
+        traceback: TracebackType | None,
+    ) -> None:
+        """Close the owned UTA connection without suppressing exceptions.
+
+        If cleanup fails, raise its error with any context body error chained.
+
+        :param exc_type: Exception type from the context body, if any.
+        :param exc_value: Exception from the context body, if any.
+        :param traceback: Traceback from the context body, if any.
+        """
+        self.close()
 
     # convenience methods for hgvs parsing, normalization, and some mappings
     def parse(self, hgvs_str: str) -> HgvsSequenceVariant | None:
@@ -586,7 +625,7 @@ if __name__ == "__main__":
 
     vrs_allele = models.Allele.model_validate(allele_dict)
     dp = create_dataproxy(seqrepo_uri)
-    hgvs_tools = HgvsTools(dp)
-    hgvs_expr = hgvs_tools.from_allele(vrs_allele, namespace="refseq")
+    with HgvsTools(dp) as hgvs_tools:
+        hgvs_expr = hgvs_tools.from_allele(vrs_allele, namespace="refseq")
 
     print(hgvs_expr)  # noqa: T201
