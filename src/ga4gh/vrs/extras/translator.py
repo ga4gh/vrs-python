@@ -9,6 +9,7 @@ import logging
 import re
 from abc import ABC
 from collections.abc import Mapping
+from enum import Enum
 from typing import Protocol
 
 from ga4gh.core import ga4gh_identify
@@ -19,6 +20,21 @@ from ga4gh.vrs.normalize import denormalize_reference_length_expression
 from ga4gh.vrs.utils.hgvs_tools import HgvsTools
 
 _logger = logging.getLogger(__name__)
+
+
+class TranslationDefault(Enum):
+    """Mark options that use the translator instance setting.
+
+    USE_INSTANCE_DEFAULT distinguishes an omitted option from an explicit None.
+    For rle_seq_limit, the default uses the instance limit, while None means no
+    limit. Enum members preserve their identity through copying and pickling.
+    """
+
+    INSTANCE = "instance"
+
+
+USE_INSTANCE_DEFAULT = TranslationDefault.INSTANCE
+"""Use the translator instance setting for an omitted option."""
 
 
 class VariationToStrProtocol(Protocol):
@@ -48,7 +64,7 @@ class _Translator(ABC):  # noqa: B024
 
      Translates various variation formats to and from GA4GH VRS models
 
-    Private `_from_*` parsers follow this pattern:
+    Format-specific `from_*` parsers follow this pattern:
     * If the argument does not appear to be an appropriate type, None is returned
     * Otherwise, the argument is expected to be of the correct type.  If an error occurs during processing,
       an exception is raised.
@@ -86,35 +102,47 @@ class _Translator(ABC):  # noqa: B024
         self.from_vrs_translators: dict[str, VariationToStrProtocol] = {}
 
     def to_vrs(
-        self, var: str, fmt: str | None = None, **kwargs
+        self, var: str | dict, fmt: str | None = None, **kwargs
     ) -> models._VariationBase:
-        """Translate variation `var` to VRS object
+        """Translate a variation expression or VRS JSON dictionary to a VRS object.
 
-        If `fmt` is None, guess the appropriate format and return the variant.
-        If `fmt` is specified, try only that format.
+        If fmt is omitted, try the registered parsers in order. Format-specific
+        methods return None for unrecognized input; this method raises ValueError.
 
-        See the class notes about private `_from_*` parsers.
+        :param var: Variation expression, or a VRS JSON dictionary with fmt="vrs".
+        :param fmt: Input format, or None to try the registered parsers.
+        :param kwargs: Options forwarded to the selected parser. Unused options
+            are ignored.
 
-        kwargs:
-            For CnvTranslator
-                copies(int): The number of copies to use. If provided will return a
-                    CopyNumberCount
-                copy_change(models.CopyChange): Copy change. If not provided, default is
-                    EFO:0030067 for deletions and EFO:0030070 for duplications
-            For AlleleTranslator
-                assembly_name (str): Assembly used for `var`. Defaults to the
-                    `default_assembly_name`. Only used for gnomad.
-                require_validation (bool): If `True` then validation checks must pass in
-                    order to return a VRS object. A `DataProxyValidationError` will be
-                    raised if validation checks fail. If `False` then VRS object will be
-                    returned even if validation checks fail. Defaults to `True`.
-                rle_seq_limit Optional(int): If RLE is set as the new state after
-                    normalization, this sets the limit for the length of the `sequence`.
-                    To exclude `sequence` from the response, set to 0.
-                    For no limit, set to `None`.
-                    Defaults value set in instance variable, `rle_seq_limit`.
-                do_normalize (bool): `True` if fully justified normalization should be
-                    performed. `False` otherwise. Defaults to `True`
+            For AlleleTranslator HGVS, SPDI, and gnomAD inputs:
+
+            * ``do_normalize`` (bool): Whether to perform fully justified
+              normalization. Defaults to True.
+            * ``rle_seq_limit`` (int or None): Maximum sequence length to include
+              when normalization produces a ReferenceLengthExpression. Omission
+              or ``USE_INSTANCE_DEFAULT`` uses the instance's ``rle_seq_limit``.
+              Set to 0 to exclude the sequence, or None for no limit.
+
+            Additional options for AlleleTranslator gnomAD inputs:
+
+            * ``assembly_name`` (str or None): Assembly used for the input.
+              Omission or None uses the instance's ``default_assembly_name``.
+            * ``require_validation`` (bool): Whether reference mismatches raise
+              DataProxyValidationError. Defaults to True. False allows reference
+              mismatches; location bounds are still validated.
+
+            For CnvTranslator HGVS inputs:
+
+            * ``copies`` (int, models.Range, or None): Copy count or range,
+              including zero. If supplied, returns CopyNumberCount and takes
+              precedence over ``copy_change``. Defaults to None.
+            * ``copy_change`` (models.CopyChange or None): Copy change used when
+              ``copies`` is omitted or None. Defaults to LOSS (EFO:0030067) for
+              deletions and GAIN (EFO:0030070) for duplications.
+        :return: Translated VRS variation.
+        :raises NotImplementedError: If the requested format is unsupported.
+        :raises ValueError: If the input cannot be parsed or represented.
+        :raises DataProxyValidationError: If required reference or location validation fails.
         """
         if fmt:
             try:
@@ -139,12 +167,28 @@ class _Translator(ABC):  # noqa: B024
         raise ValueError(msg)
 
     def from_vrs(self, vo: models._VariationBase, fmt: str, **kwargs) -> list[str]:
-        """Translate vrs object `vo` to named format `fmt`
+        """Translate a VRS object to expressions in the requested format.
 
-        kwargs:
-            ref_seq_limit Optional(int):
-                If vo.state is a ReferenceLengthExpression, and `ref_seq_limit` is specified, and `fmt` is `spdi`, the reference sequence is included in the SPDI expression if it is below the limit Otherwise only the length of the reference sequence is included. If the limit is None, the reference sequence is always included. In all cases, the alt sequence is included. Default is 0 (never include reference sequence).
-        :raise NotImplementedError: If `fmt` is not supported
+        :param vo: VRS variation to translate.
+        :param fmt: Output format.
+        :param kwargs: Options forwarded to the selected exporter. Unused options
+            are ignored.
+
+            For AlleleTranslator HGVS and SPDI exports:
+
+            * ``namespace`` (str or None): Sequence identifier namespace.
+              Defaults to "refseq". None includes all available aliases.
+
+            Additional options for AlleleTranslator SPDI exports:
+
+            * ``ref_seq_limit`` (int or None): Maximum reference sequence length
+              to include in the SPDI expression. Longer reference sequences are
+              represented by their length. Defaults to 0; None always includes
+              the reference sequence. The alternate sequence is always included,
+              including when derived from a ReferenceLengthExpression.
+        :return: Expressions in the requested format.
+        :raises NotImplementedError: If the requested format is unsupported.
+        :raises ValueError: If the object cannot be represented in the requested format.
         """
         try:
             t = self.from_vrs_translators[fmt]
@@ -154,6 +198,20 @@ class _Translator(ABC):  # noqa: B024
 
         return t(vo, **kwargs)
 
+    def from_vrs_dict(self, var: dict, **kwargs) -> models._VariationBase | None:  # noqa: ARG002
+        """Parse a VRS JSON dictionary into a VRS variation object.
+
+        :param var: Dictionary containing a VRS variation and its ``type``.
+        :param kwargs: Unused options accepted for format dispatch.
+        :return: Parsed variation, or None for non-mappings or missing ``type``.
+        :raises pydantic.ValidationError: If the dictionary is not a valid variation.
+        """
+        if not isinstance(var, Mapping):
+            return None
+        if "type" not in var:
+            return None
+        return models.Variation.model_validate(var).root
+
     ############################################################################
     # INTERNAL
 
@@ -161,17 +219,6 @@ class _Translator(ABC):  # noqa: B024
     def hgvs_tools(self) -> HgvsTools:
         """Instantiate and return an HgvsTools instance"""
         return HgvsTools(self.data_proxy)
-
-    def _from_vrs(self, var: dict, **kwargs) -> models._VariationBase | None:  # noqa: ARG002
-        """Convert from dict representation of VRS JSON to VRS object
-
-        :raise pydantic.ValidationError: If `var` is not a valid VRS variation
-        """
-        if not isinstance(var, Mapping):
-            return None
-        if "type" not in var:
-            return None
-        return models.Variation.model_validate(var).root
 
 
 class AlleleTranslator(_Translator):
@@ -183,37 +230,43 @@ class AlleleTranslator(_Translator):
         default_assembly_name: str = "GRCh38",
         identify: bool = True,
     ) -> None:
-        """Initialize AlleleTranslator class"""
+        """Initialize translation to and from VRS Alleles.
+
+        :param data_proxy: Sequence data provider used during translation.
+        :param default_assembly_name: Default assembly for gnomAD inputs.
+        :param identify: Whether to assign GA4GH identifiers to translated objects.
+        """
         super().__init__(data_proxy, default_assembly_name, identify)
 
         self.to_vrs_translators = {
-            "gnomad": self._from_gnomad,
-            "hgvs": self._from_hgvs,
-            "spdi": self._from_spdi,
-            "vrs": self._from_vrs,
+            "gnomad": self.from_gnomad,
+            "hgvs": self.from_hgvs,
+            "spdi": self.from_spdi,
+            "vrs": self.from_vrs_dict,
         }
 
         self.from_vrs_translators = {
-            "hgvs": self._to_hgvs,
-            "spdi": self._to_spdi,
+            "hgvs": self.to_hgvs,
+            "spdi": self.to_spdi,
         }
 
-    def _create_allele(self, values: dict, **kwargs) -> models.Allele:
-        """Create an allele object with the given parameters.
+    def _create_allele(
+        self,
+        values: dict,
+        *,
+        do_normalize: bool = True,
+        rle_seq_limit: int | None | TranslationDefault = USE_INSTANCE_DEFAULT,
+    ) -> models.Allele:
+        """Build and post-process an Allele from parsed coordinates and sequence.
 
-        Args:
-            values (dict): The values to use for creating the allele object.
-                'sequence_id' (str): The sequence identifier from the input
-                    expression, used to validate `start` and `end`.
-                'refget_accession' (str): The accession ID of the reference genome.
-                'start' (int): The start position of the allele.
-                'end' (int): The end position of the allele.
-                literal_sequence' (str): The literal sequence for the allele.
-            **kwargs: Additional keyword arguments.
-
-        Returns:
-            models.Allele: The created allele object.
-
+        :param values: Parsed ``sequence_id``, ``refget_accession``, ``start``,
+            ``end``, and ``literal_sequence`` values.
+        :param do_normalize: Whether to perform fully justified normalization (default True).
+        :param rle_seq_limit: Maximum RLE sequence length to include.
+            USE_INSTANCE_DEFAULT uses the instance limit; 0 excludes the sequence
+            and None includes it without a limit.
+        :return: Constructed Allele, normalized and identified as configured.
+        :raises DataProxyValidationError: If the location is outside the reference sequence.
         """
         self.data_proxy.validate_location_bounds(
             values["sequence_id"], values["start"], values["end"]
@@ -224,24 +277,33 @@ class AlleleTranslator(_Translator):
         )
         state = models.LiteralSequenceExpression(sequence=values["literal_sequence"])
         allele = models.Allele(location=location, state=state)
-        return self._post_process_imported_allele(allele, **kwargs)
+        return self._post_process_imported_allele(
+            allele, do_normalize=do_normalize, rle_seq_limit=rle_seq_limit
+        )
 
-    def _from_gnomad(self, gnomad_expr: str, **kwargs) -> models.Allele | None:
+    def from_gnomad(
+        self,
+        gnomad_expr: str,
+        *,
+        assembly_name: str | None = None,
+        require_validation: bool = True,
+        do_normalize: bool = True,
+        rle_seq_limit: int | None | TranslationDefault = USE_INSTANCE_DEFAULT,
+        **kwargs,  # noqa: ARG002
+    ) -> models.Allele | None:
         """Parse gnomAD-style VCF expression into VRS Allele
 
-        kwargs:
-            assembly_name (str): Assembly used for `gnomad_expr`.
-            require_validation (bool): If `True` then validation checks must pass in
-                order to return a VRS object. A `DataProxyValidationError` will be
-                raised if validation checks fail. If `False` then VRS object will be
-                returned even if validation checks fail. Defaults to `True`.
-            rle_seq_limit Optional(int): If RLE is set as the new state after
-                normalization, this sets the limit for the length of the `sequence`.
-                To exclude `sequence` from the response, set to 0.
-                For no limit, set to `None`.
-                Defaults value set in instance variable, `rle_seq_limit`.
-            do_normalize (bool): `True` if fully justified normalization should be
-                performed. `False` otherwise. Defaults to `True`
+        :param gnomad_expr: Variant in chr-pos-ref-alt format.
+        :param assembly_name: Assembly used for the input, or None for the instance default.
+        :param require_validation: Whether reference mismatches raise an error (default True).
+        :param do_normalize: Whether to perform fully justified normalization (default True).
+        :param rle_seq_limit: Maximum RLE sequence length to include.
+            USE_INSTANCE_DEFAULT uses the instance limit; 0 excludes the sequence
+            and None includes it without a limit.
+        :param kwargs: Unused options accepted for format dispatch.
+        :return: Translated Allele, or None if the expression or accession is unrecognized.
+        :raises DataProxyValidationError: If reference validation is required and fails,
+            or the location is outside the reference sequence.
 
         #>>> a = tlr.from_gnomad("1-55516888-G-GA")
         #>>> a.model_dump()
@@ -270,7 +332,8 @@ class AlleleTranslator(_Translator):
             return None
 
         g = m.groupdict()
-        assembly_name = kwargs.get("assembly_name", self.default_assembly_name)
+        if assembly_name is None:
+            assembly_name = self.default_assembly_name
         sequence = assembly_name + ":" + g["chr"]
         refget_accession = self.data_proxy.derive_refget_accession(sequence)
         if not refget_accession:
@@ -288,7 +351,7 @@ class AlleleTranslator(_Translator):
             start,
             end,
             ref,
-            require_validation=kwargs.get("require_validation", True),
+            require_validation=require_validation,
         )
 
         values = {
@@ -298,14 +361,30 @@ class AlleleTranslator(_Translator):
             "end": end,
             "literal_sequence": ins_seq,
         }
-        return self._create_allele(values, **kwargs)
+        return self._create_allele(
+            values, do_normalize=do_normalize, rle_seq_limit=rle_seq_limit
+        )
 
-    def _from_hgvs(self, hgvs_expr: str, **kwargs) -> models.Allele | None:
-        # Uncertain-range expressions (e.g. g.(A_B)_(C_D)del) have no faithful
-        # Allele representation — their endpoints aren't single positions.
-        # Reject here rather than inside HgvsTools so that helper layer stays
-        # unaware of sibling translator classes. CnvTranslator handles the
-        # uncertain-range del/dup path.
+    def from_hgvs(
+        self,
+        hgvs_expr: str,
+        *,
+        do_normalize: bool = True,
+        rle_seq_limit: int | None | TranslationDefault = USE_INSTANCE_DEFAULT,
+        **kwargs,  # noqa: ARG002
+    ) -> models.Allele | None:
+        """Parse an HGVS expression into a VRS Allele.
+
+        :param hgvs_expr: HGVS variant expression.
+        :param do_normalize: Whether to perform fully justified normalization (default True).
+        :param rle_seq_limit: Maximum RLE sequence length to include.
+            USE_INSTANCE_DEFAULT uses the instance limit; 0 excludes the sequence
+            and None includes it without a limit.
+        :param kwargs: Unused options accepted for format dispatch.
+        :return: Translated Allele, or None if the expression or accession is unrecognized.
+        :raises ValueError: If HGVS positions or edits cannot be represented as an Allele.
+        :raises DataProxyValidationError: If the location is outside the reference sequence.
+        """
         sv = self.hgvs_tools.parse(hgvs_expr)
         if sv is not None and self.hgvs_tools.has_uncertain_range(sv):
             msg = (
@@ -316,20 +395,29 @@ class AlleleTranslator(_Translator):
 
         allele_values = self.hgvs_tools.extract_allele_values(hgvs_expr)
         if allele_values:
-            return self._create_allele(allele_values, **kwargs)
+            return self._create_allele(
+                allele_values, do_normalize=do_normalize, rle_seq_limit=rle_seq_limit
+            )
         return None
 
-    def _from_spdi(self, spdi_expr: str, **kwargs) -> models.Allele | None:
+    def from_spdi(
+        self,
+        spdi_expr: str,
+        *,
+        do_normalize: bool = True,
+        rle_seq_limit: int | None | TranslationDefault = USE_INSTANCE_DEFAULT,
+        **kwargs,  # noqa: ARG002
+    ) -> models.Allele | None:
         """Parse SPDI expression in to a GA4GH Allele
 
-        kwargs:
-            rle_seq_limit Optional(int): If RLE is set as the new state after
-                normalization, this sets the limit for the length of the `sequence`.
-                To exclude `sequence` from the response, set to 0.
-                For no limit, set to `None`.
-                Defaults value set in instance variable, `rle_seq_limit`.
-            do_normalize (bool): `True` if fully justified normalization should be
-                performed. `False` otherwise. Defaults to `True`
+        :param spdi_expr: Variant in accession:position:deletion:insertion format.
+        :param do_normalize: Whether to perform fully justified normalization (default True).
+        :param rle_seq_limit: Maximum RLE sequence length to include.
+            USE_INSTANCE_DEFAULT uses the instance limit; 0 excludes the sequence
+            and None includes it without a limit.
+        :param kwargs: Unused options accepted for format dispatch.
+        :return: Translated Allele, or None if the expression or accession is unrecognized.
+        :raises DataProxyValidationError: If the location is outside the reference sequence.
 
         #>>> a = tlr.from_spdi("NC_000013.11:32936731:1:C")
         #>>> a.model_dump()
@@ -378,18 +466,33 @@ class AlleleTranslator(_Translator):
             "literal_sequence": ins_seq,
         }
 
-        return self._create_allele(values, **kwargs)
+        return self._create_allele(
+            values, do_normalize=do_normalize, rle_seq_limit=rle_seq_limit
+        )
 
-    def _to_hgvs(
+    def to_hgvs(
         self,
         vo: models.Allele,
         namespace: str | None = "refseq",
         **kwargs,  # noqa: ARG002
     ) -> list[str]:
+        """Generate HGVS expressions for a VRS Allele.
+
+        :param vo: Allele to translate.
+        :param namespace: Sequence identifier namespace, or None for all aliases.
+        :param kwargs: Unused options accepted for format dispatch.
+        :return: HGVS expressions, or an empty list if no aliases are available.
+        :raises ValueError: If the object cannot be represented as HGVS.
+        """
         return self.hgvs_tools.from_allele(vo, namespace)
 
-    def _to_spdi(
-        self, vo: models.Allele, namespace: str | None = "refseq", **kwargs
+    def to_spdi(
+        self,
+        vo: models.Allele,
+        namespace: str | None = "refseq",
+        *,
+        ref_seq_limit: int | None = 0,
+        **kwargs,  # noqa: ARG002
     ) -> list[str]:
         """Generate a *list* of SPDI expressions for VRS Allele.
 
@@ -413,6 +516,14 @@ class AlleleTranslator(_Translator):
 
         SPDI and VRS use identical normalization. The incoming Allele
         is expected to be normalized per VRS spec.
+
+        :param vo: Allele to translate.
+        :param namespace: Sequence identifier namespace, or None for all aliases.
+        :param ref_seq_limit: Maximum reference sequence length to include (default 0).
+            None always includes the reference sequence.
+        :param kwargs: Unused options accepted for format dispatch.
+        :return: SPDI expressions, or an empty list if no aliases are available.
+        :raises ValueError: If the object cannot be represented as SPDI.
         """
         sequence = f"ga4gh:{vo.location.get_refget_accession()}"
         aliases = self.data_proxy.translate_sequence_identifier(sequence, namespace)
@@ -446,7 +557,6 @@ class AlleleTranslator(_Translator):
 
             # Optionally allow using the length of the reference sequence
             # instead of the sequence itself.
-            ref_seq_limit = kwargs.get("ref_seq_limit", 0)
             if ref_seq_limit is not None and len(ref_seq) > int(ref_seq_limit):
                 ref_seq = len(ref_seq)
 
@@ -456,25 +566,29 @@ class AlleleTranslator(_Translator):
         return spdi_exprs
 
     def _post_process_imported_allele(
-        self, allele: models.Allele, **kwargs
+        self,
+        allele: models.Allele,
+        *,
+        do_normalize: bool = True,
+        rle_seq_limit: int | None | TranslationDefault = USE_INSTANCE_DEFAULT,
     ) -> models.Allele:
-        """Provide common post-processing for imported Alleles IN-PLACE.
+        """Normalize an imported Allele and assign identifiers as configured.
 
-        :param allele: VRS Allele object
-
-        kwargs:
-            rle_seq_limit Optional(int): If RLE is set as the new state after
-                normalization, this sets the limit for the length of the `sequence`.
-                To exclude `sequence` from the response, set to 0.
-                For no limit, set to `None`.
-            do_normalize (bool): `True` if fully justified normalization should be
-                performed. `False` otherwise. Defaults to `True`
+        :param allele: Allele to process. Identifiers are assigned in place.
+        :param do_normalize: Whether to perform fully justified normalization (default True).
+        :param rle_seq_limit: Maximum RLE sequence length to include.
+            USE_INSTANCE_DEFAULT uses the instance limit; 0 excludes the sequence
+            and None includes it without a limit.
+        :return: Processed Allele. Normalization may return a new object.
         """
-        if kwargs.get("do_normalize", True):
+        if rle_seq_limit is USE_INSTANCE_DEFAULT:
+            rle_seq_limit = self.rle_seq_limit
+
+        if do_normalize:
             allele = normalize(
                 allele,
                 self.data_proxy,
-                rle_seq_limit=kwargs.get("rle_seq_limit", self.rle_seq_limit),
+                rle_seq_limit=rle_seq_limit,
             )
 
         if self.identify:
@@ -493,24 +607,39 @@ class CnvTranslator(_Translator):
         default_assembly_name: str = "GRCh38",
         identify: bool = True,
     ) -> None:
-        """Initialize CnvTranslator class"""
+        """Initialize translation from HGVS to VRS copy number objects.
+
+        :param data_proxy: Sequence data provider used during translation.
+        :param default_assembly_name: Default assembly name.
+        :param identify: Whether to assign GA4GH identifiers to translated objects.
+        """
         super().__init__(data_proxy, default_assembly_name, identify)
         self.to_vrs_translators = {
-            "hgvs": self._from_hgvs,
+            "hgvs": self.from_hgvs,
         }
 
-    def _from_hgvs(
-        self, hgvs_dup_del_expr: str, **kwargs
+    def from_hgvs(
+        self,
+        hgvs_dup_del_expr: str,
+        *,
+        copies: int | models.Range | None = None,
+        copy_change: models.CopyChange | None = None,
+        **kwargs,  # noqa: ARG002
     ) -> models.CopyNumberChange | models.CopyNumberCount | None:
-        """Parse hgvs into a VRS CNV Object
+        """Parse an HGVS deletion or duplication into a VRS copy number object.
 
-        kwargs:
-            copies: The number of copies to use. If provided will return a
-                CopyNumberCount
-            copy_change: Copy change. If not provided, default is EFO:0030067 for
-                deletions and EFO:0030070 for duplications
+        :param hgvs_dup_del_expr: HGVS deletion or duplication expression.
+        :param copies: Copy count or range, including zero. If supplied, returns
+            CopyNumberCount and takes precedence over ``copy_change``.
+        :param copy_change: Copy change, defaulting to LOSS for deletions and
+            GAIN for duplications when ``copies`` is omitted.
+        :param kwargs: Unused options accepted for format dispatch.
+        :return: CopyNumberCount if copies is supplied, otherwise CopyNumberChange,
+            or None if the expression or accession is unrecognized.
+        :raises ValueError: If the edit is not a deletion or duplication, or its
+            positions cannot be represented as a copy number location.
+        :raises DataProxyValidationError: If the location is outside the reference sequence.
         """
-        # sv = self._get_parsed_hgvs(hgvs_dup_del_expr)
         sv = self.hgvs_tools.parse(hgvs_dup_del_expr)
         if not sv:
             return None
@@ -531,11 +660,9 @@ class CnvTranslator(_Translator):
         location = self.hgvs_tools.build_cnv_location(sv, refget_accession)
         self.data_proxy.validate_location_bounds(sv.ac, location.start, location.end)
 
-        copies = kwargs.get("copies")
         if copies is not None:
             cnv = models.CopyNumberCount(location=location, copies=copies)
         else:
-            copy_change = kwargs.get("copy_change")
             if not copy_change:
                 copy_change = (
                     models.CopyChange.LOSS

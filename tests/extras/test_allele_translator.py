@@ -352,34 +352,35 @@ def test_from_trailing_input_rejected(tlr, expr, fmt):
 
 
 @pytest.mark.vcr
-def test_from_gnomad(tlr):
+def test_from_gnomad(tlr) -> None:
+    """Public gnomAD translation preserves validation and normalization behavior."""
     do_normalize = False
     assert (
-        tlr._from_gnomad(snv_inputs["gnomad"], do_normalize=do_normalize).model_dump(
-            exclude_none=True
-        )
+        tlr.from_gnomad(
+            snv_inputs["gnomad"], do_normalize=do_normalize, unrelated_option=True
+        ).model_dump(exclude_none=True)
         == snv_output
     )
     assert (
-        tlr._from_gnomad(mito_inputs["gnomad"], do_normalize=do_normalize).model_dump(
+        tlr.from_gnomad(mito_inputs["gnomad"], do_normalize=do_normalize).model_dump(
             exclude_none=True
         )
         == mito_output
     )
     assert (
-        tlr._from_gnomad(
+        tlr.from_gnomad(
             deletion_inputs["gnomad"], do_normalize=do_normalize
         ).model_dump(exclude_none=True)
         == gnomad_deletion_output
     )
     assert (
-        tlr._from_gnomad(
+        tlr.from_gnomad(
             insertion_inputs["gnomad"], do_normalize=do_normalize
         ).model_dump(exclude_none=True)
         == gnomad_insertion_output
     )
     assert (
-        tlr._from_gnomad(
+        tlr.from_gnomad(
             duplication_inputs["gnomad"], do_normalize=do_normalize
         ).model_dump(exclude_none=True)
         == duplication_output
@@ -387,42 +388,42 @@ def test_from_gnomad(tlr):
 
     # do_normalize defaults to true
     assert (
-        tlr._from_gnomad(snv_inputs["gnomad"]).model_dump(exclude_none=True)
+        tlr.from_gnomad(snv_inputs["gnomad"]).model_dump(exclude_none=True)
         == snv_output
     )
     assert (
-        tlr._from_gnomad(mito_inputs["gnomad"]).model_dump(exclude_none=True)
+        tlr.from_gnomad(mito_inputs["gnomad"]).model_dump(exclude_none=True)
         == mito_output
     )
     assert (
-        tlr._from_gnomad(deletion_inputs["gnomad"]).model_dump(exclude_none=True)
+        tlr.from_gnomad(deletion_inputs["gnomad"]).model_dump(exclude_none=True)
         == deletion_output_normalized
     )
     assert (
-        tlr._from_gnomad(insertion_inputs["gnomad"]).model_dump(exclude_none=True)
+        tlr.from_gnomad(insertion_inputs["gnomad"]).model_dump(exclude_none=True)
         == insertion_output
     )
     assert (
-        tlr._from_gnomad(duplication_inputs["gnomad"]).model_dump(exclude_none=True)
+        tlr.from_gnomad(duplication_inputs["gnomad"]).model_dump(exclude_none=True)
         == duplication_output_normalized
     )
 
-    assert tlr._from_gnomad("17-83129587-GTTGWCACATGA-G")
+    assert tlr.from_gnomad("17-83129587-GTTGWCACATGA-G")
 
     # Test valid characters
-    assert tlr._from_gnomad(
+    assert tlr.from_gnomad(
         "7-2-ACGTURYKMSWBDHVN-ACGTURYKMSWBDHVN", require_validation=False
     )
 
     # Invalid input. Ref does not match regex
-    assert not tlr._from_gnomad("13-32936732-helloworld-C")
+    assert not tlr.from_gnomad("13-32936732-helloworld-C")
 
     # Ref != Actual ref
     invalid_var = "13-32936732-G-C"
     error_msg = "Reference mismatch at GRCh38:13 position 32936731-32936732 (input gave 'G' but correct ref is 'C')"
 
     with pytest.raises(DataProxyValidationError) as e:
-        tlr._from_gnomad(invalid_var)
+        tlr.from_gnomad(invalid_var)
     assert str(e.value) == error_msg
 
     with pytest.raises(DataProxyValidationError) as e:
@@ -430,93 +431,98 @@ def test_from_gnomad(tlr):
     assert str(e.value) == error_msg
 
     # require_validation set to False
-    assert tlr._from_gnomad(invalid_var, require_validation=False)
+    assert tlr.from_gnomad(invalid_var, require_validation=False)
 
 
 @pytest.mark.vcr
-def test_from_hgvs(tlr):
+def test_from_hgvs(tlr) -> None:
+    """Translate HGVS expressions directly through the public method."""
     do_normalize = False
     assert (
-        tlr._from_hgvs(snv_inputs["hgvs"], do_normalize=do_normalize).model_dump(
-            exclude_none=True
-        )
+        tlr.from_hgvs(
+            snv_inputs["hgvs"], do_normalize=do_normalize, assembly_name="GRCh38"
+        ).model_dump(exclude_none=True)
         == snv_output
     )
     assert (
-        tlr._from_hgvs(mito_inputs["hgvs"], do_normalize=do_normalize).model_dump(
+        tlr.from_hgvs(mito_inputs["hgvs"], do_normalize=do_normalize).model_dump(
             exclude_none=True
         )
         == mito_output
     )
     assert (
-        tlr._from_hgvs(deletion_inputs["hgvs"], do_normalize=do_normalize).model_dump(
+        tlr.from_hgvs(deletion_inputs["hgvs"], do_normalize=do_normalize).model_dump(
             exclude_none=True
         )
         == deletion_output
     )
     assert (
-        tlr._from_hgvs(insertion_inputs["hgvs"], do_normalize=do_normalize).model_dump(
+        tlr.from_hgvs(insertion_inputs["hgvs"], do_normalize=do_normalize).model_dump(
             exclude_none=True
         )
         == insertion_output
     )
     assert (
-        tlr._from_hgvs(
-            duplication_inputs["hgvs"], do_normalize=do_normalize
-        ).model_dump(exclude_none=True)
+        tlr.from_hgvs(duplication_inputs["hgvs"], do_normalize=do_normalize).model_dump(
+            exclude_none=True
+        )
         == duplication_output
     )
 
 
 @pytest.mark.vcr
-def test_from_spdi(tlr):
+def test_from_spdi(tlr) -> None:
+    """Translate SPDI expressions directly through the public method."""
     do_normalize = False
     assert (
-        tlr._from_spdi(snv_inputs["spdi"], do_normalize=do_normalize).model_dump(
-            exclude_none=True
-        )
+        tlr.from_spdi(
+            snv_inputs["spdi"], do_normalize=do_normalize, require_validation=False
+        ).model_dump(exclude_none=True)
         == snv_output
     )
     assert (
-        tlr._from_spdi(mito_inputs["spdi"], do_normalize=do_normalize).model_dump(
+        tlr.from_spdi(mito_inputs["spdi"], do_normalize=do_normalize).model_dump(
             exclude_none=True
         )
         == mito_output
     )
     for spdi_del_expr in deletion_inputs["spdi"]:
         assert (
-            tlr._from_spdi(spdi_del_expr, do_normalize=do_normalize).model_dump(
+            tlr.from_spdi(spdi_del_expr, do_normalize=do_normalize).model_dump(
                 exclude_none=True
             )
             == deletion_output
         ), spdi_del_expr
     for spdi_ins_expr in insertion_inputs["spdi"]:
         assert (
-            tlr._from_spdi(spdi_ins_expr, do_normalize=do_normalize).model_dump(
+            tlr.from_spdi(spdi_ins_expr, do_normalize=do_normalize).model_dump(
                 exclude_none=True
             )
             == insertion_output
         ), spdi_ins_expr
     assert (
-        tlr._from_spdi(
-            duplication_inputs["spdi"], do_normalize=do_normalize
-        ).model_dump(exclude_none=True)
+        tlr.from_spdi(duplication_inputs["spdi"], do_normalize=do_normalize).model_dump(
+            exclude_none=True
+        )
         == duplication_output
     )
 
 
 @pytest.mark.vcr
-def test_to_spdi(tlr):
+def test_to_spdi(tlr) -> None:
+    """Direct public exports agree with format dispatch."""
     # do_normalize defaults to true
     spdiexpr = snv_inputs["spdi"]
     allele = tlr.to_vrs(spdiexpr, "spdi")
     to_spdi = tlr.from_vrs(allele, "spdi")
+    assert tlr.to_spdi(allele, unrelated_option=True) == to_spdi
     assert len(to_spdi) == 1
     assert spdiexpr == to_spdi[0]
 
 
 @pytest.mark.vcr
-def test_to_spdi_with_ref(tlr):
+def test_to_spdi_with_ref(tlr) -> None:
+    """Direct and dispatched SPDI exports honor the reference sequence limit."""
     spdi_expr_no_ref = "NC_000019.10:44908821:1:T"
     spdi_expr_with_ref = "NC_000019.10:44908821:C:T"
 
@@ -529,6 +535,7 @@ def test_to_spdi_with_ref(tlr):
     assert spdi_expr_no_ref == to_spdi_no_ref[0]
 
     to_spdi_with_ref = tlr.from_vrs(allele_with_ref, "spdi", ref_seq_limit=None)
+    assert tlr.to_spdi(allele_with_ref, ref_seq_limit=None) == to_spdi_with_ref
     assert len(to_spdi_with_ref) == 1
     assert spdi_expr_with_ref == to_spdi_with_ref[0]
 
@@ -734,19 +741,21 @@ hgvs_tests_to_hgvs_map = {
 
 @pytest.mark.parametrize(("hgvsexpr", "expected"), hgvs_tests)
 @pytest.mark.vcr
-def test_hgvs(tlr, hgvsexpr, expected):
+def test_hgvs(tlr, hgvsexpr, expected) -> None:
+    """Direct public exports agree with format dispatch."""
     # do_normalize defaults to true
     allele = tlr.to_vrs(hgvsexpr, "hgvs")
     assert allele.model_dump(exclude_none=True) == expected
 
     to_hgvs = tlr.from_vrs(allele, "hgvs")
+    assert tlr.to_hgvs(allele, ref_seq_limit=0) == to_hgvs
     assert (hgvsexpr in to_hgvs) or (
         hgvs_tests_to_hgvs_map.get(hgvsexpr, hgvsexpr) in to_hgvs
     )
 
 
 @pytest.mark.vcr
-def test_rle_seq_limit(tlr):
+def test_rle_seq_limit(tlr, monkeypatch) -> None:
     """Test that for an ReferenceLengthExpression over 50bp, the sequence is not
     returned when rle_seq_limit is set to 50bp, but is included in the state when
     rle_seq_limit is set to None.
@@ -788,6 +797,15 @@ def test_rle_seq_limit(tlr):
     )
     assert allele_with_seq.model_dump(exclude_none=True) == a_dict_with_seq
 
+    # Omitted limits use the current instance setting; explicit None stays unlimited.
+    monkeypatch.setattr(tlr, "rle_seq_limit", None)
+    assert tlr.from_hgvs(input_hgvs_expr).state.sequence is not None
+    assert tlr.from_hgvs(input_hgvs_expr, rle_seq_limit=0).state.sequence is None
+
+    monkeypatch.setattr(tlr, "rle_seq_limit", 0)
+    assert tlr.from_hgvs(input_hgvs_expr).state.sequence is None
+    assert tlr.from_hgvs(input_hgvs_expr, rle_seq_limit=None).state.sequence is not None
+
     output_hgvs_expr = tlr.from_vrs(allele_with_seq, "hgvs")
     assert output_hgvs_expr == [input_hgvs_expr]
 
@@ -815,14 +833,14 @@ def test_to_hgvs_iri_ref_keyerror(tlr):
 
 
 @pytest.mark.vcr
-def test_reference_allele_rle(tlr):
+def test_reference_allele_rle(tlr) -> None:
     """Test that reference alleles (REF==ALT) are normalized to ReferenceLengthExpression.
 
     Added to address https://github.com/ga4gh/vrs-python/issues/587
     """
     # Test with gnomad format
     gnomad_ref_allele = "1-100210778-AA-AA"
-    allele = tlr._from_gnomad(gnomad_ref_allele)
+    allele = tlr.from_gnomad(gnomad_ref_allele)
 
     expected = {
         "type": "Allele",
@@ -847,7 +865,7 @@ def test_reference_allele_rle(tlr):
 
     # Test with SPDI format (REF==ALT)
     spdi_ref_allele = "NC_000001.11:100210777:AA:AA"
-    allele_spdi = tlr._from_spdi(spdi_ref_allele)
+    allele_spdi = tlr.from_spdi(spdi_ref_allele)
 
     assert allele_spdi.model_dump(exclude_none=True) == expected
 
@@ -972,7 +990,8 @@ def test_translate_to_invalid_fmt(tlr):
         tlr.from_vrs(models.Allele.model_validate(snv_output), fmt="gnomad")
 
 
-def test_from_vrs_dict():
+@pytest.mark.parametrize("direct", [False, True], ids=["dispatch", "direct"])
+def test_from_vrs_dict(direct: bool) -> None:
     """Regression test for ga4gh/vrs-python#489.
 
     Translating a VRS dict must resolve the model class from its `type`
@@ -981,15 +1000,17 @@ def test_from_vrs_dict():
     tlr = AlleleTranslator(data_proxy=None, identify=False)
 
     # valid VRS dict translates to a VRS object (previously raised TypeError)
-    allele = tlr.to_vrs(snv_output, fmt="vrs")
+    allele = (
+        tlr.from_vrs_dict(snv_output) if direct else tlr.to_vrs(snv_output, fmt="vrs")
+    )
     assert isinstance(allele, models.Allele)
     assert allele.type == "Allele"
     assert allele.location.start == snv_output["location"]["start"]
     assert allele.location.end == snv_output["location"]["end"]
 
     # non-dict and missing-type inputs still return None
-    assert tlr._from_vrs("NC_000019.10:g.44908822C>T") is None
-    assert tlr._from_vrs({"location": {}}) is None
+    assert tlr.from_vrs_dict("NC_000019.10:g.44908822C>T") is None
+    assert tlr.from_vrs_dict({"location": {}}) is None
 
 
 from_vrs_non_variation_type_cases = [
@@ -1004,24 +1025,28 @@ from_vrs_non_variation_type_cases = [
 @pytest.mark.parametrize(
     "case", from_vrs_non_variation_type_cases, ids=lambda c: c["id"]
 )
-def test_from_vrs_non_variation_type(case):
+@pytest.mark.parametrize("direct", [False, True], ids=["dispatch", "direct"])
+def test_from_vrs_non_variation_type(case: dict, direct: bool) -> None:
     """A VRS dict whose `type` is not a VRS variation class is rejected, rather than
     resolved to whatever `ga4gh.vrs.models` attribute has that name
     """
     tlr = AlleleTranslator(data_proxy=None, identify=False)
+    parse = tlr.from_vrs_dict if direct else tlr.to_vrs
+    options = {} if direct else {"fmt": "vrs"}
+
     with pytest.raises(ValidationError) as e:
-        tlr.to_vrs({"type": case["type"]}, fmt="vrs")
+        parse({"type": case["type"]}, **options)
     assert e.value.errors()[0]["type"] == "union_tag_invalid"
 
 
-def test_from_hgvs_uncertain_range_raises(tlr):
+def test_from_hgvs_uncertain_range_raises(tlr) -> None:
     """Uncertain-range HGVS cannot be represented as an Allele with a literal
     sequence state; use CnvTranslator instead. See issue #609.
 
     No cassette needed: the rejection happens before any data-proxy call.
     """
     with pytest.raises(ValueError, match="Uncertain-range"):
-        tlr._from_hgvs("NC_000019.9:g.(11211022_11213339)_(11217364_11218067)dup")
+        tlr.from_hgvs("NC_000019.9:g.(11211022_11213339)_(11217364_11218067)dup")
 
 
 @pytest.mark.vcr

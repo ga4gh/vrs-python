@@ -382,9 +382,11 @@ class AbstractVcfAnnotator(abc.ABC):
         :param require_validation: If `True` then validation checks must pass in order
             to return a VRS object. If `False` then VRS object will be returned even if
             validation checks fail. Defaults to `True`.
+        :param kwargs: Additional options passed to ``on_vrs_object``.
+        :raises Exception: If translation fails. The exception is logged and re-raised.
         """
         try:
-            vrs_obj = self.tlr._from_gnomad(  # noqa: SLF001
+            vrs_obj = self.tlr.from_gnomad(
                 vcf_coords,
                 assembly_name=assembly,
                 require_validation=require_validation,

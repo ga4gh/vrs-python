@@ -314,7 +314,7 @@ class TestGetPositionAndState:
 
     def test_uncertain_range_returns_range_for_del(self, hgvs_parser, tools):
         """Uncertain-range rejection is a translator-layer concern (see
-        :meth:`AlleleTranslator._from_hgvs`), not a helper-layer one. At the
+        :meth:`AlleleTranslator.from_hgvs`), not a helper-layer one. At the
         helper level, passing an uncertain-range ``sv`` directly returns
         :class:`models.Range` values for ``start`` and ``end`` — quiet but
         deterministic, and the boundary is locked by this test.
