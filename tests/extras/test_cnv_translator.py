@@ -103,9 +103,9 @@ from_hgvs_cx_tests = (
 
 @pytest.mark.parametrize(("hgvsexpr", "copy_change", "expected"), from_hgvs_cx_tests)
 @pytest.mark.vcr
-def test_from_hgvs_cx(tlr, hgvsexpr, copy_change, expected):
-    """Test that _from_hgvs works correctly for copy number change"""
-    cx = tlr._from_hgvs(hgvsexpr, copy_change=copy_change)
+def test_from_hgvs_cx(tlr, hgvsexpr, copy_change, expected) -> None:
+    """Test that from_hgvs works correctly for copy number change"""
+    cx = tlr.from_hgvs(hgvsexpr, copy_change=copy_change)
     assert cx.model_dump(exclude_none=True) == expected
 
 
@@ -157,31 +157,33 @@ from_hgvs_cn_tests = (
 
 @pytest.mark.parametrize(("hgvsexpr", "copies", "expected"), from_hgvs_cn_tests)
 @pytest.mark.vcr
-def test_from_hgvs_cn(tlr, hgvsexpr, copies, expected):
-    """Test that _from_hgvs works correctly for copy number count"""
-    cn = tlr._from_hgvs(hgvsexpr, copies=copies)
+def test_from_hgvs_cn(tlr, hgvsexpr, copies, expected) -> None:
+    """Test that from_hgvs works correctly for copy number count"""
+    cn = tlr.from_hgvs(hgvsexpr, copies=copies)
     assert cn.model_dump(exclude_none=True) == expected
 
 
 @pytest.mark.vcr
-def test_from_hgvs_cn_copies_zero(tlr):
+def test_from_hgvs_cn_copies_zero(tlr) -> None:
     """Test that copies=0 produces CopyNumberCount, not CopyNumberChange.
 
     copies=0 is a valid input (homozygous deletion), but 0 is falsy in Python
     so it was previously treated as missing and fell through to CopyNumberChange.
     """
-    cn = tlr._from_hgvs("NC_000013.11:g.26440969_26443305del", copies=0)
+    cn = tlr.from_hgvs(
+        "NC_000013.11:g.26440969_26443305del", copies=0, do_normalize=False
+    )
     assert cn.type == "CopyNumberCount"
     assert cn.copies == 0
 
 
 @pytest.mark.vcr
-def test_from_hgvs_coding_coordinates(tlr):
+def test_from_hgvs_coding_coordinates(tlr) -> None:
     """CDS-relative (``c.``) inputs are converted to transcript-relative
     coordinates via ``c_to_n`` before the VRS location is built; without the
     conversion the resulting ``SequenceLocation`` would point into the 5' UTR.
     """
-    cx = tlr._from_hgvs("NM_001331029.1:c.100_200del")
+    cx = tlr.from_hgvs("NM_001331029.1:c.100_200del")
     assert cx.model_dump(exclude_none=True) == {
         "id": "ga4gh:CX.lJiuo6QPsrSEKI7EeX0xpX5Iqx0R_Kal",
         "type": "CopyNumberChange",
@@ -296,9 +298,9 @@ from_hgvs_uncertain_range_tests = (
 
 @pytest.mark.parametrize(("hgvsexpr", "expected"), from_hgvs_uncertain_range_tests)
 @pytest.mark.vcr
-def test_from_hgvs_uncertain_range(tlr, hgvsexpr, expected):
+def test_from_hgvs_uncertain_range(tlr, hgvsexpr, expected) -> None:
     """Test uncertain-range HGVS expressions produce SequenceLocations with
     Range start/end (VRS 2.x).
     """
-    cx = tlr._from_hgvs(hgvsexpr)
+    cx = tlr.from_hgvs(hgvsexpr)
     assert cx.model_dump(exclude_none=True) == expected
