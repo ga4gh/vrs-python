@@ -166,7 +166,7 @@ in_bounds_cases = [
 def test_out_of_bounds(request: pytest.FixtureRequest, case: dict) -> None:
     tlr = request.getfixturevalue(case["tlr_fixture"])
     with pytest.raises(DataProxyValidationError, match=f"^{re.escape(case['msg'])}$"):
-        tlr.translate_from(case["var"], fmt=case["fmt"], **case.get("kwargs", {}))
+        tlr.to_vrs(case["var"], fmt=case["fmt"], **case.get("kwargs", {}))
 
 
 @pytest.mark.parametrize("case", start_after_end_cases, ids=lambda c: c["id"])
@@ -176,13 +176,13 @@ def test_start_after_end(request: pytest.FixtureRequest, case: dict) -> None:
     with pytest.raises(
         DataProxyValidationError, match=f"^{re.escape(START_AFTER_END_MSG)}$"
     ):
-        tlr.translate_from(case["var"], fmt="hgvs")
+        tlr.to_vrs(case["var"], fmt="hgvs")
 
 
 @pytest.mark.parametrize("case", in_bounds_cases, ids=lambda c: c["id"])
 @pytest.mark.vcr
 def test_in_bounds(request: pytest.FixtureRequest, case: dict) -> None:
     tlr = request.getfixturevalue(case["tlr_fixture"])
-    location = tlr.translate_from(case["var"], fmt=case["fmt"]).location.model_dump()
+    location = tlr.to_vrs(case["var"], fmt=case["fmt"]).location.model_dump()
     expected_location = case["expected_location"]
     assert {k: location[k] for k in expected_location} == expected_location
