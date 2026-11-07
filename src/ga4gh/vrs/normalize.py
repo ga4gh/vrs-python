@@ -58,7 +58,7 @@ def _get_allele_location_pos(
         if not pos0_is_none and not pos1_is_none:  # definite range
             return None
 
-        val = pos.root[0] or pos.root[1]
+        val = pos.root[1] if pos0_is_none else pos.root[0]
         pos_type = (
             PosType.RANGE_LT_OR_EQUAL if pos0_is_none else PosType.RANGE_GT_OR_EQUAL
         )
