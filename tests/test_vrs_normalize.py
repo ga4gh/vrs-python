@@ -966,6 +966,23 @@ normalize_location_in_bounds_cases = [
         "expected_start": [None, 4400],
         "expected_end": [4501, None],
     },
+    # a defined range bound of 0 must not be mistaken for the undefined one
+    {
+        "id": "indefinite-start-range-from-zero",
+        "start": [0, None],
+        "end": 1,
+        "sequence": "T",
+        "expected_start": [0, None],
+        "expected_end": 1,
+    },
+    {
+        "id": "indefinite-end-range-from-zero",
+        "start": [None, 0],
+        "end": [0, None],
+        "sequence": "A",
+        "expected_start": [None, 0],
+        "expected_end": [0, None],
+    },
 ]
 
 
