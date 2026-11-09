@@ -5,11 +5,12 @@ CURIE.
 
 These functions require a "class referable attribute" map, which will
 typically be generated from the schema by
-build_class_referable_attribute_map() in .models.py.
+pydantic_class_refatt_map() in .models.py.
 
 """
 
 import logging
+from collections.abc import Mapping, MutableMapping, Sequence
 
 from pydantic.main import BaseModel
 
@@ -25,13 +26,12 @@ _logger = logging.getLogger(__name__)
 
 
 def ga4gh_enref(
-    o,  # noqa: ANN001
-    cra_map,  # noqa: ANN001
-    object_store=None,  # noqa: ANN001
+    o: BaseModel,
+    cra_map: Mapping[str, Sequence[str]],
+    object_store: MutableMapping[str, BaseModel] | None = None,
     return_id_obj_tuple: bool = False,
-) -> tuple:
-    """Recursively convert "referable attributes" from inlined to
-    referenced form.  Returns a new object.
+) -> BaseModel | tuple[str | None, BaseModel]:
+    """Recursively convert "referable attributes" from inlined to referenced form.  Returns a new object.
 
     :param o: VRS object
     :param cra_map: class referrable-attribute map; { o.type: [attr, attr, ...] }
@@ -39,17 +39,29 @@ def ga4gh_enref(
         objects as they are referenced. If not given, referenced objects are not stored.
     :param return_id_obj_tuple: include ID with return value or not
     :return: new, enref'd object, as well as object ID if param set
-    :raise TypeError: if any object IDs are non-GA4GH CURIEs
+    :raises TypeError: If a root-model CURIE reference has a non-GA4GH prefix.
+        Plain string references are left unchanged.
+    :raises ValueError: If the input is not an identifiable Pydantic model.
     """
 
-    def _id_and_store(o) -> str | None:  # noqa: ANN001
+    def _id_and_store(o: BaseModel) -> str | None:
+        """Compute an identifier and store the object when a store is available.
+
+        :param o: Object to process.
+        :return: Computed identifier, or None for an unidentifiable object.
+        """
         _id = ga4gh_identify(o)
         if _id and object_store is not None:
             object_store[_id] = o
         return _id
 
     def _enref(o: BaseModel) -> str | None:
-        """depth-first recursive, in-place enref of object; returns id of object"""
+        """Replace referable attributes in place and identify the visited object.
+
+        :param o: Object to process.
+        :return: Identifier of the updated object, or None.
+        :raises TypeError: If a root-model CURIE has a non-GA4GH prefix.
+        """
         ref_att_names = cra_map.get(o.type, [])
         for ran in ref_att_names:
             v = getattr(o, ran)
@@ -83,19 +95,32 @@ def ga4gh_enref(
     return (_id, o) if return_id_obj_tuple else o
 
 
-def ga4gh_deref(o, cra_map, object_store) -> BaseModel:  # noqa: ANN001
-    """Convert "referable attributes" in-place from referenced to inlined
-    form.
+def ga4gh_deref(
+    o: BaseModel,
+    cra_map: Mapping[str, Sequence[str]],
+    object_store: Mapping[str, BaseModel],
+) -> BaseModel:
+    """Copy an object and replace referable identifiers with inline objects.
 
-    `object_store` must be a mappable object and is required for
-    dereferencing.
+    `object_store` must be a mappable object and is required for dereferencing.
 
-    Raises KeyError if any object cannot be dereferenced
+    The top-level input is copied. Objects retrieved from the store are inserted
+    directly and may be mutated while their own references are resolved.
 
+    :param o: Object to process.
+    :param cra_map: Mapping from model names to referable attribute names.
+    :param object_store: Mapping from identifiers to referenced objects.
+    :return: Copy with identifier references replaced by objects.
+    :raises ValueError: If the input is not an identifiable Pydantic model.
+    :raises KeyError: If a referenced object is absent from the store.
     """
 
-    def _deref(o: BaseModel):  # noqa: ANN202
-        """depth-first recursive, in-place deref of object; returns id of object"""
+    def _deref(o: BaseModel) -> BaseModel:
+        """Resolve references recursively, mutating each visited object.
+
+        :param o: Object to process.
+        :return: Updated object with inline references.
+        """
         if o.type not in cra_map:
             _logger.warning("%s not in cra_map %s", o.type, cra_map)
             return o

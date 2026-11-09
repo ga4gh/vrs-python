@@ -1,12 +1,13 @@
 """Define command-line interface for VRS annotator tool.
 
-$ vrs-annotate vcf input.vcf.gz --vcf_out output.vcf.gz --vrs_pickle_out vrs_objects.pkl
+$ vrs-annotate vcf input.vcf.gz --vcf-out output.vcf.gz --pkl-out vrs_objects.pkl
 
 """
 
 import logging
 from collections.abc import Callable
 from enum import Enum
+from os import PathLike
 from pathlib import Path
 from timeit import default_timer as timer
 
@@ -48,7 +49,13 @@ def _log_level_option(func: Callable) -> Callable:
     :return: same command, wrapped with log level option
     """
 
-    def _set_log_level(ctx: dict, param: str, value: _LogLevel) -> None:  # noqa: ARG001
+    def _set_log_level(ctx: click.Context, param: click.Parameter, value: str) -> None:  # noqa: ARG001
+        """Set the module log level from the command option.
+
+        :param ctx: Click command context.
+        :param param: Click parameter being converted.
+        :param value: Value to convert.
+        """
         level_map = {
             _LogLevel.DEBUG: logging.DEBUG,
             _LogLevel.INFO: logging.INFO,
@@ -74,15 +81,28 @@ class PathOrDash(click.ParamType):
 
     name = "path-or-dash"
 
-    def __init__(self, **kwargs) -> None:
-        """Initialize PathOrDash"""
+    def __init__(self, **kwargs: object) -> None:
+        """Initialize PathOrDash
+
+        :param kwargs: Options for click.Path, including path_type (defaults to Path).
+        """
         self._path_type = kwargs.pop("path_type", Path)
         self._inner = click.Path(**kwargs, path_type=self._path_type)
 
     def convert(
-        self, value: str, param: click.Parameter | None, ctx: click.Context | None
-    ) -> str | Path:
-        """Convert the value using click.Path if it is not '-'"""
+        self,
+        value: str | bytes | PathLike[str],
+        param: click.Parameter | None,
+        ctx: click.Context | None,
+    ) -> str | bytes | PathLike[str]:
+        """Convert the value using click.Path if it is not '-'
+
+        :param value: Value to convert.
+        :param param: Click parameter being converted.
+        :param ctx: Click command context.
+        :return: Dash, or a validated path converted using the configured path_type.
+        :raises click.BadParameter: If the path fails validation.
+        """
         if value == "-":
             return value
         # Use click.Path for validation
@@ -171,7 +191,7 @@ def _annotate_vcf_cli(
     pkl_out: Path | None,
     ndjson_out: Path | None,
     vrs_attributes: bool,
-    dataproxy_uri: str,
+    dataproxy_uri: str | None,
     assembly: str,
     skip_ref: bool,
     require_validation: bool,
@@ -186,9 +206,8 @@ def _annotate_vcf_cli(
 
     Sequence data from a provider such as SeqRepo is required. Use the `--dataproxy-uri`
     option or the environment variable `GA4GH_VRS_DATAPROXY_URI` to define its location
-    (the former will take priority over the latter when both are set). This option
-    falls back upon the VRS-Python library default `seqrepo+http://localhost:5000/seqrepo`
-    value if it is not otherwise declared.
+    (the former will take priority over the latter when both are set). A URI must be
+    supplied through one of these sources; there is no default server.
 
     Currently accepted URI schemes:
 
@@ -197,7 +216,18 @@ def _annotate_vcf_cli(
      * seqrepo+https://somewhere:5000/seqrepo
      * seqrepo+file:///path/to/seqrepo/root
      * seqrepo+:../relative/path/to/seqrepo/root
-    """  # noqa: D301
+
+    :param vcf_in: Input VCF path or dash for standard input.
+    :param vcf_out: Output VCF path or dash for standard output.
+    :param pkl_out: Optional pickle output path.
+    :param ndjson_out: Optional NDJSON output path.
+    :param vrs_attributes: Include VRS attributes in VCF INFO fields.
+    :param dataproxy_uri: URI for the sequence data provider.
+    :param assembly: Reference assembly name.
+    :param skip_ref: Skip reference-allele annotation when true.
+    :param require_validation: Require reference sequence validation.
+    :param silent: Suppress progress output when true.
+    """  # noqa: D301 -- Click requires the interpreted backspace escape.
     data_proxy = create_dataproxy(dataproxy_uri)
     annotator = VcfAnnotator(data_proxy)
     start = timer()

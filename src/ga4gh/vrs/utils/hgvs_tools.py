@@ -1,4 +1,29 @@
-"""Provide extra tools for working with hgvs expressions."""
+"""Convert HGVS expressions and coordinates.
+
+HGVS uses 1-based positions; VRS uses interbase bounds. Omitting the accession::
+
+    HGVS                            VRS start        VRS end
+    g.100A>T                        99               100
+    g.100_101insT                    100              100
+    g.(100_110)_(200_210)del          Range([99,109])  Range([200,210])
+
+Insertions use the boundary after the start residue for both bounds. For ranges,
+starts shift by one and ends stay unchanged. AlleleTranslator rejects uncertain
+ranges; use CnvTranslator for uncertain del/dup copy-number expressions.
+
+With a configured data_proxy and accessible UTA database::
+
+    from ga4gh.vrs.extras.translator import AlleleTranslator
+
+    translator = AlleleTranslator(data_proxy)
+    try:
+        allele = translator.from_hgvs("NC_000019.10:g.44908822C>T")
+        expressions = translator.to_hgvs(allele, namespace="refseq")
+    finally:
+        translator.hgvs_tools.close()  # Closes UTA, not the supplied data proxy.
+
+Coding coordinates pass through c_to_n on import and n_to_c on export.
+"""
 
 import logging
 import re
@@ -34,33 +59,40 @@ _VrsPos = int | models.Range | None
 
 
 def _is_uncertain_range(pos: _HgvsPos) -> TypeGuard[hgvs.location.Interval]:
-    """Return True if ``pos`` is a nested :class:`hgvs.location.Interval`
-    representing an uncertain range (e.g. ``(A_B)`` from ``(A_B)_(C_D)del``).
+    """Check whether an HGVS position is an uncertain interval.
 
-    Note that hgvs 2.0.0a0 also emits a non-uncertain ``Interval`` (with
-    ``start == end``) for the exact side of a mixed expression like
-    ``g.100_(200_?)del``, so the ``.uncertain`` check is required to distinguish
-    real uncertain ranges from that wrapper shape.
+    Note that hgvs 2.0.0a0 also emits a non-uncertain ``Interval`` (with ``start ==
+    end``) for the exact side of a mixed expression like ``g.100_(200_?)del``, so the
+    ``.uncertain`` check is required to distinguish real uncertain ranges from that
+    wrapper shape.
+
+    :param pos: HGVS position to inspect or convert.
+    :return: Whether the position is an uncertain interval.
     """
     return isinstance(pos, hgvs.location.Interval) and pos.uncertain
 
 
 def _has_intron_offset(pos: _HgvsPos) -> bool:
-    """Return True if ``pos`` is a :class:`hgvs.location.BaseOffsetPosition`
-    with a non-zero intron offset (e.g. ``100+5`` or ``200-3``).
+    """Check whether an HGVS position has a nonzero intron offset.
 
-    VRS :class:`SequenceLocation` coordinates are transcript-relative; a
-    non-zero offset means the position lies inside an intron, which has no
-    faithful single-integer representation in VRS. This helper lets the
-    low-level converters refuse such inputs defensively; upstream callers
-    typically reject at the variant level via :meth:`HgvsTools.is_intronic`.
+    VRS :class:`SequenceLocation` coordinates are transcript-relative; a non-zero offset
+    means the position lies inside an intron, which has no faithful single-integer
+    representation in VRS. This helper lets the low-level converters refuse such inputs
+    defensively; upstream callers typically reject at the variant level via
+    :meth:`HgvsTools.is_intronic`.
+
+    :param pos: HGVS position to inspect or convert.
+    :return: Whether the position has a nonzero intron offset.
     """
     return isinstance(pos, hgvs.location.BaseOffsetPosition) and bool(pos.offset)
 
 
 def _shift_hgvs_to_vrs(base: int | None, side: _Side) -> int | None:
-    """Convert an HGVS 1-based inclusive coordinate to a VRS 0-based interbase
-    coordinate, accounting for which side of the outer interval it is on.
+    """Convert an HGVS coordinate to the corresponding VRS interbase coordinate.
+
+    :param base: HGVS coordinate, or None if unknown.
+    :param side: Start or end side of the variant interval.
+    :return: Interbase coordinate, or None if unknown.
     """
     if base is None:
         return None
@@ -68,25 +100,28 @@ def _shift_hgvs_to_vrs(base: int | None, side: _Side) -> int | None:
 
 
 def _shift_vrs_to_hgvs(value: int | None, side: _Side) -> int | None:
-    """Inverse of :func:`_shift_hgvs_to_vrs`."""
+    """Inverse of :func:`_shift_hgvs_to_vrs`.
+
+    :param value: Value to convert.
+    :param side: Start or end side of the variant interval.
+    :return: HGVS coordinate, or None if unknown.
+    """
     if value is None:
         return None
     return value + 1 if side == "start" else value
 
 
 def _hgvs_pos_to_vrs(pos: _HgvsPos, side: _Side) -> _VrsPos:
-    """Convert the ``pos.start`` or ``pos.end`` of a parsed hgvs variant to the
-    corresponding VRS value for :attr:`models.SequenceLocation.start` /
-    :attr:`models.SequenceLocation.end`.
+    """Convert an HGVS variant endpoint to a VRS coordinate or range.
 
     Handles three shapes of ``pos``:
 
     * :class:`hgvs.location.SimplePosition` / :class:`hgvs.location.BaseOffsetPosition`
-      — a certain position; returns an ``int``.
-    * :class:`hgvs.location.Interval` with ``uncertain=True`` — a nested
+      represents a certain position; returns an ``int``.
+    * :class:`hgvs.location.Interval` with ``uncertain=True``, a nested
       uncertain range (e.g. ``(A_B)`` from ``(A_B)_(C_D)dup``); returns a
       :class:`models.Range`.
-    * :class:`hgvs.location.Interval` with ``uncertain=False`` — the
+    * :class:`hgvs.location.Interval` with ``uncertain=False``, the
       ``start==end`` wrapper hgvs emits for the exact side of a mixed
       expression like ``g.100_(200_?)del``; unwrapped to an ``int``.
 
@@ -99,12 +134,15 @@ def _hgvs_pos_to_vrs(pos: _HgvsPos, side: _Side) -> _VrsPos:
 
     :param side: ``"start"`` if ``pos`` is the outer-left side of the variant
         (HGVS→VRS subtracts 1), ``"end"`` for the outer-right side (no shift).
-    :returns: An ``int`` for a certain position, a :class:`models.Range` for an
+    :return: An ``int`` for a certain position, a :class:`models.Range` for an
         uncertain range, or ``None`` if the position is fully unknown.
     :raises TypeError: if ``pos`` is a :class:`~hgvs.location.BaseOffsetInterval`
         (c./n. transcript range), which has no VRS equivalent.
     :raises ValueError: if ``pos`` is an intronic
-        :class:`~hgvs.location.BaseOffsetPosition` (non-zero ``offset``).
+        :class:`~hgvs.location.BaseOffsetPosition` (non-zero ``offset``), or a
+        non-uncertain interval has different endpoints.
+
+    :param pos: HGVS position to inspect or convert.
     """
     if isinstance(pos, hgvs.location.Interval):
         if isinstance(pos, hgvs.location.BaseOffsetInterval):
@@ -145,8 +183,7 @@ def _vrs_pos_to_hgvs(
     *,
     as_interval: bool = False,
 ) -> hgvs.location.SimplePosition | hgvs.location.Interval:
-    """Convert a VRS :attr:`models.SequenceLocation.start` / ``end`` value to
-    the corresponding hgvs position object.
+    """Convert a VRS coordinate or range to an HGVS position.
 
     For an ``int``, returns a :class:`hgvs.location.SimplePosition`. For a
     :class:`models.Range` (or equivalent 2-element list), returns a nested
@@ -154,10 +191,15 @@ def _vrs_pos_to_hgvs(
     within a Range become ``SimplePosition(base=None)`` (rendered as ``?``).
 
     When ``as_interval`` is True, an ``int`` value is wrapped in a non-uncertain
-    ``Interval`` with ``start == end``. This matches the hgvs parser's
-    representation of mixed certain/uncertain outer intervals (e.g.
-    ``g.N_(M_?)del``), where both sides of the outer interval must have the
-    same kind of inner position for the hgvs formatter to work.
+    ``Interval`` with ``start == end``. This matches the hgvs parser's representation of
+    mixed certain/uncertain outer intervals (e.g. ``g.N_(M_?)del``), where both sides of
+    the outer interval must have the same kind of inner position for the hgvs formatter
+    to work.
+
+    :param value: Value to convert.
+    :param side: Start or end side of the variant interval.
+    :param as_interval: Wrap an exact position in an interval when true.
+    :return: HGVS position or interval.
     """
     if isinstance(value, models.Range):
         value = value.root
@@ -181,8 +223,8 @@ def _vrs_pos_to_hgvs(
 class HgvsTools:
     """Provide tools for working with HGVS notation.
 
-    Use a context manager or call ``close()`` to close this instance's UTA
-    connection. The caller owns the supplied data proxy, which stays open.
+    Use a context manager or call ``close()`` to close this instance's UTA connection.
+    The caller owns the supplied data proxy, which stays open.
 
     Attributes:
         parser (hgvs.parser.Parser): The HGVS parser object.
@@ -198,8 +240,8 @@ class HgvsTools:
     def __init__(self, data_proxy: _DataProxy | None = None) -> None:
         """Create the HGVS parser, normalizer, variant mapper, and UTA connection.
 
-        Close the UTA connection if normalizer or variant mapper setup fails.
-        If cleanup also fails, raise its error with the setup error chained.
+        Close the UTA connection if normalizer or variant mapper setup fails. If cleanup
+        also fails, raise its error with the setup error chained.
 
         :param data_proxy: Optional caller-owned GA4GH data proxy.
         """
@@ -217,9 +259,9 @@ class HgvsTools:
     def close(self) -> None:
         """Close this instance's UTA connection.
 
-        Repeated calls after success do nothing. Cleanup errors propagate;
-        callers can retry. Keep all resource references and leave the supplied
-        data proxy open. Operations that need UTA are unsupported after closure.
+        Repeated calls after success do nothing. Cleanup errors propagate; callers can
+        retry. Keep all resource references and leave the supplied data proxy open.
+        Operations that need UTA are unsupported after closure.
         """
         if not self._closed:
             self.uta_conn.close()
@@ -256,23 +298,21 @@ class HgvsTools:
     def parse(self, hgvs_str: str) -> HgvsSequenceVariant | None:
         """Parse the given HGVS string and returns the corresponding variant.
 
-        Args:
-            hgvs_str (str): The HGVS string to parse.
-
-        Returns:
-            Variant: The parsed variant object, or None if the HGVS string is invalid.
-
+        :param hgvs_str: HGVS expression to parse.
+        :return: Parsed variant, or None if the expression prefix is unsupported.
+        :raises hgvs.exceptions.HGVSParseError: If a supported expression has invalid syntax.
         """
         if not self.hgvs_re.match(hgvs_str):
             return None
         return self.parser.parse_hgvs_variant(hgvs_str)
 
     def has_uncertain_range(self, sv: HgvsSequenceVariant) -> bool:
-        """Return True if either endpoint of ``sv.posedit.pos`` is a nested
-        uncertain :class:`hgvs.location.Interval` (e.g. the ``(A_B)`` sides of
-        ``(A_B)_(C_D)del``). Surfaces the module-private
-        :func:`_is_uncertain_range` check to external callers without
-        requiring them to import an underscore helper across module boundaries.
+        """Check whether either variant endpoint is an uncertain interval.
+
+        For example, the endpoints in ``(A_B)_(C_D)del`` are nested uncertain intervals.
+
+        :param sv: Parsed HGVS sequence variant.
+        :return: Whether either endpoint is an uncertain range.
         """
         return _is_uncertain_range(sv.posedit.pos.start) or _is_uncertain_range(
             sv.posedit.pos.end
@@ -281,12 +321,8 @@ class HgvsTools:
     def is_intronic(self, sv: HgvsSequenceVariant) -> bool:
         """Check if the given SequenceVariant is intronic.
 
-        Args:
-            sv (hgvs.sequencevariant.SequenceVariant): The SequenceVariant to check.
-
-        Returns:
-            bool: True if the SequenceVariant is intronic, False otherwise.
-
+        :param sv: Parsed HGVS sequence variant.
+        :return: Whether either endpoint is intronic.
         """
         # Coding (c.) intervals are BaseOffsetInterval, but RNA (r.) intervals
         # are plain Interval even when their endpoints carry a base-offset
@@ -300,8 +336,12 @@ class HgvsTools:
             isinstance(start, hgvs.location.BaseOffsetPosition) and start.is_intronic
         ) or (isinstance(end, hgvs.location.BaseOffsetPosition) and end.is_intronic)
 
-    def get_edit_type(self, sv: HgvsSequenceVariant) -> str | None:
-        """Safely extract ``type`` property from SequenceVariant"""
+    def get_edit_type(self, sv: HgvsSequenceVariant | None) -> str | None:
+        """Safely extract ``type`` property from SequenceVariant
+
+        :param sv: Parsed HGVS sequence variant.
+        :return: Edit type, or None if no edit is present.
+        """
         if sv is None or sv.posedit is None or sv.posedit.edit is None:
             return None
         return sv.posedit.edit.type
@@ -311,22 +351,11 @@ class HgvsTools:
     ) -> tuple[_VrsPos, _VrsPos, str]:
         """Get the details of a sequence variant.
 
-        Args:
-            sv (hgvs.sequencevariant.SequenceVariant): The sequence variant object.
-
-        Returns:
-            tuple: A tuple containing the VRS start position, end position,
-            and state of the variant. Exact allele-style inputs return integer
-            bounds; uncertain-range inputs passed directly may return
-            :class:`models.Range` bounds.
-
-        Raises:
-            ValueError: If the HGVS variant type is unsupported, or if ``pos``
-                is an intronic :class:`~hgvs.location.BaseOffsetPosition`.
-            TypeError: If ``pos`` is a :class:`~hgvs.location.BaseOffsetInterval`.
-            DataProxyValidationError: If an identity or duplication's location is
-                invalid.
-
+        :param sv: Parsed HGVS sequence variant.
+        :return: VRS start, end, and literal alternate sequence.
+        :raises ValueError: If the edit type or an intronic position is unsupported.
+        :raises TypeError: If a transcript range cannot be represented in VRS.
+        :raises AttributeError: If an operation needing sequence data is called without a data proxy.
         """
         pos = sv.posedit.pos
         edit_type = sv.posedit.edit.type
@@ -367,36 +396,15 @@ class HgvsTools:
         return start, end, state
 
     def extract_allele_values(self, hgvs_expr: str) -> dict | None:
-        """Parse hgvs into a VRS Allele Object
+        """Extract allele construction fields from an HGVS expression.
 
-        kwargs:
-            rle_seq_limit Optional(int): If RLE is set as the new state after
-                normalization, this sets the limit for the length of the `sequence`.
-                To exclude `sequence` from the response, set to 0.
-                For no limit, set to `None`.
-                Defaults value set in instance variable, `rle_seq_limit`.
-            do_normalize (bool): `True` if fully justified normalization should be
-                performed. `False` otherwise. Defaults to `True`
-
-        #>>> a = tlr.from_hgvs("NC_000007.14:g.55181320A>T")
-        #>>> a.model_dump()
-        {
-          'location': {
-            'end': 55181320,
-            'start': 55181319,
-            'sequenceReference': {
-              'type': 'SequenceReference',
-              'refgetAccession': 'SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul'
-            },
-            'type': 'SequenceLocation'
-          },
-          'state': {
-            'sequence': 'T',
-            'type': 'LiteralSequenceExpression'
-          },
-          'type': 'Allele'
-        }
-
+        :param hgvs_expr: HGVS expression to translate.
+        :return: Allele fields, or None for an unsupported expression prefix or
+            unresolved accession. Invalid HGVS syntax raises HGVSParseError.
+        :raises ValueError: If the variant is intronic or its edit type is unsupported.
+        :raises AttributeError: If an operation needing sequence data is called without a data proxy.
+        :raises TypeError: If a transcript range cannot be represented in VRS.
+        :raises hgvs.exceptions.HGVSParseError: If supported HGVS syntax is malformed.
         """
         sv = self.parse(hgvs_expr)
         if not sv:
@@ -429,11 +437,17 @@ class HgvsTools:
     ) -> models.SequenceLocation:
         """Build a VRS :class:`SequenceLocation` from a parsed hgvs CNV variant.
 
-        CDS-relative (``c.``) inputs are translated to transcript-relative
-        (``n.``) coordinates first; without that step the VRS location would
-        point into the 5' UTR. Handles both certain positions and uncertain-
-        range endpoints; the resulting ``start`` / ``end`` are ints for exact
-        positions and :class:`models.Range` values for uncertain ranges.
+        CDS-relative (``c.``) inputs are translated to transcript-relative (``n.``)
+        coordinates first; without that step the VRS location would point into the 5'
+        UTR. Handles both certain positions and uncertain- range endpoints; the
+        resulting ``start`` / ``end`` are ints for exact positions and
+        :class:`models.Range` values for uncertain ranges.
+
+        :param sv: Parsed HGVS sequence variant.
+        :param refget_accession: Refget accession for the location sequence.
+        :return: Sequence location with translated coordinates.
+        :raises TypeError: If a transcript range cannot be represented in VRS.
+        :raises ValueError: If a position is intronic or an exact interval has unequal endpoints.
         """
         if sv.type == "c":
             sv = self.c_to_n(sv)
@@ -445,23 +459,25 @@ class HgvsTools:
             end=_hgvs_pos_to_vrs(sv.posedit.pos.end, side="end"),
         )
 
-    def from_allele(self, vo: models.Allele, namespace: str | None = None) -> list[str]:
+    def from_allele(
+        self, vo: models.Allele | None, namespace: str | None = None
+    ) -> list[str]:
         """Generate a *list* of HGVS expressions for VRS Allele.
 
-        If `namespace` is not None, returns HGVS strings for the
-        specified namespace.
+        If `namespace` is not None, returns HGVS strings for the specified namespace.
 
-        If `namespace` is None, returns HGVS strings for all alias
-        translations.
+        If `namespace` is None, returns HGVS strings for all alias translations.
 
-        If no alias translations are available, an empty list is
-        returned.
+        If no alias translations are available, an empty list is returned.
 
         If the VRS object cannot be expressed as HGVS, raises ValueError.
 
-        This method assumes that IRIs are dereferenced, providing a `SequenceReference`
-        as the `vo.location.sequenceReference`. If a `SequenceReference` is not
-        provided, raises TypeError
+        :param vo: VRS object to translate.
+        :param namespace: Optional namespace used to filter sequence aliases.
+        :return: Distinct HGVS expressions for supported matching aliases, or an empty
+            list for None. Protein accessions raise ValueError.
+        :raises ValueError: If the allele or sequence reference cannot be represented.
+        :raises AttributeError: If an operation needing sequence data is called without a data proxy.
         """
         if vo is None:
             return []
@@ -518,9 +534,23 @@ class HgvsTools:
         return list(set(hgvs_exprs))
 
     def _to_sequence_variant(
-        self, vo: models.Allele, sequence_type: str, sequence: str, accession: str
+        self,
+        vo: models.Allele,
+        sequence_type: str | None,
+        sequence: str,
+        accession: str,
     ) -> HgvsSequenceVariant:
-        """Create a SequenceVariant object from an Allele object."""
+        """Create a SequenceVariant object from an Allele object.
+
+        :param vo: VRS object to translate.
+        :param sequence_type: HGVS sequence type, such as g, n, or c; None when the
+            alias prefix is unknown.
+        :param sequence: Sequence identifier used to retrieve reference bases.
+        :param accession: Accession for the HGVS expression.
+        :return: HGVS variant representing the allele. Missing UTA data is logged
+            and leaves the constructed variant unnormalized.
+        :raises ValueError: If the sequence type is protein.
+        """
         # build interval and edit depending on sequence type
         if sequence_type == "p":
             msg = "Only nucleic acid variation is currently supported"
@@ -581,15 +611,30 @@ class HgvsTools:
         return var
 
     def normalize(self, hgvs: HgvsSequenceVariant) -> HgvsSequenceVariant:
-        """Perform hgvs library `normalize()` method"""
+        """Perform hgvs library `normalize()` method
+
+        :param hgvs: HGVS variant to normalize or map.
+        :return: Normalized HGVS variant.
+        :raises hgvs.exceptions.HGVSError: If the HGVS operation fails validation or required data is unavailable.
+        """
         return self.normalizer.normalize(hgvs)
 
     def n_to_c(self, hgvs: HgvsSequenceVariant) -> HgvsSequenceVariant:
-        """Perform hgvs library `n_to_c` method"""
+        """Perform hgvs library `n_to_c` method
+
+        :param hgvs: HGVS variant to normalize or map.
+        :return: Variant in coding coordinates.
+        :raises hgvs.exceptions.HGVSError: If the HGVS operation fails validation or required data is unavailable.
+        """
         return self.variant_mapper.n_to_c(hgvs)
 
     def c_to_n(self, hgvs: HgvsSequenceVariant) -> HgvsSequenceVariant:
-        """Perform hgvs library `c_to_n` method"""
+        """Perform hgvs library `c_to_n` method
+
+        :param hgvs: HGVS variant to normalize or map.
+        :return: Variant in transcript coordinates.
+        :raises hgvs.exceptions.HGVSError: If the HGVS operation fails validation or required data is unavailable.
+        """
         return self.variant_mapper.c_to_n(hgvs)
 
 

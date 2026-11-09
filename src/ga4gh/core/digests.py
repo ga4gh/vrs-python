@@ -10,22 +10,25 @@ import hashlib
 
 
 def sha512t24u(blob: bytes) -> str:
-    """Generate a base64url-encode, truncated SHA-512 digest for given
-    binary data
+    """Generate a base64url-encode, truncated SHA-512 digest for given binary data
 
-    The sha512t24u digest is a convention for constructing and
-    formatting digests for use as object identifiers. Specifically::
+    The sha512t24u digest is a convention for constructing and formatting digests for
+    use as object identifiers. Specifically::
 
         * generate a SHA512 digest on binary data
         * truncate at 24 bytes
         * encode using base64url encoding
 
-    Examples:
+    For example:
+
     >>> sha512t24u(b"")
     'z4PhNX7vuL3xVChQ1m2AB9Yg5AULVxXc'
 
     >>> sha512t24u(b"ACGT")
     'aKF498dAxcJAqme6QYQ7EZ07-fiw8Kw2'
+
+    :param blob: Binary data to digest.
+    :return: URL-safe base64 encoding of the first 24 digest bytes.
 
     """
     digest_size = 24

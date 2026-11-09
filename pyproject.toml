@@ -141,10 +141,7 @@ select = [
     "RUF",  # https://docs.astral.sh/ruff/rules/#ruff-specific-rules-ruf
 ]
 fixable = ["ALL"]
-# ANN002 - missing-type-args
-# ANN003 - missing-type-kwargs
 # D203 - one-blank-line-before-class
-# D205 - blank-line-after-summary
 # D206 - indent-with-spaces*
 # D213 - multi-line-summary-second-line
 # D300 - triple-single-quotes*
@@ -159,8 +156,7 @@ fixable = ["ALL"]
 # PLC0206 - dict-index-missing-items
 # *ignored for compatibility with formatter
 ignore = [
-    "ANN002", "ANN003",
-    "D203", "D205", "D206", "D213", "D300", "D400", "D415",
+    "D203", "D206", "D213", "D300", "D400", "D415",
     "E111", "E114", "E117", "E501",
     "W191",
     "S321",
@@ -168,52 +164,28 @@ ignore = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
-# ANN001 - missing-type-function-argument
-# ANN2 - missing-return-type
-# D100 - undocumented-public-module
-# D102 - undocumented-public-class
-# D103 - undocumented-public-function
+# ANN - type annotations
+# D - docstrings
 # S101 - assert
 # B011 - assert-false
 # INP001 - implicit-namespace-package
 # SLF001 - private-member-access
 "tests/*" = [
-    "ANN001",
-    "ANN2",
-    "D100",
-    "D102",
-    "D103",
+    "ANN",
+    "D",
     "S101",
     "B011",
     "INP001",
     "SLF001",
 ]
-"src/ga4gh/vrs/normalize.py" = [
-    "ANN001",
-    "ANN201",
-    "ANN202",
-]
-"src/ga4gh/vrs/extras/object_store.py" = [
-    "ANN",
-    "D",
-]
-"src/ga4gh/vrs/enderef.py" = [
-    "ANN",
-    "D",
-]
 "src/ga4gh/vrs/dataproxy.py" = [
     "B019",
-]
-"src/ga4gh/core/pydantic.py" = [
-    "ANN401",
 ]
 "src/ga4gh/vrs/models.py" = [
     "F",  # https://docs.astral.sh/ruff/rules/#pyflakes-f
     "E", "W",  # https://docs.astral.sh/ruff/rules/#pycodestyle-e-w
     "I",  # https://docs.astral.sh/ruff/rules/#isort-i
     "N",  # https://docs.astral.sh/ruff/rules/#pep8-naming-n
-    "D",  # https://docs.astral.sh/ruff/rules/#pydocstyle-d
-    "ANN",  # https://docs.astral.sh/ruff/rules/#flake8-annotations-ann
     "ASYNC",  # https://docs.astral.sh/ruff/rules/#flake8-async-async
     "S",  # https://docs.astral.sh/ruff/rules/#flake8-bandit-s
     "B",  # https://docs.astral.sh/ruff/rules/#flake8-bugbear-b

@@ -39,9 +39,7 @@ class BaseModelForbidExtra(BaseModel):
 
 
 class Relation(str, Enum):
-    """A mapping relation between concepts as defined by the Simple Knowledge
-    Organization System (SKOS).
-    """
+    """A mapping relation between concepts as defined by the Simple Knowledge Organization System (SKOS)."""
 
     CLOSE_MATCH = "closeMatch"
     EXACT_MATCH = "exactMatch"
@@ -51,13 +49,14 @@ class Relation(str, Enum):
 
 
 class MembershipOperator(str, Enum):
-    """The logical relationship between concepts in the set, in the context of some
-    knowledge reported about them. The value 'AND' indicates that the concepts are
-    dependent and occur together in this context - i.e. the reported assertion is not
-    necessarily true for each concept on its own - only in combination with the
-    other(s). The value 'OR' indicates that each concept applies independently in this
-    context - i.e. the reported assertion is necessarily true for each concept on its
-    own, independent of the presence of the other(s).
+    """The logical relationship between concepts in the set, in the context of some knowledge reported about them.
+
+    The value 'AND' indicates that the concepts are dependent and occur together in this
+    context - i.e. the reported assertion is not necessarily true for each concept on
+    its own - only in combination with the other(s). The value 'OR' indicates that each
+    concept applies independently in this context - i.e. the reported assertion is
+    necessarily true for each concept on its own, independent of the presence of the
+    other(s).
     """
 
     AND = "AND"
@@ -70,11 +69,7 @@ class MembershipOperator(str, Enum):
 
 
 class code(GKMCoreMetadataMixin, RootModel):  # noqa: N801
-    """Indicates that the value is taken from a set of controlled strings defined
-    elsewhere. Technically, a code is restricted to a string which has at least one
-    character and no leading or trailing whitespace, and where there is no whitespace
-    other than single spaces in the contents.
-    """
+    """Indicates that the value is taken from a set of controlled strings defined elsewhere. Technically, a code is restricted to a string which has at least one character and no leading or trailing whitespace, and where there is no whitespace other than single spaces in the contents."""
 
     _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
 
@@ -88,19 +83,22 @@ class code(GKMCoreMetadataMixin, RootModel):  # noqa: N801
 
 
 class iriReference(GKMCoreMetadataMixin, RootModel):  # noqa: N801
-    """An IRI Reference (either an IRI or a relative-reference), according to `RFC3986
-    section 4.1 <https://datatracker.ietf.org/doc/html/rfc3986#section-4.1>`_ and
-    `RFC3987 section 2.1 <https://datatracker.ietf.org/doc/html/rfc3987#section-2.1>`_.
-    MAY be a JSON Pointer as an IRI fragment, as described by `RFC6901 section 6
-    <https://datatracker.ietf.org/doc/html/rfc6901#section-6>`_.
-    """
+    """An IRI Reference (either an IRI or a relative-reference), according to `RFC3986 section 4.1 <https://datatracker.ietf.org/doc/html/rfc3986#section-4.1>`_ and `RFC3987 section 2.1 <https://datatracker.ietf.org/doc/html/rfc3987#section-2.1>`_. MAY be a JSON Pointer as an IRI fragment, as described by `RFC6901 section 6 <https://datatracker.ietf.org/doc/html/rfc6901#section-6>`_."""
 
     _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
 
-    def __hash__(self) -> int:  # noqa: D105
+    def __hash__(self) -> int:
+        """Hash the underlying IRI.
+
+        :return: Hash of the underlying value.
+        """
         return self.root.__hash__()
 
-    def ga4gh_serialize(self) -> str:  # noqa: D102
+    def ga4gh_serialize(self) -> str:
+        """Serialize an IRI reference for GA4GH digest computation.
+
+        :return: Digest for a GA4GH reference, otherwise the original IRI.
+        """
         m = GA4GH_IR_REGEXP.match(self.root)
         if m is not None:
             return m["digest"]
@@ -147,12 +145,7 @@ class Element(GKMCoreMetadataMixin, BaseModel):
 
 # Not an ABC, but needs to go here so there's no circular imports
 class Extension(Element, BaseModelForbidExtra):
-    """The Extension class provides entities with a means to include additional
-    attributes that are outside of the specified standard but needed by a given content
-    provider or system implementer. These extensions are not expected to be natively
-    understood, but may be used for pre-negotiated exchange of message attributes
-    between systems.
-    """
+    """The Extension class provides entities with a means to include additional attributes that are outside of the specified standard but needed by a given content provider or system implementer. These extensions are not expected to be natively understood, but may be used for pre-negotiated exchange of message attributes between systems."""
 
     _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
 
@@ -203,9 +196,7 @@ class Entity(GKMCoreMetadataMixin, BaseModel):
 
 
 class Coding(Element, BaseModelForbidExtra):
-    """A structured representation of a code for a defined concept in a terminology or
-    code system.
-    """
+    """A structured representation of a code for a defined concept in a terminology or code system."""
 
     _maturity: ClassVar[Maturity] = Maturity.TRIAL_USE
 
@@ -246,12 +237,7 @@ class ConceptMapping(Element, BaseModelForbidExtra):
 
 
 class ConceptSet(Entity, BaseModelForbidExtra):
-    """A set of concepts that may be considered as dependent (occurring together), or
-    independent (existing separately) in the context of some knowledge reported about
-    them, as indicated by a set membership operator. e.g. a set of independent molecular
-    consequences that both result from the presence of a particular genetic variant
-    (membership operator = OR).
-    """
+    """A set of concepts that may be considered as dependent (occurring together), or independent (existing separately) in the context of some knowledge reported about them, as indicated by a set membership operator. e.g. a set of independent molecular consequences that both result from the presence of a particular genetic variant (membership operator = OR)."""
 
     model_config = ConfigDict(use_enum_values=True)
 
@@ -303,7 +289,11 @@ class MappableConcept(Entity, BaseModelForbidExtra):
 
     @model_validator(mode="after")
     def require_name_or_primary_coding(self) -> Self:
-        """Ensure that ``name`` or ``primaryCoding`` is provided"""
+        """Ensure that ``name`` or ``primaryCoding`` is provided
+
+        :return: Validated object.
+        :raises ValueError: If both name and primaryCoding are None.
+        """
         if self.primaryCoding is None and self.name is None:
             err_msg = "One of `name` or `primaryCoding` must be provided."
             raise ValueError(err_msg)

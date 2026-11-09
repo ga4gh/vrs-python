@@ -1,11 +1,35 @@
-"""VRS object normalization functions
+"""Normalize VRS objects.
+
+Allele normalization validates bounds, trims shared sequence, expands repeat
+ambiguity, and chooses a literal or reference-length expression. Substitutions
+and identity alleles return before expansion.
+
+For reference ``CAAAG``, inserting ``A`` inside the run expands as follows::
+
+    input:    [2, 2), literal "A"
+    expanded: [1, 4), reference "AAA", alternate "AAAA"
+    output:   ReferenceLengthExpression(length=4, repeatSubunitLength=1)
+
+A substitution needs only trimming: ``ACGT -> ATGT`` at [0, 4) becomes
+``C -> T`` at [1, 2), with a LiteralSequenceExpression.
+
+Given an inline literal Allele and a data proxy serving its reference::
+
+    from ga4gh.vrs import normalize
+
+    compact = normalize(allele, data_proxy, rle_seq_limit=0)
+    with_sequence = normalize(allele, data_proxy, rle_seq_limit=None)
+
+0 omits the optional RLE sequence; None retains it without a length limit.
+A positive limit retains the complete sequence only if it fits. Use the original
+literal input for each call: existing RLE states are returned unchanged.
 
 See https://vrs.ga4gh.org/en/stable/impl-guide/normalization.html
-
 """
 
 import itertools
 import logging
+from collections.abc import Iterator
 from enum import IntEnum
 from typing import NamedTuple
 
@@ -85,25 +109,26 @@ def _get_new_allele_location_pos(
 
 
 def _normalize_allele(
-    input_allele: models.Allele, data_proxy: _DataProxy, rle_seq_limit: int = 50
-):
-    """Normalize Allele using "fully-justified" normalization adapted from NCBI's
-    VOCA. Fully-justified normalization expands such ambiguous representation over the
-    entire region of ambiguity, resulting in an unambiguous representation that may be
-    readily compared with other alleles.
+    input_allele: models.Allele, data_proxy: _DataProxy, rle_seq_limit: int | None = 50
+) -> models.Allele:
+    """Normalize an Allele using fully justified normalization.
+
+    Adapted from NCBI's VOCA, this expands ambiguous representations over the entire
+    region of ambiguity so they can be compared with other alleles.
 
     This function assumes that IRIs are dereferenced, providing a `SequenceReference` as
-    the `allele.location.sequenceReference`. If a `SequenceReference` is not provided, the allele
-    will be returned as is with no normalization.
+    the `allele.location.sequenceReference`. If a `SequenceReference` is not provided,
+    the allele will be returned as is with no normalization.
 
-    Does not attempt to normalize Alleles with definite ranges or non-LiteralSequenceExpression
-    states and will instead return the `input_allele`.
+    Does not attempt to normalize Alleles with definite ranges or
+    non-LiteralSequenceExpression states and will instead return the `input_allele`.
 
-    If attempting to re-normalize a ReferenceLengthExpression allele,
-    use denormalize_reference_length_expression to construct a LiteralSequenceExpression
+    If attempting to re-normalize a ReferenceLengthExpression allele, use
+    denormalize_reference_length_expression to construct a LiteralSequenceExpression
     allele and then call normalize() on that LiteralSequenceExpression allele.
 
-    See: https://vrs.ga4gh.org/en/2.0/conventions/normalization.html#literalsequenceexpression-alleles
+    See:
+    https://vrs.ga4gh.org/en/2.0/conventions/normalization.html#literalsequenceexpression-alleles
 
     :param input_allele: Input VRS Allele object
     :param data_proxy: SeqRepo dataproxy
@@ -111,6 +136,7 @@ def _normalize_allele(
         of the `sequence`.
         To exclude `sequence` from the response, set to 0.
         For no limit, set to `None`.
+    :return: Normalized allele, or the input if normalization is unsupported.
     :raises DataProxyValidationError: If the allele location is out of bounds on its
         sequence
     """
@@ -252,14 +278,22 @@ def _trim_for_normalization(
     alleles: tuple[None, str],
     start: LocationPos,
     end: LocationPos,
-):
+) -> tuple[tuple[int, int], tuple[str | None, str]]:
     """Trim common prefix and suffix from the intervals.
 
     Return the trimmed interval and trimmed alleles:
         ((trim_start, trim_end), (trim_ref, trim_alt))
 
-    If the alleles are the same, return the original interval and alleles.
-    The first allele (ref) will be populated by bioutils.
+    If the alleles are the same, return the original interval and alleles. The first
+    allele (ref) will be populated by bioutils.
+
+    :param ref_seq: Reference sequence proxy.
+    :param ival: Input start and end coordinates.
+    :param alleles: Reference placeholder and alternate sequence.
+    :param start: Representative start position.
+    :param end: Representative end position.
+    :return: Trimmed interval and allele sequences.
+    :raises ValueError: If trimming fails for a non-reference allele.
     """
     try:
         trim_ival, trim_alleles = _normalize(
@@ -286,7 +320,13 @@ def _set_location_from_interval(
     start_pos_type: PosType,
     end_pos_type: PosType,
 ) -> None:
-    """Update ``allele`` start and end location"""
+    """Update ``allele`` start and end location
+
+    :param allele: Allele to modify in place.
+    :param ival: Start and end coordinates.
+    :param start_pos_type: Representation of the original start position.
+    :param end_pos_type: Representation of the original end position.
+    """
     allele.location.start = _get_new_allele_location_pos(ival[0], start_pos_type)
     allele.location.end = _get_new_allele_location_pos(ival[1], end_pos_type)
 
@@ -296,15 +336,20 @@ def denormalize_reference_length_expression(
     repeat_subunit_length: int,
     alt_length: int,
 ) -> str:
-    """Reverse the process of repeat subunit compaction for a ReferenceLengthExpression.
-    The alt is reference-derived so repeat the repeat subunit until it is it to alt_length
-    characters long. May include a trailing partial copy of the repeat subunit.
+    """Expand a ReferenceLengthExpression into its alternate sequence.
+
+    Repeat the reference subunit to alt_length characters, including a trailing partial
+    copy when needed.
 
     e.g. "ACGT" (repeat_subunit_length=4, length=10) -> "ACGTACGTAC" (ACGT ACGT AC)
 
     :param ref_seq: The reference sequence to be denormalized.
     :param repeat_subunit_length: The length of the repeat subunit.
     :param alt_length: The length of the alternate sequence that was compacted during normalization.
+
+    :return: Expanded alternate sequence.
+    :raises ValueError: If the subunit length is negative or exceeds the reference length.
+    :raises ZeroDivisionError: If the repeat subunit length is zero.
     """
     repeat_subunit = ref_seq[:repeat_subunit_length]
     if len(repeat_subunit) != repeat_subunit_length:
@@ -318,8 +363,12 @@ def denormalize_reference_length_expression(
     return alt
 
 
-def _factor_gen(n: int):
-    """Yield all factors of an integer `n`, in descending order"""
+def _factor_gen(n: int) -> Iterator[int]:
+    """Yield all factors of an integer in descending order.
+
+    :param n: Positive integer to factor. Nonpositive inputs yield no values.
+    :return: Iterator yielding factors from largest to smallest.
+    """
     lower_factors = []
     i = 1
     while i * i <= n:
@@ -332,13 +381,21 @@ def _factor_gen(n: int):
 
 
 def _define_rle_allele(
-    allele: BaseModel,
+    allele: models.Allele,
     length: int,
     repeat_subunit_length: int,
-    rle_seq_limit,
-    extended_alt_seq,
-):
-    # Otherwise, create the Allele as an RLE
+    rle_seq_limit: int | None,
+    extended_alt_seq: str,
+) -> models.Allele:
+    """Replace an allele state with a reference length expression.
+
+    :param allele: Allele to modify in place.
+    :param length: Alternate sequence length.
+    :param repeat_subunit_length: Length of the repeating unit.
+    :param rle_seq_limit: Maximum sequence length to retain, or None for no limit.
+    :param extended_alt_seq: Expanded alternate sequence.
+    :return: Updated allele.
+    """
     allele.state = models.ReferenceLengthExpression(
         length=length, repeatSubunitLength=repeat_subunit_length
     )
@@ -349,7 +406,16 @@ def _define_rle_allele(
     return allele
 
 
-def _is_valid_cycle(template_start, template: str, target) -> bool:
+def _is_valid_cycle(template_start: int, template: str, target: str) -> bool:
+    """Check whether the target suffix repeats the template cycle.
+
+    :param template_start: Start of a nonempty repeating unit within the template.
+    :param template: Reference sequence containing the repeating unit.
+    :param target: Alternate sequence whose suffix is checked.
+    :return: Whether all suffix characters match the cycle. The template-length
+        prefix is not compared; an empty suffix matches.
+    :raises StopIteration: If the cycle is empty and the target suffix is not.
+    """
     cycle = itertools.cycle(template[template_start:])
     for char in target[len(template) :]:  # noqa: SIM110
         if char != next(cycle):
@@ -361,9 +427,15 @@ def _is_valid_cycle(template_start, template: str, target) -> bool:
 
 
 def _normalize_cis_phased_block(
-    o,
+    o: models.CisPhasedBlock,
     data_proxy: _DataProxy | None = None,  # noqa: ARG001
-):
+) -> models.CisPhasedBlock:
+    """Sort block members by their GA4GH digests in place.
+
+    :param o: Block to normalize.
+    :param data_proxy: Unused sequence data proxy.
+    :return: Updated block.
+    """
     o.members = sorted(o.members, key=ga4gh_digest)
     return o
 
@@ -374,16 +446,21 @@ handlers = {
 }
 
 
-def normalize(vo, data_proxy: _DataProxy | None = None, **kwargs):
+def normalize(
+    vo: BaseModel, data_proxy: _DataProxy | None = None, **kwargs: int | None
+) -> BaseModel:
     """Normalize given vrs object, regardless of type
 
-    :param vo:
-    :param data_proxy: GA4GH sequence dataproxy instance, if needed
-    :keyword rle_seq_limit: If RLE is set as the new state, set the limit for the length
-        of the `sequence`. To exclude `state.sequence`, set to 0.
-    :return: normalized object, or unmodified input object if the normalization algorithm
-        does not provide normalization steps for the given type.
-    :raise TypeError: if given object isn't a pydantic.BaseModel
+    :param vo: VRS object to normalize.
+    :param kwargs: Allele handler options. rle_seq_limit limits retained RLE sequence
+        length; 0 omits it and None removes the limit. CisPhasedBlock accepts
+        no extra options.
+    :param data_proxy: Required for supported Allele normalization; unused by
+        CisPhasedBlock normalization.
+    :return: Normalized object of the input type. Alleles may be copied;
+        CisPhasedBlock members are sorted in place. Unsupported types are
+        returned unchanged. The input must expose a VRS type attribute.
+    :raises TypeError: if given object isn't a pydantic.BaseModel
     """
     if not is_pydantic_instance(vo):
         msg = f"Object is of class {vo.__class__} (with parents {vo.__class__.__mro__}), but normalize requires objects that inherit from pydantic.BaseModel."
