@@ -132,7 +132,6 @@ clean-cassettes:
 .PHONY: record-hgvs-cache
 # hgvs fetches sequences from HGVS_SEQREPO_DIR instead of HGVS_SEQREPO_URL when it's set, so it's unset for the recording run
 record-hgvs-cache:
-	@test -n "$${UTA_DB_URL}" || { echo "record-hgvs-cache: set UTA_DB_URL to the UTA instance to record from" >&2; exit 1; }
 	rm -f tests/data/hgvs_cache.pkl.new
 	env -u HGVS_SEQREPO_DIR HGVS_SEQREPO_URL="$${SEQREPO_REST_URL:-http://localhost:5000/seqrepo}" pytest --record-hgvs-cache=$(CURDIR)/tests/data/hgvs_cache.pkl.new --disable-vcr
 	python tests/hgvs_cache_json.py tests/data/hgvs_cache.pkl.new tests/data/hgvs_cache.json

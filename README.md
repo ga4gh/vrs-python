@@ -329,8 +329,10 @@ need a SeqRepo REST service, a UTA database, or network access. Set
   (`block_live_connections` in `tests/conftest.py`). Connections opened by other C
   libraries are not intercepted.
 - **The hgvs cache** (`tests/data/hgvs_cache.json`) replays the hgvs library's UTA
-  queries and sequence fetches. A missing entry fails immediately, even when
-  production code would normally catch the HGVS error. `make record-hgvs-cache`
+  queries and sequence fetches. Lookups that found no data are recorded too, and
+  replay as the same `HGVSDataNotAvailableError`. A lookup that was never recorded
+  fails immediately, even when production code would normally catch the HGVS error.
+  `make record-hgvs-cache`
   uses `--record-hgvs-cache=PATH --disable-vcr` to record live data
   to a temporary pickle, then converts it to JSON if tests pass. hgvs itself reads
   and writes pickles; `tests/hgvs_cache_json.py` converts between the two formats.

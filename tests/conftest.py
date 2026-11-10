@@ -9,6 +9,7 @@ import hgvs.dataproviders.uta
 import psycopg2
 import pytest
 from biocommons.seqrepo import SeqRepo
+from hgvs.decorators.lru_cache import _make_key
 from hgvs.exceptions import HGVSDataNotAvailableError
 from hgvs_cache_json import json_to_pickle
 
@@ -48,6 +49,10 @@ def pytest_configure(config: pytest.Config) -> None:
     if not record_path.parent.is_dir():
         msg = f"--record-hgvs-cache directory does not exist: {record_path.parent}"
         raise pytest.UsageError(msg)
+    # Without it, hgvs silently records from its built-in public UTA.
+    if not os.environ.get("UTA_DB_URL"):
+        msg = "HGVS recording requires UTA_DB_URL to name the UTA instance to record from."
+        raise pytest.UsageError(msg)
 
 
 def _forbidden_connection(_sock: socket.socket, address: object) -> NoReturn:
@@ -81,15 +86,45 @@ def block_live_connections(request: pytest.FixtureRequest) -> Iterator[bool]:
         yield blocked
 
 
-def _require_recorded_data(method: Callable[..., Any]) -> Callable[..., Any]:
-    """Make cache misses fatal even inside production HGVS fallback handlers"""
+def _wrap_cached_method(
+    provider: hgvs.dataproviders.uta.UTABase,
+    method: Callable[..., Any],
+    recording: bool,
+) -> Callable[..., Any]:
+    """Record and replay "no data" results, and fail on lookups never recorded.
+
+    hgvs caches only returned values. Without this, a lookup that raised
+    HGVSDataNotAvailableError would be missing from the recording, and replaying it
+    would look the same as a cache miss. A recorded result is stored as the exception
+    itself, which hgvs's cache returns like any other value.
+
+    hgvs reports a SeqRepo outage as HGVSDataNotAvailableError too. An outage while
+    recording fails tests, so no JSON is written, and any that slips through shows in
+    the JSON diff.
+    """
+    name: str = method.__wrapped__.__name__  # hgvs keys cache entries by this name
 
     @functools.wraps(method)
     def wrapped(*args: object, **kwargs: object) -> Any:  # noqa: ANN401
         try:
-            return method(*args, **kwargs)
+            result = method(*args, **kwargs)
         except HGVSDataNotAvailableError as exc:
-            pytest.fail(f"Missing HGVS recording: {exc}\nRun make record-hgvs-cache.")
+            if not recording:
+                # Replay never queries a data source, so only a cache miss raises.
+                # pytest.fail escapes the production handlers that catch this error.
+                pytest.fail(
+                    f"Missing HGVS recording: {exc}\nRun make record-hgvs-cache."
+                )
+            # Keep the message: hgvs's Normalizer.is_valid_pos reads it.
+            provider.cache[_make_key(name, args, kwargs, False, ())] = (
+                HGVSDataNotAvailableError(str(exc))
+            )
+            provider.cache.sync()
+            raise
+        if isinstance(result, HGVSDataNotAvailableError):
+            # A fresh instance, so tracebacks don't pile up on the cached one.
+            raise HGVSDataNotAvailableError(str(result))
+        return result
 
     return wrapped
 
@@ -113,18 +148,17 @@ def hgvs_cached_data_provider(
 
     with pytest.MonkeyPatch.context() as mp:
         provider = hgvs.dataproviders.uta.connect(
-            db_url=None if recording else HGVS_OFFLINE_UTA_URL,
+            db_url=os.environ["UTA_DB_URL"] if recording else HGVS_OFFLINE_UTA_URL,
             mode="learn" if recording else "run",
             cache=str(cache_file),
         )
         close = provider.close
         try:
-            if not recording:
-                # In run mode, these methods raise HGVSDataNotAvailableError only
-                # for cache misses; ordinary domain errors occur above this layer.
-                for name, method in vars(provider).items():
-                    if hasattr(method, "cache_info"):
-                        mp.setattr(provider, name, _require_recorded_data(method))
+            for name, method in vars(provider).items():
+                if hasattr(method, "cache_info"):
+                    mp.setattr(
+                        provider, name, _wrap_cached_method(provider, method, recording)
+                    )
             mp.setattr(hgvs.dataproviders.uta, "connect", lambda *_a, **_kw: provider)
             # HgvsTools.close() must not close the shared provider between tests.
             mp.setattr(provider, "close", lambda: None)

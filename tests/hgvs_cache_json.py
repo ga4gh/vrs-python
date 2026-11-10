@@ -6,7 +6,9 @@ instead commit `tests/data/hgvs_cache.json` and generate the pickle from it at s
 
 Each cache entry is stored as ``{"func": ..., "args": [...], "value": ...}``. Values are
 strings, numbers, None, lists, and UTA rows (`psycopg2.extras.DictRow`), which are
-stored as ``{"psycopg2_dictrow": {column: value, ...}}`` in column order.
+stored as ``{"psycopg2_dictrow": {column: value, ...}}`` in column order. A lookup that
+found no data is stored as the `HGVSDataNotAvailableError` it raised (see
+`tests/conftest.py`), written as ``{"hgvs_data_not_available": message}``.
 
 Usage, to convert a cache hgvs just recorded:
 ``python tests/hgvs_cache_json.py <recorded.pkl> <hgvs_cache.json>``
@@ -20,16 +22,20 @@ from pathlib import Path
 from typing import Any
 
 from hgvs.decorators.lru_cache import _make_key
+from hgvs.exceptions import HGVSDataNotAvailableError
 from psycopg2.extras import DictRow
 
 # hgvs builds each cache key as (*args, "__func__", function name)
 _FUNC_MARKER = "__func__"
 _DICTROW_TAG = "psycopg2_dictrow"
+_NOT_AVAILABLE_TAG = "hgvs_data_not_available"
 _JSON_SCALARS = (str, int, float, bool, type(None))
 
 
 def _encode_value(value: Any) -> Any:  # noqa: ANN401
     """Convert a cached hgvs result to a JSON value"""
+    if isinstance(value, HGVSDataNotAvailableError):
+        return {_NOT_AVAILABLE_TAG: str(value)}
     if isinstance(value, DictRow):
         columns = dict(value.items())
         if len(columns) != len(value):
@@ -45,10 +51,15 @@ def _encode_value(value: Any) -> Any:  # noqa: ANN401
 
 
 def _decode_value(value: Any) -> Any:  # noqa: ANN401
-    """Convert a JSON value back to the cached hgvs result, rebuilding UTA rows"""
+    """Convert a JSON value back to the cached hgvs result, rebuilding tagged values"""
     if isinstance(value, dict):
+        if value.keys() == {_NOT_AVAILABLE_TAG}:
+            return HGVSDataNotAvailableError(value[_NOT_AVAILABLE_TAG])
         if value.keys() != {_DICTROW_TAG}:
-            msg = f'expected {{"{_DICTROW_TAG}": {{...}}}}, got {value!r}'
+            msg = (
+                f'expected {{"{_DICTROW_TAG}": {{...}}}} or '
+                f'{{"{_NOT_AVAILABLE_TAG}": "..."}}, got {value!r}'
+            )
             raise ValueError(msg)
         columns: dict[str, Any] = value[_DICTROW_TAG]
         row = DictRow.__new__(DictRow)
