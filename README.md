@@ -24,7 +24,7 @@ See the [**documentation**](https://ga4gh.github.io/vrs-python/latest/) for inst
 - Algorithm for generating consistent, globally unique identifiers for variation without a central authority
 - Algorithm for performing fully justified allele normalization
 - Translating from and to other variant formats
-- [Annotate VCFs with VRS](https://github.com/ga4gh/vrs-python/blob/main/docs/extras/vcf_annotator.md)
+- Annotate VCFs with VRS
 - Convert GA4GH objects between inlined and referenced forms
 
 ## Security Note (from the GA4GH Security Team)
