@@ -97,11 +97,16 @@ format:
 lint:
 	python3 -m ruff check --fix
 
-#=> docs -- make sphinx docs
-.PHONY: docs
-docs: develop
-	# RTD makes json. Build here to ensure that it works.
-	make -C doc html json
+#=> docs: stage and build documentation with strict checks
+.PHONY: docs docs-serve
+docs:
+	python -m scripts.build_docs
+	zensical build --clean --strict
+
+#=> docs-serve: stage documentation and start a local preview
+docs-serve:
+	python -m scripts.build_docs
+	zensical serve
 
 ############################################################################
 #= CLEANUP

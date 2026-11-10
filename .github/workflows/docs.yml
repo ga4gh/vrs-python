@@ -1,0 +1,88 @@
+name: Documentation
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+    tags:
+      - "*"
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version-file: ".python-version"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync --extra docs
+
+      - name: Generate documentation
+        run: uv run python -m scripts.build_docs
+
+      - name: Verify documentation build
+        run: |
+          uv run zensical build --clean --strict
+          test -f site/index.html
+
+  publish:
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref_type == 'tag')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    concurrency:
+      group: docs-pages
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version-file: ".python-version"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+
+      - name: Install publishing dependencies
+        run: |
+          uv sync --extra docs
+          # Zensical requires its mike fork, which is not published on PyPI.
+          uv pip install git+https://github.com/squidfunk/mike.git
+
+      - name: Generate documentation
+        run: uv run python -m scripts.build_docs
+
+      - name: Publish versioned documentation
+        env:
+          GIT_REF_NAME: ${{ github.ref_name }}
+          GIT_REF_TYPE: ${{ github.ref_type }}
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          if [[ "$GIT_REF_TYPE" == "branch" ]]; then
+            uv run mike deploy --push latest
+            uv run mike set-default --push latest
+          else
+            uv run mike deploy --push "$GIT_REF_NAME"
+          fi
