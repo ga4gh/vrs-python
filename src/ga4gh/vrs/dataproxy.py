@@ -56,13 +56,10 @@ class _DataProxy(ABC):
     ) -> str:
         """Return the specified sequence or subsequence
 
-        start and end are optional
+        For example:
 
-        If the given sequence does not exist, KeyError is raised. If start is after end,
-        DataProxyValidationError may be raised.
-
-        >>> dp.get_sequence("NM_000551.3", 0, 10)
-        'CCTCGCCTCC'
+            >>> dp.get_sequence("NM_000551.3", 0, 10)
+            'CCTCGCCTCC'
 
         :param identifier: Sequence identifier to resolve.
         :param start: Zero-based inclusive start, or None for the sequence start.
@@ -73,24 +70,20 @@ class _DataProxy(ABC):
         """
 
     @abstractmethod
-    def get_metadata(self, identifier: str) -> dict:
-        """For a given identifier, return a structure (dict) containing sequence length, aliases, and other optional info
-
-        If the given sequence does not exist, KeyError is raised.
-
-        >>> dp.get_metadata("NM_000551.3")
-        {'added': '2016-08-24T05:03:11Z',
-         'aliases': ['MD5:215137b1973c1a5afcf86be7d999574a',
-                     'RefSeq:NM_000551.3',
-                     'SEGUID:T12L0p2X5E8DbnL0+SwI4Wc1S6g',
-                     'SHA1:4f5d8bd29d97e44f036e72f4f92c08e167354ba8',
-                     'ga4gh:SQ.v_QTc1p-MUYdgrRv4LMT6ByXIOsdw3C_',
-                     'gi:319655736'],
-         'alphabet': 'ACGT',
-         'length': 4560}
+    def get_length(self, identifier: str) -> int:
+        """Return the sequence length.
 
         :param identifier: Sequence identifier to resolve.
-        :return: Sequence metadata, including length and aliases.
+        :return: Sequence length.
+        :raises KeyError: If the sequence identifier is not found.
+        """
+
+    @abstractmethod
+    def get_aliases(self, identifier: str) -> list[str]:
+        """Return the known sequence aliases.
+
+        :param identifier: Sequence identifier to resolve.
+        :return: List of known sequence aliases.
         :raises KeyError: If the sequence identifier is not found.
         """
 
@@ -138,10 +131,11 @@ class _DataProxy(ABC):
         :raises KeyError: If the sequence identifier is not found.
         """
         try:
-            md = self.get_metadata(identifier)
+            # Deduplicate while preserving the backend's alias order.
+            aliases = list(dict.fromkeys(self.get_aliases(identifier)))
         except (ValueError, KeyError, IndexError) as e:
             raise KeyError(identifier) from e
-        aliases = list(set(md["aliases"]))  # ensure uniqueness
+
         if namespace is not None:
             nsd = namespace + ":"
             aliases = [a for a in aliases if a.startswith(nsd)]
@@ -238,8 +232,7 @@ class _DataProxy(ABC):
         """
         # same cache key as derive_refget_accession
         sequence_id = coerce_namespace(sequence_id)
-        md = self.get_metadata(sequence_id)
-        seq_len = md["length"]
+        seq_len = self.get_length(sequence_id)
         bad = []
         for name, pos in (("start", start_pos), ("end", end_pos)):
             values = pos.root if isinstance(pos, Range) else [pos]
@@ -252,7 +245,10 @@ class _DataProxy(ABC):
                 for name, pos in bad
             )
             # Name the sequence as given, plus the refget accession it resolved to
-            refget_ac = next((a for a in md["aliases"] if a.startswith("ga4gh:")), None)
+            refget_ac = next(
+                (a for a in self.get_aliases(sequence_id) if a.startswith("ga4gh:")),
+                None,
+            )
             seq_name = sequence_id
             if refget_ac and refget_ac != sequence_id:
                 seq_name += f" ({refget_ac})"
@@ -276,18 +272,6 @@ class _SeqRepoDataProxyBase(_DataProxy):
     # `ga4gh` identifiers.
 
     @functools.lru_cache
-    def get_metadata(self, identifier: str) -> dict:
-        """Fetch sequence metadata.
-
-        :param identifier: Sequence identifier to resolve.
-        :return: Sequence metadata, including length and aliases.
-        :raises KeyError: If the sequence identifier is not found.
-        """
-        md = self._get_metadata(identifier)
-        md["aliases"] = list(a for a in md["aliases"])  # noqa: C400
-        return md
-
-    @functools.lru_cache
     def get_sequence(
         self, identifier: str, start: int | None = None, end: int | None = None
     ) -> str:
@@ -304,19 +288,48 @@ class _SeqRepoDataProxyBase(_DataProxy):
         validate_start_le_end(identifier, start, end)
         return self._get_sequence(identifier, start=start, end=end)
 
-    @abstractmethod
-    def _get_metadata(self, identifier: str) -> dict:  # pragma: no cover
-        """Fetch sequence metadata from the backend.
+    @functools.lru_cache
+    def get_length(self, identifier: str) -> int:
+        """Return the sequence length.
 
         :param identifier: Sequence identifier to resolve.
-        :return: Sequence metadata, including length and aliases.
+        :return: Sequence length.
+        :raises KeyError: If the sequence identifier is not found.
+        """
+        return self._get_length(identifier)
+
+    @abstractmethod
+    def _get_length(self, identifier: str) -> int:
+        """Return the sequence length.
+
+        :param identifier: Sequence identifier to resolve.
+        :return: Sequence length.
+        :raises KeyError: If the sequence identifier is not found.
+        """
+
+    @functools.lru_cache
+    def get_aliases(self, identifier: str) -> list[str]:
+        """Return the known sequence aliases.
+
+        :param identifier: Sequence identifier to resolve.
+        :return: List of known sequence aliases.
+        :raises KeyError: If the sequence identifier is not found.
+        """
+        return self._get_aliases(identifier)
+
+    @abstractmethod
+    def _get_aliases(self, identifier: str) -> list[str]:
+        """Return the known sequence aliases.
+
+        :param identifier: Sequence identifier to resolve.
+        :return: List of known sequence aliases.
         :raises KeyError: If the sequence identifier is not found.
         """
 
     @abstractmethod
     def _get_sequence(
         self, identifier: str, start: int | None = None, end: int | None = None
-    ) -> str:  # pragma: no cover
+    ) -> str:
         """Fetch a sequence or subsequence from the backend.
 
         :param identifier: Sequence identifier to resolve.
@@ -352,26 +365,48 @@ class SeqRepoDataProxy(_SeqRepoDataProxyBase):
         """
         return self.sr.fetch_uri(coerce_namespace(identifier), start, end)
 
-    def _get_metadata(self, identifier: str) -> dict:
-        """Fetch sequence metadata from the backend.
+    @functools.lru_cache
+    def _resolve_sequence_id(self, identifier: str) -> str:
+        """Resolve an identifier to the internal SeqRepo sequence ID.
 
         :param identifier: Sequence identifier to resolve.
-        :return: Sequence metadata, including length and aliases.
+        :return: Internal SeqRepo sequence ID.
+        :raises KeyError: If the identifier is not found or resolves to multiple sequences.
+        """
+        namespace, alias = coerce_namespace(identifier).split(":", 1)
+        seq_ids = {
+            record["seq_id"]
+            for record in self.sr.aliases.find_aliases(namespace=namespace, alias=alias)
+        }
+        if not seq_ids:
+            raise KeyError(identifier)
+
+        if len(seq_ids) > 1:
+            msg = f"Identifier resolves to multiple sequences: {identifier}"
+            raise KeyError(msg)
+
+        return seq_ids.pop()
+
+    def _get_length(self, identifier: str) -> int:
+        """Return the sequence length.
+
+        :param identifier: Sequence identifier to resolve.
+        :return: Sequence length.
         :raises KeyError: If the sequence identifier is not found.
         """
-        ns, a = coerce_namespace(identifier).split(":", 2)
-        r = list(self.sr.aliases.find_aliases(namespace=ns, alias=a))
-        if len(r) == 0:
-            raise KeyError(identifier)
-        seq_id = r[0]["seq_id"]
-        seqinfo = self.sr.sequences.fetch_seqinfo(seq_id)
+        seq_id = self._resolve_sequence_id(identifier)
+        return self.sr.sequences.fetch_seqinfo(seq_id)["len"]
+
+    def _get_aliases(self, identifier: str) -> list[str]:
+        """Return the known sequence aliases.
+
+        :param identifier: Sequence identifier to resolve.
+        :return: List of known sequence aliases.
+        :raises KeyError: If the sequence identifier is not found.
+        """
+        seq_id = self._resolve_sequence_id(identifier)
         aliases = self.sr.aliases.find_aliases(seq_id=seq_id)
-        return {
-            "length": seqinfo["len"],
-            "alphabet": seqinfo["alpha"],
-            "added": _isoformat(seqinfo["added"]),
-            "aliases": [f"{a['namespace']}:{a['alias']}" for a in aliases],
-        }
+        return [f"{a['namespace']}:{a['alias']}" for a in aliases]
 
 
 class SeqRepoRESTDataProxy(_SeqRepoDataProxyBase):
@@ -414,8 +449,29 @@ class SeqRepoRESTDataProxy(_SeqRepoDataProxyBase):
         resp.raise_for_status()
         return resp.text
 
+    def _get_length(self, identifier: str) -> int:
+        """Return the sequence length.
+
+        :param identifier: Sequence identifier to resolve.
+        :return: Sequence length.
+        :raises KeyError: If the sequence identifier is not found.
+        :raises requests.RequestException: If the request fails with an error other than a missing sequence.
+        """
+        return self._get_metadata(identifier)["length"]
+
+    def _get_aliases(self, identifier: str) -> list[str]:
+        """Return the known sequence aliases.
+
+        :param identifier: Sequence identifier to resolve.
+        :return: List of known sequence aliases.
+        :raises KeyError: If the sequence identifier is not found.
+        :raises requests.RequestException: If the request fails with an error other than a missing sequence.
+        """
+        return list(self._get_metadata(identifier)["aliases"])
+
+    @functools.lru_cache
     def _get_metadata(self, identifier: str) -> dict:
-        """Fetch sequence metadata from the backend.
+        """Fetch and cache the REST metadata used by length and alias lookups.
 
         :param identifier: Sequence identifier to resolve.
         :return: Sequence metadata, including length and aliases.
@@ -443,10 +499,11 @@ class SequenceProxy(Sequence[str]):
 
         :param dp: Sequence data proxy.
         :param alias: Sequence accession or alias.
+        :raises KeyError: If the sequence identifier is not found.
         """
         self.dp = dp
         self.alias = alias
-        self._md = self.dp.get_metadata(self.alias)
+        self._length = self.dp.get_length(self.alias)
 
     def __str__(self) -> str:
         """Fetch the complete sequence.
@@ -460,7 +517,7 @@ class SequenceProxy(Sequence[str]):
 
         :return: Sequence length.
         """
-        return self._md["length"]
+        return self._length
 
     def __reversed__(self) -> NoReturn:
         """Reject reversed iteration.
