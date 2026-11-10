@@ -1,9 +1,9 @@
 """Tests for ga4gh.vrs.utils.hgvs_tools."""
 
-import hgvs.dataproviders.uta
 import hgvs.parser
 import pytest
 
+from ga4gh.vrs import models
 from ga4gh.vrs.utils.hgvs_tools import HgvsTools
 
 
@@ -43,11 +43,15 @@ def test_is_intronic(hgvs_tools, hgvs_expr, expected):
     assert hgvs_tools.is_intronic(sv) is expected
 
 
-def test_hgvs_cache_data_provider_is_shared(
-    hgvs_cached_data_provider: hgvs.dataproviders.uta.UTABase,
-) -> None:
-    """Every HgvsTools gets the tests' shared hgvs cache data provider, so in learn
-    mode they cannot overwrite each other's cache entries
-    """
-    assert HgvsTools().uta_conn is hgvs_cached_data_provider
-    assert HgvsTools().uta_conn is hgvs_cached_data_provider
+def test_hgvs_cache_miss_fails_through_fallback(request: pytest.FixtureRequest) -> None:
+    if request.config.getoption("--record-hgvs-cache"):
+        pytest.skip("HGVS recording uses live data")
+    # An insertion needs no data-proxy fetch before reaching HGVS normalization.
+    # This accession is deliberately absent from the recorded provider data.
+    allele = models.Allele(
+        location=models.SequenceLocation(start=10, end=10),
+        state=models.LiteralSequenceExpression(sequence="A"),
+    )
+    tools = HgvsTools()
+    with pytest.raises(pytest.fail.Exception, match="Missing HGVS recording"):
+        tools._to_sequence_variant(allele, "c", "unused", "NM_000000.0")

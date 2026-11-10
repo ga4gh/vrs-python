@@ -317,22 +317,21 @@ make test
 
 #### Recorded test data
 
-Tests run offline by replaying recorded data, so they don't need a SeqRepo REST
-service, a UTA database, or network access. Set `SEQREPO_ROOT_DIR=tests/data/seqrepo/latest`
-(as CI does) when running or recording tests.
+`pytest` and `make test` default to offline replay of recorded data, so they do not
+need a SeqRepo REST service, a UTA database, or network access. Set
+`SEQREPO_ROOT_DIR=tests/data/seqrepo/latest` (as CI does) when running or recording tests.
 
 - **VCR cassettes** (`tests/**/cassettes/*.yaml`) replay vrs-python's HTTP requests to
-  the [SeqRepo REST service](https://github.com/biocommons/seqrepo-rest-service). CI
-  runs `pytest --vcr-record=none`. In that mode, attempts to open Python socket
-  connections or connect through psycopg2 fail immediately, including HTTP requests
-  from tests not marked `@pytest.mark.vcr` (`tests/offline_guard.py`).
+  the [SeqRepo REST service](https://github.com/biocommons/seqrepo-rest-service).
+  The default `--vcr-record=none` matches CI. Unless VCR is disabled, opening Python
+  socket connections or connecting through psycopg2 fails immediately, including HTTP
+  requests from tests not marked `@pytest.mark.vcr` (`tests/conftest.py`).
 - **The hgvs cache** (`tests/data/hgvs_cache.json`) replays the hgvs library's UTA
-  queries and sequence fetches. `tests/conftest.py` enables it by default
-  (`VRS_HGVS_CACHE_MODE=run`). A missing entry fails immediately, even when
-  production code would normally catch the HGVS error. The only other supported
-  mode is `learn`, used by `make record-hgvs-cache` to record live data. hgvs itself
-  reads and writes its cache as a pickle; `tests/hgvs_cache_json.py` converts between
-  the two.
+  queries and sequence fetches. A missing entry fails immediately, even when
+  production code would normally catch the HGVS error. `make record-hgvs-cache`
+  uses `--record-hgvs-cache=PATH --disable-vcr` to record live data
+  to a temporary pickle, then converts it to JSON if tests pass. hgvs itself reads
+  and writes pickles; `tests/hgvs_cache_json.py` converts between the two formats.
 
 To re-record, start the external services (`docker compose up` starts
 seqrepo-rest-service on port 5000 and UTA on port 5432). With an existing local SeqRepo
@@ -350,6 +349,11 @@ make record-hgvs-cache
 make clean-cassettes
 pytest --vcr-record=once
 ```
+
+`--disable-vcr` allows live connections and bypasses HTTP cassette replay and writing,
+even with the default `--vcr-record=none`. HGVS still replays its cache unless
+`--record-hgvs-cache=PATH` is also supplied. The recording target uses both flags,
+so it records HGVS data without changing HTTP cassettes.
 
 `SEQREPO_REST_URL` (default `http://localhost:5000/seqrepo`) sets the REST service used
 by both.

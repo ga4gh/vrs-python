@@ -134,7 +134,7 @@ clean-cassettes:
 record-hgvs-cache:
 	@test -n "$${UTA_DB_URL}" || { echo "record-hgvs-cache: set UTA_DB_URL to the UTA instance to record from" >&2; exit 1; }
 	rm -f tests/data/hgvs_cache.pkl.new
-	env -u HGVS_SEQREPO_DIR HGVS_SEQREPO_URL="$${SEQREPO_REST_URL:-http://localhost:5000/seqrepo}" VRS_HGVS_CACHE_MODE=learn VRS_HGVS_CACHE_FILE=$(CURDIR)/tests/data/hgvs_cache.pkl.new pytest --disable-vcr
+	env -u HGVS_SEQREPO_DIR HGVS_SEQREPO_URL="$${SEQREPO_REST_URL:-http://localhost:5000/seqrepo}" pytest --record-hgvs-cache=$(CURDIR)/tests/data/hgvs_cache.pkl.new --disable-vcr
 	python tests/hgvs_cache_json.py tests/data/hgvs_cache.pkl.new tests/data/hgvs_cache.json
 	rm tests/data/hgvs_cache.pkl.new
 
