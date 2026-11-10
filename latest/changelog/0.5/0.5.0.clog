@@ -1,0 +1,28 @@
+clog format: 1; -*-outline-*-
+* 0.5.0 (2020-09-14)
+Changes since 0.4.0 (2020-01-24).
+** Special Attention
+This is the first version with changelog.
+** Deprecations and Removals
+*** REMOVED: move clinvarparser and redisobjectstore to anyvar [4d61476] (Reece Hart)
+*** REMOVED: ga4gh.vr.__main__.py [b68e71e] (Reece Hart)
+** New Features
+*** Added generalized vrs normalize function [47673ec] (Reece Hart)
+*** Added vr_deref and vr_enref wrappers [a138b1f] (Reece Hart)
+*** Closes #42: dataproxy uses namespaces directly (and remove previous workarounds)
+*** Merge branch 'vr-spec-116-variation-set-116' [89a8560] (Reece Hart)
+*** Merge branch 'vr-spec-186-haplotype' [7fc0b7f] (Reece Hart)
+*** Merge support for ChromosomeLocation and NamedLocation [bd21a2c] (Reece Hart)
+*** Promoted dataproxy to ga4gh.vr.dataproxy) [4fbdfa7] (Reece Hart)
+*** Support referable attributes in arrays (ga4gh/vr-spec#116) [4c84749] (Reece Hart)
+*** Update localizer to require explicitly naming assembly [d630e70] (Reece Hart)
+*** Update localizer to support NamedInterval in ChromosomeLocation [d3bd56b] (Reece Hart)
+*** Updated dependency versions and added redis for extras [60cd001] (Reece Hart)
+*** ga4gh/vr-spec#116: implemented enref/deref for Discrete Variation Sets; needs tests [152fae1] (Reece Hart)
+** Other Changes
+*** Allow CURIEs from any namespace (for taxonomy, e.g.) [933b728] (Reece Hart)
+*** Added tests for enderef [498f753] (Reece Hart)
+*** Added tests for normalize (Reece Hart)
+*** Update ga4gh.vr.__init__.py to use ga4gh normalize (not bioutils) [e8781ef] (Reece Hart)
+** Internal and Developer Changes
+*** Updated stale bot config [740bd42] (Reece Hart)

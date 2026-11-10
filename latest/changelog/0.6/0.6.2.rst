@@ -1,0 +1,13 @@
+
+0.6.2 (2021-01-07)
+###################
+
+Changes since 0.6.1 (2021-01-06).
+
+Internal and Developer Changes
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+* Merge pull request #47 from ga4gh/update-spec [`7536abc <https://github.com/ga4gh/vr-python/commit/7536abc>`_] (Alex H. Wagner, PhD)
+* s/vr-python/vrs-python/g [`8892989 <https://github.com/ga4gh/vr-python/commit/8892989>`_] (Reece Hart)
+* don't build sdist anymore [`731f105 <https://github.com/ga4gh/vr-python/commit/731f105>`_] (Reece Hart)
+* Revert "update spec and call to it in tests" [`6da3ba0 <https://github.com/ga4gh/vr-python/commit/6da3ba0>`_] (Reece Hart)

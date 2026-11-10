@@ -1,0 +1,8 @@
+clog format: 1; -*-outline-*-
+* 0.6.2 (2021-01-07)
+Changes since 0.6.1 (2021-01-06).
+** Internal and Developer Changes
+*** Merge pull request #47 from ga4gh/update-spec [7536abc] (Alex H. Wagner, PhD)
+*** s/vr-python/vrs-python/g [8892989] (Reece Hart)
+*** don't build sdist anymore [731f105] (Reece Hart)
+*** Revert "update spec and call to it in tests" [6da3ba0] (Reece Hart)
