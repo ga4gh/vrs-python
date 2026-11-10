@@ -323,9 +323,11 @@ need a SeqRepo REST service, a UTA database, or network access. Set
 
 - **VCR cassettes** (`tests/**/cassettes/*.yaml`) replay vrs-python's HTTP requests to
   the [SeqRepo REST service](https://github.com/biocommons/seqrepo-rest-service).
-  The default `--vcr-record=none` matches CI. Unless VCR is disabled, opening Python
-  socket connections or connecting through psycopg2 fails immediately, including HTTP
-  requests from tests not marked `@pytest.mark.vcr` (`tests/conftest.py`).
+  The default `--vcr-record=none` matches CI. In that mode (without `--disable-vcr`),
+  opening a Python socket connection or connecting through psycopg2 fails the test
+  immediately, including HTTP requests from tests not marked `@pytest.mark.vcr`
+  (`block_live_connections` in `tests/conftest.py`). Connections opened by other C
+  libraries are not intercepted.
 - **The hgvs cache** (`tests/data/hgvs_cache.json`) replays the hgvs library's UTA
   queries and sequence fetches. A missing entry fails immediately, even when
   production code would normally catch the HGVS error. `make record-hgvs-cache`

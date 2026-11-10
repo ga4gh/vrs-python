@@ -26,16 +26,27 @@ def pytest_addoption(parser: pytest.Parser) -> None:
         "--record-hgvs-cache",
         metavar="PATH",
         type=Path,
-        help="Record HGVS data to a pickle file (requires --disable-vcr).",
+        help=(
+            "Record live hgvs lookups into the pickle file PATH, adding to it if it "
+            "exists (requires --disable-vcr)."
+        ),
     )
 
 
 def pytest_configure(config: pytest.Config) -> None:
-    """Reject recording settings that would block or replay live requests"""
-    if config.getoption("--record-hgvs-cache") and not config.getoption(
-        "--disable-vcr"
-    ):
+    """Reject --record-hgvs-cache settings that would fail only after tests start"""
+    record_path: Path | None = config.getoption("--record-hgvs-cache")
+    if record_path is None:
+        return
+    if not config.getoption("--disable-vcr"):
         msg = "HGVS recording requires --disable-vcr."
+        raise pytest.UsageError(msg)
+    # hgvs opens the file only after the first cache miss, so check it upfront.
+    if record_path.exists() and not record_path.is_file():
+        msg = f"--record-hgvs-cache must name a regular file: {record_path}"
+        raise pytest.UsageError(msg)
+    if not record_path.parent.is_dir():
+        msg = f"--record-hgvs-cache directory does not exist: {record_path.parent}"
         raise pytest.UsageError(msg)
 
 
@@ -48,6 +59,26 @@ def _forbidden_connection(_sock: socket.socket, address: object) -> NoReturn:
 
 def _forbidden_postgres(*_args: object, **_kwargs: object) -> NoReturn:
     pytest.fail("Live PostgreSQL connections are disabled. Run make record-hgvs-cache.")
+
+
+@pytest.fixture(scope="session", autouse=True)
+def block_live_connections(request: pytest.FixtureRequest) -> Iterator[bool]:
+    """Fail any test that opens a live connection while VCR replays cassettes.
+
+    Active with `--vcr-record=none` (the default) unless `--disable-vcr` is given.
+    Yields whether connections are blocked.
+    """
+    blocked = request.config.getoption(
+        "--vcr-record"
+    ) == "none" and not request.config.getoption("--disable-vcr")
+    with pytest.MonkeyPatch.context() as mp:
+        if blocked:
+            # VCR replays without connecting. libpq bypasses Python sockets, so
+            # psycopg2 needs its own patch. pytest.fail escapes except Exception.
+            mp.setattr(socket.socket, "connect", _forbidden_connection)
+            mp.setattr(socket.socket, "connect_ex", _forbidden_connection)
+            mp.setattr(psycopg2, "connect", _forbidden_postgres)
+        yield blocked
 
 
 def _require_recorded_data(method: Callable[..., Any]) -> Callable[..., Any]:
@@ -67,26 +98,20 @@ def _require_recorded_data(method: Callable[..., Any]) -> Callable[..., Any]:
 def hgvs_cached_data_provider(
     request: pytest.FixtureRequest,
     tmp_path_factory: pytest.TempPathFactory,
+    block_live_connections: bool,  # noqa: ARG001  # Block before provider setup.
 ) -> Iterator[hgvs.dataproviders.uta.UTABase]:
     """Share one provider so recording instances cannot overwrite each other's entries.
 
-    Replay converts committed JSON to a temporary pickle and blocks live connections
-    unless HTTP recording or --disable-vcr explicitly enables them.
+    Replay converts committed JSON to a temporary pickle; recording
+    (`--record-hgvs-cache`) writes live data to the given pickle.
     """
-    recording = request.config.getoption("--record-hgvs-cache")
-    cache_file = recording or tmp_path_factory.mktemp("hgvs_cache") / "hgvs_cache.pkl"
+    record_path: Path | None = request.config.getoption("--record-hgvs-cache")
+    recording = record_path is not None
+    cache_file = record_path or tmp_path_factory.mktemp("hgvs_cache") / "hgvs_cache.pkl"
     if not recording:
         json_to_pickle(HGVS_CACHE_JSON, cache_file)
 
     with pytest.MonkeyPatch.context() as mp:
-        if request.config.getoption(
-            "--vcr-record"
-        ) == "none" and not request.config.getoption("--disable-vcr"):
-            # VCR replays without connecting. libpq bypasses Python sockets, so
-            # psycopg2 needs its own patch. pytest.fail escapes except Exception.
-            mp.setattr(socket.socket, "connect", _forbidden_connection)
-            mp.setattr(socket.socket, "connect_ex", _forbidden_connection)
-            mp.setattr(psycopg2, "connect", _forbidden_postgres)
         provider = hgvs.dataproviders.uta.connect(
             db_url=None if recording else HGVS_OFFLINE_UTA_URL,
             mode="learn" if recording else "run",

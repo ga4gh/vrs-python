@@ -20,10 +20,8 @@ def test_vcrtest(rest_dataproxy):
         ),
     ],
 )
-def test_live_connections_blocked(request, connect):
-    if request.config.getoption("--vcr-record") != "none" or request.config.getoption(
-        "--disable-vcr"
-    ):
+def test_live_connections_blocked(block_live_connections: bool, connect) -> None:
+    if not block_live_connections:
         pytest.skip("live connections are enabled")
     with pytest.raises(pytest.fail.Exception):
         connect()
