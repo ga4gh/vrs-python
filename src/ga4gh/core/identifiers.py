@@ -144,14 +144,16 @@ class use_ga4gh_compute_identifier_when(ContextDecorator):  # noqa: N801
 def is_ga4gh_identifier(ir: object) -> bool:
     """Check whether a value starts with the GA4GH namespace prefix
 
-    >>> is_ga4gh_identifier("ga4gh:SQ.0123abcd")
-    True
+    For example:
 
-    >>> is_ga4gh_identifier("refseq:NM_01234.5")
-    False
+        >>> is_ga4gh_identifier("ga4gh:SQ.0123abcd")
+        True
 
-    >>> is_ga4gh_identifier(None)
-    False
+        >>> is_ga4gh_identifier("refseq:NM_01234.5")
+        False
+
+        >>> is_ga4gh_identifier(None)
+        False
 
     :param ir: Value or root model to inspect.
     :return: Whether the value has the GA4GH namespace prefix.
@@ -182,17 +184,19 @@ def ga4gh_identify(
     updates; it does not override the context policy. Accepts a supported PrevVrsVersion
     member or its string value. Raises ValueError for other version values.
 
-    >>> from ga4gh.core import ga4gh_identify
-    >>> import ga4gh.vrs
-    >>> location = ga4gh.vrs.models.SequenceLocation(
-    ...     start=44908821,
-    ...     end=44908822,
-    ...     sequenceReference=ga4gh.vrs.models.SequenceReference(
-    ...         refgetAccession="SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul"
-    ...     ),
-    ... )
-    >>> ga4gh_identify(location)
-    'ga4gh:SL.4t6JnYWqHwYw9WzBT_lmWBb3tLQNalkT'
+    For example:
+
+        >>> from ga4gh.core import ga4gh_identify
+        >>> import ga4gh.vrs
+        >>> location = ga4gh.vrs.models.SequenceLocation(
+        ...     start=44908821,
+        ...     end=44908822,
+        ...     sequenceReference=ga4gh.vrs.models.SequenceReference(
+        ...         refgetAccession="SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul"
+        ...     ),
+        ... )
+        >>> ga4gh_identify(location)
+        'ga4gh:SL.4t6JnYWqHwYw9WzBT_lmWBb3tLQNalkT'
 
     :param vro: GA4GH model implementing is_ga4gh_identifiable and the digest
         and identifier methods used for identifiable objects.
@@ -236,17 +240,19 @@ def ga4gh_digest(
     supported PrevVrsVersion member or its string value. Raises ValueError for other
     version values.
 
-    >>> from ga4gh.core import ga4gh_digest
-    >>> import ga4gh.vrs
-    >>> location = ga4gh.vrs.models.SequenceLocation(
-    ...     start=44908821,
-    ...     end=44908822,
-    ...     sequenceReference=ga4gh.vrs.models.SequenceReference(
-    ...         refgetAccession="SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul"
-    ...     ),
-    ... )
-    >>> ga4gh_digest(location)
-    '4t6JnYWqHwYw9WzBT_lmWBb3tLQNalkT'
+    For example:
+
+        >>> from ga4gh.core import ga4gh_digest
+        >>> import ga4gh.vrs
+        >>> location = ga4gh.vrs.models.SequenceLocation(
+        ...     start=44908821,
+        ...     end=44908822,
+        ...     sequenceReference=ga4gh.vrs.models.SequenceReference(
+        ...         refgetAccession="SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul"
+        ...     ),
+        ... )
+        >>> ga4gh_digest(location)
+        '4t6JnYWqHwYw9WzBT_lmWBb3tLQNalkT'
 
     :param vro: GA4GH model implementing is_ga4gh_identifiable and the digest
         and identifier methods used for identifiable objects.

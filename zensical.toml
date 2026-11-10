@@ -1,0 +1,115 @@
+[project]
+site_name = "VRS-Python"
+site_description = "Represent, normalize, and identify genomic variation in Python"
+site_url = "https://ga4gh.github.io/vrs-python/"
+repo_url = "https://github.com/ga4gh/vrs-python"
+repo_name = "ga4gh/vrs-python"
+edit_uri = "edit/main/docs/"
+docs_dir = "docs-build"
+extra_css = ["assets/css/extra.css"]
+extra_javascript = ["assets/js/external-links.js"]
+strict = true
+nav = [
+  { Home = "index.md" },
+  { Installation = "installation.md" },
+  { "Quick start" = "quick-start.md" },
+  { "Set up SeqRepo and UTA" = "data-services.md" },
+  { "VRS annotate" = "extras/vrs-annotate.md" },
+  { "Explore with notebooks" = [
+    "notebooks/index.md",
+    { "Quick start" = "notebooks/1_Quick_Start.md" },
+    { "Sequence access" = "notebooks/2_Exploring_the_SeqRepo_DataProxy.md" },
+    { "Models" = "notebooks/3_Basic_Models.md" },
+    { "Allele translation" = "notebooks/4_Exploring_the_AlleleTranslator.md" },
+    { "Copy number translation" = "notebooks/5_Exploring_the_CnvTranslator.md" },
+    { "Upcoming features" = "notebooks/6_Upcoming_features.md" },
+    { "Uncertain HGVS ranges" = "notebooks/7_Uncertain_Range_HGVS.md" },
+  ] },
+  { "API reference" = [
+    "api/index.md",
+    { "GKM-Core models" = "api/core-models.md" },
+    { "VRS models" = "api/vrs-models.md" },
+    { "Identifiers and digests" = "api/identifiers-and-digests.md" },
+    { Normalization = "api/normalization.md" },
+    { "Data proxies" = "api/data-proxies.md" },
+    { "Translation and HGVS" = "api/translation-and-hgvs.md" },
+    { "Object references and storage" = "api/object-references-and-storage.md" },
+    { "VCF annotation" = "api/vcf-annotation.md" },
+  ] },
+  { "VRS compatibility" = "compatibility.md" },
+  { "Development and contributing" = "development.md" },
+]
+
+[project.extra.version]
+provider = "mike"
+default = "latest"
+
+[project.theme]
+variant = "classic"
+logo = "assets/images/ga4gh-favicon.svg"
+favicon = "assets/images/ga4gh-favicon.svg"
+features = [
+  "navigation.indexes",
+  "navigation.top",
+  "toc.follow",
+  "content.action.edit",
+  "content.code.copy",
+  "content.tabs.link",
+  "search.suggest",
+  "search.highlight",
+]
+
+# Palette toggle for automatic mode
+[[project.theme.palette]]
+media = "(prefers-color-scheme)"
+toggle.icon = "lucide/sun-moon"
+toggle.name = "Switch to light mode"
+
+# Palette toggle for light mode
+[[project.theme.palette]]
+media = "(prefers-color-scheme: light)"
+scheme = "default"
+primary = "custom"
+accent = "custom"
+toggle.icon = "lucide/sun"
+toggle.name = "Switch to dark mode"
+
+# Palette toggle for dark mode
+[[project.theme.palette]]
+media = "(prefers-color-scheme: dark)"
+scheme = "slate"
+primary = "custom"
+accent = "custom"
+toggle.icon = "lucide/moon"
+toggle.name = "Switch to system preference"
+
+[project.plugins.search]
+
+[project.plugins.mkdocstrings.handlers.python]
+paths = ["src"]
+options.docstring_style = "sphinx"
+options.filters = ["!^_[^_]"]
+options.inherited_members = false
+options.merge_init_into_class = true
+options.members_order = "source"
+options.separate_signature = true
+options.show_signature_annotations = true
+options.show_source = false
+options.show_symbol_type_heading = true
+options.show_symbol_type_toc = true
+options.signature_crossrefs = true
+
+[project.markdown_extensions]
+admonition = {}
+attr_list = {}
+md_in_html = {}
+pymdownx.details = {}
+pymdownx.superfences = {}
+tables = {}
+pymdownx.inlinehilite = {}
+pymdownx.highlight.anchor_linenums = true
+pymdownx.tabbed.alternate_style = true
+pymdownx.emoji.emoji_index = "zensical.extensions.emoji.twemoji"
+pymdownx.emoji.emoji_generator = "zensical.extensions.emoji.to_svg"
+pymdownx.snippets.base_path = ["."]
+pymdownx.snippets.check_paths = true

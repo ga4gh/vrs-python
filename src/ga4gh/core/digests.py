@@ -21,11 +21,11 @@ def sha512t24u(blob: bytes) -> str:
 
     For example:
 
-    >>> sha512t24u(b"")
-    'z4PhNX7vuL3xVChQ1m2AB9Yg5AULVxXc'
+        >>> sha512t24u(b"")
+        'z4PhNX7vuL3xVChQ1m2AB9Yg5AULVxXc'
 
-    >>> sha512t24u(b"ACGT")
-    'aKF498dAxcJAqme6QYQ7EZ07-fiw8Kw2'
+        >>> sha512t24u(b"ACGT")
+        'aKF498dAxcJAqme6QYQ7EZ07-fiw8Kw2'
 
     :param blob: Binary data to digest.
     :return: URL-safe base64 encoding of the first 24 digest bytes.

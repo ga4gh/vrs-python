@@ -1,0 +1,34 @@
+/* VRS-Python theming */
+
+/* GA4GH brand palette. Dark blue carries text and UI chrome so that it remains
+   readable; light blue is reserved for highlights and illustrations. */
+:root,
+[data-md-color-scheme="slate"] {
+    --md-primary-fg-color: #1b75bb;
+    --md-primary-fg-color--light: #4faedc;
+    --md-primary-fg-color--dark: #155a8f;
+    --md-accent-fg-color: #1b75bb;
+    --md-accent-fg-color--transparent: rgb(27 117 187 / 10%);
+}
+
+[data-md-color-scheme="slate"] {
+    --md-accent-fg-color: #4faedc;
+    --md-accent-fg-color--transparent: rgb(79 174 220 / 10%);
+}
+
+/* Render the compact GA4GH mark in white on blue header surfaces. */
+.md-header .md-logo img,
+.md-nav--primary > .md-nav__title[for="__drawer"] .md-logo img {
+    filter: brightness(0) invert(1);
+}
+
+/* Omit the right-hand table of contents when a page has nothing worth
+   navigating to — i.e. zero or one heading. The :has() test keeps the TOC only
+   when its list holds a second entry (a sibling top-level heading, or a nested
+   sub-heading under a lone one); otherwise the sidebar is hidden.
+   Pages with no sub-pages hide the left nav via `hide: navigation` front matter,
+   since Material renders the full nav tree into every page's primary sidebar and
+   CSS alone can't tell an empty section from a populated one. */
+.md-sidebar--secondary:not(:has(.md-nav__list .md-nav__item:nth-child(2))) {
+    display: none;
+}
