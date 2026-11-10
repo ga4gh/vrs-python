@@ -364,20 +364,24 @@ def denormalize_reference_length_expression(
 
 
 def _factor_gen(n: int) -> Iterator[int]:
-    """Yield all factors of an integer in descending order.
+    """Yield all factors of an integer in ascending order.
+
+    The first factor that passes `_is_valid_cycle` becomes the ``repeatSubunitLength``,
+    so ascending order selects the smallest valid factor (VRS 2.1 normalization). VRS
+    2.0 selected the largest; see ``PrevVrsVersion.V2_0`` for computing 2.0 digests.
 
     :param n: Positive integer to factor. Nonpositive inputs yield no values.
-    :return: Iterator yielding factors from largest to smallest.
+    :return: Iterator yielding factors from smallest to largest.
     """
-    lower_factors = []
+    upper_factors = []
     i = 1
     while i * i <= n:
         if n % i == 0:
-            yield n // i
+            yield i
             if n // i != i:
-                lower_factors.append(i)
+                upper_factors.append(n // i)
         i += 1
-    yield from reversed(lower_factors)
+    yield from reversed(upper_factors)
 
 
 def _define_rle_allele(

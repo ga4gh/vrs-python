@@ -1005,3 +1005,26 @@ def test_normalize_location_out_of_bounds(
     )
     with pytest.raises(DataProxyValidationError, match=f"^{re.escape(expected_msg)}$"):
         normalize(_bounds_allele(case["start"], case["end"], "A"), dataproxy)
+
+
+@pytest.mark.vcr
+def test_normalize_rle_smallest_subunit(rest_dataproxy):
+    """A reference-derived insertion uses the smallest valid repeat subunit length.
+    Inserting GTGT into chr1 (GT) x 5: of the factors of seed length 4, 1 is not valid,
+    and 2 is selected over 4 (VRS 2.0 selected 4).
+    """
+    allele = models.Allele(
+        location=models.SequenceLocation(
+            sequenceReference=models.SequenceReference(
+                refgetAccession="SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO"
+            ),
+            start=1007183,
+            end=1007183,
+        ),
+        state=models.LiteralSequenceExpression(sequence="GTGT"),
+    )
+    normalized = normalize(allele, rest_dataproxy, rle_seq_limit=None)
+    assert (normalized.location.start, normalized.location.end) == (1007173, 1007183)
+    assert normalized.state == models.ReferenceLengthExpression(
+        length=14, repeatSubunitLength=2, sequence="GT" * 7
+    )

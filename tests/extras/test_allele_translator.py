@@ -257,7 +257,8 @@ rle_inputs = [
         },
     },
     {
-        # single base expansion (9*A -> 11*A)
+        # two base expansion (9*A -> 11*A): subunit lengths 1 and 2 are both valid, and
+        # VRS 2.1 selects the smallest (VRS 2.0 selected 2)
         "spdi": "NC_000001.11:236900409:AAAAAAAAA:AAAAAAAAAAA",
         "gnomad": "1-236900410-A-AAA",
         "expected_allele": {
@@ -272,7 +273,7 @@ rle_inputs = [
             },
             "state": {
                 "length": 11,
-                "repeatSubunitLength": 2,
+                "repeatSubunitLength": 1,
                 "sequence": "AAAAAAAAAAA",
                 "type": "ReferenceLengthExpression",
             },
@@ -629,7 +630,7 @@ hgvs_tests = (
             },
             "state": {
                 "length": 14,
-                "repeatSubunitLength": 2,
+                "repeatSubunitLength": 1,
                 "sequence": "TTTTTTTTTTTTTT",
                 "type": "ReferenceLengthExpression",
             },
