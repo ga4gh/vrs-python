@@ -1,5 +1,7 @@
 """Tests for ga4gh.vrs.utils.hgvs_tools."""
 
+import logging
+
 import hgvs.parser
 import pytest
 
@@ -43,15 +45,30 @@ def test_is_intronic(hgvs_tools, hgvs_expr, expected):
     assert hgvs_tools.is_intronic(sv) is expected
 
 
+# An insertion needs no data-proxy fetch before reaching HGVS normalization.
+INSERTION = models.Allele(
+    location=models.SequenceLocation(start=10, end=10),
+    state=models.LiteralSequenceExpression(sequence="A"),
+)
+
+
 def test_hgvs_cache_miss_fails_through_fallback(request: pytest.FixtureRequest) -> None:
     if request.config.getoption("--record-hgvs-cache"):
         pytest.skip("HGVS recording uses live data")
-    # An insertion needs no data-proxy fetch before reaching HGVS normalization.
     # This accession is deliberately absent from the recorded provider data.
-    allele = models.Allele(
-        location=models.SequenceLocation(start=10, end=10),
-        state=models.LiteralSequenceExpression(sequence="A"),
-    )
     tools = HgvsTools()
     with pytest.raises(pytest.fail.Exception, match="Missing HGVS recording"):
-        tools._to_sequence_variant(allele, "c", "unused", "NM_000000.0")
+        tools._to_sequence_variant(INSERTION, "c", "unused", "NM_000000.0")
+
+
+def test_missing_accession_falls_back_unnormalized(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    # Neither SeqRepo nor UTA has this accession; the recording keeps its "no data"
+    # results. It must differ from the accession the cache-miss test keeps unrecorded.
+    accession = "NM_999999.1"
+    tools = HgvsTools()
+    with caplog.at_level(logging.WARNING, logger="ga4gh.vrs.utils.hgvs_tools"):
+        var = tools._to_sequence_variant(INSERTION, "c", "unused", accession)
+    assert f"No data found for accession {accession}" in caplog.text
+    assert str(var) == f"{accession}:n.10_11insA"  # left as n., not normalized

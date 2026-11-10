@@ -245,6 +245,17 @@
   {
     "func": "get_seq",
     "args": [
+      "NM_999999.1",
+      10,
+      11
+    ],
+    "value": {
+      "hgvs_data_not_available": "Failed to fetch NM_999999.1 from SeqRepo REST (http://localhost:5000/seqrepo) ('NM_999999.1')"
+    }
+  },
+  {
+    "func": "get_seq",
+    "args": [
       "NR_040711.1",
       1262,
       1263
@@ -1434,6 +1445,13 @@
         }
       }
     ]
+  },
+  {
+    "func": "get_tx_mapping_options",
+    "args": [
+      "NM_999999.1"
+    ],
+    "value": []
   },
   {
     "func": "get_tx_mapping_options",
