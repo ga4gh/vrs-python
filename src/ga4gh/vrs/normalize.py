@@ -243,7 +243,8 @@ def _normalize_allele(
         factors = _factor_gen(seed_length)
         for cycle_length in factors:
             if cycle_length > len_extended_ref:
-                continue
+                # factors are ascending, so all remaining factors are too long
+                break
             cycle_start = len_extended_ref - cycle_length
             if _is_valid_cycle(cycle_start, extended_ref_seq, extended_alt_seq):
                 _set_location_from_interval(

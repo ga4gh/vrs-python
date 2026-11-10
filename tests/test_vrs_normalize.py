@@ -3,7 +3,11 @@ import re
 import pytest
 
 from ga4gh.vrs import models, normalize
-from ga4gh.vrs.dataproxy import DataProxyValidationError, SeqRepoDataProxy
+from ga4gh.vrs.dataproxy import (
+    DataProxyValidationError,
+    SeqRepoDataProxy,
+    SeqRepoRESTDataProxy,
+)
 
 # Single nucleotide same-as-reference allele.
 allele_dict1 = {
@@ -1008,7 +1012,7 @@ def test_normalize_location_out_of_bounds(
 
 
 @pytest.mark.vcr
-def test_normalize_rle_smallest_subunit(rest_dataproxy):
+def test_normalize_rle_smallest_subunit(rest_dataproxy: SeqRepoRESTDataProxy) -> None:
     """A reference-derived insertion uses the smallest valid repeat subunit length.
     Inserting GTGT into chr1 (GT) x 5: of the factors of seed length 4, 1 is not valid,
     and 2 is selected over 4 (VRS 2.0 selected 4).

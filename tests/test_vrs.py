@@ -439,13 +439,20 @@ def _rle_allele(
         ),
     ],
 )
-def test_vrs_2_0_identify(allele, expected_id, expected_2_0_id):
+def test_vrs_2_0_identify(
+    allele: models.Allele, expected_id: str, expected_2_0_id: str
+) -> None:
     """`as_version` 2.0 uses the largest valid repeat subunit length"""
     assert ga4gh_identify(allele, in_place="never") == expected_id
     assert ga4gh_identify(allele, as_version=PrevVrsVersion.V2_0) == expected_2_0_id
     assert ga4gh_identify(
         allele.location, as_version=PrevVrsVersion.V2_0
     ) == ga4gh_identify(allele.location, in_place="never")
+
+    # 2.0 ids are recomputed, not read from a cached (here stale) location digest
+    stale = allele.model_copy(deep=True)
+    stale.location.digest = "0" * 32
+    assert ga4gh_identify(stale, as_version=PrevVrsVersion.V2_0) == expected_2_0_id
 
 
 @pytest.mark.parametrize(
@@ -478,7 +485,7 @@ def test_vrs_2_0_identify(allele, expected_id, expected_2_0_id):
         ),
     ],
 )
-def test_vrs_2_0_identify_errors(allele, match):
+def test_vrs_2_0_identify_errors(allele: models.Allele, match: str) -> None:
     """`as_version` 2.0 rejects RLE Alleles that VRS 2.1 normalization cannot produce"""
     with pytest.raises(ValueError, match=match):
         ga4gh_identify(allele, as_version=PrevVrsVersion.V2_0)

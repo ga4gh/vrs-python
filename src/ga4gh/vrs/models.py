@@ -956,10 +956,17 @@ class Allele(_VariationBase, BaseModelForbidExtra):
         multiples of the smallest that divide the insertion length and fit within the
         span. All other states serialize the same in VRS 2.0 and 2.1.
 
+        This assumes ``repeatSubunitLength`` is the smallest valid subunit, as produced
+        by VRS 2.1 normalization. Verifying that requires the reference sequence, so only
+        inconsistencies detectable from the Allele alone raise an error.
+
+        Nested digests are recomputed rather than read from a cached ``digest``, and are
+        not stored on this Allele or its location.
+
         :raises ValueError: If a ``ReferenceLengthExpression`` ``state`` is not on a
             ``SequenceLocation`` with int or indefinite Range coordinates, has a Range
-            ``length``, or has a ``repeatSubunitLength`` inconsistent with a normalized
-            insertion
+            ``length``, or has a ``repeatSubunitLength`` that is not a factor of the
+            insertion length within the span
         """
         state = self.state
         if isinstance(state, ReferenceLengthExpression):
@@ -984,8 +991,14 @@ class Allele(_VariationBase, BaseModelForbidExtra):
                     )
                     raise ValueError(msg)
                 state = state.model_copy(update={"repeatSubunitLength": valid[-1]})
-        allele = self.model_copy(update={"state": state})
-        return encode_canonical_json(allele.ga4gh_serialize()).decode("utf-8")
+        location = (
+            self.location.compute_digest(as_version=PrevVrsVersion.V2_0)
+            if isinstance(self.location, SequenceLocation)
+            else self.location.ga4gh_serialize()
+        )
+        return encode_canonical_json(
+            {"location": location, "state": state.ga4gh_serialize(), "type": self.type}
+        ).decode("utf-8")
 
     class ga4gh(Ga4ghIdentifiableObject.ga4gh):  # noqa: N801
         """Define GA4GH serialization metadata for this model."""
