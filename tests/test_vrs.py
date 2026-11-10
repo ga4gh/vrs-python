@@ -2,6 +2,7 @@ import pytest
 from pydantic import ValidationError
 
 from ga4gh.core import (
+    PrevVrsVersion,
     VrsObjectIdentifierIs,
     ga4gh_digest,
     ga4gh_identify,
@@ -383,3 +384,108 @@ def test_compute_identifiers_when():
     with use_ga4gh_compute_identifier_when(VrsObjectIdentifierIs.MISSING):
         assert ga4gh_identify(vo_a, in_place="never") == correct_id
         assert ga4gh_identify(vo_a, in_place="never") is correct_id
+
+
+def _rle_allele(
+    start: int | list[int | None],
+    end: int | list[int | None],
+    length: int | list[int],
+    repeat_subunit_length: int,
+) -> models.Allele:
+    """Build a GRCh38 chr1 Allele with a ReferenceLengthExpression state"""
+    return models.Allele(
+        location=models.SequenceLocation(
+            sequenceReference=models.SequenceReference(
+                refgetAccession="SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO"
+            ),
+            start=start,
+            end=end,
+        ),
+        state=models.ReferenceLengthExpression(
+            length=length, repeatSubunitLength=repeat_subunit_length
+        ),
+    )
+
+
+@pytest.mark.parametrize(
+    ("allele", "expected_id", "expected_2_0_id"),
+    [
+        # A x 9 + AA: subunit lengths 1 and 2 are valid (2.0 id from vrs-python main)
+        pytest.param(
+            _rle_allele(236900409, 236900418, 11, 1),
+            "ga4gh:VA.b3Q0IQnr9q2zhTZtnn5vYvO1-wQL2yQv",
+            "ga4gh:VA.ZaXCGjhs7Tu13b0azh6oIxiZzKfkLOhp",
+            id="poly_a_ins",
+        ),
+        # (GT) x 5 + GTGT: subunit lengths 2 and 4 are valid (2.0 id from vrs-python main)
+        pytest.param(
+            _rle_allele(1007173, 1007183, 14, 2),
+            "ga4gh:VA.ahwf1XfAC63L8RgfDNqv0jORnM-W31SC",
+            "ga4gh:VA.kkbrHw87FMI-ePHgyzrCFAFTqVXJqTkQ",
+            id="microsatellite_ins",
+        ),
+        pytest.param(
+            _rle_allele([None, 236900409], [236900418, None], 11, 1),
+            "ga4gh:VA.qLrGhMXYoXALZ_NTcYO3Bh-TOzCRW8gj",
+            "ga4gh:VA.Octo9VAsfwhgSoOIMQ25UJPxBR0O3_Th",
+            id="indefinite_range_ins",
+        ),
+        # Deletions are the same in VRS 2.0 and 2.1
+        pytest.param(
+            _rle_allele(40819438, 40819446, 5, 3),
+            "ga4gh:VA.kL06ErFmanQt9ZsXkcdpd7qSbJ8sXmj7",
+            "ga4gh:VA.kL06ErFmanQt9ZsXkcdpd7qSbJ8sXmj7",
+            id="deletion",
+        ),
+    ],
+)
+def test_vrs_2_0_identify(
+    allele: models.Allele, expected_id: str, expected_2_0_id: str
+) -> None:
+    """`as_version` 2.0 uses the largest valid repeat subunit length"""
+    assert ga4gh_identify(allele, in_place="never") == expected_id
+    assert ga4gh_identify(allele, as_version=PrevVrsVersion.V2_0) == expected_2_0_id
+    assert ga4gh_identify(
+        allele.location, as_version=PrevVrsVersion.V2_0
+    ) == ga4gh_identify(allele.location, in_place="never")
+
+    # 2.0 ids are recomputed, not read from a cached (here stale) location digest
+    stale = allele.model_copy(deep=True)
+    stale.location.digest = "0" * 32
+    assert ga4gh_identify(stale, as_version=PrevVrsVersion.V2_0) == expected_2_0_id
+
+
+@pytest.mark.parametrize(
+    ("allele", "match"),
+    [
+        pytest.param(
+            _rle_allele(1007173, 1007183, 14, 3),
+            "repeatSubunitLength 3 is inconsistent",
+            id="subunit_not_factor_of_insertion",
+        ),
+        pytest.param(
+            _rle_allele([236900400, 236900409], 236900418, 11, 1),
+            "Expected an int or indefinite Range coordinate",
+            id="definite_range",
+        ),
+        pytest.param(
+            _rle_allele(236900409, 236900418, [10, 12], 1),
+            "requires a `SequenceLocation` and an int `length`",
+            id="range_length",
+        ),
+        pytest.param(
+            models.Allele(
+                location="ga4gh:SL.shRADI_uRNo_P7bKGqD7Hrsw6iAkXciO",
+                state=models.ReferenceLengthExpression(
+                    length=11, repeatSubunitLength=1
+                ),
+            ),
+            "requires a `SequenceLocation` and an int `length`",
+            id="iri_reference_location",
+        ),
+    ],
+)
+def test_vrs_2_0_identify_errors(allele: models.Allele, match: str) -> None:
+    """`as_version` 2.0 rejects RLE Alleles that VRS 2.1 normalization cannot produce"""
+    with pytest.raises(ValueError, match=match):
+        ga4gh_identify(allele, as_version=PrevVrsVersion.V2_0)

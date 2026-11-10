@@ -84,6 +84,9 @@ class PrevVrsVersion(str, Enum):
     """Define prior VRS versions supported for digest and identifier computation."""
 
     V1_3 = "1.3"
+    # VRS 2.0 normalization selected the largest valid repeat subunit length for
+    # reference-derived insertions; VRS 2.1 selects the smallest
+    V2_0 = "2.0"
 
     @classmethod
     def validate(cls, version: object) -> None:

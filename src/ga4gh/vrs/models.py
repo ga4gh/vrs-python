@@ -771,6 +771,9 @@ class SequenceLocation(Ga4ghIdentifiableObject, BaseModelForbidExtra):
                     raise ValueError(msg)
                 out.append(result)
             return f'{{"interval":{{"end":{out[1]},"start":{out[0]},"type":"SequenceInterval"}},"sequence_id":"{self.sequenceReference.refgetAccession.split(".")[1]}","type":"SequenceLocation"}}'
+        if as_version == PrevVrsVersion.V2_0:
+            # SequenceLocation serialization is unchanged between VRS 2.0 and 2.1
+            return encode_canonical_json(self.ga4gh_serialize()).decode("utf-8")
         msg = f"Received an unexpected value for `as_version`: {as_version}. MUST be an instance of `PrevVrsVersion`."
         raise TypeError(msg)
 
@@ -789,7 +792,10 @@ class SequenceLocation(Ga4ghIdentifiableObject, BaseModelForbidExtra):
         """Define GA4GH serialization metadata for this model."""
 
         prefix = "SL"
-        priorPrefix = {PrevVrsVersion.V1_3.value: "VSL"}  # noqa: N815
+        priorPrefix = {  # noqa: N815
+            PrevVrsVersion.V1_3.value: "VSL",
+            PrevVrsVersion.V2_0.value: "SL",
+        }
         inherent = ["end", "sequenceReference", "start", "type"]
 
 
@@ -877,6 +883,17 @@ class _VariationBase(Ga4ghIdentifiableObject, ABC):
     expressions: list[Expression] | None = None
 
 
+def _interval_value(pos: Range | int) -> int:
+    """Return the coordinate of an int or indefinite Range ([None, v] / [v, None])"""
+    value: int | list[int | None] | None = get_pydantic_root(pos)
+    if isinstance(value, int):
+        return value
+    if not isinstance(value, list) or None not in value:
+        msg = f"Expected an int or indefinite Range coordinate, but got {value}"
+        raise ValueError(msg)
+    return next(v for v in value if v is not None)
+
+
 class Allele(_VariationBase, BaseModelForbidExtra):
     """The state of a molecule at a `Location`."""
 
@@ -895,6 +912,19 @@ class Allele(_VariationBase, BaseModelForbidExtra):
     def ga4gh_serialize_as_version(self, as_version: PrevVrsVersion) -> str:
         """Return a serialized string following the conventions for Allele serialization as defined in the VRS version specified by ``as_version``.
 
+        :raises ValueError: If the Allele cannot be serialized for ``as_version``. See
+            ``_ga4gh_serialize_as_1_3`` and ``_ga4gh_serialize_as_2_0``.
+        """
+        if as_version == PrevVrsVersion.V1_3:
+            return self._ga4gh_serialize_as_1_3()
+        if as_version == PrevVrsVersion.V2_0:
+            return self._ga4gh_serialize_as_2_0()
+        msg = f"Received an unexpected value for `as_version`: {as_version}. MUST be an instance of `PrevVrsVersion`."
+        raise TypeError(msg)
+
+    def _ga4gh_serialize_as_1_3(self) -> str:
+        """Return a serialized string following VRS 1.3 Allele serialization.
+
         :raises ValueError: If ``state`` is not a ``LiteralSequenceExpression`` or
             ``ReferenceLengthExpression``; ``state.sequence`` is null.
 
@@ -902,7 +932,7 @@ class Allele(_VariationBase, BaseModelForbidExtra):
         :raises TypeError: If the requested version is unsupported.
         :return: Serialization for the requested prior version.
         """
-        location_digest = self.location.compute_digest(as_version=as_version)
+        location_digest = self.location.compute_digest(as_version=PrevVrsVersion.V1_3)
 
         if not isinstance(
             self.state, LiteralSequenceExpression | ReferenceLengthExpression
@@ -915,16 +945,69 @@ class Allele(_VariationBase, BaseModelForbidExtra):
         if sequence is None:
             raise ValueError("State sequence attribute must be defined.")
 
-        if as_version == PrevVrsVersion.V1_3:
-            return f'{{"location":"{location_digest}","state":{{"sequence":"{sequence}","type":"LiteralSequenceExpression"}},"type":"Allele"}}'
-        msg = f"Received an unexpected value for `as_version`: {as_version}. MUST be an instance of `PrevVrsVersion`."
-        raise TypeError(msg)
+        return f'{{"location":"{location_digest}","state":{{"sequence":"{sequence}","type":"LiteralSequenceExpression"}},"type":"Allele"}}'
+
+    def _ga4gh_serialize_as_2_0(self) -> str:
+        """Return a serialized string following VRS 2.0 Allele serialization.
+
+        VRS 2.0 normalization selected the largest valid repeat subunit length for
+        reference-derived insertions (``ReferenceLengthExpression`` ``length`` greater
+        than the location span); VRS 2.1 selects the smallest. The valid lengths are the
+        multiples of the smallest that divide the insertion length and fit within the
+        span. All other states serialize the same in VRS 2.0 and 2.1.
+
+        This assumes ``repeatSubunitLength`` is the smallest valid subunit, as produced
+        by VRS 2.1 normalization. Verifying that requires the reference sequence, so only
+        inconsistencies detectable from the Allele alone raise an error.
+
+        Nested digests are recomputed rather than read from a cached ``digest``, and are
+        not stored on this Allele or its location.
+
+        :raises ValueError: If a ``ReferenceLengthExpression`` ``state`` is not on a
+            ``SequenceLocation`` with int or indefinite Range coordinates, has a Range
+            ``length``, or has a ``repeatSubunitLength`` that is not a factor of the
+            insertion length within the span
+        """
+        state = self.state
+        if isinstance(state, ReferenceLengthExpression):
+            if not isinstance(self.location, SequenceLocation) or not isinstance(
+                state.length, int
+            ):
+                msg = "A VRS 2.0 `ReferenceLengthExpression` requires a `SequenceLocation` and an int `length`"
+                raise ValueError(msg)
+            ref_length = _interval_value(self.location.end) - _interval_value(
+                self.location.start
+            )
+            insert_length = state.length - ref_length
+            if insert_length > 0:
+                p = state.repeatSubunitLength
+                multiples = range(p, ref_length + 1, p) if p > 0 else []
+                valid = [c for c in multiples if insert_length % c == 0]
+                if not valid:
+                    msg = (
+                        f"repeatSubunitLength {p} is inconsistent with a normalized "
+                        f"insertion of {insert_length} residues into a {ref_length} "
+                        "residue span"
+                    )
+                    raise ValueError(msg)
+                state = state.model_copy(update={"repeatSubunitLength": valid[-1]})
+        location = (
+            self.location.compute_digest(as_version=PrevVrsVersion.V2_0)
+            if isinstance(self.location, SequenceLocation)
+            else self.location.ga4gh_serialize()
+        )
+        return encode_canonical_json(
+            {"location": location, "state": state.ga4gh_serialize(), "type": self.type}
+        ).decode("utf-8")
 
     class ga4gh(Ga4ghIdentifiableObject.ga4gh):  # noqa: N801
         """Define GA4GH serialization metadata for this model."""
 
         prefix = "VA"
-        priorPrefix = {PrevVrsVersion.V1_3.value: "VA"}  # noqa: N815
+        priorPrefix = {  # noqa: N815
+            PrevVrsVersion.V1_3.value: "VA",
+            PrevVrsVersion.V2_0.value: "VA",
+        }
         inherent = ["location", "state", "type"]
 
 
