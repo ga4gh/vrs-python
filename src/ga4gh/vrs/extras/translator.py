@@ -81,9 +81,14 @@ class _Translator(ABC):  # noqa: B024
         self.data_proxy = data_proxy
         self.identify = identify
         self.rle_seq_limit = rle_seq_limit
-        self.from_translators: dict[str, VariationFromStrProtocol] = {}
-        self.to_translators: dict[str, VariationToStrProtocol] = {}
+        self.from_translators: dict[
+            str, VariationFromStrProtocol
+        ] = {}  # Will be renamed to ``to_vrs_translators`` in v3.
+        self.to_translators: dict[
+            str, VariationToStrProtocol
+        ] = {}  # Will be renamed to ``from_vrs_translators`` in v3.
 
+    @deprecated("translate_from is deprecated and will be renamed to to_vrs in v3.")
     def translate_from(
         self, var: str, fmt: str | None = None, **kwargs
     ) -> models._VariationBase:
@@ -137,6 +142,7 @@ class _Translator(ABC):  # noqa: B024
         msg = f"Unable to parse data as {', '.join(formats)}"
         raise ValueError(msg)
 
+    @deprecated("translate_to is deprecated and will be renamed to from_vrs in v3.")
     def translate_to(self, vo: models._VariationBase, fmt: str, **kwargs) -> list[str]:
         """Translate vrs object `vo` to named format `fmt`
 
@@ -203,6 +209,8 @@ class AlleleTranslator(_Translator):
 
         Args:
             values (dict): The values to use for creating the allele object.
+                'sequence_id' (str): The sequence identifier from the input
+                    expression, used to validate `start` and `end`.
                 'refget_accession' (str): The accession ID of the reference genome.
                 'start' (int): The start position of the allele.
                 'end' (int): The end position of the allele.
@@ -213,6 +221,9 @@ class AlleleTranslator(_Translator):
             models.Allele: The created allele object.
 
         """
+        self.data_proxy.validate_location_bounds(
+            values["sequence_id"], values["start"], values["end"]
+        )
         seq_ref = models.SequenceReference(refgetAccession=values["refget_accession"])
         location = models.SequenceLocation(
             sequenceReference=seq_ref, start=values["start"], end=values["end"]
@@ -276,6 +287,7 @@ class AlleleTranslator(_Translator):
         ins_seq = alt
 
         values = {
+            "sequence_id": sequence,
             "refget_accession": refget_accession,
             "start": start,
             "end": end,
@@ -349,6 +361,7 @@ class AlleleTranslator(_Translator):
         )
 
         values = {
+            "sequence_id": sequence,
             "refget_accession": refget_accession,
             "start": start,
             "end": end,
@@ -414,6 +427,7 @@ class AlleleTranslator(_Translator):
         ins_seq = g["ins_seq"]
 
         values = {
+            "sequence_id": g["ac"],
             "refget_accession": refget_accession,
             "start": start,
             "end": end,
@@ -570,12 +584,16 @@ class CnvTranslator(_Translator):
         if not refget_accession:
             return None
 
+        start = sv.posedit.pos.start.base - 1
+        end = sv.posedit.pos.end.base
+        self.data_proxy.validate_location_bounds(sv.ac, start, end)
+
         location = models.SequenceLocation(
             sequenceReference=models.SequenceReference(
                 refgetAccession=refget_accession
             ),
-            start=sv.posedit.pos.start.base - 1,
-            end=sv.posedit.pos.end.base,
+            start=start,
+            end=end,
         )
 
         copies = kwargs.get("copies")
