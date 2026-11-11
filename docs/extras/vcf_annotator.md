@@ -35,6 +35,18 @@ Or an alternate REST path:
 vrs-annotate vcf --dataproxy-uri="seqrepo+http://mylabwebsite.org/seqrepo" --vcf-out=out.vcf.gz input.vcf.gz
 ```
 
+### Output Options
+At least one form of output must be declared.
+
+`--vcf-out` [PATH]
+>Save location for the output annotated VCF (or `-` to write to stdout).
+
+`--pkl-out` [PATH]
+>Save location for a PKL file mapping VRS IDs to VRS Alleles.
+
+`--jsonl-out` [PATH]
+>Save location for a [JSON Lines](https://jsonlines.org/) file with one VRS Allele per line. `--ndjson-out` is a deprecated alias of this option, and will be removed in v3.
+
 ### Other Options
 `--vrs-attributes`
 >Will include VRS_Start, VRS_End, VRS_State fields in the INFO field.

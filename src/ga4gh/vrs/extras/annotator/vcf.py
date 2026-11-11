@@ -3,11 +3,13 @@
 import abc
 import logging
 import pickle
+import warnings
 from enum import Enum
 from pathlib import Path
 from typing import Literal
 
 import pysam
+from typing_extensions import deprecated
 
 from ga4gh.core.identifiers import (
     VrsObjectIdentifierIs,
@@ -95,17 +97,33 @@ def dump_alleles_to_pkl(alleles: list[Allele], output_pkl_path: Path) -> None:
         pickle.dump(allele_dict, f)
 
 
+def dump_alleles_to_jsonl(
+    allele_collection: list[Allele], output_jsonl_path: Path
+) -> None:
+    """Create JSON Lines dump of all alleles ingested from VCF
+
+    :param allele_collection: all alleles constructed + annotated during VCF ingestion
+    :param output_jsonl_path: location to save JSON Lines file to
+    """
+    with output_jsonl_path.open("w") as f:
+        for allele in allele_collection:
+            f.write(allele.model_dump_json(exclude_none=True) + "\n")
+
+
+@deprecated(
+    "dump_alleles_to_ndjson is deprecated and will be removed in v3. Use dump_alleles_to_jsonl instead."
+)
 def dump_alleles_to_ndjson(
     allele_collection: list[Allele], output_ndjson_path: Path
 ) -> None:
-    """Create NDJSON dump of all alleles ingested from VCF
+    """Create JSON Lines dump of all alleles ingested from VCF
 
-    :param alleles: all alleles + constructed + annotated during VCF ingestion
-    :param output_ndjson_path: location to save NDJSON file to
+    Deprecated alias of ``dump_alleles_to_jsonl``.
+
+    :param allele_collection: all alleles constructed + annotated during VCF ingestion
+    :param output_ndjson_path: location to save JSON Lines file to
     """
-    with output_ndjson_path.open("w") as f:
-        for allele in allele_collection:
-            f.write(allele.model_dump_json(exclude_none=True) + "\n")
+    dump_alleles_to_jsonl(allele_collection, output_ndjson_path)
 
 
 class AbstractVcfAnnotator(abc.ABC):
@@ -561,16 +579,18 @@ class VcfAnnotator(AbstractVcfAnnotator):
 
     collect_alleles = True
     pkl_arg_name = "output_pkl_path"
+    jsonl_arg_name = "output_jsonl_path"
+    # Deprecated alias of ``jsonl_arg_name``, which will be removed in v3
     ndjson_arg_name = "output_ndjson_path"
 
     def should_collect_alleles(self, **kwargs) -> bool:
         """Inhibit allele collection parameter if no means of output are given.
 
         :kwparam output_pkl_path: Optional path to output PKL dump of all alleles
-        :kwparam output_ndjson_path: Optional path to output NDJSON dump of all alleles
+        :kwparam output_jsonl_path: Optional path to output JSON Lines dump of all alleles
         :return: ``True`` if at least one of the output path args is ``True``
         """
-        return bool(kwargs.get("output_pkl_path") or kwargs.get("output_ndjson_path"))
+        return bool(kwargs.get(self.pkl_arg_name) or kwargs.get(self.jsonl_arg_name))
 
     @use_ga4gh_compute_identifier_when(VrsObjectIdentifierIs.MISSING)
     def annotate(
@@ -584,7 +604,7 @@ class VcfAnnotator(AbstractVcfAnnotator):
         **kwargs,
     ) -> None:
         """Given a VCF, produce an output VCF annotated with VRS allele IDs, and/or
-        a PKL or NDJSON dump of the corresponding VRS objects.
+        a PKL or JSON Lines dump of the corresponding VRS objects.
 
         :param input_vcf_path: Location of input VCF
         :param output_vcf_path: The path for the output VCF file
@@ -599,9 +619,24 @@ class VcfAnnotator(AbstractVcfAnnotator):
             validation checks fail, although all instances of failed validation are
             logged as warnings regardless.
         :kwparam output_pkl_path: Optional path to output PKL dump of all alleles
-        :kwparam output_ndjson_path: Optional path to output NDJSON dump of all alleles
-        :raise VCFAnnotatorError: if no output formats are selected
+        :kwparam output_jsonl_path: Optional path to output JSON Lines dump of all
+            alleles
+        :kwparam output_ndjson_path: Deprecated alias of `output_jsonl_path`, which
+            will be removed in v3
+        :raise VCFAnnotatorError: if no output formats are selected, or if both
+            `output_jsonl_path` and `output_ndjson_path` are given
         """
+        output_ndjson_path = kwargs.pop(self.ndjson_arg_name, None)
+        if output_ndjson_path is not None:
+            warnings.warn(
+                f"`{self.ndjson_arg_name}` is deprecated and will be removed in v3. Use `{self.jsonl_arg_name}` instead.",
+                DeprecationWarning,
+                stacklevel=3,  # skip the identifier-computation context decorator
+            )
+            if kwargs.get(self.jsonl_arg_name) is not None:
+                msg = f"`{self.ndjson_arg_name}` is a deprecated alias of `{self.jsonl_arg_name}` -- pass only `{self.jsonl_arg_name}` to annotate()."
+                raise VcfAnnotatorArgsError(msg)
+            kwargs[self.jsonl_arg_name] = output_ndjson_path
         return super().annotate(
             input_vcf_path,
             output_vcf_path,
@@ -613,20 +648,20 @@ class VcfAnnotator(AbstractVcfAnnotator):
         )
 
     def raise_for_output_args(self, output_vcf_path: Path | None, **kwargs) -> None:
-        """Raise an exception if no output (VCF, PKL, NDJSON) appears to be configured
-        or declared.
+        """Raise an exception if no output (VCF, PKL, JSON Lines) appears to be
+        configured or declared.
 
         :param output_vcf_path: VCF output path arg passed to `annotate()`
         :kwparam output_pkl_path: optional path to PKL output
-        :kwparam output_ndjson_path: optional path to NDJSON output
+        :kwparam output_jsonl_path: optional path to JSON Lines output
         :raise VCFAnnotatorArgsError: if no output args are given
         """
         if (
             output_vcf_path is None
             and kwargs.get(self.pkl_arg_name) is None
-            and kwargs.get(self.ndjson_arg_name) is None
+            and kwargs.get(self.jsonl_arg_name) is None
         ):
-            msg = f"No VCF, PKL, or NDJSON output path provided -- must pass at least one of `output_vcf_path`, `{self.pkl_arg_name}`, `{self.ndjson_arg_name}` to annotate()."
+            msg = f"No VCF, PKL, or JSON Lines output path provided -- must pass at least one of `output_vcf_path`, `{self.pkl_arg_name}`, `{self.jsonl_arg_name}` to annotate()."
             raise VcfAnnotatorArgsError(msg)
 
     def on_vrs_object(
@@ -659,6 +694,6 @@ class VcfAnnotator(AbstractVcfAnnotator):
             if output_pkl_path is not None:
                 dump_alleles_to_pkl(vrs_alleles_collection, output_pkl_path)
 
-            output_ndjson_path = kwargs.get(self.ndjson_arg_name)
-            if output_ndjson_path is not None:
-                dump_alleles_to_ndjson(vrs_alleles_collection, output_ndjson_path)
+            output_jsonl_path = kwargs.get(self.jsonl_arg_name)
+            if output_jsonl_path is not None:
+                dump_alleles_to_jsonl(vrs_alleles_collection, output_jsonl_path)

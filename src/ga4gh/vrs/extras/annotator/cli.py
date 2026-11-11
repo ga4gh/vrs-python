@@ -119,12 +119,19 @@ class PathOrDash(click.ParamType):
     ),
 )
 @click.option(
-    "--ndjson-out",
+    "--jsonl-out",
     required=False,
     type=click.Path(writable=True, allow_dash=False, path_type=Path),
     help=(
-        "Declare save location for output NDJSON file dump of VRS alleles. At least one form of output must be declared."
+        "Declare save location for output JSON Lines file dump of VRS alleles. At least one form of output must be declared."
     ),
+)
+@click.option(
+    "--ndjson-out",
+    required=False,
+    type=click.Path(writable=True, allow_dash=False, path_type=Path),
+    hidden=True,
+    help="Deprecated alias of --jsonl-out, which will be removed in v3.",
 )
 @click.option(
     "--vrs-attributes",
@@ -169,6 +176,7 @@ def _annotate_vcf_cli(
     vcf_in: Path | str,
     vcf_out: Path | str | None,
     pkl_out: Path | None,
+    jsonl_out: Path | None,
     ndjson_out: Path | None,
     vrs_attributes: bool,
     dataproxy_uri: str,
@@ -181,7 +189,7 @@ def _annotate_vcf_cli(
 
         $ vrs-annotate vcf input.vcf.gz --vcf-out output.vcf.gz --pkl-out vrs_objects.pkl
 
-    Note that at least one of --vcf-out, --pkl-out, or --ndjson-out must be selected and
+    Note that at least one of --vcf-out, --pkl-out, or --jsonl-out must be selected and
     defined; otherwise, this process will terminate immediately.
 
     Sequence data from a provider such as SeqRepo is required. Use the `--dataproxy-uri`
@@ -198,6 +206,15 @@ def _annotate_vcf_cli(
      * seqrepo+file:///path/to/seqrepo/root
      * seqrepo+:../relative/path/to/seqrepo/root
     """  # noqa: D301
+    if ndjson_out is not None:
+        if jsonl_out is not None:
+            msg = "--ndjson-out is a deprecated alias of --jsonl-out -- set only --jsonl-out"
+            raise click.UsageError(msg)
+        msg = "--ndjson-out is deprecated and will be removed in v3. Use --jsonl-out instead."
+        click.echo(f"Warning: {msg}", err=True)
+        _logger.warning(msg)
+        jsonl_out = ndjson_out
+
     data_proxy = create_dataproxy(dataproxy_uri)
     annotator = VcfAnnotator(data_proxy)
     start = timer()
@@ -213,10 +230,10 @@ def _annotate_vcf_cli(
             compute_for_ref=(not skip_ref),
             require_validation=require_validation,
             output_pkl_path=pkl_out,
-            output_ndjson_path=ndjson_out,
+            output_jsonl_path=jsonl_out,
         )
     except VcfAnnotatorArgsError:
-        msg = "No VCF, PKL, or NDJSON output path provided -- must set at least one of --vcf-out, --pkl-out, or --ndjson-out"
+        msg = "No VCF, PKL, or JSON Lines output path provided -- must set at least one of --vcf-out, --pkl-out, or --jsonl-out"
         if not silent:
             click.echo(msg)
         _logger.exception(msg)
