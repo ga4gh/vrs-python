@@ -158,3 +158,6 @@ notebooks/scratch/
 notes
 lint
 uta_*.pgd.gz
+
+# partial hgvs cache from an interrupted `make record-hgvs-cache`
+tests/data/hgvs_cache.pkl.new
