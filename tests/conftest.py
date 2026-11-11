@@ -105,7 +105,7 @@ def _wrap_cached_method(
     name: str = method.__wrapped__.__name__  # hgvs keys cache entries by this name
 
     @functools.wraps(method)
-    def wrapped(*args: object, **kwargs: object) -> Any:  # noqa: ANN401
+    def wrapped(*args: object, **kwargs: object) -> Any:
         try:
             result = method(*args, **kwargs)
         except HGVSDataNotAvailableError as exc:

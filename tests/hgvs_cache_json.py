@@ -32,7 +32,7 @@ _NOT_AVAILABLE_TAG = "hgvs_data_not_available"
 _JSON_SCALARS = (str, int, float, bool, type(None))
 
 
-def _encode_value(value: Any) -> Any:  # noqa: ANN401
+def _encode_value(value: Any) -> Any:
     """Convert a cached hgvs result to a JSON value"""
     if isinstance(value, HGVSDataNotAvailableError):
         return {_NOT_AVAILABLE_TAG: str(value)}
@@ -50,7 +50,7 @@ def _encode_value(value: Any) -> Any:  # noqa: ANN401
     raise TypeError(msg)
 
 
-def _decode_value(value: Any) -> Any:  # noqa: ANN401
+def _decode_value(value: Any) -> Any:
     """Convert a JSON value back to the cached hgvs result, rebuilding tagged values"""
     if isinstance(value, dict):
         if value.keys() == {_NOT_AVAILABLE_TAG}:
