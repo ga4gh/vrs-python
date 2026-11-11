@@ -6,11 +6,11 @@ from types import SimpleNamespace
 from typing import Any, NoReturn
 
 import pytest
-from conftest import _wrap_cached_method
 from hgvs.decorators.lru_cache import LEARN, RUN, lru_cache
 from hgvs.exceptions import HGVSDataNotAvailableError
 from hgvs.utils.PersistentDict import PersistentDict
 from hgvs_cache_json import json_to_pickle, pickle_to_json
+from hgvs_cache_provider import _wrap_cached_method
 
 
 def test_not_found_survives_record_and_replay(tmp_path: Path) -> None:
