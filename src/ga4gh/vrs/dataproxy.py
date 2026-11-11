@@ -1,6 +1,6 @@
 """provides an abstract class for all data access required for VRS, and a concrete implementation based on seqrepo.
 
-See https://vr-spec.readthedocs.io/en/1.1/impl-guide/required_data.html
+See https://vrs.ga4gh.org/en/latest/conventions/required_data.html
 """
 
 import datetime
