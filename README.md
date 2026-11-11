@@ -15,7 +15,7 @@ See the [**documentation**](https://ga4gh.github.io/vrs-python/latest/) for inst
 
 ## Development
 
- [![action status](https://github.com/ga4gh/vrs-python/actions/workflows/python-cqa.yml/badge.svg)](https://github.com/ga4gh/vrs-python/actions/workflows/python-cqa.yml) [![issues](https://img.shields.io/github/issues-raw/ga4gh/vrs-python.svg)](https://github.com/ga4gh/vrs-python/issues)
+[![action status](https://github.com/ga4gh/vrs-python/actions/workflows/python-cqa.yml/badge.svg)](https://github.com/ga4gh/vrs-python/actions/workflows/python-cqa.yml) [![issues](https://img.shields.io/github/issues-raw/ga4gh/vrs-python.svg)](https://github.com/ga4gh/vrs-python/issues)
 [![GitHub Open Pull Requests](https://img.shields.io/github/issues-pr/ga4gh/vrs-python.svg)](https://github.com/ga4gh/vrs-python/pull/) [![GitHub Contributors](https://img.shields.io/github/contributors/ga4gh/vrs-python.svg)](https://github.com/ga4gh/vrs-python/graphs/contributors/) [![GitHub stars](https://img.shields.io/github/stars/ga4gh/vrs-python.svg?style=social&label=Stars)](https://github.com/ga4gh/vrs-python/stargazers) [![GitHub forks](https://img.shields.io/github/forks/ga4gh/vrs-python.svg?style=social&label=Forks)](https://github.com/ga4gh/vrs-python/forks)
 
 ## Features

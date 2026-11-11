@@ -133,6 +133,15 @@ cleanest: cleaner
 clean-cassettes:
 	find ./tests -type f -path '*/cassettes/*.yaml' -print0 | ${XRM}
 
+#=> record-hgvs-cache: re-record tests/data/hgvs_cache.json (needs UTA_DB_URL and a running seqrepo-rest-service at SEQREPO_REST_URL; VCR cassettes are not touched)
+.PHONY: record-hgvs-cache
+# hgvs fetches sequences from HGVS_SEQREPO_DIR instead of HGVS_SEQREPO_URL when it's set, so it's unset for the recording run
+record-hgvs-cache:
+	rm -f tests/data/hgvs_cache.pkl.new
+	env -u HGVS_SEQREPO_DIR HGVS_SEQREPO_URL="$${SEQREPO_REST_URL:-http://localhost:5000/seqrepo}" pytest --record-hgvs-cache=$(CURDIR)/tests/data/hgvs_cache.pkl.new --disable-vcr
+	python tests/hgvs_cache_json.py tests/data/hgvs_cache.pkl.new tests/data/hgvs_cache.json
+	rm tests/data/hgvs_cache.pkl.new
+
 
 ## <LICENSE>
 ## Copyright 2016 Source Code Committers
