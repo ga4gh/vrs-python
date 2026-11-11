@@ -50,3 +50,26 @@ vrs-annotate vcf --dataproxy-uri="seqrepo+http://mylabwebsite.org/seqrepo" --vcf
 
 `--help`
 >Show the options available
+
+## Reading VRS Alleles from an annotated VCF
+
+The [`VcfReader`](../../src/ga4gh/vrs/extras/annotator/vcf.py) class reconstructs the VRS Alleles from a VCF annotated with `--vrs-attributes` (or `vrs_attributes=True` in `VcfAnnotator.annotate()`). It iterates over the VCF's records and yields each pysam record together with a list of VRS Alleles:
+
+```python
+from pathlib import Path
+
+from ga4gh.vrs.dataproxy import create_dataproxy
+from ga4gh.vrs.extras.annotator.vcf import VcfReader
+
+data_proxy = create_dataproxy("seqrepo+http://localhost:5000/seqrepo")
+reader = VcfReader(data_proxy)
+for record, vrs_alleles in reader.read(Path("out.vcf.gz"), assembly="GRCh38"):
+    for vrs_allele in vrs_alleles:
+        if vrs_allele is not None:
+            print(record.chrom, record.pos, vrs_allele.id)
+```
+
+* The list of VRS Alleles has one value per REF and ALT allele (`record.alleles`), or per ALT allele (`record.alts`) if the VCF was annotated with `--skip-ref`. It holds `None` for alleles without a VRS ID, such as `*` ALTs, and for every allele of a record that failed annotation (see its `VRS_Error` INFO field).
+* The data proxy is only used to look up the refget accession for each `CHROM`, and `assembly` must be the assembly used to annotate the VCF.
+* The identifier of each reconstructed VRS Allele is checked against its `VRS_Allele_IDs` annotation. A `VcfReaderError` is raised if they differ, if the annotations of a record are incomplete, or if the VCF wasn't annotated with VRS attributes.
+* `ReferenceLengthExpression` sequences longer than 50 residues aren't written to the annotated VCF, so these states are read without a `sequence`. This doesn't change their VRS identifiers.

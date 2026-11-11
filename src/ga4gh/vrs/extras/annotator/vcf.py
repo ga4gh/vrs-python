@@ -1,14 +1,19 @@
-"""Annotate VCFs with VRS identifiers and attributes."""
+"""Annotate VCFs with VRS identifiers and attributes, and read VRS Alleles back from
+annotated VCFs.
+"""
 
 import abc
 import logging
 import pickle
+from collections.abc import Iterator
 from enum import Enum
 from pathlib import Path
 from typing import Literal
 
 import pysam
+from pydantic import ValidationError
 
+from ga4gh.core import ga4gh_identify
 from ga4gh.core.identifiers import (
     VrsObjectIdentifierIs,
     use_ga4gh_compute_identifier_when,
@@ -16,7 +21,15 @@ from ga4gh.core.identifiers import (
 from ga4gh.vrs import VRS_VERSION, VrsType, __version__
 from ga4gh.vrs.dataproxy import _DataProxy
 from ga4gh.vrs.extras.translator import AlleleTranslator
-from ga4gh.vrs.models import Allele, Range
+from ga4gh.vrs.models import (
+    Allele,
+    LengthExpression,
+    LiteralSequenceExpression,
+    Range,
+    ReferenceLengthExpression,
+    SequenceLocation,
+    SequenceReference,
+)
 
 _logger = logging.getLogger(__name__)
 
@@ -41,6 +54,10 @@ class VcfAnnotatorAbortError(VcfAnnotatorError):
     """
 
 
+class VcfReaderError(Exception):
+    """Raise for VCFs that VRS Alleles can't be read back from"""
+
+
 class FieldName(str, Enum):
     """Define VCF field names for VRS annotations"""
 
@@ -62,6 +79,17 @@ _STRING_FIELDS = frozenset(
         FieldName.STATES_FIELD,
         FieldName.ERROR_FIELD,
     }
+)
+
+
+# INFO fields, in addition to ``FieldName.IDS_FIELD``, that ``VcfAnnotator`` adds when
+# run with VRS attributes. ``VcfReader`` needs all of them to reconstruct VRS Alleles.
+_VRS_ATTRIBUTE_FIELDS = (
+    FieldName.STARTS_FIELD,
+    FieldName.ENDS_FIELD,
+    FieldName.STATES_FIELD,
+    FieldName.LENGTHS_FIELD,
+    FieldName.REPEAT_SUBUNIT_LENGTHS_FIELD,
 )
 
 
@@ -662,3 +690,176 @@ class VcfAnnotator(AbstractVcfAnnotator):
             output_ndjson_path = kwargs.get(self.ndjson_arg_name)
             if output_ndjson_path is not None:
                 dump_alleles_to_ndjson(vrs_alleles_collection, output_ndjson_path)
+
+
+class VcfReader:
+    """Read VRS Alleles back from a VCF annotated with VRS attributes.
+
+    The input VCF must have been annotated with VRS attributes (e.g. by
+    ``VcfAnnotator.annotate()`` with ``vrs_attributes=True``, or by
+    ``vrs-annotate vcf --vrs-attributes``). Each VRS Allele is reconstructed from the
+    record's CHROM and its VRS INFO fields, and its computed identifier must match the
+    annotated ``VRS_Allele_IDs`` value.
+    """
+
+    def __init__(self, data_proxy: _DataProxy) -> None:
+        """Initialize the VcfReader class.
+
+        :param data_proxy: GA4GH sequence dataproxy instance, used to look up the
+            refget accession for each CHROM
+        """
+        self.data_proxy = data_proxy
+
+    def read(
+        self, input_vcf_path: Path | Literal["-"], assembly: str = "GRCh38"
+    ) -> Iterator[tuple[pysam.VariantRecord, list[Allele | None]]]:
+        """Iterate over the records of an annotated VCF along with their VRS Alleles.
+
+        For each record, yield the pysam record and a list of identified VRS Alleles,
+        one per ``VRS_Allele_IDs`` value: one per REF and ALT allele
+        (``record.alleles``) if the VCF was annotated with REF alleles, or one per ALT
+        allele (``record.alts``) if not. The list holds
+        ``None`` for alleles without a VRS ID, such as ``*`` ALTs, and for every
+        allele of a record that failed annotation (see its ``VRS_Error`` INFO field).
+
+        The input VCF is opened when iteration starts and closed when iteration ends.
+
+        ReferenceLengthExpression sequences longer than the annotator's sequence
+        limit aren't stored in the VCF, so these states are returned without a
+        ``sequence``. This doesn't change their VRS identifiers.
+
+        :param input_vcf_path: Location of input VCF (or "-" to read from stdin)
+        :param assembly: The assembly used in `input_vcf_path` data
+        :raise VcfReaderError: if the VCF wasn't annotated with VRS attributes, or if
+            the VRS Alleles of a record can't be reconstructed from its annotations,
+            including when a computed identifier doesn't match the annotated one
+        """
+        pysam_in_filename = (
+            "-" if input_vcf_path == "-" else str(input_vcf_path.absolute())
+        )
+        with pysam.VariantFile(filename=pysam_in_filename, mode="r") as vcf:
+            missing_fields = [
+                field.value
+                for field in (FieldName.IDS_FIELD, *_VRS_ATTRIBUTE_FIELDS)
+                if field.value not in vcf.header.info
+            ]
+            if missing_fields:
+                msg = f"VCF is missing VRS annotation INFO fields {', '.join(missing_fields)} -- it must be annotated with VRS attributes (`--vrs-attributes`) to read VRS Alleles from it."
+                raise VcfReaderError(msg)
+            includes_ref = vcf.header.info[FieldName.IDS_FIELD.value].number == "R"
+
+            for record in vcf:
+                yield record, self._get_vrs_alleles(record, assembly, includes_ref)
+
+    def _get_vrs_alleles(
+        self, record: pysam.VariantRecord, assembly: str, includes_ref: bool
+    ) -> list[Allele | None]:
+        """Reconstruct the VRS Alleles for a record from its VRS annotations.
+
+        :param record: A row in the VCF file
+        :param assembly: The assembly used in `record`
+        :param includes_ref: Whether the VCF was annotated with VRS Alleles for REFs
+        :return: VRS Alleles, or ``None`` for alleles without a VRS ID, in the order of
+            ``record.alleles`` if `includes_ref`, otherwise of ``record.alts``
+        :raise VcfReaderError: if the VRS annotations of `record` are incomplete or
+            inconsistent
+        """
+        num_alleles = len(record.alleles) if includes_ref else len(record.alts or ())
+        if FieldName.IDS_FIELD.value not in record.info:
+            return [None] * num_alleles
+
+        vcf_coords = f"{record.chrom}-{record.pos}"
+        ids, starts, ends, states, lengths, repeat_subunit_lengths = (
+            self._get_info_values(record, field, num_alleles, vcf_coords)
+            for field in (FieldName.IDS_FIELD, *_VRS_ATTRIBUTE_FIELDS)
+        )
+        refget_accession = None
+        vrs_alleles = []
+        for vrs_id, start, end, sequence, length, repeat_subunit_length in zip(
+            ids, starts, ends, states, lengths, repeat_subunit_lengths, strict=True
+        ):
+            if vrs_id is None:
+                vrs_alleles.append(None)
+                continue
+
+            if start is None or end is None:
+                msg = f"VRS Allele {vrs_id} at {vcf_coords} is missing its {FieldName.STARTS_FIELD.value} or {FieldName.ENDS_FIELD.value} value"
+                raise VcfReaderError(msg)
+
+            if refget_accession is None:
+                sequence_id = f"{assembly}:{record.chrom}"
+                refget_accession = self.data_proxy.derive_refget_accession(sequence_id)
+                if refget_accession is None:
+                    msg = f"Unable to find refget accession for {sequence_id}"
+                    raise VcfReaderError(msg)
+
+            try:
+                vrs_allele = Allele(
+                    location=SequenceLocation(
+                        sequenceReference=SequenceReference(
+                            refgetAccession=refget_accession
+                        ),
+                        start=start,
+                        end=end,
+                    ),
+                    state=self._get_state(sequence, length, repeat_subunit_length),
+                )
+            except ValidationError as e:
+                msg = f"Invalid VRS annotations for VRS Allele {vrs_id} at {vcf_coords}: {e}"
+                raise VcfReaderError(msg) from e
+            vrs_allele.id = ga4gh_identify(vrs_allele)
+            vrs_allele.location.id = ga4gh_identify(vrs_allele.location)
+            if vrs_allele.id != vrs_id:
+                msg = f"VRS Allele reconstructed at {vcf_coords} has ID {vrs_allele.id}, but was annotated with {vrs_id}"
+                raise VcfReaderError(msg)
+            vrs_alleles.append(vrs_allele)
+        return vrs_alleles
+
+    @staticmethod
+    def _get_info_values(
+        record: pysam.VariantRecord, field: FieldName, num_alleles: int, vcf_coords: str
+    ) -> tuple:
+        """Get the per-allele values of a VRS INFO field, with missing values as
+        ``None``.
+
+        :param record: A row in the VCF file
+        :param field: VRS INFO field to get
+        :param num_alleles: Number of values the field must have
+        :param vcf_coords: CHR-POS of `record`, for error messages
+        :return: The values of `field`, or ``None`` for each allele if `record` doesn't
+            have it
+        :raise VcfReaderError: if `field` doesn't have `num_alleles` values
+        """
+        values = record.info.get(field.value)
+        if values is None:
+            return (None,) * num_alleles
+        if len(values) != num_alleles:
+            msg = f"Expected {num_alleles} {field.value} values at {vcf_coords}, but found {len(values)}"
+            raise VcfReaderError(msg)
+        # Missing String values are written as "." (or "" by older VRS-Python versions)
+        return tuple(None if value in ("", ".") else value for value in values)
+
+    @staticmethod
+    def _get_state(
+        sequence: str | None, length: int | None, repeat_subunit_length: int | None
+    ) -> LiteralSequenceExpression | ReferenceLengthExpression | LengthExpression:
+        """Construct a VRS Allele state from its VRS annotation values.
+
+        :param sequence: ``VRS_States`` value
+        :param length: ``VRS_Lengths`` value
+        :param repeat_subunit_length: ``VRS_RepeatSubunitLengths`` value
+        :return: LiteralSequenceExpression if there's no `length`, otherwise
+            ReferenceLengthExpression if there's a `repeat_subunit_length`, otherwise
+            LengthExpression
+        """
+        # An empty sequence is written as a missing value, which is also used for
+        # ReferenceLengthExpression sequences left out because of their length.
+        if length is None:
+            return LiteralSequenceExpression(sequence=sequence or "")
+        if repeat_subunit_length is None:
+            return LengthExpression(length=length)
+        if sequence is None and length == 0:
+            sequence = ""
+        return ReferenceLengthExpression(
+            length=length, repeatSubunitLength=repeat_subunit_length, sequence=sequence
+        )
