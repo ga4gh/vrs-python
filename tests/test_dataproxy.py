@@ -1,11 +1,14 @@
 import os
 import re
+from unittest.mock import Mock
 
 import pytest
 
 from ga4gh.vrs import models
 from ga4gh.vrs.dataproxy import (
     DataProxyValidationError,
+    SeqRepoRESTDataProxy,
+    SequenceProxy,
     _DataProxy,
     _SeqRepoDataProxyBase,
     create_dataproxy,
@@ -15,14 +18,17 @@ from ga4gh.vrs.dataproxy import (
 @pytest.mark.parametrize("dp", ["rest_dataproxy", "dataproxy"])
 @pytest.mark.vcr
 def test_data_proxies(dp, request):
+    """Both backends expose sequence lengths, aliases, and sequence data."""
     dataproxy = request.getfixturevalue(dp)
-    r = dataproxy.get_metadata("NM_000551.3")
-    assert r["length"] == 4560
-    assert "ga4gh:SQ.v_QTc1p-MUYdgrRv4LMT6ByXIOsdw3C_" in r["aliases"]
+    assert dataproxy.get_length("NM_000551.3") == 4560
+    assert "ga4gh:SQ.v_QTc1p-MUYdgrRv4LMT6ByXIOsdw3C_" in dataproxy.get_aliases(
+        "NM_000551.3"
+    )
 
-    r = dataproxy.get_metadata("NC_000013.11")
-    assert r["length"] == 114364328
-    assert "ga4gh:SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT" in r["aliases"]
+    assert dataproxy.get_length("NC_000013.11") == 114364328
+    assert "ga4gh:SQ._0wi-qoDrvram155UmcSC-zA5ZK4fpLT" in dataproxy.get_aliases(
+        "NC_000013.11"
+    )
 
     seq = dataproxy.get_sequence("ga4gh:SQ.v_QTc1p-MUYdgrRv4LMT6ByXIOsdw3C_")
     assert seq.startswith("CCTCGCCTCCGTTACAACGGCCTACGGTGCTGGAGGATCCTTCTGCGCAC")
@@ -84,8 +90,13 @@ class _StubDataProxy(_DataProxy):
     ) -> str:
         raise NotImplementedError
 
-    def get_metadata(self, identifier: str) -> dict:
-        return self.metadata[identifier]
+    def get_length(self, identifier: str) -> int:
+        """Return the stored sequence length."""
+        return self.metadata[identifier]["length"]
+
+    def get_aliases(self, identifier: str) -> list[str]:
+        """Return the stored sequence aliases."""
+        return self.metadata[identifier]["aliases"]
 
 
 BOUNDS_SEQ_ID = "refseq:NM_000551.3"
@@ -97,6 +108,20 @@ def _bounds_dp(aliases: list[str]) -> _StubDataProxy:
     """Stub serving one sequence's metadata under each of its aliases"""
     md = {"length": BOUNDS_SEQ_LEN, "aliases": aliases}
     return _StubDataProxy(dict.fromkeys(aliases, md))
+
+
+@pytest.mark.parametrize("namespace", [None, "refseq"])
+def test_translate_sequence_identifier_deduplicates_aliases(namespace) -> None:
+    """Repeated backend aliases produce distinct translations."""
+    dp = _bounds_dp([BOUNDS_SEQ_ID, BOUNDS_REFGET_ID, BOUNDS_SEQ_ID])
+
+    aliases = dp.translate_sequence_identifier(BOUNDS_SEQ_ID, namespace)
+
+    expected = (
+        {BOUNDS_SEQ_ID, BOUNDS_REFGET_ID} if namespace is None else {BOUNDS_SEQ_ID}
+    )
+    assert set(aliases) == expected
+    assert len(aliases) == len(expected)
 
 
 # Locations representable on a sequence of length BOUNDS_SEQ_LEN
@@ -241,7 +266,12 @@ class _BackendlessSeqRepoDataProxy(_SeqRepoDataProxyBase):
     ) -> str:
         raise NotImplementedError
 
-    def _get_metadata(self, identifier: str) -> dict:
+    def _get_length(self, identifier: str) -> int:
+        """Reject backend access."""
+        raise NotImplementedError
+
+    def _get_aliases(self, identifier: str) -> list[str]:
+        """Reject backend access."""
         raise NotImplementedError
 
 
@@ -291,3 +321,41 @@ def test_validate_location_bounds_sequence_name(case: dict) -> None:
         DataProxyValidationError, match=f"^{re.escape(expected_prefix)}"
     ):
         dp.validate_location_bounds(case["sequence_id"], 0, BOUNDS_SEQ_LEN + 1)
+
+
+def test_sequence_proxy_length() -> None:
+    """SequenceProxy obtains its length through the data proxy length API."""
+    dp = _bounds_dp([BOUNDS_SEQ_ID])
+
+    sequence = SequenceProxy(dp, BOUNDS_SEQ_ID)
+
+    assert len(sequence) == BOUNDS_SEQ_LEN
+
+
+def test_rest_length_and_aliases_share_metadata_request(monkeypatch) -> None:
+    """Length and alias lookups share one cached REST metadata response."""
+    response = Mock()
+    response.status_code = 200
+    response.json.return_value = {"length": 4560, "aliases": [BOUNDS_SEQ_ID]}
+    get = Mock(return_value=response)
+    monkeypatch.setattr("ga4gh.vrs.dataproxy.requests.get", get)
+    dp = SeqRepoRESTDataProxy("http://example.test/seqrepo", disable_healthcheck=True)
+
+    assert dp.get_length(BOUNDS_SEQ_ID) == 4560
+    assert dp.get_aliases(BOUNDS_SEQ_ID) == [BOUNDS_SEQ_ID]
+    get.assert_called_once_with(
+        f"http://example.test/seqrepo/1/metadata/{BOUNDS_SEQ_ID}"
+    )
+
+
+@pytest.mark.parametrize("method", ["get_length", "get_aliases"])
+def test_rest_missing_sequence(method, monkeypatch) -> None:
+    """Both metadata accessors raise KeyError for a missing sequence."""
+    from unittest.mock import Mock
+
+    response = Mock(status_code=404)
+    monkeypatch.setattr("ga4gh.vrs.dataproxy.requests.get", Mock(return_value=response))
+    dp = SeqRepoRESTDataProxy("http://example.test/seqrepo", disable_healthcheck=True)
+
+    with pytest.raises(KeyError, match="missing"):
+        getattr(dp, method)("missing")
