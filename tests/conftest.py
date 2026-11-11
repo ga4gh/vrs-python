@@ -1,17 +1,15 @@
-import functools
 import os
 import socket
-from collections.abc import Callable, Iterator
+from collections.abc import Iterator
 from pathlib import Path
-from typing import Any, NoReturn
+from typing import NoReturn
 
 import hgvs.dataproviders.uta
 import psycopg2
 import pytest
 from biocommons.seqrepo import SeqRepo
-from hgvs.decorators.lru_cache import _make_key
-from hgvs.exceptions import HGVSDataNotAvailableError
 from hgvs_cache_json import json_to_pickle
+from hgvs_cache_provider import _wrap_cached_method
 
 from ga4gh.vrs.dataproxy import SeqRepoDataProxy, SeqRepoRESTDataProxy
 
@@ -84,49 +82,6 @@ def block_live_connections(request: pytest.FixtureRequest) -> Iterator[bool]:
             mp.setattr(socket.socket, "connect_ex", _forbidden_connection)
             mp.setattr(psycopg2, "connect", _forbidden_postgres)
         yield blocked
-
-
-def _wrap_cached_method(
-    provider: hgvs.dataproviders.uta.UTABase,
-    method: Callable[..., Any],
-    recording: bool,
-) -> Callable[..., Any]:
-    """Record and replay "no data" results, and fail on lookups never recorded.
-
-    hgvs caches only returned values. Without this, a lookup that raised
-    HGVSDataNotAvailableError would be missing from the recording, and replaying it
-    would look the same as a cache miss. A recorded result is stored as the exception
-    itself, which hgvs's cache returns like any other value.
-
-    hgvs reports a SeqRepo outage as HGVSDataNotAvailableError too. An outage while
-    recording fails tests, so no JSON is written, and any that slips through shows in
-    the JSON diff.
-    """
-    name: str = method.__wrapped__.__name__  # hgvs keys cache entries by this name
-
-    @functools.wraps(method)
-    def wrapped(*args: object, **kwargs: object) -> Any:  # noqa: ANN401
-        try:
-            result = method(*args, **kwargs)
-        except HGVSDataNotAvailableError as exc:
-            if not recording:
-                # Replay never queries a data source, so only a cache miss raises.
-                # pytest.fail escapes the production handlers that catch this error.
-                pytest.fail(
-                    f"Missing HGVS recording: {exc}\nRun make record-hgvs-cache."
-                )
-            # Keep the message: hgvs's Normalizer.is_valid_pos reads it.
-            provider.cache[_make_key(name, args, kwargs, False, ())] = (
-                HGVSDataNotAvailableError(str(exc))
-            )
-            provider.cache.sync()
-            raise
-        if isinstance(result, HGVSDataNotAvailableError):
-            # A fresh instance, so tracebacks don't pile up on the cached one.
-            raise HGVSDataNotAvailableError(str(result))
-        return result
-
-    return wrapped
 
 
 @pytest.fixture(scope="session", autouse=True)
