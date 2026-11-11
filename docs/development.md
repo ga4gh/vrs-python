@@ -64,12 +64,59 @@ Add focused tests for changed behavior, then run the test suite:
 python3 -m pytest
 ```
 
-The test suite includes VRS compliance tests from the submodule. For direct pytest
-runs, set the SeqRepo path and use recorded network responses, as CI does:
+The test suite includes VRS compliance tests from the submodule. Set the SeqRepo
+path when running or recording tests, as CI does:
 
 ```shell
 SEQREPO_ROOT_DIR=tests/data/seqrepo/latest python3 -m pytest --vcr-record=none
 ```
+
+### Recorded test data
+
+`pytest` and `make test` default to offline replay of recorded data, so they do not
+need a SeqRepo REST service, a UTA database, or network access. Set
+`SEQREPO_ROOT_DIR=tests/data/seqrepo/latest` (as CI does) when running or recording tests.
+
+- **VCR cassettes** (`tests/**/cassettes/*.yaml`) replay vrs-python's HTTP requests to
+  the [SeqRepo REST service](https://github.com/biocommons/seqrepo-rest-service).
+  The default `--vcr-record=none` matches CI. In that mode (without `--disable-vcr`),
+  opening a Python socket connection or connecting through psycopg2 fails the test
+  immediately, including HTTP requests from tests not marked `@pytest.mark.vcr`
+  (`block_live_connections` in `tests/conftest.py`). Connections opened by other C
+  libraries are not intercepted.
+- **The hgvs cache** (`tests/data/hgvs_cache.json`) replays the hgvs library's UTA
+  queries and sequence fetches. Lookups that found no data are recorded too, and
+  replay as the same `HGVSDataNotAvailableError`. A lookup that was never recorded
+  fails immediately, even when production code would normally catch the HGVS error.
+  `make record-hgvs-cache`
+  uses `--record-hgvs-cache=PATH --disable-vcr` to record live data
+  to a temporary pickle, then converts it to JSON if tests pass. hgvs itself reads
+  and writes pickles; `tests/hgvs_cache_json.py` converts between the two formats.
+
+To re-record, start the external services (`docker compose up` starts
+seqrepo-rest-service on port 5000 and UTA on port 5432). With an existing local SeqRepo
+snapshot, you can instead run just the REST service with it mounted:
+`docker run -p 5000:5000 -v /path/to/seqrepo:/usr/local/share/seqrepo:ro biocommons/seqrepo-rest-service:0.2.2 seqrepo-rest-service /usr/local/share/seqrepo/2024-12-20`.
+When a change needs new data in both, re-record the hgvs cache first, since cassette
+recording reads hgvs data from it:
+
+```shell
+# hgvs cache: needs UTA and seqrepo-rest-service; does not touch cassettes
+export UTA_DB_URL=postgresql://anonymous@localhost:5432/uta/uta_20241220
+make record-hgvs-cache
+
+# VCR cassettes: needs seqrepo-rest-service
+make clean-cassettes
+pytest --vcr-record=once
+```
+
+`--disable-vcr` allows live connections and bypasses HTTP cassette replay and writing,
+even with the default `--vcr-record=none`. HGVS still replays its cache unless
+`--record-hgvs-cache=PATH` is also supplied. The recording target uses both flags,
+so it records HGVS data without changing HTTP cassettes.
+
+`SEQREPO_REST_URL` (default `http://localhost:5000/seqrepo`) sets the REST service used
+by both.
 
 ## Build and preview the documentation
 

@@ -94,7 +94,7 @@ where = ["src"]
 [tool.setuptools_scm]
 
 [tool.pytest.ini_options]
-addopts = "--cov-report=term-missing --cov=ga4gh"
+addopts = "--cov-report=term-missing --cov=ga4gh --vcr-record=none"
 testpaths = ["tests", "src"]
 doctest_optionflags = "ALLOW_UNICODE ALLOW_BYTES ELLIPSIS IGNORE_EXCEPTION_DETAIL NORMALIZE_WHITESPACE"
 

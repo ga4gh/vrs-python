@@ -162,3 +162,6 @@ uta_*.pgd.gz
 # Generated documentation
 /docs-build/
 /site/
+
+# partial hgvs cache from an interrupted `make record-hgvs-cache`
+tests/data/hgvs_cache.pkl.new
