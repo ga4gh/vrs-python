@@ -546,9 +546,11 @@ class SequenceProxy(Sequence[str]):
 def _isoformat(o: datetime.datetime) -> str:
     """Convert datetime.datetime to iso formatted timestamp
 
-    >>> dt = datetime.datetime(2019, 10, 15, 10, 23, 41, 115927)
-    >>> _isoformat(dt)
-    '2019-10-15T10:23:41.115927Z'
+    For example:
+
+        >>> dt = datetime.datetime(2019, 10, 15, 10, 23, 41, 115927)
+        >>> _isoformat(dt)
+        '2019-10-15T10:23:41.115927Z'
 
     :param o: date object to format
     :return: ISO8601-formatted string equivalent

@@ -1,0 +1,31 @@
+{% extends 'markdown/index.md.j2' %}
+
+{% block input %}
+````python{% if cell.execution_count is not none %} title="In [{{ cell.execution_count }}]"{% endif %}
+{{ cell.source }}
+````
+{% endblock input %}
+
+{% block stream %}
+**Output:**
+
+````{{ output.text | output_language }}
+{{ output.text | strip_ansi | trim }}
+````
+{% endblock stream %}
+
+{% block data_text scoped %}
+**Output:**
+
+````{{ output.data['text/plain'] | output_language('python') }}
+{{ output.data['text/plain'] | strip_ansi | trim }}
+````
+{% endblock data_text %}
+
+{% block error %}
+**Output:**
+
+````text
+{{ output.traceback | join('\n') | strip_ansi }}
+````
+{% endblock error %}

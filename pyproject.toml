@@ -65,8 +65,9 @@ lint = [
     "ruff==0.9.4",
 ]
 docs = [
-    "sphinx",
-    "sphinx_rtd_theme",
+    "zensical==0.0.59",
+    "mkdocstrings-python",
+    "nbconvert>=7,<8",
 ]
 notebooks = [
     "jupyter",
@@ -75,7 +76,7 @@ notebooks = [
 
 [project.urls]
 Homepage = "https://github.com/ga4gh/vrs-python"
-Documentation = "https://github.com/ga4gh/vrs-python"
+Documentation = "https://ga4gh.github.io/vrs-python/latest/"
 Changelog = "https://github.com/ga4gh/vrs-python/releases"
 Source = "https://github.com/ga4gh/vrs-python"
 "Bug Tracker" = "https://github.com/ga4gh/vrs-python/issues"

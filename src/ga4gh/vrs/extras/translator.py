@@ -329,11 +329,11 @@ class AlleleTranslator(_Translator):
         With ``tlr`` configured for the reference sequence, disable normalization
         to inspect the input coordinates and alternate sequence:
 
-        >>> a = tlr.from_gnomad("1-55516888-G-GA", do_normalize=False)
-        >>> a.location.start, a.location.end
-        (55516887, 55516888)
-        >>> a.state.sequence.root
-        'GA'
+            >>> a = tlr.from_gnomad("1-55516888-G-GA", do_normalize=False)
+            >>> a.location.start, a.location.end
+            (55516887, 55516888)
+            >>> a.state.sequence.root
+            'GA'
 
         """
         if not isinstance(gnomad_expr, str):
@@ -433,11 +433,11 @@ class AlleleTranslator(_Translator):
         With ``tlr`` configured for the reference sequence, disable normalization
         to inspect the input coordinates and alternate sequence:
 
-        >>> a = tlr.from_spdi("NC_000013.11:32936731:1:C", do_normalize=False)
-        >>> a.location.start, a.location.end
-        (32936731, 32936732)
-        >>> a.state.sequence.root
-        'C'
+            >>> a = tlr.from_spdi("NC_000013.11:32936731:1:C", do_normalize=False)
+            >>> a.location.start, a.location.end
+            (32936731, 32936732)
+            >>> a.state.sequence.root
+            'C'
 
         """
         if not isinstance(spdi_expr, str):
