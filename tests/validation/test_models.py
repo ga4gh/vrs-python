@@ -186,6 +186,18 @@ def test_copy_number_change():
 
 def test_adjacency():
     """Test the Adjacency field validator"""
+    # A bound of 0 still counts as provided
+    for start, end in [(0, 2), (1, 0), (0, 0)]:
+        with pytest.raises(
+            ValueError, match="Adjoined sequence must not have both `start` and `end`."
+        ):
+            models.Adjacency(
+                adjoinedSequences=[
+                    models.SequenceLocation(start=1),
+                    models.SequenceLocation(start=start, end=end),
+                ]
+            )
+
     # Both start and end provided
     with pytest.raises(
         ValueError, match="Adjoined sequence must not have both `start` and `end`."

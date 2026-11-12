@@ -782,7 +782,7 @@ class Adjacency(_VariationBase, BaseModelForbidExtra):
         """
         for adjoined_seq in v:
             if isinstance(adjoined_seq, SequenceLocation):
-                if adjoined_seq.start and adjoined_seq.end:
+                if adjoined_seq.start is not None and adjoined_seq.end is not None:
                     err_msg = "Adjoined sequence must not have both `start` and `end`."
                     raise ValueError(err_msg)
         return v
