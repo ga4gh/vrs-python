@@ -381,3 +381,21 @@ def test_compute_identifiers_when():
     with use_ga4gh_compute_identifier_when(VrsObjectIdentifierIs.MISSING):
         assert ga4gh_identify(vo_a, in_place="never") == correct_id
         assert ga4gh_identify(vo_a, in_place="never") is correct_id
+
+
+def test_enref_deref_list_attribute():
+    """A list of references, such as CisPhasedBlock.members, can be dereferenced"""
+    object_store = {}
+    enreffed = vrs_enref(cpb_431012, object_store=object_store)
+    assert all(is_curie_type(member) for member in enreffed.members)
+
+    dereffed = vrs_deref(enreffed, object_store=object_store)
+    assert [member.type for member in dereffed.members] == ["Allele", "Allele"]
+    assert [m.model_dump(exclude_none=True) for m in dereffed.members] == [
+        vrs_deref(vrs_enref(m), object_store=object_store).model_dump(exclude_none=True)
+        for m in cpb_431012.members
+    ]
+
+    # Members that are already inlined are passed through as-is
+    inlined = vrs_deref(cpb_431012, object_store=object_store)
+    assert [m.type for m in inlined.members] == ["Allele", "Allele"]

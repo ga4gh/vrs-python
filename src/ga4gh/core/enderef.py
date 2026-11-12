@@ -94,6 +94,12 @@ def ga4gh_deref(o, cra_map, object_store) -> BaseModel:  # noqa: ANN001
 
     """
 
+    def _deref_item(v):  # noqa: ANN001, ANN202
+        """Dereference one list item; inlined objects are passed through as-is"""
+        if is_ga4gh_identifier(v):
+            return _deref(object_store[str(get_pydantic_root(v))])
+        return v
+
     def _deref(o: BaseModel):  # noqa: ANN202
         """depth-first recursive, in-place deref of object; returns id of object"""
         if o.type not in cra_map:
@@ -104,7 +110,7 @@ def ga4gh_deref(o, cra_map, object_store) -> BaseModel:  # noqa: ANN001
         for ran in ref_att_names:
             v = getattr(o, ran)
             if isinstance(v, list):
-                setattr(o, ran, [_deref(object_store[str(curie)]) for curie in v])
+                setattr(o, ran, [_deref_item(item) for item in v])
             elif is_ga4gh_identifier(v):
                 v = get_pydantic_root(v)
                 dereffed_identifier = object_store[str(v)]
