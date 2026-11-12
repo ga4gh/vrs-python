@@ -13,6 +13,7 @@ def configured_modules(monkeypatch, request):
         import_module("ga4gh.vrs.normalize"),
         import_module("ga4gh.vrs.extras.translator"),
         import_module("ga4gh.vrs.extras.annotator.vcf"),
+        import_module("ga4gh.vrs.extras.annotator.cli"),
     ]
     original_namespaces = [vars(module).copy() for module in modules]
     try:

@@ -1,6 +1,7 @@
 """Ensure proper functionality of VCFAnnotator"""
 
 import gzip
+import json
 import logging
 import os
 import re
@@ -8,8 +9,10 @@ from pathlib import Path
 
 import pysam
 import pytest
+from click.testing import CliRunner
 
 from ga4gh.vrs.dataproxy import DataProxyValidationError, SeqRepoRESTDataProxy
+from ga4gh.vrs.extras.annotator import cli
 from ga4gh.vrs.extras.annotator.vcf import (
     VcfAnnotator,
     VcfAnnotatorAbortError,
@@ -339,6 +342,136 @@ def test_annotate_vcf_rle(
     assert output_vrs_pkl.exists()
     if vcr_cassette.write_protected:
         assert vcr_cassette.all_played
+
+
+@pytest.mark.vcr
+@pytest.mark.parametrize(
+    ("configured_modules", "rle_seq_limit", "expected_sequence", "vcr_cassette_name"),
+    [
+        (None, 0, None, "test_annotate_vcf_rle"),
+        (None, 4, None, "test_annotate_vcf_rle"),
+        ("4", 8, "CTTTCTTT", "test_annotate_vcf_rle"),
+        ("4", None, "CTTTCTTT", "test_annotate_vcf_rle"),
+        ("none", 4, None, "test_annotate_vcf_rle"),
+    ],
+    indirect=["configured_modules"],
+)
+def test_annotate_vcf_rle_seq_limit(
+    configured_modules,
+    rle_seq_limit,
+    expected_sequence,
+    rest_dataproxy_fn_scope,
+    vcr_cassette,
+    tmp_path: Path,
+):
+    """Test that the annotator's ``rle_seq_limit`` overrides the configured default
+    for both the VRS_States INFO field and the VRS objects that are written out
+    """
+    vcf_annotator = configured_modules[2].VcfAnnotator(
+        rest_dataproxy_fn_scope, rle_seq_limit=rle_seq_limit
+    )
+    input_vcf = TEST_DATA_DIR / "test_rle.vcf"
+    output_vcf = tmp_path / "test_rle_seq_limit_output.vcf"
+    output_ndjson = tmp_path / "test_rle_seq_limit_output.ndjson"
+
+    vcf_annotator.annotate(
+        input_vcf, output_vcf, vrs_attributes=True, output_ndjson_path=output_ndjson
+    )
+
+    with pysam.VariantFile(str(output_vcf)) as vcf:
+        # 1-102995989-CTTT-CTTTCTTT: ALT is an RLE with length 8
+        duplication_variant = list(vcf)[1]
+    assert duplication_variant.info["VRS_Lengths"][-1] == 8
+    assert duplication_variant.info["VRS_States"][-1] == (expected_sequence or ".")
+
+    alleles = {
+        allele["id"]: allele
+        for allele in map(json.loads, output_ndjson.read_text().splitlines())
+    }
+    dup_allele = alleles[duplication_variant.info["VRS_Allele_IDs"][-1]]
+    assert dup_allele["state"]["type"] == "ReferenceLengthExpression"
+    assert dup_allele["state"].get("sequence") == expected_sequence
+    if vcr_cassette.write_protected:
+        assert vcr_cassette.all_played
+
+
+@pytest.mark.vcr
+@pytest.mark.parametrize(
+    ("configured_modules", "rle_seq_limit", "expected_sequence", "vcr_cassette_name"),
+    [
+        (None, "4", ".", "test_annotate_vcf_rle"),
+        ("4", None, ".", "test_annotate_vcf_rle"),
+        ("4", "8", "CTTTCTTT", "test_annotate_vcf_rle"),
+        ("4", "NoNe", "CTTTCTTT", "test_annotate_vcf_rle"),
+    ],
+    indirect=["configured_modules"],
+)
+def test_annotate_vcf_cli_rle_seq_limit(
+    configured_modules,
+    rle_seq_limit,
+    expected_sequence,
+    vcr_cassette,
+    tmp_path: Path,
+    monkeypatch,
+):
+    """Test that ``--rle-seq-limit`` sets the limit used by ``vrs-annotate vcf``,
+    falling back to the configured default when it is not given
+    """
+    input_vcf = (TEST_DATA_DIR / "test_rle.vcf").absolute()
+    output_vcf = tmp_path / "test_rle_cli_output.vcf"
+    seqrepo_rest_url = os.environ.get(
+        "SEQREPO_REST_URL", "http://localhost:5000/seqrepo"
+    )
+    args = [
+        "vcf",
+        str(input_vcf),
+        "--vcf-out",
+        str(output_vcf),
+        "--vrs-attributes",
+        "--dataproxy-uri",
+        f"seqrepo+{seqrepo_rest_url}",
+        "--silent",
+    ]
+    if rle_seq_limit is not None:
+        args += ["--rle-seq-limit", rle_seq_limit]
+    # Keep the CLI's log file out of the working tree
+    monkeypatch.chdir(tmp_path)
+
+    result = CliRunner().invoke(configured_modules[3]._cli, args)
+
+    assert result.exit_code == 0, result.output
+    with pysam.VariantFile(str(output_vcf)) as vcf:
+        duplication_variant = list(vcf)[1]
+    assert duplication_variant.info["VRS_States"][-1] == expected_sequence
+    if vcr_cassette.write_protected:
+        assert vcr_cassette.all_played
+
+
+@pytest.mark.parametrize("rle_seq_limit", ["-1", "1.5", "invalid", ""])
+def test_annotate_vcf_cli_invalid_rle_seq_limit(
+    rle_seq_limit, tmp_path: Path, monkeypatch
+):
+    """Test that ``--rle-seq-limit`` rejects values other than a non-negative
+    integer or 'none'
+    """
+    input_vcf = (TEST_DATA_DIR / "test_rle.vcf").absolute()
+    monkeypatch.chdir(tmp_path)
+
+    result = CliRunner().invoke(
+        cli._cli,
+        [
+            "vcf",
+            str(input_vcf),
+            "--vcf-out",
+            str(tmp_path / "out.vcf"),
+            "--rle-seq-limit",
+            rle_seq_limit,
+        ],
+    )
+
+    assert result.exit_code == 2
+    assert f"{rle_seq_limit!r} is not a non-negative integer or 'none'" in result.output
+    assert not (tmp_path / "out.vcf").exists()
 
 
 class FailingVcfAnnotator(VcfAnnotator):

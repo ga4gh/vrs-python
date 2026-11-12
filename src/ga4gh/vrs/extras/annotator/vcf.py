@@ -119,12 +119,22 @@ class AbstractVcfAnnotator(abc.ABC):
 
     collect_alleles: bool = False
 
-    def __init__(self, data_proxy: _DataProxy, **kwargs) -> None:  # noqa: ARG002
+    def __init__(
+        self,
+        data_proxy: _DataProxy,
+        rle_seq_limit: int | None = RLE_SEQ_LIMIT,
+        **kwargs,  # noqa: ARG002
+    ) -> None:
         """Initialize the VCFAnnotator class.
 
         :param data_proxy: GA4GH sequence dataproxy instance.
+        :param rle_seq_limit: If RLE is set as the new state after normalization, this
+            sets the limit for the length of the `sequence` in VRS objects and in the
+            VRS_States INFO field. To exclude `sequence`, set to 0. For no limit, set
+            to `None`. Defaults to the `GA4GH_VRS_RLE_SEQ_LIMIT` setting.
         """
         self.data_proxy = data_proxy
+        self.rle_seq_limit = rle_seq_limit
         self.tlr = AlleleTranslator(self.data_proxy)
 
     def should_collect_alleles(self, **kwargs) -> bool:  # noqa: ARG002
@@ -407,6 +417,7 @@ class AbstractVcfAnnotator(abc.ABC):
                 vcf_coords,
                 assembly_name=assembly,
                 require_validation=require_validation,
+                rle_seq_limit=self.rle_seq_limit,
             )
         except Exception:
             vrs_obj = None
@@ -457,7 +468,7 @@ class AbstractVcfAnnotator(abc.ABC):
                         repeat_subunit_length = state.repeatSubunitLength
                         # Only include sequence if within rle_seq_limit
                         if state.sequence is not None and (
-                            RLE_SEQ_LIMIT is None or length <= RLE_SEQ_LIMIT
+                            self.rle_seq_limit is None or length <= self.rle_seq_limit
                         ):
                             alt = state.sequence.root
                     elif state_type == VrsType.LEN_EXPR:

@@ -12,6 +12,7 @@ from timeit import default_timer as timer
 
 import click
 
+from ga4gh.vrs.config import RLE_SEQ_LIMIT
 from ga4gh.vrs.dataproxy import create_dataproxy
 from ga4gh.vrs.extras.annotator.vcf import VcfAnnotator, VcfAnnotatorArgsError
 
@@ -89,6 +90,27 @@ class PathOrDash(click.ParamType):
         return self._inner.convert(value, param, ctx)
 
 
+class RleSeqLimit(click.ParamType):
+    """click ParamType for RLE sequence limits: a non-negative integer or 'none'"""
+
+    name = "integer-or-none"
+
+    def convert(
+        self, value: str | int, param: click.Parameter | None, ctx: click.Context | None
+    ) -> int | None:
+        """Convert the value to a non-negative integer, or ``None`` for 'none'"""
+        if isinstance(value, str) and value.lower() == "none":
+            return None
+        msg = f"{value!r} is not a non-negative integer or 'none'."
+        try:
+            limit = int(value)
+        except ValueError:
+            self.fail(msg, param, ctx)
+        if limit < 0:
+            self.fail(msg, param, ctx)
+        return limit
+
+
 @_cli.command(name="vcf")
 @_log_level_option
 @click.argument(
@@ -133,6 +155,17 @@ class PathOrDash(click.ParamType):
     help="Include VRS_Start, VRS_End, and VRS_State fields in the VCF output INFO field.",
 )
 @click.option(
+    "--rle-seq-limit",
+    type=RleSeqLimit(),
+    default=RLE_SEQ_LIMIT,
+    help=(
+        "Maximum length of the optional sequence in ReferenceLengthExpression states, "
+        "applied to VRS objects and the VRS_States INFO field. Use 0 to omit the "
+        "sequence, or 'none' for no limit. Defaults to the GA4GH_VRS_RLE_SEQ_LIMIT "
+        "environment variable, or 50 if it is not set."
+    ),
+)
+@click.option(
     "--dataproxy-uri",
     required=False,
     help="URI declaring source of sequence data. See subcommand description for more information.",
@@ -171,6 +204,7 @@ def _annotate_vcf_cli(
     pkl_out: Path | None,
     ndjson_out: Path | None,
     vrs_attributes: bool,
+    rle_seq_limit: int | None,
     dataproxy_uri: str,
     assembly: str,
     skip_ref: bool,
@@ -199,7 +233,7 @@ def _annotate_vcf_cli(
      * seqrepo+:../relative/path/to/seqrepo/root
     """  # noqa: D301
     data_proxy = create_dataproxy(dataproxy_uri)
-    annotator = VcfAnnotator(data_proxy)
+    annotator = VcfAnnotator(data_proxy, rle_seq_limit=rle_seq_limit)
     start = timer()
     msg = f"Annotating {vcf_in} with the VCF Annotator..."
     _logger.info(msg)
