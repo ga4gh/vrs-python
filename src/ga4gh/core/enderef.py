@@ -48,21 +48,26 @@ def ga4gh_enref(
             object_store[_id] = o
         return _id
 
+    def _is_reference(v) -> bool:  # noqa: ANN001
+        """Return whether ``v`` is already a reference, not an inlined object"""
+        if isinstance(v, str):
+            return True
+        if is_curie_type(v):
+            if not is_ga4gh_identifier(v):
+                msg = "Identifiable attribute CURIE is contains an invalid identifier"
+                raise TypeError(msg)
+            return True
+        return False
+
     def _enref(o: BaseModel) -> str | None:
         """depth-first recursive, in-place enref of object; returns id of object"""
         ref_att_names = cra_map.get(o.type, [])
         for ran in ref_att_names:
             v = getattr(o, ran)
             if isinstance(v, list):
-                setattr(o, ran, [_enref(o2) for o2 in v])
-            elif isinstance(v, str):
+                setattr(o, ran, [o2 if _is_reference(o2) else _enref(o2) for o2 in v])
+            elif _is_reference(v):
                 pass
-            elif is_curie_type(v):  # already a reference
-                if not is_ga4gh_identifier(v):
-                    msg = (
-                        "Identifiable attribute CURIE is contains an invalid identifier"
-                    )
-                    raise TypeError(msg)
             elif v is not None:
                 _id = _id_and_store(v)
                 if _id:

@@ -12,6 +12,7 @@ from ga4gh.core import (
     sha512t24u,
     use_ga4gh_compute_identifier_when,
 )
+from ga4gh.core.pydantic import get_pydantic_root
 from ga4gh.vrs import models, vrs_deref, vrs_enref
 
 allele_dict = {
@@ -381,3 +382,25 @@ def test_compute_identifiers_when():
     with use_ga4gh_compute_identifier_when(VrsObjectIdentifierIs.MISSING):
         assert ga4gh_identify(vo_a, in_place="never") == correct_id
         assert ga4gh_identify(vo_a, in_place="never") is correct_id
+
+
+def test_enref_list_attribute_with_references():
+    """Enref keeps list items that are already references, as it does for single values"""
+    object_store = {}
+    enreffed = vrs_enref(cpb_431012, object_store=object_store)
+    member_ids = [str(get_pydantic_root(m)) for m in enreffed.members]
+
+    # Enref'ing an already enref'd object is a no-op for its references
+    again = vrs_enref(enreffed, object_store=object_store)
+    assert [str(get_pydantic_root(m)) for m in again.members] == member_ids
+
+    # A mix of a reference and an inlined member
+    mixed = models.CisPhasedBlock(
+        members=[member_ids[0], cpb_431012.members[1].model_dump(exclude_none=True)]
+    )
+    mixed_enreffed = vrs_enref(mixed, object_store=object_store)
+    assert [str(get_pydantic_root(m)) for m in mixed_enreffed.members] == member_ids
+
+    bad = models.CisPhasedBlock(members=["refseq:NC_000001.11", member_ids[1]])
+    with pytest.raises(TypeError, match="invalid identifier"):
+        vrs_enref(bad, object_store=object_store)
