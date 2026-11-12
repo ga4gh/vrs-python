@@ -1,6 +1,7 @@
 """Ensure proper functionality of VCFAnnotator"""
 
 import gzip
+import json
 import logging
 import os
 import re
@@ -8,12 +9,20 @@ from pathlib import Path
 
 import pysam
 import pytest
+from click.testing import CliRunner
 
-from ga4gh.vrs.dataproxy import DataProxyValidationError, SeqRepoRESTDataProxy
+from ga4gh.vrs.dataproxy import (
+    DataProxyValidationError,
+    SeqRepoDataProxy,
+    SeqRepoRESTDataProxy,
+)
+from ga4gh.vrs.extras.annotator.cli import _cli
 from ga4gh.vrs.extras.annotator.vcf import (
     VcfAnnotator,
     VcfAnnotatorAbortError,
+    VcfAnnotatorArgsError,
     VcfAnnotatorError,
+    dump_alleles_to_ndjson,
 )
 from ga4gh.vrs.models import Allele
 
@@ -187,11 +196,138 @@ def test_annotate_vcf_vcf_only(
     assert not Path(output_vrs_pkl).exists()
 
 
+def check_jsonl_output(output_jsonl: Path, require_validation: bool = True):
+    """Check the JSON Lines dump of the alleles annotated from ``test_vcf_input.vcf``"""
+    with output_jsonl.open() as f:
+        alleles = [Allele(**json.loads(line)) for line in f]
+    # REF and ALT alleles for all records, except a `*` ALT, an invalid ALT and, if
+    # validation is required, a record with a reference mismatch
+    assert len(alleles) == (14 if require_validation else 16)
+    assert alleles[0].id == "ga4gh:VA.esmv8nARRRdSysDFuIErJxRAdUSVsWNE"
+    assert alleles[1].id == "ga4gh:VA.b9AIUegs1SOYO7nKY8l01yllkyUns-u4"
+
+
+def test_annotate_vcf_jsonl_only(
+    dataproxy: SeqRepoDataProxy, input_vcf: Path, tmp_path: Path
+):
+    output_jsonl = tmp_path / "test_vcf_jsonl_only.jsonl"
+
+    VcfAnnotator(dataproxy).annotate(input_vcf, output_jsonl_path=output_jsonl)
+    check_jsonl_output(output_jsonl)
+    assert list(tmp_path.iterdir()) == [output_jsonl]
+
+
+def test_annotate_vcf_ndjson_deprecated(
+    dataproxy: SeqRepoDataProxy, input_vcf: Path, tmp_path: Path
+):
+    """Test that the deprecated `output_ndjson_path` arg still writes JSON Lines"""
+    output_jsonl = tmp_path / "test_vcf_ndjson_deprecated.ndjson"
+    vcf_annotator = VcfAnnotator(dataproxy)
+
+    with pytest.warns(
+        DeprecationWarning, match="`output_ndjson_path` is deprecated"
+    ) as warnings_record:
+        vcf_annotator.annotate(input_vcf, output_ndjson_path=output_jsonl)
+    # Warning points at the caller of annotate()
+    assert warnings_record[0].filename == __file__
+    check_jsonl_output(output_jsonl)
+
+    with (
+        pytest.warns(DeprecationWarning),
+        pytest.raises(
+            VcfAnnotatorArgsError,
+            match="`output_ndjson_path` is a deprecated alias of `output_jsonl_path`",
+        ),
+    ):
+        vcf_annotator.annotate(
+            input_vcf,
+            output_jsonl_path=tmp_path / "test_vcf_both.jsonl",
+            output_ndjson_path=tmp_path / "test_vcf_both.ndjson",
+        )
+
+
+def test_dump_alleles_to_ndjson_deprecated(tmp_path: Path):
+    output_jsonl = tmp_path / "test_dump.ndjson"
+    allele = Allele(
+        location={
+            "sequenceReference": {
+                "refgetAccession": "SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl"
+            },
+            "start": 82663,
+            "end": 82664,
+        },
+        state={"type": "LiteralSequenceExpression", "sequence": "T"},
+    )
+
+    with pytest.warns(DeprecationWarning, match="dump_alleles_to_jsonl"):
+        dump_alleles_to_ndjson([allele], output_jsonl)
+    assert output_jsonl.read_text() == allele.model_dump_json(exclude_none=True) + "\n"
+
+
+@pytest.fixture
+def cli_dataproxy_uri() -> str:
+    """Provide a data proxy URI for the local SeqRepo used by the `dataproxy` fixture"""
+    root_dir = os.environ.get("SEQREPO_ROOT_DIR", "/usr/local/share/seqrepo/latest")
+    return f"seqrepo+file://{Path(root_dir).absolute()}"
+
+
+@pytest.mark.parametrize("output_option", ["--jsonl-out", "--ndjson-out"])
+def test_annotate_vcf_cli_jsonl(
+    cli_dataproxy_uri: str,
+    input_vcf: Path,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    output_option: str,
+):
+    """Test JSON Lines output from the CLI, including the deprecated `--ndjson-out`"""
+    input_vcf = input_vcf.absolute()
+    monkeypatch.chdir(tmp_path)  # CLI writes a log file to the working directory
+    output_jsonl = tmp_path / "test_vcf_cli.jsonl"
+
+    result = CliRunner().invoke(
+        _cli,
+        [
+            "vcf",
+            str(input_vcf),
+            f"--dataproxy-uri={cli_dataproxy_uri}",
+            output_option,
+            str(output_jsonl),
+        ],
+    )
+    assert result.exit_code == 0, result.output
+    deprecation_msg = "--ndjson-out is deprecated and will be removed in v3"
+    assert (deprecation_msg in result.output) == (output_option == "--ndjson-out")
+    check_jsonl_output(output_jsonl, require_validation=False)
+
+
+def test_annotate_vcf_cli_jsonl_and_ndjson(
+    input_vcf: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    input_vcf = input_vcf.absolute()
+    monkeypatch.chdir(tmp_path)
+
+    result = CliRunner().invoke(
+        _cli,
+        [
+            "vcf",
+            str(input_vcf),
+            "--jsonl-out",
+            str(tmp_path / "test_vcf_cli.jsonl"),
+            "--ndjson-out",
+            str(tmp_path / "test_vcf_cli.ndjson"),
+        ],
+    )
+    assert result.exit_code == 2
+    assert "--ndjson-out is a deprecated alias of --jsonl-out" in result.output
+    assert not (tmp_path / "test_vcf_cli.jsonl").exists()
+    assert not (tmp_path / "test_vcf_cli.ndjson").exists()
+
+
 @pytest.mark.vcr
 def test_annotate_vcf_input_validation(vcf_annotator: VcfAnnotator, input_vcf: Path):
     with pytest.raises(
         VcfAnnotatorError,
-        match="No VCF, PKL, or NDJSON output path provided -- must pass at least one of `output_vcf_path`, `output_pkl_path`, `output_ndjson_path` to annotate().",
+        match="No VCF, PKL, or JSON Lines output path provided -- must pass at least one of `output_vcf_path`, `output_pkl_path`, `output_jsonl_path` to annotate().",
     ):
         vcf_annotator.annotate(input_vcf)
 
