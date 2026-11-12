@@ -8,7 +8,7 @@ Each cache entry is stored as ``{"func": ..., "args": [...], "value": ...}``. Va
 strings, numbers, None, lists, and UTA rows (`psycopg2.extras.DictRow`), which are
 stored as ``{"psycopg2_dictrow": {column: value, ...}}`` in column order. A lookup that
 found no data is stored as the `HGVSDataNotAvailableError` it raised (see
-`tests/conftest.py`), written as ``{"hgvs_data_not_available": message}``.
+`tests/hgvs_cache_provider.py`), written as ``{"hgvs_data_not_available": message}``.
 
 Usage, to convert a cache hgvs just recorded:
 ``python tests/hgvs_cache_json.py <recorded.pkl> <hgvs_cache.json>``

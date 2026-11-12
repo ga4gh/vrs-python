@@ -47,6 +47,25 @@ At least one form of output must be declared.
 `--jsonl-out` [PATH]
 >Save location for a [JSON Lines](https://jsonlines.org/) file with one VRS Allele per line. `--ndjson-out` is a deprecated alias of this option, and will be removed in v3.
 
+### Configuring optional RLE sequences
+
+Set `GA4GH_VRS_RLE_SEQ_LIMIT` before starting Python or `vrs-annotate` to change
+the maximum length of optional `ReferenceLengthExpression.sequence` values.
+The default is `50` bases. Use a non-negative integer, `0` to omit the optional
+sequence, or `none` (case-insensitive) for no limit. Invalid values raise a
+`ValueError` when VRS-Python is imported.
+
+The normalizer, translator, and VCF writer share this setting. Explicit
+`rle_seq_limit` arguments to normalization or translation override the default;
+the VCF writer still applies the configured output limit. Required
+`LiteralSequenceExpression.sequence` values are unaffected.
+
+For example:
+
+```shell
+GA4GH_VRS_RLE_SEQ_LIMIT=100 vrs-annotate vcf --vrs-attributes --vcf-out=out.vcf input.vcf
+```
+
 ### Other Options
 `--vrs-attributes`
 >Will include VRS_Start, VRS_End, VRS_State fields in the INFO field.
