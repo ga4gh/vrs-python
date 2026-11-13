@@ -2,6 +2,7 @@ import pytest
 from pydantic import ValidationError
 
 from ga4gh.core import (
+    PrevVrsVersion,
     VrsObjectIdentifierIs,
     ga4gh_digest,
     ga4gh_identify,
@@ -381,3 +382,142 @@ def test_compute_identifiers_when():
     with use_ga4gh_compute_identifier_when(VrsObjectIdentifierIs.MISSING):
         assert ga4gh_identify(vo_a, in_place="never") == correct_id
         assert ga4gh_identify(vo_a, in_place="never") is correct_id
+
+
+def test_ga4gh_identify_recursive():
+    loc_id = "ga4gh:SL._G2K0qSioM74l_u3OaKR0mgLYdeTL7Xd"
+    allele_id = "ga4gh:VA.Hy2XU_-rp4IMh6I_1NXNecBo8Qx8n0oE"
+
+    # not recursive: only the outermost object is identified
+    allele = models.Allele(**allele_dict)
+    assert ga4gh_identify(allele, in_place="always") == allele_id
+    assert allele.id == allele_id
+    assert allele.location.id is None
+
+    # recursive: the location is identified too
+    allele = models.Allele(**allele_dict)
+    assert ga4gh_identify(allele, recursive=True) == allele_id
+    assert allele.id == allele_id
+    assert allele.location.id == loc_id
+    assert allele.location.digest == loc_id.split(".")[1]
+
+    # in_place="never" computes the IDs without setting them
+    allele = models.Allele(**allele_dict)
+    assert ga4gh_identify(allele, in_place="never", recursive=True) == allele_id
+    assert allele.id is None
+    assert allele.location.id is None
+
+    # in_place="default" keeps existing IDs, in_place="always" replaces them
+    other_loc_id = "ga4gh:SL.0123456789abcdef0123456789abcdef"
+    allele = models.Allele(**allele_dict)
+    allele.location.id = other_loc_id
+    assert ga4gh_identify(allele, recursive=True) == allele_id
+    assert allele.location.id == other_loc_id
+    assert ga4gh_identify(allele, in_place="always", recursive=True) == allele_id
+    assert allele.location.id == loc_id
+
+    # the use_ga4gh_compute_identifier_when context applies to contained objects
+    allele = models.Allele(**allele_dict)
+    allele.location.id = other_loc_id
+    with use_ga4gh_compute_identifier_when(VrsObjectIdentifierIs.MISSING):
+        assert ga4gh_identify(allele, in_place="always", recursive=True) == allele_id
+    assert allele.location.id == other_loc_id
+
+    # as_version ignores other parameters
+    allele = models.Allele(**allele_dict)
+    assert (
+        ga4gh_identify(allele, as_version=PrevVrsVersion.V1_3, recursive=True)
+        == "ga4gh:VA.5Z7gWQGUuGAPe4Pw2_kJvnkhS2Q5jRhY"
+    )
+    assert allele.id is None
+    assert allele.location.id is None
+
+
+def test_ga4gh_identify_recursive_cpb():
+    cpb = models.CisPhasedBlock(
+        members=[
+            allele_383650_dict,
+            allele_417816_dict,
+            "ga4gh:VA.Hy2XU_-rp4IMh6I_1NXNecBo8Qx8n0oE",
+        ]
+    )
+    cpb_id = ga4gh_identify(cpb, recursive=True)
+    assert cpb_id == cpb.id
+    assert cpb.model_dump(exclude_none=True) == {
+        "id": cpb_id,
+        "digest": cpb_id.split(".")[1],
+        "type": "CisPhasedBlock",
+        "members": [
+            allele_383650_dict,
+            {
+                **allele_417816_dict,
+                "id": "ga4gh:VA.TKhpDsfclpSXpn6BjTLViB_ceqRerOd2",
+                "digest": "TKhpDsfclpSXpn6BjTLViB_ceqRerOd2",
+                "location": {
+                    **allele_417816_dict["location"],
+                    "id": "ga4gh:SL.KYxoEZ7E-frbN03t8K7e546-LJ-_NrKO",
+                    "digest": "KYxoEZ7E-frbN03t8K7e546-LJ-_NrKO",
+                },
+            },
+            "ga4gh:VA.Hy2XU_-rp4IMh6I_1NXNecBo8Qx8n0oE",
+        ],
+    }
+
+
+def test_ga4gh_identify_recursive_derivative_molecule():
+    seq_ref = {
+        "type": "SequenceReference",
+        "refgetAccession": "SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul",
+    }
+    adjacency_dict = {
+        "type": "Adjacency",
+        "adjoinedSequences": [
+            {"type": "SequenceLocation", "sequenceReference": seq_ref, "end": 1000},
+            {"type": "SequenceLocation", "sequenceReference": seq_ref, "start": 2000},
+        ],
+    }
+    terminus_dict = {
+        "type": "Terminus",
+        "location": {
+            "type": "SequenceLocation",
+            "sequenceReference": seq_ref,
+            "end": 3000,
+        },
+    }
+
+    # contained objects are found through non-identifiable objects
+    traversal_block = models.TraversalBlock(component=adjacency_dict)
+    assert ga4gh_identify(traversal_block, recursive=True) is None
+    adjacency = traversal_block.component
+    assert adjacency.id == ga4gh_identify(
+        models.Adjacency(**adjacency_dict), in_place="never"
+    )
+    for loc, loc_dict in zip(
+        adjacency.adjoinedSequences, adjacency_dict["adjoinedSequences"], strict=True
+    ):
+        assert loc.id == ga4gh_identify(
+            models.SequenceLocation(**loc_dict), in_place="never"
+        )
+
+    dm_dict = {
+        "type": "DerivativeMolecule",
+        "components": [
+            {"type": "TraversalBlock", "component": adjacency_dict},
+            terminus_dict,
+        ],
+    }
+    dm = models.DerivativeMolecule(**dm_dict)
+    assert ga4gh_identify(dm, recursive=True) == dm.id
+    assert dm.id == ga4gh_identify(
+        models.DerivativeMolecule(**dm_dict), in_place="never"
+    )
+    assert dm.components[0].component.model_dump(exclude_none=True) == (
+        adjacency.model_dump(exclude_none=True)
+    )
+    terminus = dm.components[1]
+    assert terminus.id == ga4gh_identify(
+        models.Terminus(**terminus_dict), in_place="never"
+    )
+    assert terminus.location.id == ga4gh_identify(
+        models.SequenceLocation(**terminus_dict["location"]), in_place="never"
+    )
