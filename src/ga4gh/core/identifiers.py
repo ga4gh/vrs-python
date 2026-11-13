@@ -17,6 +17,7 @@ For that reason, they are implemented here in one file.
 
 import contextvars
 import re
+from collections.abc import Iterator
 from contextlib import ContextDecorator
 from enum import Enum, IntEnum
 
@@ -112,10 +113,37 @@ def is_ga4gh_identifier(ir: str) -> bool:
     return str(get_pydantic_root(ir)).startswith(NS_W_SEP)
 
 
+def _iter_models(value: object) -> Iterator[BaseModel]:
+    """Yield the pydantic models in ``value``, which may be a model, a custom root
+    type wrapping a model, or a list or tuple of these. Other values yield nothing.
+    """
+    value = get_pydantic_root(value)
+    if isinstance(value, BaseModel):
+        yield value
+    elif isinstance(value, list | tuple):
+        for item in value:
+            yield from _iter_models(item)
+
+
+def _identify_contained(vro: BaseModel, in_place: str) -> None:
+    """Identify every GA4GH identifiable object contained in ``vro``, depth-first.
+
+    All fields are searched, including those of non-identifiable objects (e.g.
+    the component of a TraversalBlock). ``vro`` itself is not identified.
+    """
+    for field_name in type(vro).model_fields:
+        for obj in _iter_models(getattr(vro, field_name)):
+            _identify_contained(obj, in_place)
+            is_identifiable = getattr(obj, "is_ga4gh_identifiable", None)
+            if is_identifiable is not None and is_identifiable():
+                ga4gh_identify(obj, in_place=in_place)
+
+
 def ga4gh_identify(
     vro,  # noqa: ANN001
     in_place: str = "default",
     as_version: PrevVrsVersion | None = None,
+    recursive: bool = False,
 ) -> str | None:
     """Return the GA4GH digest-based id for the object, as a CURIE
     (string).  Returns None if object is not identifiable.
@@ -129,6 +157,12 @@ def ga4gh_identify(
         use_ga4gh_compute_identifier_when context)
     - 'never': the vro.id field will not be edited in-place,
         even when empty
+
+    If ``recursive`` is ``True``, every GA4GH identifiable object contained in vro
+    (e.g. the location of an Allele, or the members of a CisPhasedBlock and their
+    locations) is identified first, depth-first, using the same ``in_place`` option
+    and use_ga4gh_compute_identifier_when context. This is done even if vro itself is
+    not identifiable. Contained objects given as references (CURIEs) are left as is.
 
     If ``as_version`` is provided, other parameters are ignored and an identifier is
     returned following the conventions of the VRS version indicated by ``as_version_``.
@@ -145,8 +179,26 @@ def ga4gh_identify(
     ... )
     >>> ga4gh_identify(location)
     'ga4gh:SL.4t6JnYWqHwYw9WzBT_lmWBb3tLQNalkT'
+
+    >>> allele = ga4gh.vrs.models.Allele(
+    ...     location=ga4gh.vrs.models.SequenceLocation(
+    ...         start=44908821,
+    ...         end=44908822,
+    ...         sequenceReference=ga4gh.vrs.models.SequenceReference(
+    ...             refgetAccession="SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul"
+    ...         ),
+    ...     ),
+    ...     state=ga4gh.vrs.models.LiteralSequenceExpression(sequence="T"),
+    ... )
+    >>> ga4gh_identify(allele, recursive=True)
+    'ga4gh:VA.zMPFEc3F_JAtk3BEHjYFzTcobYjWKFQn'
+    >>> allele.location.id
+    'ga4gh:SL.4t6JnYWqHwYw9WzBT_lmWBb3tLQNalkT'
     """
     PrevVrsVersion.validate(as_version)
+
+    if recursive and as_version is None:
+        _identify_contained(vro, in_place)
 
     if vro.is_ga4gh_identifiable():
         when_rule = ga4gh_compute_identifier_when.get(VrsObjectIdentifierIs.ANY)
