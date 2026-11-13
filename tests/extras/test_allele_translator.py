@@ -1,5 +1,4 @@
 from typing import ClassVar
-from unittest.mock import MagicMock, patch
 
 import pytest
 from pydantic import ValidationError
@@ -7,7 +6,6 @@ from pydantic import ValidationError
 from ga4gh.vrs import models
 from ga4gh.vrs.dataproxy import DataProxyValidationError, _DataProxy
 from ga4gh.vrs.extras.translator import AlleleTranslator
-from ga4gh.vrs.utils.hgvs_tools import HgvsTools
 
 
 @pytest.fixture(scope="module")
@@ -1076,8 +1074,12 @@ def test_from_vrs_non_variation_type(case):
 # Regression tests for https://github.com/ga4gh/vrs-python/issues/364
 # ("hgvs to vrs is returning valid results when hgvs has IncorrectReferenceAllele")
 #
-# These tests are hermetic: reference-sequence lookups are served from canned
-# ground truth, so they run without seqrepo/UTA network access.
+# Sequence comparisons use canned ground truth. Coding-coordinate mapping goes
+# through the real VariantMapper.c_to_n and the recorded UTA cache
+# (tests/data/hgvs_cache.json), including NM_006087.3. The default mapper
+# rejects that transcript's c.900C>A with HGVSInvalidVariantError; these tests
+# require DataProxyValidationError instead, and require_validation=False must
+# still return the allele.
 
 
 class _CannedDataProxy(_DataProxy):
@@ -1094,6 +1096,8 @@ class _CannedDataProxy(_DataProxy):
         # NM_006087.3:c.900C>A expression in issue #364 (IncorrectReferenceAllele:
         # "given=C, found=G"), independently confirmed against NCBI RefSeq.
         ("NM_006087.3", 1271, 1272): "G",
+        # NM_001331029.1 c.722 is n.872. Recorded UTA sequence at that base is A.
+        ("NM_001331029.1", 871, 872): "A",
         # GRCh38 chr19:44908822, true ref C (matches the C>T test expression)
         ("NC_000019.10", 44908821, 44908822): "C",
     }
@@ -1104,37 +1108,27 @@ class _CannedDataProxy(_DataProxy):
         return self.TRUTH[(identifier, start, end)]
 
     def get_metadata(self, _identifier: str) -> dict:
-        return {"aliases": ["ga4gh:SQ." + "A" * 32], "length": 10**6}
-
-
-def _c_to_n_nm006087(_self, sv):
-    """Emulate the UTA c.->n. mapping for NM_006087.3.
-
-    UTA is not reachable from every test environment, so apply the true
-    mapping directly: the RefSeq CDS annotation for NM_006087.3 is 373..1707,
-    hence c.900 maps to n.1272.
-    """
-    assert sv.ac == "NM_006087.3"
-    offset = 372  # n. coordinate == c. coordinate + 372 on this transcript
-    sv.posedit.pos.start.base += offset
-    sv.posedit.pos.end.base += offset
-    sv.type = "n"
-    return sv
+        # Longer than any coordinate these tests use, including GRCh38 chr19.
+        return {"aliases": ["ga4gh:SQ." + "A" * 32], "length": 10**9}
 
 
 @pytest.fixture
 def tlr_canned():
-    """AlleleTranslator backed by canned reference data (no network/UTA)."""
-    with (
-        patch("hgvs.dataproviders.uta.connect", return_value=MagicMock()),
-        patch.object(HgvsTools, "c_to_n", _c_to_n_nm006087),
-    ):
-        yield AlleleTranslator(data_proxy=_CannedDataProxy(), identify=False)
+    """AlleleTranslator backed by canned reference data.
+
+    UTA lookups are the shared recorded provider from conftest, so c. to n.
+    mapping is the real VariantMapper rather than a coordinate stub.
+    """
+    return AlleleTranslator(data_proxy=_CannedDataProxy(), identify=False)
 
 
 def test_from_hgvs_wrong_ref_allele_raises(tlr_canned):
     """A mismatched reference allele in the HGVS expression must raise, not
     silently produce a plausible-but-wrong VRS Allele (issue #364).
+
+    Mapping uses the real VariantMapper. The default mapper raises
+    HGVSInvalidVariantError for this expression before require_validation
+    can turn the mismatch into DataProxyValidationError.
     """
     error_msg = (
         "Reference mismatch at NM_006087.3 position 1271-1272 "
@@ -1152,21 +1146,57 @@ def test_from_hgvs_wrong_ref_allele_raises(tlr_canned):
     assert str(e.value) == error_msg
 
 
-def test_from_hgvs_wrong_ref_allele_no_validation(tlr_canned):
+def test_from_hgvs_wrong_ref_allele_no_validation(tlr_canned, caplog):
     """require_validation=False keeps the legacy behavior: the allele is
     returned and the mismatch is only logged.
+
+    This has to survive the real VariantMapper.c_to_n, which otherwise raises
+    HGVSInvalidVariantError for NM_006087.3:c.900C>A.
     """
-    allele = tlr_canned._from_hgvs(
-        "NM_006087.3:c.900C>A", do_normalize=False, require_validation=False
-    )
+    with caplog.at_level("WARNING"):
+        allele = tlr_canned._from_hgvs(
+            "NM_006087.3:c.900C>A", do_normalize=False, require_validation=False
+        )
     assert (allele.location.start, allele.location.end) == (1271, 1272)
     assert allele.state.sequence.root == "A"
+    assert "input gave 'C' but correct ref is 'G'" in caplog.text
+
+
+def test_from_hgvs_wrong_ref_on_recorded_transcript(tlr_canned, caplog):
+    """Same contract on a transcript already in the recorded UTA cache.
+
+    NM_001331029.1:c.722 is n.872 and the recorded reference base is A, so
+    c.722C>G is a reference mismatch. require_validation=False still returns it.
+    """
+    error_msg = (
+        "Reference mismatch at NM_001331029.1 position 871-872 "
+        "(input gave 'C' but correct ref is 'A')"
+    )
+    with pytest.raises(DataProxyValidationError) as e:
+        tlr_canned._from_hgvs("NM_001331029.1:c.722C>G", do_normalize=False)
+    assert str(e.value) == error_msg
+
+    with caplog.at_level("WARNING"):
+        allele = tlr_canned._from_hgvs(
+            "NM_001331029.1:c.722C>G",
+            do_normalize=False,
+            require_validation=False,
+        )
+    assert (allele.location.start, allele.location.end) == (871, 872)
+    assert allele.state.sequence.root == "G"
+    assert "input gave 'C' but correct ref is 'A'" in caplog.text
 
 
 def test_from_hgvs_correct_ref_allele_passes(tlr_canned):
     """HGVS expressions whose stated ref matches the reference sequence still
     translate cleanly (substitution and deletion-with-ref forms).
     """
+    allele = tlr_canned.translate_from(
+        "NM_006087.3:c.900G>A", fmt="hgvs", do_normalize=False
+    )
+    assert (allele.location.start, allele.location.end) == (1271, 1272)
+    assert allele.state.sequence.root == "A"
+
     allele = tlr_canned.translate_from(
         "NC_000019.10:g.44908822C>T", fmt="hgvs", do_normalize=False
     )
@@ -1187,6 +1217,26 @@ def test_from_hgvs_wrong_ref_allele_del_raises(tlr_canned):
             "NC_000019.10:g.44908822delG", fmt="hgvs", do_normalize=False
         )
     assert "correct ref is 'C'" in str(e.value)
+
+
+def test_from_hgvs_length_only_ref_skips_comparison(tlr_canned):
+    """A length in edit.ref is not a sequence, so del1 and del1ins are not
+    compared with the reference base.
+
+    The true base at NC_000019.10:g.44908822 is C. Comparing the stored ref
+    ``1`` with that base would reject a deletion that states no bases.
+    """
+    allele = tlr_canned.translate_from(
+        "NC_000019.10:g.44908822del1", fmt="hgvs", do_normalize=False
+    )
+    assert (allele.location.start, allele.location.end) == (44908821, 44908822)
+    assert allele.state.sequence.root == ""
+
+    allele = tlr_canned.translate_from(
+        "NC_000019.10:g.44908822del1insAT", fmt="hgvs", do_normalize=False
+    )
+    assert (allele.location.start, allele.location.end) == (44908821, 44908822)
+    assert allele.state.sequence.root == "AT"
 
 
 def test_from_hgvs_no_ref_allele_skips_validation(tlr_canned):
