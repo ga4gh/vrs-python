@@ -232,6 +232,83 @@ def test_identify_in_place_modes_still_mutate():
     assert allele.id == "ga4gh:VA.Hy2XU_-rp4IMh6I_1NXNecBo8Qx8n0oE"
 
 
+def test_identify_never_reuses_cached_digest_unless_recompute():
+    """in_place "never" and "always" agree when a cached digest is stale.
+
+    Changing state after a digest is stored must not change the identifier
+    unless recompute is requested. "never" leaves the object unchanged for
+    both recompute values.
+    """
+    allele = models.Allele(**allele_dict)
+    original_id = allele.get_or_create_ga4gh_identifier(in_place="always")
+    assert original_id == "ga4gh:VA.Hy2XU_-rp4IMh6I_1NXNecBo8Qx8n0oE"
+    assert allele.digest is not None
+    assert allele.location.digest is not None
+
+    allele.state = models.LiteralSequenceExpression(sequence="G")
+    before = allele.model_dump_json(exclude_none=True)
+    cached = allele.model_copy(deep=True)
+
+    never_cached_id = allele.get_or_create_ga4gh_identifier(
+        in_place="never", recompute=False
+    )
+    always_cached_id = cached.get_or_create_ga4gh_identifier(
+        in_place="always", recompute=False
+    )
+    assert never_cached_id == always_cached_id == original_id
+    assert ga4gh_identify(allele, in_place="never") == original_id
+    assert allele.model_dump_json(exclude_none=True) == before
+
+    recomputed = allele.model_copy(deep=True)
+    never_recomputed_id = allele.get_or_create_ga4gh_identifier(
+        in_place="never", recompute=True
+    )
+    always_recomputed_id = recomputed.get_or_create_ga4gh_identifier(
+        in_place="always", recompute=True
+    )
+    fresh = models.Allele(
+        type="Allele",
+        location=allele_dict["location"],
+        state={"type": "LiteralSequenceExpression", "sequence": "G"},
+    )
+    fresh_id = fresh.get_or_create_ga4gh_identifier(in_place="always")
+    assert never_recomputed_id == always_recomputed_id == fresh_id
+    assert never_recomputed_id != original_id
+    assert allele.model_dump_json(exclude_none=True) == before
+    assert allele.digest == "Hy2XU_-rp4IMh6I_1NXNecBo8Qx8n0oE"
+    assert allele.id == original_id
+    assert recomputed.digest != allele.digest
+    assert recomputed.id == always_recomputed_id
+
+
+def test_cis_phased_block_store_false_sorts_without_mutating():
+    """CisPhasedBlock store=False keeps member sorting and writes no digests."""
+    # 417816's digest sorts after 383650's. Pass them in reverse so sorting
+    # has to move the cached digest ahead of the computed one.
+    block = models.CisPhasedBlock(members=[allele_417816_dict, allele_383650_dict])
+    before = block.model_dump_json(exclude_none=True)
+    expected_members = [
+        "SZIS2ua7AL-0YgUTAqyBsFPYK3vE8h_d",
+        "TKhpDsfclpSXpn6BjTLViB_ceqRerOd2",
+    ]
+
+    unstored = block.ga4gh_serialize(store=False)
+    stored = block.model_copy(deep=True).ga4gh_serialize(store=True)
+    assert unstored == stored
+    assert unstored["members"] == expected_members
+    assert block.model_dump_json(exclude_none=True) == before
+    assert block.members[0].digest is None
+    assert block.members[0].location.digest is None
+
+    never_id = block.get_or_create_ga4gh_identifier(in_place="never")
+    always_id = block.model_copy(deep=True).get_or_create_ga4gh_identifier(
+        in_place="always"
+    )
+    assert never_id == always_id == "ga4gh:CPB.x8GH5G73cPMs37jy1-9mJjWynu324rxI"
+    assert block.model_dump_json(exclude_none=True) == before
+    assert block.digest is None
+
+
 def test_ga4gh_iri():
     iri = models.iriReference.model_construct(
         "ga4gh:VA.Hy2XU_-rp4IMh6I_1NXNecBo8Qx8n0oE"
