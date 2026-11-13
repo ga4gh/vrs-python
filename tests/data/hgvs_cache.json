@@ -227,6 +227,15 @@
   {
     "func": "get_seq",
     "args": [
+      "NM_006087.3",
+      1271,
+      1272
+    ],
+    "value": "G"
+  },
+  {
+    "func": "get_seq",
+    "args": [
       "NM_181798.1",
       1262,
       1263
@@ -1315,6 +1324,28 @@
           8096
         ],
         "hgnc": "PPP1R12B"
+      }
+    }
+  },
+  {
+    "func": "get_tx_identity_info",
+    "args": [
+      "NM_006087.3"
+    ],
+    "value": {
+      "psycopg2_dictrow": {
+        "tx_ac": "NM_006087.3",
+        "alt_ac": "NM_006087.3",
+        "alt_aln_method": "transcript",
+        "cds_start_i": 372,
+        "cds_end_i": 1707,
+        "lengths": [
+          429,
+          109,
+          111,
+          1903
+        ],
+        "hgnc": "TUBB4A"
       }
     }
   },

@@ -17,6 +17,22 @@ from ga4gh.vrs.dataproxy import _DataProxy
 _logger = logging.getLogger(__name__)
 
 
+def _reference_bases(ref: object) -> str | None:
+    """Return stated reference bases, ignoring a length stored in ``edit.ref``.
+
+    HGVS keeps a deletion length there for expressions such as ``del1`` and
+    ``del1insAT`` (``ref`` is ``"1"`` and ``ref_s`` is unset). Digits are not a
+    sequence. The hgvs validator skips them the same way.
+    """
+    if not isinstance(ref, str) or not ref:
+        return None
+    try:
+        int(ref)
+    except ValueError:
+        return ref
+    return None
+
+
 class HgvsTools:
     """A convenience class that exposes only the tools needed by vrs-python for working with HGVS (Human Genome Variation Society) notation.
 
@@ -40,6 +56,13 @@ class HgvsTools:
         self.uta_conn = hgvs.dataproviders.uta.connect()
         self.normalizer = hgvs.normalizer.Normalizer(self.uta_conn, validate=True)
         self.variant_mapper = hgvs.variantmapper.VariantMapper(self.uta_conn)
+        # c. to n. projection for translation. Reference checking happens
+        # afterwards and has to see the allele the expression stated.
+        self._c_to_n_mapper = hgvs.variantmapper.VariantMapper(
+            self.uta_conn,
+            replace_reference=False,
+            prevalidation_level="INTRINSIC",
+        )
         self.data_proxy = data_proxy
 
     def close(self) -> None:
@@ -49,6 +72,7 @@ class HgvsTools:
         """
         self.normalizer = None
         self.variant_mapper = None
+        self._c_to_n_mapper = None
         self.data_proxy = None
         if self.uta_conn is not None:
             self.uta_conn.close()
@@ -139,8 +163,18 @@ class HgvsTools:
 
         return start, end, state
 
-    def extract_allele_values(self, hgvs_expr: str) -> dict | None:
+    def extract_allele_values(
+        self, hgvs_expr: str, require_validation: bool = True
+    ) -> dict | None:
         """Parse hgvs into a VRS Allele Object
+
+        :param hgvs_expr: HGVS expression to parse
+        :param require_validation: If `True`, a reference allele stated as
+            nucleotides (the `C` in `c.900C>A`, or `delC`) must match the
+            reference sequence, otherwise a `DataProxyValidationError` is
+            raised. A length (`del1`, `del1insAT`) is not a sequence and is not
+            compared. If `False`, a mismatch is only logged and the allele is
+            still returned. Defaults to `True`.
 
         kwargs:
             rle_seq_limit Optional(int): If RLE is set as the new state after
@@ -185,9 +219,26 @@ class HgvsTools:
 
         # translate coding coordinates to positional coordinates, if necessary
         if sv.type == "c":
-            sv = self.c_to_n(sv)
+            sv = self._project_c_to_n(sv)
 
         (start, end, state) = self.get_position_and_state(sv)
+
+        # The HGVS expression may state the expected reference allele (e.g. the
+        # `C` in `c.900C>A`, or the deleted bases in `g.44908822delC`). A
+        # mismatch means the input itself is invalid: silently emitting a VRS
+        # Allele would produce a plausible-but-wrong variant object
+        # (ga4gh/vrs-python#364), so validate it against the reference
+        # sequence just like the gnomAD translator does. A length-only ref
+        # (`del1`) is not a sequence and is left alone.
+        ref_allele = _reference_bases(getattr(sv.posedit.edit, "ref", None))
+        if ref_allele:
+            self.data_proxy.validate_ref_seq(
+                sv.ac,
+                start,
+                end,
+                ref_allele.upper(),
+                require_validation=require_validation,
+            )
 
         return {
             "sequence_id": sv.ac,
@@ -330,6 +381,23 @@ class HgvsTools:
     def c_to_n(self, hgvs: HgvsSequenceVariant) -> HgvsSequenceVariant:
         """Perform hgvs library `c_to_n` method"""
         return self.variant_mapper.c_to_n(hgvs)
+
+    def _project_c_to_n(self, sv: HgvsSequenceVariant) -> HgvsSequenceVariant:
+        """Project a c. variant to n. coordinates, keeping its stated reference.
+
+        ``VariantMapper.c_to_n`` validates that reference extrinsically and then
+        replaces it. A mismatch raises ``HGVSInvalidVariantError`` before
+        ``require_validation`` applies, and a replacement makes the stated
+        allele compare equal to the sequence it was overwritten with. A
+        length-only deletion is rewritten too: the length lives in ``edit.ref``
+        while ``ref_s`` is unset, so ``fill_ref`` treats it as missing.
+        """
+        stated_ref = getattr(sv.posedit.edit, "ref", None)
+        mapped = self._c_to_n_mapper.c_to_n(sv)
+        edit = mapped.posedit.edit
+        if hasattr(edit, "ref"):
+            edit.ref = stated_ref
+        return mapped
 
 
 if __name__ == "__main__":
