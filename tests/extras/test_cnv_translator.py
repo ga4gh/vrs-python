@@ -5,9 +5,14 @@ from ga4gh.vrs.extras.translator import CnvTranslator
 
 
 @pytest.fixture(scope="module")
-def tlr(rest_dataproxy):
+def tlr(dataproxy):
+    """Fixture providing a CnvTranslator backed by local SeqRepoDataProxy.
+
+    NC_000013.11 is present in the local test SeqRepo, so using dataproxy allows
+    these tests to run standalone and in any test order without VCR cassettes.
+    """
     return CnvTranslator(
-        data_proxy=rest_dataproxy,
+        data_proxy=dataproxy,
         default_assembly_name="GRCh38",
         identify=True,
     )
@@ -102,7 +107,6 @@ from_hgvs_cx_tests = (
 
 
 @pytest.mark.parametrize(("hgvsexpr", "copy_change", "expected"), from_hgvs_cx_tests)
-@pytest.mark.vcr
 def test_from_hgvs_cx(tlr, hgvsexpr, copy_change, expected):
     """Test that _from_hgvs works correctly for copy number change"""
     cx = tlr._from_hgvs(hgvsexpr, copy_change=copy_change)
@@ -156,14 +160,12 @@ from_hgvs_cn_tests = (
 
 
 @pytest.mark.parametrize(("hgvsexpr", "copies", "expected"), from_hgvs_cn_tests)
-@pytest.mark.vcr
 def test_from_hgvs_cn(tlr, hgvsexpr, copies, expected):
     """Test that _from_hgvs works correctly for copy number count"""
     cn = tlr._from_hgvs(hgvsexpr, copies=copies)
     assert cn.model_dump(exclude_none=True) == expected
 
 
-@pytest.mark.vcr
 def test_from_hgvs_cn_copies_zero(tlr):
     """Test that copies=0 produces CopyNumberCount, not CopyNumberChange.
 
