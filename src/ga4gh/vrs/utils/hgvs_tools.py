@@ -13,6 +13,7 @@ from hgvs.sequencevariant import SequenceVariant as HgvsSequenceVariant
 
 from ga4gh.vrs import models
 from ga4gh.vrs.dataproxy import _DataProxy
+from ga4gh.vrs.normalize import denormalize_reference_length_expression
 
 _logger = logging.getLogger(__name__)
 
@@ -293,7 +294,19 @@ class HgvsTools:
             start=hgvs.location.SimplePosition(start),
             end=hgvs.location.SimplePosition(end),
         )
-        alt = str(vo.state.sequence.root) or None  # "" => None
+        if (
+            isinstance(vo.state, models.ReferenceLengthExpression)
+            and vo.state.sequence is None
+        ):
+            # sequence is omitted above rle_seq_limit; derive it as _to_spdi does
+            alt = denormalize_reference_length_expression(
+                ref_seq=ref,
+                repeat_subunit_length=vo.state.repeatSubunitLength,
+                alt_length=vo.state.length,
+            )
+        else:
+            alt = str(vo.state.sequence.root)
+        alt = alt or None  # "" => None
         edit = hgvs.edit.NARefAlt(ref=ref, alt=alt)
 
         posedit = hgvs.posedit.PosEdit(pos=ival, edit=edit)
