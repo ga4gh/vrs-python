@@ -823,10 +823,8 @@ def test_rle_seq_limit(tlr):
     allele_no_seq = tlr.translate_from(input_hgvs_expr, fmt="hgvs")
     assert allele_no_seq.model_dump(exclude_none=True) == a_dict
 
-    with pytest.raises(
-        AttributeError, match="'NoneType' object has no attribute 'root'"
-    ):
-        tlr.translate_to(allele_no_seq, "hgvs")
+    # sequence is derived from the reference when it is omitted
+    assert tlr.translate_to(allele_no_seq, "hgvs") == [input_hgvs_expr]
 
     # set rle_seq_limit to None
     allele_with_seq = tlr.translate_from(
