@@ -237,7 +237,10 @@ def _recurse_ga4gh_serialize(obj):
     if isinstance(obj, RootModel):
         return _recurse_ga4gh_serialize(obj.model_dump())
     if isinstance(obj, str):
-        return obj
+        # A referable attribute set to a plain GA4GH CURIE (as ga4gh_enref does)
+        # serializes to its digest, the same as an iriReference or inlined object.
+        m = GA4GH_IR_REGEXP.match(obj)
+        return m["digest"] if m else obj
     if isinstance(obj, list):
         return [_recurse_ga4gh_serialize(x) for x in obj]
     return obj

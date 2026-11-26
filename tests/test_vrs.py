@@ -247,8 +247,8 @@ def test_enref2():
     object_store = {}
     a = {
         "type": "Allele",
-        "id": "ga4gh:VA.LDzK5JahEZG2Ua_5itDtVV8v3O1ptTgI",
-        "digest": "LDzK5JahEZG2Ua_5itDtVV8v3O1ptTgI",
+        "id": "ga4gh:VA.0AePZIWZUNsUlQTamyLrjm2HWUw2opLt",
+        "digest": "0AePZIWZUNsUlQTamyLrjm2HWUw2opLt",
         "location": {
             "id": "ga4gh:SL.wIlaGykfwHIpPY2Fcxtbx4TINbbODFVz",
             "digest": "wIlaGykfwHIpPY2Fcxtbx4TINbbODFVz",
@@ -273,12 +273,39 @@ def test_enref2():
     )
     assert a_enreffed.location == "ga4gh:SL.wIlaGykfwHIpPY2Fcxtbx4TINbbODFVz"
     assert a_enreffed.model_dump(exclude_none=True) == {
-        "id": "ga4gh:VA.LDzK5JahEZG2Ua_5itDtVV8v3O1ptTgI",
-        "digest": "LDzK5JahEZG2Ua_5itDtVV8v3O1ptTgI",
+        "id": "ga4gh:VA.0AePZIWZUNsUlQTamyLrjm2HWUw2opLt",
+        "digest": "0AePZIWZUNsUlQTamyLrjm2HWUw2opLt",
         "type": "Allele",
         "location": "ga4gh:SL.wIlaGykfwHIpPY2Fcxtbx4TINbbODFVz",
         "state": {"type": "LiteralSequenceExpression", "sequence": "T"},
     }
+
+
+def test_enref_without_precomputed_ids():
+    """Enref must not change the identifier of an object whose ids are not set yet"""
+    allele_dict = {
+        "type": "Allele",
+        "location": {
+            "type": "SequenceLocation",
+            "sequenceReference": {
+                "type": "SequenceReference",
+                "refgetAccession": "SQ.IIB53T8CNeJJdUqzn9V_JnRtQadwWCbl",
+            },
+            "start": 44908821,
+            "end": 44908822,
+        },
+        "state": {"type": "LiteralSequenceExpression", "sequence": "T"},
+    }
+    expected_id = ga4gh_identify(models.Allele(**allele_dict), in_place="never")
+
+    object_store = {}
+    enreffed = vrs_enref(models.Allele(**allele_dict), object_store=object_store)
+    assert enreffed.location == "ga4gh:SL.wIlaGykfwHIpPY2Fcxtbx4TINbbODFVz"
+    assert enreffed.id == expected_id
+
+    dereffed = vrs_deref(enreffed, object_store=object_store)
+    assert dereffed.id == expected_id
+    assert dereffed.location.id == "ga4gh:SL.wIlaGykfwHIpPY2Fcxtbx4TINbbODFVz"
 
 
 def test_class_refatt_map():
